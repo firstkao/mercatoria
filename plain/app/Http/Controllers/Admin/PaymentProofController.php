@@ -2,10 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Enums\UserRole;
 use App\Http\Controllers\Controller;
-use App\Models\AdminLog;
-use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -23,7 +20,10 @@ class PaymentProofController extends Controller
             ->join('payment_methods', 'payment_methods.id', '=', 'payment_proofs.payment_method_id')
             ->when($status !== 'all', fn ($query) => $query->where('payment_proofs.status', $status))
             ->select(
-                'payment_proofs.*',
+                'payment_proofs.id',
+                'payment_proofs.status',
+                'payment_proofs.amount_idr',
+                'payment_proofs.uploaded_at',
                 'orders.order_number',
                 'orders.pay_now_idr',
                 'orders.status as order_status',
@@ -45,7 +45,20 @@ class PaymentProofController extends Controller
             ->join('users', 'users.id', '=', 'orders.user_id')
             ->join('payment_methods', 'payment_methods.id', '=', 'payment_proofs.payment_method_id')
             ->where('payment_proofs.id', $proof)
-            ->select('payment_proofs.*', 'orders.order_number', 'orders.pay_now_idr', 'orders.status as order_status', 'users.full_name', 'users.email', 'payment_methods.label as payment_method_label')
+            ->select(
+                'payment_proofs.id',
+                'payment_proofs.status',
+                'payment_proofs.amount_idr',
+                'payment_proofs.proof_path',
+                'payment_proofs.reject_reason',
+                'payment_proofs.uploaded_at',
+                'orders.order_number',
+                'orders.pay_now_idr',
+                'orders.status as order_status',
+                'users.full_name',
+                'users.email',
+                'payment_methods.label as payment_method_label'
+            )
             ->firstOrFail();
 
         return view('admin.payments.show', [
@@ -68,11 +81,13 @@ class PaymentProofController extends Controller
                 'reviewed_at' => now(),
                 'updated_at' => now(),
             ]);
+
             DB::table('orders')->where('id', $order->id)->update([
                 'status' => 'pembayaran_diterima',
                 'paid_at' => now(),
                 'updated_at' => now(),
             ]);
+
             DB::table('order_status_history')->insert([
                 'order_id' => $order->id,
                 'from_status' => 'menunggu_pembayaran',
@@ -82,20 +97,12 @@ class PaymentProofController extends Controller
                 'created_at' => now(),
             ]);
 
-            $user = DB::table('users')->where('id', $order->user_id)->first();
-            if ($user && $user->role === UserRole::Spammer->value) {
-                DB::table('users')->where('id', $user->id)->update([
-                    'role' => UserRole::Customer->value,
-                    'became_customer_at' => now(),
-                    'updated_at' => now(),
-                ]);
-            }
-
             DB::table('admin_notifications')->insert([
                 'type' => 'payment_approved',
                 'order_id' => $order->id,
                 'created_at' => now(),
             ]);
+
             AdminLog::record('approve_payment', null, ['order_id' => $order->id, 'proof_id' => $record->id]);
         });
 
@@ -117,11 +124,13 @@ class PaymentProofController extends Controller
                 'resubmit_deadline_at' => now()->addHours(24),
                 'updated_at' => now(),
             ]);
+
             DB::table('admin_notifications')->insert([
                 'type' => 'payment_rejected',
                 'order_id' => $record->order_id,
                 'created_at' => now(),
             ]);
+
             AdminLog::record('reject_payment', null, ['order_id' => $record->order_id, 'proof_id' => $record->id, 'reason' => $data['reject_reason']]);
         });
 
