@@ -64,6 +64,8 @@ class AdminLog extends Model
         'create_page' => 'Tambah halaman',
         'update_page' => 'Ubah halaman',
         'delete_page' => 'Hapus halaman',
+        'approve_payment' => 'Setujui bukti pembayaran',
+        'reject_payment' => 'Tolak bukti pembayaran',
     ];
 
     public function label(): string
