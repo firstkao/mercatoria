@@ -9,6 +9,8 @@ use App\Http\Controllers\LegalPageController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ResellerApplicationController;
+use App\Http\Controllers\Admin\AuthController as AdminAuthController;
+use App\Http\Controllers\Admin\PaymentProofController;
 use Illuminate\Support\Facades\Route;
 
 Route::redirect('/', '/katalog')->name('home');
@@ -21,6 +23,21 @@ Route::middleware('guest')->group(function (): void {
     Route::get('/masuk', [AuthenticatedSessionController::class, 'create'])->name('login');
     Route::post('/masuk', [AuthenticatedSessionController::class, 'store']);
 });
+
+Route::prefix('admin')->name('admin.')->group(function (): void {
+    Route::middleware('guest:admin')->group(function (): void {
+        Route::get('/masuk', [AdminAuthController::class, 'create'])->name('login');
+        Route::post('/masuk', [AdminAuthController::class, 'store'])->name('login.store');
+    });
+    Route::middleware('auth:admin')->group(function (): void {
+        Route::post('/keluar', [AdminAuthController::class, 'destroy'])->name('logout');
+        Route::get('/pembayaran', [PaymentProofController::class, 'index'])->name('payments.index');
+        Route::get('/pembayaran/{proof}', [PaymentProofController::class, 'show'])->name('payments.show');
+        Route::post('/pembayaran/{proof}/setujui', [PaymentProofController::class, 'approve'])->name('payments.approve');
+        Route::post('/pembayaran/{proof}/tolak', [PaymentProofController::class, 'reject'])->name('payments.reject');
+    });
+});
+
 Route::middleware('auth')->group(function (): void {
     Route::get('/katalog', [CatalogController::class, 'index'])->name('catalog.index');
     Route::get('/produk/{product}', [ProductController::class, 'show'])->name('products.show');
