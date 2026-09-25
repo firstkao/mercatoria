@@ -21,6 +21,7 @@ class DashboardController extends Controller
                 'Spammer' => User::query()->where('role', UserRole::Spammer)->count(),
                 'Customer' => User::query()->where('role', UserRole::Customer)->count(),
                 'Pendaftar reseller baru' => DB::table('reseller_applications')->where('status', 'pending')->count(),
+                'Bukti pembayaran pending' => DB::table('payment_proofs')->where('status', 'pending')->count(),
             ],
             'ratesConfigured' => PriceCalculator::fromSettings()->isConfigured(),
         ]);

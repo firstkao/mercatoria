@@ -1,6 +1,9 @@
 <?php
 
 use App\Http\Controllers\AccountController;
+use App\Http\Controllers\Admin\AuthController as AdminAuthController;
+use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\PaymentProofController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\CartController;
@@ -9,13 +12,14 @@ use App\Http\Controllers\LegalPageController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ResellerApplicationController;
-use App\Http\Controllers\Admin\AuthController as AdminAuthController;
-use App\Http\Controllers\Admin\DashboardController;
-use App\Http\Controllers\Admin\PaymentProofController;
 use Illuminate\Support\Facades\Route;
 
 Route::redirect('/', '/katalog')->name('home');
-Route::get('/{page}', [LegalPageController::class, 'show'])->whereIn('page', ['syarat-dan-ketentuan', 'kebijakan-privasi', 'faq'])->name('legal.show');
+
+Route::get('/{page}', [LegalPageController::class, 'show'])
+    ->whereIn('page', ['syarat-dan-ketentuan', 'kebijakan-privasi', 'faq'])
+    ->name('legal.show');
+
 Route::get('/reseller', [ResellerApplicationController::class, 'create'])->name('reseller.create');
 Route::post('/reseller', [ResellerApplicationController::class, 'store'])->middleware('throttle:5,1');
 
@@ -34,11 +38,11 @@ Route::prefix('admin')->name('admin.')->group(function (): void {
 
     Route::middleware('auth:admin')->group(function (): void {
         Route::get('/', DashboardController::class)->name('dashboard');
-        Route::post('/keluar', [AdminAuthController::class, 'destroy'])->name('logout');
         Route::get('/pembayaran', [PaymentProofController::class, 'index'])->name('payments.index');
         Route::get('/pembayaran/{proof}', [PaymentProofController::class, 'show'])->name('payments.show');
         Route::post('/pembayaran/{proof}/setujui', [PaymentProofController::class, 'approve'])->name('payments.approve');
         Route::post('/pembayaran/{proof}/tolak', [PaymentProofController::class, 'reject'])->name('payments.reject');
+        Route::post('/keluar', [AdminAuthController::class, 'destroy'])->name('logout');
     });
 });
 
