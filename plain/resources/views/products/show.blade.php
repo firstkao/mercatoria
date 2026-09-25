@@ -64,8 +64,12 @@
                     </fieldset>
                 @endif
 
-                <p class="sold-out-note" data-sold-out hidden>Varian ini sedang out of stock.</p>
-                <button type="button" class="button button--block" data-add-to-cart disabled>Tambah ke keranjang</button>
+                <form method="POST" action="{{ route('cart.store') }}" class="product__add-to-cart">
+                    @csrf
+                    <input type="hidden" name="product_variant_id" value="" data-product-variant-id>
+                    <input type="hidden" name="quantity" value="1">
+                    <button type="submit" class="button button--block" data-add-to-cart disabled>Tambah ke keranjang</button>
+                </form>
                 <p class="hint">Keranjang aktif di tahap berikutnya.</p>
 
                 <dl class="product__meta">
@@ -93,8 +97,14 @@
             var comparePrice = root.querySelector('[data-compare-price]');
             var mainImage = root.querySelector('[data-main-image]');
             var soldOut = root.querySelector('[data-sold-out]');
+            var addToCartButton = root.querySelector('[data-add-to-cart]');
+            var hiddenVariantId = root.querySelector('[data-product-variant-id]');
 
             function select(input) {
+                if (!input) return;
+
+                hiddenVariantId.value = input.value;
+                addToCartButton.disabled = !(input.dataset.available === '1');
                 price.textContent = input.dataset.price;
                 comparePrice.textContent = input.dataset.comparePrice;
                 comparePrice.hidden = !input.dataset.comparePrice;
