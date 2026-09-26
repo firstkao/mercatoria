@@ -1,9 +1,10 @@
 <?php
 
-use App\Http\Controllers\HomeController; // Di-import dari kode 1
+use App\Http\Controllers\HomeController;
 use App\Http\Controllers\AccountController;
 use App\Http\Controllers\Admin\AuthController as AdminAuthController;
 use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\OrderManagementController;
 use App\Http\Controllers\Admin\PaymentProofController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Auth\RegisteredUserController;
@@ -44,10 +45,18 @@ Route::middleware('guest')->group(function (): void {
 // 5. Rute Admin Dashboard & Fitur (Khusus Admin yang sudah login)
 Route::prefix('admin')->name('admin.')->middleware('auth:admin')->group(function (): void {
     Route::get('/', DashboardController::class)->name('dashboard');
+    
+    // Manajemen Order Admin
+    Route::get('/orders', [OrderManagementController::class, 'index'])->name('orders.index');
+    Route::get('/orders/{order}', [OrderManagementController::class, 'show'])->name('orders.show');
+    Route::post('/orders/{order}/status', [OrderManagementController::class, 'updateStatus'])->name('orders.status');
+    
+    // Manajemen Bukti Pembayaran
     Route::get('/pembayaran', [PaymentProofController::class, 'index'])->name('payments.index');
     Route::get('/pembayaran/{proof}', [PaymentProofController::class, 'show'])->name('payments.show');
     Route::post('/pembayaran/{proof}/setujui', [PaymentProofController::class, 'approve'])->name('payments.approve');
     Route::post('/pembayaran/{proof}/tolak', [PaymentProofController::class, 'reject'])->name('payments.reject');
+    
     Route::post('/keluar', [AdminAuthController::class, 'destroy'])->name('logout');
 });
 
