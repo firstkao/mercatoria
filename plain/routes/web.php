@@ -10,8 +10,9 @@ use App\Http\Controllers\Admin\VoucherController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\CartController;
-use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\CatalogController;
+use App\Http\Controllers\CheckoutController;
+use App\Http\Controllers\CoinController:
 use App\Http\Controllers\LegalPageController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ProductController;
@@ -41,6 +42,8 @@ Route::middleware('guest')->group(function (): void {
     Route::post('/daftar', [RegisteredUserController::class, 'store'])->middleware('throttle:10,1');
     Route::get('/masuk', [AuthenticatedSessionController::class, 'create'])->name('login');
     Route::post('/masuk', [AuthenticatedSessionController::class, 'store']);
+
+    Route::get('/akun/koin', [\App\Http\Controllers\CoinController::class, 'index'])->name('account.coins.index');
 });
 
 // 5. Rute Admin Dashboard & Fitur (Khusus Admin yang sudah login)
