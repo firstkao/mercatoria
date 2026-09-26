@@ -2,118 +2,107 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\AddToCartRequest;
+use App\Models\CartItem;
+use App\Models\CoinLot;
+use App\Models\Marketplace;
 use App\Models\ProductVariant;
+use App\Models\Setting;
 use App\Support\PriceCalculator;
-use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\View\View;
 
 class CartController extends Controller
 {
-    public function index(): View
+    public function index(Request $request)
     {
+        $user = $request->user();
+        
+        // Menggunakan gaya V1 (Eager Loading) karena terbukti lebih cepat 
+        // dan tidak rawan masalah N+1 Query dibanding V2
+        $cartItems = $user->cartItems()->with('variant.product.shippingTier')->get();
+        $marketplaces = Marketplace::where('is_active', true)->orderBy('name')->get();
         $calculator = PriceCalculator::fromSettings();
-        $rows = DB::table('cart_items')
-            ->join('product_variants', 'product_variants.id', '=', 'cart_items.product_variant_id')
-            ->join('products', 'products.id', '=', 'product_variants.product_id')
-            ->where('cart_items.user_id', auth()->id())
-            ->orderBy('cart_items.id')
-            ->select(
-                'cart_items.id as cart_item_id',
-                'cart_items.quantity',
-                'product_variants.id as variant_id',
-                'product_variants.name as variant_name',
-                'product_variants.price_yuan',
-                'product_variants.weight_grams',
-                'products.id as product_id',
-                'products.name as product_name',
-                'products.slug',
-                'products.is_published'
-            )
-            ->get();
 
-        $items = $rows->map(function ($row) use ($calculator) {
-            $unitPrice = ProductVariant::query()->find($row->variant_id)?->sellingPrice($calculator);
-            $lineTotal = $unitPrice !== null ? $unitPrice * (int) $row->quantity : 0;
+        $subtotal = 0;
+        foreach ($cartItems as $item) {
+            if ($item->variant->isAvailable()) {
+                $subtotal += $item->variant->sellingPrice($calculator) * $item->quantity;
+            }
+        }
 
-            return (object) [
-                'cart_item_id' => $row->cart_item_id,
-                'product_id' => $row->product_id,
-                'product_name' => $row->product_name,
-                'variant_name' => $row->variant_name,
-                'quantity' => (int) $row->quantity,
-                'unit_price_idr' => $unitPrice,
-                'line_total_idr' => $lineTotal,
-                'slug' => $row->slug,
-            ];
-        });
-
-        $subtotal = $items->sum('line_total_idr');
+        // Mempertahankan fitur Koin dari V1
+        $availableCoins = CoinLot::where('user_id', $user->id)
+            ->where('expires_at', '>', now())
+            ->sum('remaining');
+        $maxCoinDiscount = floor($subtotal * (Setting::integer('coin_max_use_percent', 5) / 100));
 
         return view('cart.index', [
-            'items' => $items,
+            'cartItems' => $cartItems,
+            'marketplaces' => $marketplaces,
+            'calculator' => $calculator,
             'subtotal' => $subtotal,
-            'marketplaces' => \App\Models\Marketplace::query()->where('is_active', true)->orderBy('name')->get(),
+            'availableCoins' => $availableCoins,
+            'maxCoinDiscount' => $maxCoinDiscount,
         ]);
     }
 
-    public function store(AddToCartRequest $request): RedirectResponse
+    public function store(Request $request)
     {
-        $variant = ProductVariant::query()->with('product.shippingTier')->findOrFail($request->integer('product_variant_id'));
+        $data = $request->validate([
+            'variant' => 'required|exists:product_variants,id',
+            'quantity' => 'required|integer|min:1|max:99'
+        ]);
+
+        $variant = ProductVariant::with('product')->findOrFail($data['variant']);
 
         abort_unless($variant->product->is_published && $variant->isAvailable(), 422, 'Varian produk tidak tersedia.');
 
-        $quantity = max(1, (int) $request->integer('quantity'));
+        $quantity = (int) $data['quantity'];
 
-        DB::transaction(function () use ($request, $variant, $quantity): void {
-            $existing = DB::table('cart_items')
-                ->where('user_id', $request->user()->id)
+        // Mengambil fitur Anti-Spam Klik (Database Locking) dari V2
+        DB::transaction(function () use ($request, $variant, $quantity) {
+            $existing = CartItem::where('user_id', $request->user()->id)
                 ->where('product_variant_id', $variant->id)
-                ->lockForUpdate()
+                ->lockForUpdate() // Menggembok row ini sepersekian detik agar aman dari spam
                 ->first();
 
             if ($existing) {
-                DB::table('cart_items')
-                    ->where('id', $existing->id)
-                    ->update([
-                        'quantity' => min(99, (int) $existing->quantity + $quantity),
-                        'updated_at' => now(),
-                    ]);
-
-                return;
+                $existing->update([
+                    'quantity' => min(99, $existing->quantity + $quantity)
+                ]);
+            } else {
+                CartItem::create([
+                    'user_id' => $request->user()->id,
+                    'product_variant_id' => $variant->id,
+                    'quantity' => $quantity
+                ]);
             }
-
-            DB::table('cart_items')->insert([
-                'user_id' => $request->user()->id,
-                'product_variant_id' => $variant->id,
-                'quantity' => min(99, $quantity),
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]);
         });
 
-        return redirect()->route('cart.index')->with('status', 'Produk ditambahkan ke keranjang.');
+        return redirect()->route('cart.index')->with('status', 'Berhasil ditambahkan ke keranjang.');
     }
 
-    public function update(int $item): RedirectResponse
+    // Mengambil fitur Update Kuantitas langsung dari V2
+    public function update(Request $request, CartItem $cartItem)
     {
-        $quantity = max(0, min(99, (int) request()->integer('quantity')));
-        $query = DB::table('cart_items')->where('id', $item)->where('user_id', auth()->id());
+        abort_if($cartItem->user_id !== $request->user()->id, 403);
+
+        $quantity = max(0, min(99, (int) $request->integer('quantity')));
 
         if ($quantity === 0) {
-            $query->delete();
+            $cartItem->delete();
         } else {
-            $query->update(['quantity' => $quantity, 'updated_at' => now()]);
+            $cartItem->update(['quantity' => $quantity]);
         }
 
         return back()->with('status', 'Keranjang diperbarui.');
     }
 
-    public function destroy(int $item): RedirectResponse
+    public function destroy(CartItem $cartItem)
     {
-        DB::table('cart_items')->where('id', $item)->where('user_id', auth()->id())->delete();
-
-        return back()->with('status', 'Produk dihapus dari keranjang.');
+        abort_if($cartItem->user_id !== auth()->id(), 403);
+        $cartItem->delete();
+        
+        return back()->with('status', 'Item dihapus dari keranjang.');
     }
 }
