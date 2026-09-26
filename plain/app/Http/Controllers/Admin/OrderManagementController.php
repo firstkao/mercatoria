@@ -10,6 +10,7 @@ use App\Models\PaymentProof;
 use App\Models\Setting;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
 
 class OrderManagementController extends Controller
 {
@@ -62,7 +63,9 @@ class OrderManagementController extends Controller
             }
         });
 
-        // TODO: Memicu antrean pengiriman Email notifikasi ke pelanggan di sini
+        if ($request->action === 'reject') {
+            Mail::to($order->user->email)->send(new \App\Mail\PaymentRejected($order, $request->reject_reason));
+        }
 
         return back()->with('status', 'Verifikasi pembayaran berhasil disimpan.');
     }
@@ -122,6 +125,7 @@ class OrderManagementController extends Controller
         });
 
         AdminLog::record('update_order_status', $order, ['from' => $oldStatus, 'to' => $newStatus]);
+        Mail::to($order->user->email)->send(new \App\Mail\OrderStatusUpdated($order));
         return back()->with('status', 'Status pesanan berhasil diperbarui.');
     }
 }
