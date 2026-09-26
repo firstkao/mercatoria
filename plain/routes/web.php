@@ -12,7 +12,7 @@ use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\CatalogController;
 use App\Http\Controllers\CheckoutController;
-use App\Http\Controllers\CoinController:
+use App\Http\Controllers\CoinController;
 use App\Http\Controllers\LegalPageController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ProductController;
