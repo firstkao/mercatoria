@@ -6,6 +6,7 @@ use App\Http\Controllers\Admin\AuthController as AdminAuthController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\OrderManagementController;
 use App\Http\Controllers\Admin\PaymentProofController;
+use App\Http\Controllers\Admin\VoucherController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\CartController;
@@ -56,6 +57,9 @@ Route::prefix('admin')->name('admin.')->middleware('auth:admin')->group(function
     Route::get('/pembayaran/{proof}', [PaymentProofController::class, 'show'])->name('payments.show');
     Route::post('/pembayaran/{proof}/setujui', [PaymentProofController::class, 'approve'])->name('payments.approve');
     Route::post('/pembayaran/{proof}/tolak', [PaymentProofController::class, 'reject'])->name('payments.reject');
+
+    // Managemen Voucher
+    Route::resource('vouchers', VoucherController::class)->except('show');
     
     Route::post('/keluar', [AdminAuthController::class, 'destroy'])->name('logout');
 });
