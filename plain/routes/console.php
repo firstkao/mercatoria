@@ -14,3 +14,6 @@ Schedule::command('spammers:prune-expired')->hourly()->withoutOverlapping(30);
 
 // Bersihkan log aktivitas setiap hari jam 03:00 pagi waktu Jakarta
 Schedule::command('activity-logs:prune')->dailyAt('03:00')->timezone('Asia/Jakarta');
+
+// Tugas baru untuk siklus koin
+Schedule::command('coins:lifecycle')->dailyAt('01:00')->timezone('Asia/Jakarta');
