@@ -2,7 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\ActivityLog;
 use App\Models\Marketplace;
+use App\Models\Order;
+use App\Models\PaymentMethod;
 use App\Models\ProductVariant;
 use App\Models\Setting;
 use App\Support\PriceCalculator;
@@ -13,40 +16,70 @@ use Illuminate\View\View;
 
 class OrderController extends Controller
 {
-    public function index(): View
+    public function index(Request $request): View
     {
-        $orders = DB::table('orders')
-            ->where('user_id', auth()->id())
-            ->latest('created_at')
-            ->paginate(20);
-
-        return view('orders.index', ['orders' => $orders]);
+        // Mix: Menggunakan Eloquent ORM yang lebih rapi (Kode 2) 
+        // dengan nama view dari (Kode 1)
+        $orders = $request->user()->orders()->latest()->paginate(20);
+        
+        return view('orders.index', compact('orders'));
     }
 
     public function show(string $orderNumber): View
     {
-        $order = DB::table('orders')
-            ->where('user_id', auth()->id())
+        // Mix: Cari berdasarkan order_number (Kode 1) tapi menggunakan Eloquent (Kode 2)
+        $order = Order::where('user_id', auth()->id())
             ->where('order_number', $orderNumber)
             ->firstOrFail();
 
-        $items = DB::table('order_items')
-            ->where('order_id', $order->id)
-            ->get();
+        $order->load('items.variant.product', 'paymentProofs.method', 'marketplace');
+        
+        $paymentMethods = PaymentMethod::where('is_active', true)->orderBy('sort_order')->get();
 
-        $proofs = DB::table('payment_proofs')
-            ->where('order_id', $order->id)
-            ->latest('created_at')
-            ->get();
-
-        $methods = DB::table('payment_methods')
-            ->where('is_active', true)
-            ->orderBy('sort_order')
-            ->get();
-
-        return view('orders.show', compact('order', 'items', 'proofs', 'methods'));
+        return view('orders.show', compact('order', 'paymentMethods'));
     }
 
+    public function proof(Request $request, string $orderNumber): RedirectResponse
+    {
+        // Mix: Nama method disesuaikan dengan Route (Kode 1), logika menggunakan Kode 2
+        $order = Order::where('user_id', auth()->id())
+            ->where('order_number', $orderNumber)
+            ->firstOrFail();
+
+        abort_unless($order->status === 'menunggu_pembayaran', 422, 'Status pesanan tidak memungkinkan upload bukti.');
+
+        $request->validate([
+            'payment_method_id' => ['required', 'exists:payment_methods,id'],
+            'amount_idr' => ['required', 'integer', 'min:1'],
+            'proof' => ['required', 'image', 'mimes:jpeg,png,jpg,webp', 'max:5120'], // Max 5MB
+        ]);
+
+        $path = $request->file('proof')->store('payment-proofs', 'public');
+
+        // Simpan bukti bayar menggunakan relasi
+        $order->paymentProofs()->create([
+            'payment_method_id' => $request->payment_method_id,
+            'amount_idr' => $request->amount_idr,
+            'proof_path' => $path,
+            'status' => 'pending'
+        ]);
+
+        // Fitur canggih dari Kode 2: Ubah status pesanan dan catat log
+        $order->update(['status' => 'ditahan']);
+        
+        if (class_exists(ActivityLog::class)) {
+            ActivityLog::record(auth()->user(), 'upload_payment_proof', $request, ['order_number' => $order->order_number]);
+        }
+
+        return redirect()->route('orders.show', $orderNumber)->with('status', 'Bukti pembayaran berhasil diunggah. Menunggu verifikasi admin.');
+    }
+
+    /**
+     * CATATAN UNTUK CHECKOUT:
+     * Karena di file web.php sebelumnya rute checkout mengarah ke CheckoutController, 
+     * kamu bisa CUT (potong) method di bawah ini, pindahkan ke CheckoutController.php, 
+     * dan ubah namanya dari checkout() menjadi store().
+     */
     public function checkout(Request $request): RedirectResponse
     {
         $data = $request->validate([
@@ -160,36 +193,5 @@ class OrderController extends Controller
         });
 
         return redirect()->route('orders.index')->with('status', 'Order berhasil dibuat. Silakan bayar dan upload bukti pembayaran.');
-    }
-
-    public function proof(Request $request, string $orderNumber): RedirectResponse
-    {
-        $data = $request->validate([
-            'payment_method_id' => ['required', 'integer', 'exists:payment_methods,id'],
-            'amount_idr' => ['required', 'integer', 'min:1'],
-            'proof' => ['required', 'image', 'max:5120'],
-        ]);
-
-        $order = DB::table('orders')
-            ->where('user_id', auth()->id())
-            ->where('order_number', $orderNumber)
-            ->firstOrFail();
-
-        abort_unless($order->status === 'menunggu_pembayaran', 422, 'Status pesanan tidak memungkinkan upload bukti.');
-
-        $path = $request->file('proof')->store('payment-proofs', 'public');
-
-        DB::table('payment_proofs')->insert([
-            'order_id' => $order->id,
-            'payment_method_id' => $data['payment_method_id'],
-            'amount_idr' => $data['amount_idr'],
-            'proof_path' => $path,
-            'status' => 'pending',
-            'uploaded_at' => now(),
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
-
-        return redirect()->route('orders.show', $orderNumber)->with('status', 'Bukti pembayaran berhasil diunggah dan menunggu verifikasi admin.');
     }
 }
