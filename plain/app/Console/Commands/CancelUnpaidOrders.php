@@ -3,55 +3,72 @@
 namespace App\Console\Commands;
 
 use App\Actions\DeleteSpammerAccount;
-use App\Models\Order; // Pastikan model Order sudah ada
-use Illuminate\Console\Attributes\Description;
-use Illuminate\Console\Attributes\Signature;
+use App\Models\Order;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 
-#[Signature('orders:cancel-unpaid')]
-#[Description('Membatalkan pesanan yang belum dibayar > 24 jam dan menghapus akun spammer')]
 class CancelUnpaidOrders extends Command
 {
+    // Menggunakan properti standar agar 100% kompatibel dengan semua versi Laravel
+    protected $signature = 'orders:cancel-unpaid';
+    protected $description = 'Membatalkan pesanan yang lewat batas pembayaran dan menghapus akun Spammer';
+
     public function handle(DeleteSpammerAccount $deleteSpammerAccount): int
     {
-        // Cari waktu 24 jam ke belakang
-        $expiredTime = now()->subHours(24);
-
-        // Ambil order yang statusnya menunggu pembayaran (sesuaikan field status/bukti bayar dengan tabelmu)
-        $expiredOrders = Order::query()
-            ->with('user')
-            ->whereNull('payment_proof_path') // Asumsi kalau bukti bayar kosong
-            ->where('status', 'pending')      // Asumsi status awal pesanan
-            ->where('created_at', '<=', $expiredTime)
+        // Mix: Query berbasis waktu dinamis (Kode 2) + Proteksi cek bukti bayar (Kode 1)
+        $expiredOrders = Order::with('user')
+            ->whereIn('status', ['menunggu_pembayaran', 'pembayaran_gagal'])
+            ->whereNotNull('payment_deadline_at')
+            ->where('payment_deadline_at', '<', now())
+            ->whereNull('payment_proof_path') // Keamanan ekstra dari Kode 1
             ->get();
 
         $canceledCount = 0;
-        $deletedSpammerCount = 0;
+        $deletedSpammers = 0;
 
         foreach ($expiredOrders as $order) {
-            DB::transaction(function () use ($order, $deleteSpammerAccount, &$canceledCount, &$deletedSpammerCount) {
+            DB::transaction(function () use ($order, $deleteSpammerAccount, &$canceledCount, &$deletedSpammers) {
                 $user = $order->user;
 
-                if ($user && $user->isSpammer()) {
-                    // Aturan ketat: Spammer gagal bayar 24 jam -> Akun & order dihapus
-                    $deleteSpammerAccount->handle($user, 'deleted_unpaid');
-                    $deletedSpammerCount++;
+                if ($user && method_exists($user, 'isSpammer') && $user->isSpammer()) {
+                    // Eksekusi akun Spammer
+                    $deleteSpammerAccount->handle($user, 'deleted_unpaid_order');
+                    $deletedSpammers++;
                 } else {
-                    // Customer biasa: Hanya batalkan order & kembalikan stok
-                    $order->update(['status' => 'cancelled']);
-                    
-                    // TODO: Jika kamu punya mekanisme pemotongan stok saat checkout, kembalikan stoknya di sini
-                    // foreach ($order->items as $item) {
-                    //     $item->variant()->where('status', 'out_of_stock')->update(['status' => 'available']);
-                    // }
-                    
+                    // Customer biasa: Batalkan order
+                    $order->update([
+                        'status' => 'dibatalkan',
+                        'cancelled_at' => now()
+                    ]);
+
+                    // Mix: Kembalikan koin yang terpakai (Kode 2)
+                    $spentCoins = DB::table('coin_spends')->where('order_id', $order->id)->get();
+                    if ($spentCoins->isNotEmpty()) {
+                        foreach ($spentCoins as $spend) {
+                            DB::table('coin_lots')
+                                ->where('id', $spend->coin_lot_id)
+                                ->increment('remaining', $spend->amount);
+                        }
+                        DB::table('coin_spends')->where('order_id', $order->id)->delete();
+                    }
+
+                    // Mix: Pengembalian stok yang dirapikan (Kode 1)
+                    // TODO: Hilangkan komentar di bawah jika sistemmu memotong stok saat checkout
+                    /*
+                    foreach ($order->items as $item) {
+                        DB::table('product_variants')
+                            ->where('id', $item->product_variant_id)
+                            ->increment('stock', $item->quantity);
+                    }
+                    */
+
                     $canceledCount++;
                 }
             });
         }
 
-        $this->info("Selesai! Membatalkan {$canceledCount} pesanan customer & menghapus {$deletedSpammerCount} akun spammer.");
+        // Mix: Output terminal yang lebih rapi
+        $this->info("Selesai! Membatalkan {$canceledCount} pesanan expired & menghapus {$deletedSpammers} akun spammer.");
 
         return self::SUCCESS;
     }
