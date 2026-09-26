@@ -1,4 +1,4 @@
->?php
+<?php
 
 // app/Models/CoinLot.php
 namespace App\Models;
