@@ -7,6 +7,7 @@ use App\Http\Controllers\Admin\PaymentProofController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\CartController;
+use App\Http\Controllers\CheckoutController; // Pastikan ini di-import
 use App\Http\Controllers\CatalogController;
 use App\Http\Controllers\LegalPageController;
 use App\Http\Controllers\OrderController;
@@ -49,11 +50,17 @@ Route::prefix('admin')->name('admin.')->group(function (): void {
 Route::middleware('auth')->group(function (): void {
     Route::get('/katalog', [CatalogController::class, 'index'])->name('catalog.index');
     Route::get('/produk/{product}', [ProductController::class, 'show'])->name('products.show');
-    Route::post('/keranjang', [CartController::class, 'store'])->name('cart.store');
+    
+    // --- FITUR CART (Keranjang) ---
     Route::get('/keranjang', [CartController::class, 'index'])->name('cart.index');
+    Route::post('/keranjang', [CartController::class, 'store'])->name('cart.store');
     Route::patch('/keranjang/{item}', [CartController::class, 'update'])->name('cart.update');
     Route::delete('/keranjang/{item}', [CartController::class, 'destroy'])->name('cart.destroy');
-    Route::post('/checkout', [OrderController::class, 'checkout'])->name('orders.checkout');
+    
+    // --- FITUR CHECKOUT (Di-mix menggunakan CheckoutController) ---
+    Route::post('/checkout', [CheckoutController::class, 'store'])->name('checkout.store');
+    
+    // --- FITUR PESANAN & AKUN ---
     Route::get('/pesanan', [OrderController::class, 'index'])->name('orders.index');
     Route::get('/pesanan/{orderNumber}', [OrderController::class, 'show'])->name('orders.show');
     Route::post('/pesanan/{orderNumber}/bukti-pembayaran', [OrderController::class, 'proof'])->name('orders.proof');
