@@ -8,22 +8,21 @@ use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
+use Intervention\Image\ImageManager;
+use Intervention\Image\Drivers\Gd\Driver;
 
 /**
  * Creates or updates a product together with its images and variants.
  */
 class SaveProduct
 {
-    /**
-     * @param  array<string, mixed>  $data  Validated ProductRequest data.
-     * @param  array<int, UploadedFile>  $newImages
-     * @param  array<int|string, UploadedFile|null>  $variantImages  Keyed like $data['variants'].
-     */
     public function handle(Product $product, array $data, array $newImages = [], array $variantImages = []): Product
     {
         $filesToDelete = [];
+        $manager = new ImageManager(new Driver());
 
-        DB::transaction(function () use ($product, $data, $newImages, $variantImages, &$filesToDelete): void {
+        DB::transaction(function () use ($product, $data, $newImages, $variantImages, &$filesToDelete, $manager): void {
             $product->fill([
                 'name' => $data['name'],
                 'slug' => $data['slug'],
@@ -44,9 +43,15 @@ class SaveProduct
 
             $nextOrder = (int) $product->images()->max('sort_order');
             $newImageIds = [];
+            
+            // Kompresi & Konversi Foto Utama Produk
             foreach ($newImages as $image) {
+                $filename = 'products/' . Str::random(40) . '.webp';
+                $img = $manager->read($image)->scaleDown(width: 1000);
+                Storage::disk('public')->put($filename, (string) $img->toWebp(75));
+
                 $newImageIds[] = $product->images()->create([
-                    'image_path' => $image->store('products', 'public'),
+                    'image_path' => $filename,
                     'sort_order' => ++$nextOrder,
                 ])->id;
             }
@@ -58,7 +63,6 @@ class SaveProduct
             $position = 0;
 
             foreach ($data['variants'] as $key => $row) {
-                /** @var ProductVariant $variant */
                 $variant = isset($row['id']) && $existing->has((int) $row['id'])
                     ? $existing->get((int) $row['id'])
                     : $product->variants()->make();
@@ -78,14 +82,22 @@ class SaveProduct
                     if ($variant->image_path) {
                         $filesToDelete[] = $variant->image_path;
                     }
-                    $variant->image_path = $upload instanceof UploadedFile ? $upload->store('products/variants', 'public') : null;
+                    
+                    // Kompresi & Konversi Foto Varian
+                    if ($upload instanceof UploadedFile) {
+                        $filename = 'products/variants/' . Str::random(40) . '.webp';
+                        $img = $manager->read($upload)->scaleDown(width: 800);
+                        Storage::disk('public')->put($filename, (string) $img->toWebp(75));
+                        $variant->image_path = $filename;
+                    } else {
+                        $variant->image_path = null;
+                    }
                 }
 
                 $variant->save();
                 $keptIds[] = $variant->id;
             }
 
-            // Past orders keep their own snapshots, so removed variants can be deleted.
             $removedVariants = $existing->except($keptIds);
             $filesToDelete = [...$filesToDelete, ...$removedVariants->pluck('image_path')->filter()->all()];
             $removedVariants->each->delete();
@@ -96,11 +108,6 @@ class SaveProduct
         return $product;
     }
 
-    /**
-     * Move the chosen image to the front; "new-N" refers to the N-th image uploaded in this request.
-     *
-     * @param  array<int, int>  $newImageIds
-     */
     private function applyMainImage(Product $product, ?string $choice, array $newImageIds): void
     {
         if ($choice === null || $choice === '') {
@@ -123,9 +130,6 @@ class SaveProduct
         }
     }
 
-    /**
-     * Admin enters sale dates in WIB; they are stored in UTC.
-     */
     private function jakartaDate(?string $value): ?Carbon
     {
         return $value ? Carbon::parse($value, 'Asia/Jakarta')->utc() : null;
