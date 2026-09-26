@@ -12,14 +12,17 @@ use App\Support\PriceCalculator;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Illuminate\View\View;
+use Intervention\Image\ImageManager;
+use Intervention\Image\Drivers\Gd\Driver;
 
 class OrderController extends Controller
 {
     public function index(Request $request): View
     {
-        // Mix: Menggunakan Eloquent ORM yang lebih rapi (Kode 2) 
-        // dengan nama view dari (Kode 1)
+        // View disesuaikan dengan rute web.php yang sudah kita rapikan sebelumnya
         $orders = $request->user()->orders()->latest()->paginate(20);
         
         return view('orders.index', compact('orders'));
@@ -27,7 +30,7 @@ class OrderController extends Controller
 
     public function show(string $orderNumber): View
     {
-        // Mix: Cari berdasarkan order_number (Kode 1) tapi menggunakan Eloquent (Kode 2)
+        // Cari order berdasarkan parameter string dari rute web.php
         $order = Order::where('user_id', auth()->id())
             ->where('order_number', $orderNumber)
             ->firstOrFail();
@@ -41,7 +44,6 @@ class OrderController extends Controller
 
     public function proof(Request $request, string $orderNumber): RedirectResponse
     {
-        // Mix: Nama method disesuaikan dengan Route (Kode 1), logika menggunakan Kode 2
         $order = Order::where('user_id', auth()->id())
             ->where('order_number', $orderNumber)
             ->firstOrFail();
@@ -50,21 +52,26 @@ class OrderController extends Controller
 
         $request->validate([
             'payment_method_id' => ['required', 'exists:payment_methods,id'],
-            'amount_idr' => ['required', 'integer', 'min:1'],
             'proof' => ['required', 'image', 'mimes:jpeg,png,jpg,webp', 'max:5120'], // Max 5MB
         ]);
 
-        $path = $request->file('proof')->store('payment-proofs', 'public');
+        // Mix: Fitur Kompresi & Konversi ke WEBP dari Kode 1
+        $file = $request->file('proof');
+        $filename = 'payment-proofs/' . Str::random(40) . '.webp';
 
-        // Simpan bukti bayar menggunakan relasi
+        $manager = new ImageManager(new Driver());
+        $img = $manager->read($file)->scaleDown(width: 800);
+        Storage::disk('public')->put($filename, (string) $img->toWebp(75));
+
+        // Simpan bukti bayar ke database
         $order->paymentProofs()->create([
             'payment_method_id' => $request->payment_method_id,
-            'amount_idr' => $request->amount_idr,
-            'proof_path' => $path,
+            // Mix: Keamanan dari Kode 1. Ambil tagihan dari DB, jangan dari input form user agar tidak bisa di-hack
+            'amount_idr' => $order->pay_now_idr, 
+            'proof_path' => $filename,
             'status' => 'pending'
         ]);
 
-        // Fitur canggih dari Kode 2: Ubah status pesanan dan catat log
         $order->update(['status' => 'ditahan']);
         
         if (class_exists(ActivityLog::class)) {
@@ -75,10 +82,9 @@ class OrderController extends Controller
     }
 
     /**
-     * CATATAN UNTUK CHECKOUT:
-     * Karena di file web.php sebelumnya rute checkout mengarah ke CheckoutController, 
-     * kamu bisa CUT (potong) method di bawah ini, pindahkan ke CheckoutController.php, 
-     * dan ubah namanya dari checkout() menjadi store().
+     * LOGIKA CHECKOUT (Dari Kode 2)
+     * Catatan: Sebaiknya ini dipindah ke CheckoutController@store 
+     * agar rapi, tapi tetap dibiarkan di sini sesuai permintaan awalmu.
      */
     public function checkout(Request $request): RedirectResponse
     {
