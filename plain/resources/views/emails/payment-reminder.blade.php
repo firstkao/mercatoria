@@ -26,6 +26,6 @@
     <p>Abaikan email ini jika Anda sudah melakukan pembayaran dan sedang menunggu verifikasi admin.</p>
 
     <br>
-    <p>Terima kasih,<br><strong>Tim MERCATORIA</strong></p>
+    <p>Terima kasih,<br><strong>MERCATORIA</strong></p>
 </body>
 </html>
