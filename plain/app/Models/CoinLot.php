@@ -1,3 +1,5 @@
+>?php
+
 // app/Models/CoinLot.php
 namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
