@@ -23,7 +23,7 @@ class SaveProduct
         $manager = new ImageManager(new Driver());
 
         DB::transaction(function () use ($product, $data, $newImages, $variantImages, &$filesToDelete, $manager): void {
-            $product->fill([
+            $fill = [
                 'name' => $data['name'],
                 'slug' => $data['slug'],
                 'sku' => $data['sku'] ?? null,
@@ -35,16 +35,25 @@ class SaveProduct
                 'sale_starts_at' => $this->jakartaDate($data['sale_starts_at'] ?? null),
                 'sale_ends_at' => $this->jakartaDate($data['sale_ends_at'] ?? null),
                 'is_published' => $data['is_published'] ?? false,
-            ])->save();
+            ];
 
+            // is_featured hanya di-set kalau form mengirimnya (biar nggak nge-reset nilai lama)
+            if (array_key_exists('is_featured', $data)) {
+                $fill['is_featured'] = ! empty($data['is_featured']);
+            }
+
+            $product->fill($fill)->save();
+
+            // ============================================================
+            // FOTO PRODUK
+            // ============================================================
             $removedImages = $product->images()->whereIn('id', $data['remove_images'] ?? [])->get();
             $filesToDelete = $removedImages->pluck('image_path')->all();
             $removedImages->each->delete();
 
             $nextOrder = (int) $product->images()->max('sort_order');
             $newImageIds = [];
-            
-            // Kompresi & Konversi Foto Utama Produk
+
             foreach ($newImages as $image) {
                 $filename = 'products/' . Str::random(40) . '.webp';
                 $img = $manager->read($image)->scaleDown(width: 1000);
@@ -58,6 +67,9 @@ class SaveProduct
 
             $this->applyMainImage($product, $data['main_image'] ?? null, $newImageIds);
 
+            // ============================================================
+            // VARIAN
+            // ============================================================
             $existing = $product->variants()->get()->keyBy('id');
             $keptIds = [];
             $position = 0;
@@ -70,9 +82,9 @@ class SaveProduct
                 $variant->fill([
                     'name' => $row['name'],
                     'sku' => $row['sku'] ?? null,
-                    'price_yuan' => $row['price_yuan'],
-                    'compare_price_yuan' => $row['compare_price_yuan'] ?? null,
-                    'weight_grams' => $row['weight_grams'],
+                    'price_yuan' => $this->normalizeDecimal($row['price_yuan']),
+                    'compare_price_yuan' => $this->normalizeDecimal($row['compare_price_yuan'] ?? null),
+                    'weight_grams' => $this->normalizeInt($row['weight_grams']),
                     'status' => $row['status'],
                     'sort_order' => ++$position,
                 ]);
@@ -82,8 +94,7 @@ class SaveProduct
                     if ($variant->image_path) {
                         $filesToDelete[] = $variant->image_path;
                     }
-                    
-                    // Kompresi & Konversi Foto Varian
+
                     if ($upload instanceof UploadedFile) {
                         $filename = 'products/variants/' . Str::random(40) . '.webp';
                         $img = $manager->read($upload)->scaleDown(width: 800);
@@ -133,5 +144,35 @@ class SaveProduct
     private function jakartaDate(?string $value): ?Carbon
     {
         return $value ? Carbon::parse($value, 'Asia/Jakarta')->utc() : null;
+    }
+
+    /**
+     * Normalisasi input desimal: terima "12.5" atau "12,5" → 12.5
+     */
+    private function normalizeDecimal(mixed $value): ?float
+    {
+        if ($value === null || $value === '') {
+            return null;
+        }
+
+        if (is_numeric($value)) {
+            return (float) $value;
+        }
+
+        $clean = str_replace(',', '.', (string) $value);
+
+        return is_numeric($clean) ? (float) $clean : null;
+    }
+
+    /**
+     * Normalisasi input integer: "500g" → 500, "500" → 500
+     */
+    private function normalizeInt(mixed $value): int
+    {
+        if ($value === null || $value === '') {
+            return 0;
+        }
+
+        return (int) preg_replace('/\D/', '', (string) $value);
     }
 }

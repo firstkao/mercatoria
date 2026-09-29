@@ -13,6 +13,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 class UserController extends Controller
@@ -44,6 +45,89 @@ class UserController extends Controller
             'viewQuota' => Setting::integer('view_quota', 10),
         ]);
     }
+
+    // ============================================================
+    // TAMBAHAN: CRUD
+    // ============================================================
+
+    public function create(): View
+    {
+        return view('admin.users.create', [
+            'roles' => UserRole::cases(),
+        ]);
+    }
+
+    public function store(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'full_name' => ['required', 'string', 'max:255'],
+            'email'     => ['required', 'email', 'max:255', 'unique:users,email'],
+            'whatsapp'  => ['nullable', 'string', 'max:20'],
+            'password'  => ['required', 'string', 'min:8'],
+            'role'      => ['required', Rule::enum(UserRole::class)],
+        ]);
+
+        $validated['password'] = bcrypt($validated['password']);
+        $validated['registered_at'] = now();
+
+        $user = User::create($validated);
+
+        AdminLog::record('create_user', $user, ['nama' => $user->full_name]);
+
+        return redirect()
+            ->route('admin.users.show', $user)
+            ->with('status', 'Pengguna baru berhasil ditambahkan.');
+    }
+
+    public function edit(User $user): View
+    {
+        return view('admin.users.edit', [
+            'user'  => $user,
+            'roles' => UserRole::cases(),
+        ]);
+    }
+
+    public function update(Request $request, User $user): RedirectResponse
+    {
+        $validated = $request->validate([
+            'full_name' => ['required', 'string', 'max:255'],
+            'email'     => ['required', 'email', 'max:255', Rule::unique('users', 'email')->ignore($user->id)],
+            'whatsapp'  => ['nullable', 'string', 'max:20'],
+            'password'  => ['nullable', 'string', 'min:8'],
+            'role'      => ['required', Rule::enum(UserRole::class)],
+        ]);
+
+        if (! empty($validated['password'])) {
+            $validated['password'] = bcrypt($validated['password']);
+        } else {
+            unset($validated['password']);
+        }
+
+        $user->update($validated);
+        AdminLog::record('update_user', $user, ['nama' => $user->full_name]);
+
+        return redirect()
+            ->route('admin.users.show', $user)
+            ->with('status', 'Data pengguna berhasil diperbarui.');
+    }
+
+    public function destroy(User $user): RedirectResponse
+    {
+        if (auth('admin')->id() === $user->id) {
+            return back()->withErrors(['user' => 'Tidak bisa menghapus akun sendiri.']);
+        }
+
+        $name = $user->full_name;
+        $user->delete();
+
+        return redirect()
+            ->route('admin.users.index')
+            ->with('status', "Pengguna {$name} berhasil dihapus.");
+    }
+
+    // ============================================================
+    // METHOD YANG SUDAH ADA (tetap)
+    // ============================================================
 
     public function show(User $user): View
     {
@@ -80,6 +164,25 @@ class UserController extends Controller
         AdminLog::record('anonymize_customer', $user, ['nama' => $name]);
 
         return redirect()->route('admin.users.show', $user)->with('status', 'Data pribadi customer dihapus. Riwayat order tetap tersimpan.');
+    }
+    
+        /**
+     * Kirim link reset password ke user (dipicu admin).
+     */
+    public function sendPasswordReset(User $user): RedirectResponse
+    {
+        if (empty($user->email)) {
+            return back()->withErrors(['user' => 'User ini tidak punya email (mungkin sudah dianonimkan).']);
+        }
+
+        $status = \Illuminate\Support\Facades\Password::sendResetLink(['email' => $user->email]);
+
+        if ($status === \Illuminate\Support\Facades\Password::RESET_LINK_SENT) {
+            AdminLog::record('send_password_reset', $user, ['email' => $user->email]);
+            return back()->with('status', "Link reset password sudah dikirim ke {$user->email}.");
+        }
+
+        return back()->withErrors(['user' => 'Gagal mengirim link: ' . __($status)]);
     }
 
     /**

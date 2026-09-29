@@ -19,16 +19,25 @@ class AuthController extends Controller
 
     public function store(AdminLoginRequest $request): RedirectResponse
     {
+        // AdminLoginRequest::authenticate() sudah handle rate limit + attempt
         $request->authenticate();
+
         $request->session()->regenerate();
+
+        // Buang url.intended sisa dari guard web — biar nggak nyasar ke halaman user
+        $request->session()->forget('url.intended');
+
         AdminLog::record('login');
 
-        return redirect()->intended(route('admin.dashboard'));
+        // Langsung ke dashboard admin (JANGAN pakai intended())
+        return redirect()->route('admin.dashboard');
     }
 
     public function destroy(Request $request): RedirectResponse
     {
         Auth::guard('admin')->logout();
+
+        $request->session()->invalidate();
         $request->session()->regenerateToken();
 
         return redirect()->route('admin.login');

@@ -13,6 +13,7 @@ class AnonymizeCustomer
     public function handle(User $user): void
     {
         DB::transaction(function () use ($user): void {
+            // 1) Hapus data pribadi dari row user
             $user->forceFill([
                 'full_name' => null,
                 'province' => null,
@@ -27,11 +28,21 @@ class AnonymizeCustomer
                 'anonymized_at' => now(),
             ])->save();
 
+            // 2) Bersihkan data turunan yang mengandung info personal
             $user->activityLogs()->delete();
             DB::table('cart_items')->where('user_id', $user->id)->delete();
             DB::table('product_views')->where('user_id', $user->id)->delete();
             DB::table('coin_lots')->where('user_id', $user->id)->delete();
             DB::table('sessions')->where('user_id', $user->id)->delete();
+
+            // 3) Bersihkan tabel dari batch-batch terbaru (kalau tabelnya ada)
+            if (\Illuminate\Support\Facades\Schema::hasTable('user_notifications')) {
+                DB::table('user_notifications')->where('user_id', $user->id)->delete();
+            }
+
+            if (\Illuminate\Support\Facades\Schema::hasTable('cart_reminders')) {
+                DB::table('cart_reminders')->where('user_id', $user->id)->delete();
+            }
         });
     }
 }

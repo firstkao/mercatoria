@@ -8,7 +8,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{{ asset('css/admin.css') }}?v=4">
+    <link rel="stylesheet" href="{{ asset('css/admin.css') }}?v=5">
     @stack('head')
 </head>
 <body>
@@ -16,26 +16,40 @@
         $navigation = [
             ['label' => null, 'items' => [
                 ['route' => 'admin.dashboard', 'active' => 'admin.dashboard', 'label' => 'Ringkasan', 'icon' => 'home'],
+                ['route' => 'admin.reports.index', 'active' => 'admin.reports.*', 'label' => 'Laporan', 'icon' => 'list'],
             ]],
             ['label' => 'Penjualan', 'items' => [
-                ['route' => 'admin.payments.index', 'active' => 'admin.payments.*', 'label' => 'Pembayaran', 'icon' => 'wallet'],
+                ['route' => 'admin.orders.index', 'active' => 'admin.orders.*', 'label' => 'Pesanan', 'icon' => 'box', 'badge' => 'pendingOrders'],
+                ['route' => 'admin.payments.index', 'active' => 'admin.payments.*', 'label' => 'Pembayaran', 'icon' => 'wallet', 'badge' => 'pendingProofs'],
+                ['route' => 'admin.payment-methods.index', 'active' => 'admin.payment-methods.*', 'label' => 'Metode Bayar', 'icon' => 'wallet'],
+                ['route' => 'admin.cart-reminders.index', 'active' => 'admin.cart-reminders.*', 'label' => 'Cart Reminder', 'icon' => 'users'],
             ]],
             ['label' => 'Katalog', 'items' => [
                 ['route' => 'admin.products.index', 'active' => 'admin.products.*', 'label' => 'Produk', 'icon' => 'box'],
+                ['route' => 'admin.best-sellers.index', 'active' => 'admin.best-sellers.*', 'label' => 'Produk Terlaris', 'icon' => 'list'],
+                ['route' => 'admin.games.index', 'active' => 'admin.games.*', 'label' => 'Game', 'icon' => 'file'],
+                ['route' => 'admin.developers.index', 'active' => 'admin.developers.*', 'label' => 'Developer', 'icon' => 'users'],
             ]],
             ['label' => 'Pelanggan', 'items' => [
                 ['route' => 'admin.users.index', 'active' => 'admin.users.*', 'label' => 'Pengguna', 'icon' => 'users'],
+                ['route' => 'admin.referrals.index', 'active' => 'admin.referrals.*', 'label' => 'Referral', 'icon' => 'users'],
+                ['route' => 'admin.contact.index', 'active' => 'admin.contact.*', 'label' => 'Pesan kontak', 'icon' => 'file', 'badge' => 'unreadContact'],
                 ['route' => 'admin.identities.index', 'active' => ['admin.identities.*', 'admin.names.*'], 'label' => 'Blokir & banding', 'icon' => 'shield'],
                 ['route' => 'admin.logs.index', 'active' => 'admin.logs.*', 'label' => 'Log aktivitas', 'icon' => 'list'],
             ]],
             ['label' => 'Konten', 'items' => [
                 ['route' => 'admin.pages.index', 'active' => 'admin.pages.*', 'label' => 'Halaman', 'icon' => 'file'],
+                ['route' => 'admin.hero-slides.index', 'active' => 'admin.hero-slides.*', 'label' => 'Hero Slider', 'icon' => 'image'],
+                ['route' => 'admin.preorder.index', 'active' => 'admin.preorder.*', 'label' => 'Pre-Order Baru', 'icon' => 'image'],
             ]],
             ['label' => 'Pengaturan', 'items' => [
+                ['route' => 'admin.settings.general', 'active' => 'admin.settings.general', 'label' => 'Umum', 'icon' => 'sliders'],
+                ['route' => 'admin.settings.seo', 'active' => 'admin.settings.seo', 'label' => 'SEO', 'icon' => 'list'],
                 ['route' => 'admin.settings.pricing', 'active' => 'admin.settings.pricing', 'label' => 'Harga & kurs', 'icon' => 'sliders'],
                 ['route' => 'admin.settings.tiers', 'active' => 'admin.settings.tiers', 'label' => 'Tier ongkir', 'icon' => 'truck'],
                 ['route' => 'admin.settings.marketplaces', 'active' => 'admin.settings.marketplaces', 'label' => 'Marketplace', 'icon' => 'store'],
                 ['route' => 'admin.settings.display', 'active' => 'admin.settings.display', 'label' => 'Tampilan toko', 'icon' => 'eye'],
+                ['route' => 'admin.maintenance.index', 'active' => 'admin.maintenance.*', 'label' => 'Maintenance', 'icon' => 'shield'],
             ]],
         ];
         $tabs = [
@@ -60,7 +74,7 @@
                 @include('admin.partials.nav', ['navigation' => $navigation])
             </nav>
             <div class="sidebar__footer">
-                <span class="sidebar__user">{{ auth('admin')->user()->name }}</span>
+                <a href="{{ route('admin.profile.edit') }}" class="sidebar__user" title="Edit profil">{{ auth('admin')->user()->name }}</a>
                 <form method="POST" action="{{ route('admin.logout') }}">
                     @csrf
                     <button type="submit" class="link">Keluar</button>
@@ -69,6 +83,15 @@
         </aside>
 
         <div class="main">
+            {{-- Banner maintenance mode --}}
+            @if (\App\Models\Setting::get('maintenance_enabled') === '1')
+                <div style="background:#fef2f2;border-bottom:1px solid #fecaca;color:#991b1b;padding:12px 32px;font-size:14px;display:flex;align-items:center;gap:12px;">
+                    <strong>⚠️ Mode Pemeliharaan AKTIF</strong>
+                    <span>— Pengunjung biasa melihat halaman pemeliharaan. Kamu tetap bisa akses karena login admin.</span>
+                    <a href="{{ route('admin.settings.general') }}" style="margin-left:auto;color:#dc2626;font-weight:600;">Matikan →</a>
+                </div>
+            @endif
+
             <header class="topbar">
                 <div class="topbar__title">
                     @isset($back)
@@ -153,6 +176,7 @@
             });
         });
     </script>
+    <script src="{{ asset('js/admin-bulk.js') }}" defer></script>
     @stack('scripts')
 </body>
 </html>

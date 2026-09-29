@@ -1,9 +1,15 @@
 @extends('layouts.app', ['title' => 'Keranjang Belanja'])
 
+@section('main_class', 'main--default')
+
 @section('content')
 <section class="card" style="max-width: 900px;">
     <h1>Keranjang Belanja</h1>
-    
+
+    @if (session('status'))
+        <div class="notice">{{ session('status') }}</div>
+    @endif
+
     @if($cartItems->isEmpty())
         <div class="empty">
             <p>Keranjang masih kosong.</p>
@@ -12,23 +18,28 @@
     @else
         <form method="POST" action="{{ route('checkout.store') }}" id="checkout-form">
             @csrf
-            
+
             <div class="cart-items" style="margin-bottom: 30px;">
                 @foreach($cartItems as $item)
                     @php($price = $item->variant->sellingPrice($calculator))
-                    <div style="display: flex; gap: 15px; border-bottom: 1px solid var(--border); padding-bottom: 15px; margin-bottom: 15px;">
+                    <div style="display: flex; gap: 15px; border-bottom: 1px solid var(--border); padding-bottom: 15px; margin-bottom: 15px; align-items:center;">
                         @if($item->variant->image_path)
-                            <img src="{{ $item->variant->imageUrl() }}" style="width: 80px; height: 80px; object-fit: cover; border-radius: 8px;">
+                            <img src="{{ $item->variant->imageUrl() }}" style="width: 80px; height: 80px; object-fit: cover; border-radius: 8px;" alt="">
                         @else
                             <div style="width: 80px; height: 80px; background: var(--bg); display: flex; align-items:center; justify-content:center; border-radius: 8px;">IMG</div>
                         @endif
                         <div style="flex: 1;">
                             <strong style="display:block;">{{ $item->variant->product->name }}</strong>
                             <span class="muted" style="font-size: 13px;">Varian: {{ $item->variant->name }}</span>
-                            <div style="color: var(--accent-strong); font-weight: bold; margin-top: 5px;">{{ \App\Support\PriceCalculator::formatRupiah($price) }} x {{ $item->quantity }}</div>
+                            <div style="color: var(--accent-strong); font-weight: bold; margin-top: 5px;">
+                                {{ \App\Support\PriceCalculator::formatRupiah($price) }} × {{ $item->quantity }}
+                            </div>
                         </div>
                         <div>
-                            <button type="submit" form="delete-{{ $item->id }}" class="link-button" style="color: var(--danger);">Hapus</button>
+                            <button type="button" class="link-button" style="color: var(--danger);"
+                                    onclick="document.getElementById('delete-{{ $item->id }}').submit();">
+                                Hapus
+                            </button>
                         </div>
                     </div>
                 @endforeach
@@ -40,11 +51,11 @@
                     <input type="radio" name="discount_type" value="none" checked> Tanpa Potongan
                 </label>
                 <label class="check">
-                    <input type="radio" name="discount_type" value="coin" @disabled($availableCoins == 0)> 
+                    <input type="radio" name="discount_type" value="coin" @disabled($availableCoins == 0)>
                     Gunakan Koin (Maks {{ \App\Support\PriceCalculator::formatRupiah(min($availableCoins, $maxCoinDiscount)) }})
                 </label>
                 <label class="check">
-                    <input type="radio" name="discount_type" value="voucher"> Kode Voucher: 
+                    <input type="radio" name="discount_type" value="voucher"> Kode Voucher:
                     <input type="text" name="voucher_code" style="padding: 4px; border: 1px solid var(--border); border-radius: 4px; width: 150px;">
                 </label>
             </fieldset>
@@ -55,7 +66,7 @@
                     <label class="check"><input type="radio" name="payment_scheme" value="FP" checked> Full Payment (FP)</label>
                     <label class="check"><input type="radio" name="payment_scheme" value="DP"> Down Payment (DP 50%)</label>
                 </fieldset>
-                
+
                 <fieldset>
                     <legend>Pengiriman Marketplace</legend>
                     @foreach($marketplaces as $mp)
@@ -80,9 +91,11 @@
             <button type="submit" class="button button--block">Checkout Sekarang</button>
         </form>
 
+        {{-- Form delete terpisah (di luar form checkout, biar HTML-nya valid) --}}
         @foreach($cartItems as $item)
             <form id="delete-{{ $item->id }}" action="{{ route('cart.destroy', $item) }}" method="POST" hidden>
-                @csrf @method('DELETE')
+                @csrf
+                @method('DELETE')
             </form>
         @endforeach
     @endif
@@ -92,57 +105,67 @@
 @push('scripts')
 <script>
     (function() {
-        const subtotal = {{ $subtotal }};
-        const maxCoinUse = {{ min($availableCoins, $maxCoinDiscount) }};
+        const subtotal = {{ (int) $subtotal }};
+        const maxCoinUse = {{ (int) min($availableCoins, $maxCoinDiscount) }};
         const mps = @json($marketplaces);
-        
+
         function formatRp(num) { return 'Rp' + num.toLocaleString('id-ID'); }
 
+        const checkoutForm = document.getElementById('checkout-form');
+        if (!checkoutForm) return;
+
         function calculate() {
-            const scheme = document.querySelector('input[name="payment_scheme"]:checked').value;
-            const mpId = document.querySelector('input[name="marketplace_id"]:checked').value;
-            const discountType = document.querySelector('input[name="discount_type"]:checked').value;
-            
+            const scheme = document.querySelector('input[name="payment_scheme"]:checked')?.value || 'FP';
+            const mpId = document.querySelector('input[name="marketplace_id"]:checked')?.value;
+            const discountType = document.querySelector('input[name="discount_type"]:checked')?.value || 'none';
+
             let discount = 0;
             if (discountType === 'coin') { discount = maxCoinUse; }
-            // Note: Voucher is validated strictly on backend. For frontend preview, we ignore it to prevent false promises.
-            
+
             let netTotal = subtotal - discount;
             let mp = mps.find(m => m.id == mpId);
-            
-            let payNow = 0; let remaining = 0; let mpFee = 0;
+            if (!mp) return;
+
+            let payNow = 0, remaining = 0, mpFee = 0;
             if (scheme === 'FP') {
                 payNow = netTotal;
-                mpFee = parseInt(mp.fp_fee_idr);
+                mpFee = parseInt(mp.fp_fee_idr || 0);
             } else {
                 payNow = Math.floor(netTotal / 2);
                 remaining = netTotal - payNow;
-                mpFee = Math.floor(remaining * (parseFloat(mp.dp_fee_percent) / 100));
+                mpFee = Math.floor(remaining * (parseFloat(mp.dp_fee_percent || 0) / 100));
             }
 
-            document.getElementById('discount-row').hidden = discount === 0;
-            document.getElementById('discount-val').textContent = formatRp(discount);
-            document.getElementById('mp-fee-val').textContent = formatRp(mpFee);
-            
-            // Note: User rule Opsi B -> mpFee is NOT collected in web checkout, it is collected in marketplace later.
-            // So Pay Now is just the web portion!
-            document.getElementById('pay-now-val').textContent = formatRp(payNow);
-            
-            if (scheme === 'DP' || mpFee > 0) {
-                document.getElementById('remaining-row').hidden = false;
-                document.getElementById('remaining-val').textContent = formatRp(remaining + mpFee) + " (Termasuk Biaya Admin)";
-            } else {
-                document.getElementById('remaining-row').hidden = true;
+            const discountRow = document.getElementById('discount-row');
+            const discountVal = document.getElementById('discount-val');
+            const mpFeeVal = document.getElementById('mp-fee-val');
+            const payNowVal = document.getElementById('pay-now-val');
+            const remainingRow = document.getElementById('remaining-row');
+            const remainingVal = document.getElementById('remaining-val');
+            const coinEstimate = document.getElementById('coin-estimate');
+
+            if (discountRow) discountRow.hidden = discount === 0;
+            if (discountVal) discountVal.textContent = formatRp(discount);
+            if (mpFeeVal) mpFeeVal.textContent = formatRp(mpFee);
+            if (payNowVal) payNowVal.textContent = formatRp(payNow);
+
+            if (remainingRow) {
+                if (scheme === 'DP' || mpFee > 0) {
+                    remainingRow.hidden = false;
+                    if (remainingVal) remainingVal.textContent = formatRp(remaining + mpFee) + " (Termasuk Biaya Admin)";
+                } else {
+                    remainingRow.hidden = true;
+                }
             }
 
-            document.getElementById('coin-estimate').textContent = Math.floor(netTotal * 0.01).toLocaleString('id-ID') + ' Koin';
+            if (coinEstimate) coinEstimate.textContent = Math.floor(netTotal * 0.01).toLocaleString('id-ID') + ' Koin';
         }
 
-        document.querySelectorAll('#checkout-form input[type="radio"]').forEach(el => {
+        checkoutForm.querySelectorAll('input[type="radio"]').forEach(el => {
             el.addEventListener('change', calculate);
         });
-        
-        if (document.getElementById('checkout-form')) calculate();
+
+        calculate();
     })();
 </script>
 @endpush

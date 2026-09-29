@@ -2,8 +2,8 @@
 
 namespace App\Mail;
 
+use App\Models\Order;
 use App\Models\User;
-// use App\Models\Order; // Uncomment jika model Order sudah siap
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
@@ -15,21 +15,11 @@ class PaymentReminderMail extends Mailable implements ShouldQueue
 {
     use Queueable, SerializesModels;
 
-    public User $user;
-    // public Order $order; // Uncomment jika ingin melampirkan data order
+    public function __construct(
+        public User $user,
+        public Order $order,
+    ) {}
 
-    /**
-     * Create a new message instance.
-     */
-    public function __construct(User $user /*, Order $order */)
-    {
-        $this->user = $user;
-        // $this->order = $order;
-    }
-
-    /**
-     * Get the message envelope.
-     */
     public function envelope(): Envelope
     {
         return new Envelope(
@@ -37,13 +27,10 @@ class PaymentReminderMail extends Mailable implements ShouldQueue
         );
     }
 
-    /**
-     * Get the message content definition.
-     */
     public function content(): Content
     {
         return new Content(
-            view: 'emails.payment-reminder', // Ini merujuk ke file Blade HTML
+            view: 'emails.payment-reminder',
         );
     }
 }

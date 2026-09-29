@@ -11,12 +11,72 @@ use App\Models\Product;
 final class Slugs
 {
     /**
-     * Paths used by the application itself.
+     * Paths used by the application itself (bahasa Indonesia).
      */
     public const RESERVED = [
-        'admin', 'akun', 'api', 'cart', 'checkout', 'daftar', 'katalog', 'keluar', 'keranjang',
-        'konfirmasi-pembayaran', 'login', 'logout', 'masuk', 'order', 'order-saya', 'produk',
-        'register', 'storage', 'up', 'build', 'css', 'js', 'images', 'favicon-ico', 'robots-txt',
+        // Admin & auth
+        'office',
+        'masuk',
+        'keluar',
+        'daftar',
+
+        // Akun pembeli
+        'akun',
+
+        // Belanja
+        'katalog',
+        'produk',
+        'keranjang',
+        'checkout',
+        'pesanan',
+
+        // Pembayaran
+        'konfirmasi-pembayaran',
+        'pembayaran',
+
+        // Lupa password
+        'lupa-password',
+        'reset-password',
+
+        // Verifikasi email
+        'verifikasi-email',
+
+        // Notifikasi
+        'notifikasi',
+
+        // Referral
+        'undang',
+
+        // Promo
+        'promo',
+
+        // Kontak
+        'kontak',
+
+        // Search
+        'cari',
+
+        // Pre-order
+        'pre-order-baru',
+
+        // Reseller
+        'reseller',
+
+        // Kategori (untuk antisipasi halaman per-game/developer)
+        'game',
+        'developer',
+
+        // Sistem & asset
+        'api',
+        'storage',
+        'up',
+        'build',
+        'css',
+        'js',
+        'images',
+        'favicon-ico',
+        'robots-txt',
+        'sitemap',
     ];
 
     /**

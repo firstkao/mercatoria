@@ -9,9 +9,14 @@ use Illuminate\Http\Request;
 
 class VoucherController extends Controller
 {
-    public function index()
+        public function index()
     {
-        $vouchers = Voucher::latest()->paginate(20);
+        $vouchers = Voucher::query()
+            ->with('user')
+            ->withCount('redemptions')
+            ->latest()
+            ->paginate(20);
+
         return view('admin.vouchers.index', compact('vouchers'));
     }
 

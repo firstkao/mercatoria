@@ -99,6 +99,14 @@
                         <input type="password" name="password_confirmation" autocomplete="new-password" required>
                     </label>
                 </div>
+                
+                 <label class="field">
+                    <span>Kode undangan (opsional)</span>
+                    <input type="text" name="referral_code" value="{{ old('referral_code', $prefilledReferral ?? '') }}"
+                           maxlength="20" placeholder="Contoh: ABCD1234" style="text-transform: uppercase;">
+                    <small class="hint">Punya kode dari teman? Isi di sini supaya kalian berdua dapat bonus koin setelah pesanan pertama kamu selesai.</small>
+                    @include('partials.field-error', ['name' => 'referral_code'])
+                </label>
             </fieldset>
 
             <div class="notice">

@@ -1,3 +1,5 @@
+<a href="{{ route('admin.settings.general') }}" @class(['subtab', 'is-active' => request()->routeIs('admin.settings.general')])>Umum</a>
+<a href="{{ route('admin.settings.seo') }}" @class(['subtab', 'is-active' => request()->routeIs('admin.settings.seo')])>SEO</a>
 <a href="{{ route('admin.settings.pricing') }}" @class(['subtab', 'is-active' => request()->routeIs('admin.settings.pricing')])>Harga & kurs</a>
 <a href="{{ route('admin.settings.tiers') }}" @class(['subtab', 'is-active' => request()->routeIs('admin.settings.tiers')])>Tier ongkir</a>
 <a href="{{ route('admin.settings.marketplaces') }}" @class(['subtab', 'is-active' => request()->routeIs('admin.settings.marketplaces')])>Marketplace</a>

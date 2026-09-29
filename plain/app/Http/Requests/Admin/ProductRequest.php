@@ -20,7 +20,7 @@ class ProductRequest extends FormRequest
         $this->merge([
             'slug' => $slug,
             'is_published' => $this->boolean('is_published'),
-            // Row keys are kept so uploaded variant photos stay matched to their row.
+            'is_featured' => $this->boolean('is_featured'),
             'variants' => (array) $this->input('variants', []),
         ]);
     }
@@ -42,6 +42,7 @@ class ProductRequest extends FormRequest
             'sale_starts_at' => ['nullable', 'date', 'required_with:sale_ends_at'],
             'sale_ends_at' => ['nullable', 'date', 'required_with:sale_starts_at', 'after:sale_starts_at'],
             'is_published' => ['boolean'],
+            'is_featured' => ['boolean'],
             'images' => ['array', 'max:10'],
             'images.*' => ['image', 'mimes:jpg,jpeg,png,webp', 'max:4096'],
             'remove_images' => ['array'],
@@ -105,7 +106,7 @@ class ProductRequest extends FormRequest
             'sale_starts_at' => 'mulai sale',
             'sale_ends_at' => 'akhir sale',
             'images.*' => 'foto',
-            'variants.*.name' => 'nama varian',
+            'variants.*.name' => 'nama variasi',
             'variants.*.price_yuan' => 'harga yuan',
             'variants.*.compare_price_yuan' => 'harga coret',
             'variants.*.weight_grams' => 'berat',

@@ -44,7 +44,7 @@ class LoginRequest extends FormRequest
 
         if (IdentityRecord::anyBlocked($this->input('email'), null)) {
             throw ValidationException::withMessages([
-                'email' => 'Email ini diblokir. Hubungi admin melalui chat untuk mengajukan banding.',
+                'email' => 'Email ini diblokir. Hubungi admin melalui WhatsApp untuk membuka blokir.',
             ]);
         }
 

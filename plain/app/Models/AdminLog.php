@@ -66,6 +66,27 @@ class AdminLog extends Model
         'delete_page' => 'Hapus halaman',
         'approve_payment' => 'Setujui bukti pembayaran',
         'reject_payment' => 'Tolak bukti pembayaran',
+        // TAMBAHAN BATCH 7
+        'create_payment_method' => 'Tambah metode bayar',
+        'update_payment_method' => 'Ubah metode bayar',
+        'delete_payment_method' => 'Hapus metode bayar',
+        'create_hero_slide' => 'Tambah hero slide',
+        'update_hero_slide' => 'Ubah hero slide',
+        'delete_hero_slide' => 'Hapus hero slide',
+        'update_order_status' => 'Ubah status pesanan',
+        'verify_payment_accept' => 'Terima pembayaran',
+        'verify_payment_reject' => 'Tolak pembayaran',
+        'update_profile' => 'Ubah profil admin',
+        'update_password' => 'Ganti kata sandi admin',
+        'update_general' => 'Ubah pengaturan umum',
+        'update_seo' => 'Ubah pengaturan SEO',
+        'create_voucher' => 'Tambah voucher',
+        'update_voucher' => 'Ubah voucher',
+        'delete_voucher' => 'Hapus voucher',
+        'backup_database' => 'Backup database',
+        'cleanup_storage' => 'Cleanup storage',
+        'download_backup' => 'Download backup',
+        'delete_backup' => 'Hapus backup',
     ];
 
     public function label(): string

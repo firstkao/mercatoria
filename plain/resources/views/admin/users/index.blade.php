@@ -22,6 +22,10 @@
     </form>
 @endsection
 
+@section('actions')
+    <a href="{{ route('admin.users.create') }}" class="btn">+ Tambah Pengguna</a>
+@endsection
+
 @section('content')
     @if ($users->isEmpty())
         <div class="empty"><p>Belum ada pengguna{{ $filters['q'] ? ' yang cocok' : '' }}.</p></div>
@@ -35,6 +39,7 @@
                         <th>Peran</th>
                         <th>Pelacakan</th>
                         <th>Terdaftar</th>
+                        <th>Aksi</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -47,7 +52,17 @@
                             <td class="muted nowrap">{{ $user->whatsapp ? '+'.$user->whatsapp : '—' }}</td>
                             <td>@include('admin.users.role-badge', ['user' => $user])</td>
                             <td>@include('admin.users.tracking', ['user' => $user])</td>
-                            <td class="muted nowrap">{{ $user->registered_at->timezone('Asia/Jakarta')->translatedFormat('j M Y') }}</td>
+                            <td class="muted nowrap">{{ $user->registered_at?->timezone('Asia/Jakarta')->translatedFormat('j M Y') ?? '—' }}</td>
+                            <td class="nowrap">
+                                <a href="{{ route('admin.users.edit', $user) }}" class="link">Edit</a>
+                                <form method="POST" action="{{ route('admin.users.destroy', $user) }}"
+                                      onsubmit="return confirm('Yakin hapus {{ $user->displayName() }}? Riwayat order tetap tersimpan.');"
+                                      style="display:inline;">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="link" style="color:var(--danger);">Hapus</button>
+                                </form>
+                            </td>
                         </tr>
                     @endforeach
                 </tbody>
@@ -65,6 +80,16 @@
                         <span class="card-row__meta">{{ $user->email ?? '—' }}</span>
                         @include('admin.users.tracking', ['user' => $user])
                     </a>
+                    <div style="display:flex;gap:.5rem;padding:.5rem 0;">
+                        <a href="{{ route('admin.users.edit', $user) }}" class="link">Edit</a>
+                        <form method="POST" action="{{ route('admin.users.destroy', $user) }}"
+                              onsubmit="return confirm('Yakin hapus {{ $user->displayName() }}?');"
+                              style="display:inline;">
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit" class="link" style="color:var(--danger);">Hapus</button>
+                        </form>
+                    </div>
                 </li>
             @endforeach
         </ul>

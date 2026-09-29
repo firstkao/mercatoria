@@ -3,7 +3,7 @@
 @section('content')
 <section class="card" style="max-width: 900px;">
     <h1>Koin Saya</h1>
-    
+
     <div style="background: var(--primary-bg); padding: 20px; border-radius: 8px; margin-bottom: 30px; text-align: center; border: 1px solid #bae6fd;">
         <p class="muted" style="margin: 0 0 5px 0;">Total Koin Aktif</p>
         <h2 style="color: var(--primary); margin: 0; font-size: 2.5rem;">{{ number_format($activeCoins, 0, ',', '.') }}</h2>
@@ -30,17 +30,23 @@
                 </thead>
                 <tbody>
                     @foreach($coinHistory as $lot)
+                        @php
+                            $isExpired = $lot->expires_at && $lot->expires_at->isPast();
+                            $isExhausted = $lot->remaining == 0;
+                        @endphp
                         <tr>
-                            <td>{{ $lot->earned_at->timezone('Asia/Jakarta')->translatedFormat('j M Y') }}</td>
-                            <td>{{ str_replace('_', ' ', Str::title($lot->source)) }}</td>
+                            <td>{{ $lot->earned_at?->timezone('Asia/Jakarta')->translatedFormat('j M Y') ?? '—' }}</td>
+                            <td>{{ str_replace('_', ' ', \Illuminate\Support\Str::title($lot->source)) }}</td>
                             <td style="color: var(--success); font-weight: bold;">+{{ number_format($lot->amount, 0, ',', '.') }}</td>
                             <td>{{ number_format($lot->remaining, 0, ',', '.') }}</td>
-                            <td class="muted small">{{ $lot->expires_at->timezone('Asia/Jakarta')->translatedFormat('j M Y') }}</td>
+                            <td class="muted small">{{ $lot->expires_at?->timezone('Asia/Jakarta')->translatedFormat('j M Y') ?? '—' }}</td>
                             <td>
-                                @if($lot->remaining == 0 && $lot->expires_at <= now())
+                                @if($isExhausted && $isExpired)
                                     <span class="badge badge--danger">Hangus</span>
-                                @elseif($lot->remaining == 0)
+                                @elseif($isExhausted)
                                     <span class="badge badge--muted">Habis Terpakai</span>
+                                @elseif($isExpired)
+                                    <span class="badge badge--danger">Kedaluwarsa</span>
                                 @else
                                     <span class="badge badge--on">Aktif</span>
                                 @endif

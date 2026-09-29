@@ -17,6 +17,35 @@
         @endforeach
     </div>
 
+    {{-- Aksi cepat --}}
+    @php($badges = $adminBadges ?? [])
+    @if (($badges['pendingProofs'] ?? 0) > 0 || ($badges['pendingOrders'] ?? 0) > 0 || ($badges['pendingResellers'] ?? 0) > 0)
+        <section class="panel stack">
+            <h2>Perlu Perhatian</h2>
+
+            @if (($badges['pendingProofs'] ?? 0) > 0)
+                <a href="{{ route('admin.payments.index', ['status' => 'pending']) }}" class="quick-action">
+                    <strong>{{ $badges['pendingProofs'] }}</strong> bukti pembayaran menunggu verifikasi
+                    <span class="quick-action__arrow">→</span>
+                </a>
+            @endif
+
+            @if (($badges['pendingOrders'] ?? 0) > 0)
+                <a href="{{ route('admin.orders.index') }}" class="quick-action">
+                    <strong>{{ $badges['pendingOrders'] }}</strong> pesanan belum selesai diproses
+                    <span class="quick-action__arrow">→</span>
+                </a>
+            @endif
+
+            @if (($badges['pendingResellers'] ?? 0) > 0)
+                <a href="{{ route('admin.reports.index') }}" class="quick-action">
+                    <strong>{{ $badges['pendingResellers'] }}</strong> pendaftar reseller baru
+                    <span class="quick-action__arrow">→</span>
+                </a>
+            @endif
+        </section>
+    @endif
+
     <section class="panel">
         <h2>Mulai dari sini</h2>
         <ol class="steps">

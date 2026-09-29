@@ -14,6 +14,7 @@
                 <th>Tipe Diskon</th>
                 <th>Minimal Belanja</th>
                 <th>Masa Berlaku</th>
+                <th>Dipakai</th>
                 <th>Status</th>
                 <th>Aksi</th>
             </tr>
@@ -21,8 +22,21 @@
         <tbody>
             @foreach($vouchers as $voucher)
                 <tr>
-                    <td><strong style="font-family: monospace; font-size: 1.1em;">{{ $voucher->code }}</strong></td>
-                    <td>{{ $voucher->name }}</td>
+                    <td>
+                        <strong style="font-family: monospace; font-size: 1em;">{{ $voucher->code }}</strong>
+                        @if ($voucher->is_personal)
+                            <div class="badge badge--warn small" style="margin-top:4px;">Personal</div>
+                        @endif
+                        @if ($voucher->auto_type === 'birthday')
+                            <div class="badge small" style="margin-top:4px;">🎂 Ultah {{ $voucher->auto_year }}</div>
+                        @endif
+                    </td>
+                    <td>
+                        {{ $voucher->name }}
+                        @if ($voucher->user)
+                            <div class="muted small">Untuk: {{ $voucher->user->displayName() }}</div>
+                        @endif
+                    </td>
                     <td>
                         {{ $voucher->discount_type === 'nominal' ? \App\Support\PriceCalculator::formatRupiah($voucher->value) : $voucher->value . '%' }}
                         @if($voucher->max_discount_idr)
@@ -31,10 +45,20 @@
                     </td>
                     <td>{{ \App\Support\PriceCalculator::formatRupiah($voucher->min_purchase_idr) }}</td>
                     <td class="small muted">
-                        {{ $voucher->starts_at ? $voucher->starts_at->format('d/m/Y') : 'Selamanya' }} - 
+                        {{ $voucher->starts_at ? $voucher->starts_at->format('d/m/Y') : 'Selamanya' }} -
                         {{ $voucher->ends_at ? $voucher->ends_at->format('d/m/Y') : 'Selamanya' }}
                     </td>
-                    <td><span class="badge {{ $voucher->is_active ? 'badge--on' : 'badge--danger' }}">{{ $voucher->is_active ? 'Aktif' : 'Nonaktif' }}</span></td>
+                    <td class="small">
+                        {{ $voucher->redemptions_count ?? 0 }}×
+                        @if($voucher->usage_limit)
+                            <span class="muted">/ {{ $voucher->usage_limit }}</span>
+                        @endif
+                    </td>
+                    <td>
+                        <span class="badge {{ $voucher->is_active ? 'badge--on' : 'badge--danger' }}">
+                            {{ $voucher->is_active ? 'Aktif' : 'Nonaktif' }}
+                        </span>
+                    </td>
                     <td style="display: flex; gap: 8px;">
                         <a href="{{ route('admin.vouchers.edit', $voucher) }}" class="btn btn--small">Edit</a>
                         <form method="POST" action="{{ route('admin.vouchers.destroy', $voucher) }}" onsubmit="return confirm('Hapus voucher ini?');">

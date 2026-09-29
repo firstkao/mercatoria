@@ -91,6 +91,79 @@ class ProductController extends Controller
         return redirect()->route('admin.products.index')->with('status', 'Produk dihapus.');
     }
 
+    // ============================================================
+    // BATCH 28: BULK ACTIONS
+    // ============================================================
+    public function bulk(Request $request): RedirectResponse
+    {
+        $data = $request->validate([
+            'action' => ['required', 'in:publish,unpublish,delete,feature,unfeature'],
+            'ids' => ['required', 'array', 'min:1'],
+            'ids.*' => ['integer', 'exists:products,id'],
+        ]);
+
+        $products = Product::query()->whereIn('id', $data['ids'])->get();
+        $count = $products->count();
+
+        if ($count === 0) {
+            return back()->withErrors(['bulk' => 'Tidak ada produk yang dipilih.']);
+        }
+
+        if ($data['action'] === 'publish') {
+            Product::query()->whereIn('id', $data['ids'])->update(['is_published' => true]);
+            AdminLog::record('bulk_publish_product', null, ['count' => $count]);
+            return back()->with('status', "{$count} produk berhasil dipublikasikan.");
+        }
+
+        if ($data['action'] === 'unpublish') {
+            Product::query()->whereIn('id', $data['ids'])->update(['is_published' => false]);
+            AdminLog::record('bulk_unpublish_product', null, ['count' => $count]);
+            return back()->with('status', "{$count} produk berhasil dijadikan draf.");
+        }
+
+        if ($data['action'] === 'feature') {
+            Product::query()->whereIn('id', $data['ids'])->update(['is_featured' => true]);
+            AdminLog::record('bulk_feature_product', null, ['count' => $count]);
+            return back()->with('status', "{$count} produk berhasil dijadikan unggulan.");
+        }
+
+        if ($data['action'] === 'unfeature') {
+            Product::query()->whereIn('id', $data['ids'])->update(['is_featured' => false]);
+            AdminLog::record('bulk_unfeature_product', null, ['count' => $count]);
+            return back()->with('status', "{$count} produk berhasil dihapus dari unggulan.");
+        }
+
+        // Delete
+        $files = [
+            ...$products->flatMap(fn ($p) => $p->images()->pluck('image_path'))->all(),
+            ...$products->flatMap(fn ($p) => $p->variants()->whereNotNull('image_path')->pluck('image_path'))->all(),
+        ];
+
+        Product::query()->whereIn('id', $data['ids'])->delete();
+        Storage::disk('public')->delete($files);
+
+        AdminLog::record('bulk_delete_product', null, ['count' => $count]);
+
+        return back()->with('status', "{$count} produk berhasil dihapus.");
+    }
+
+    // ============================================================
+    // BATCH 29: TOGGLE FEATURED (single)
+    // ============================================================
+    public function toggleFeatured(Product $product): RedirectResponse
+    {
+        $product->update(['is_featured' => ! $product->is_featured]);
+
+        AdminLog::record('toggle_featured_product', $product, [
+            'name' => $product->name,
+            'featured' => $product->is_featured,
+        ]);
+
+        return back()->with('status', $product->is_featured
+            ? "\"{$product->name}\" ditambahkan ke produk unggulan."
+            : "\"{$product->name}\" dihapus dari produk unggulan.");
+    }
+
     private function form(Product $product): View
     {
         $calculator = PriceCalculator::fromSettings();

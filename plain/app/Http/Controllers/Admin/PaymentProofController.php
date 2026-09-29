@@ -2,11 +2,18 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Enums\OrderStatus;
 use App\Http\Controllers\Controller;
 use App\Models\AdminLog;
+use App\Models\CoinLot;
+use App\Models\Order;
+use App\Models\Referral;
+use App\Models\Setting;
+use App\Services\NotificationService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 
@@ -49,20 +56,63 @@ class PaymentProofController extends Controller
 
     public function approve(int $proof): RedirectResponse
     {
-        DB::transaction(function () use ($proof): void {
+        $order = null;
+
+        DB::transaction(function () use ($proof, &$order): void {
             $record = DB::table('payment_proofs')->whereKey($proof)->lockForUpdate()->firstOrFail();
             abort_unless($record->status === 'pending', 422, 'Bukti pembayaran sudah diproses.');
 
-            $order = DB::table('orders')->whereKey($record->order_id)->lockForUpdate()->firstOrFail();
-            abort_unless($order->status === 'menunggu_pembayaran', 422, 'Status order tidak dapat diubah.');
+            $orderRow = DB::table('orders')->whereKey($record->order_id)->lockForUpdate()->firstOrFail();
+            abort_unless($orderRow->status === 'menunggu_pembayaran', 422, 'Status order tidak dapat diubah.');
 
-            DB::table('payment_proofs')->whereKey($record->id)->update(['status' => 'approved', 'reviewed_at' => now(), 'updated_at' => now()]);
-            DB::table('orders')->whereKey($order->id)->update(['status' => 'pembayaran_diterima', 'paid_at' => now(), 'updated_at' => now()]);
-            DB::table('order_status_history')->insert(['order_id' => $order->id, 'from_status' => 'menunggu_pembayaran', 'to_status' => 'pembayaran_diterima', 'changed_by' => 'admin', 'admin_id' => auth('admin')->id(), 'created_at' => now()]);
-            DB::table('admin_notifications')->insert(['type' => 'payment_approved', 'order_id' => $order->id, 'created_at' => now()]);
+            DB::table('payment_proofs')->whereKey($record->id)->update([
+                'status' => 'approved',
+                'reviewed_at' => now(),
+                'updated_at' => now(),
+            ]);
 
-            AdminLog::record('approve_payment', null, ['order_id' => $order->id, 'proof_id' => $record->id]);
+            DB::table('orders')->whereKey($orderRow->id)->update([
+                'status' => 'pembayaran_diterima',
+                'paid_at' => now(),
+                'updated_at' => now(),
+            ]);
+
+            DB::table('order_status_history')->insert([
+                'order_id' => $orderRow->id,
+                'from_status' => 'menunggu_pembayaran',
+                'to_status' => 'pembayaran_diterima',
+                'changed_by' => 'admin',
+                'admin_id' => auth('admin')->id(),
+                'created_at' => now(),
+            ]);
+
+            // Update user role kalau masih spammer
+            $user = DB::table('users')->whereKey($orderRow->user_id)->first();
+            if ($user && $user->role === 'spammer') {
+                DB::table('users')->whereKey($user->id)->update([
+                    'role' => 'customer',
+                    'became_customer_at' => now(),
+                    'view_quota_used' => 0,
+                ]);
+            }
+
+            AdminLog::record('approve_payment', null, ['order_id' => $orderRow->id, 'proof_id' => $record->id]);
+
+            $order = $orderRow;
         });
+
+        // Notifikasi in-app di luar transaction
+        if ($order) {
+            $user = \App\Models\User::find($order->user_id);
+            if ($user) {
+                try {
+                    $orderModel = Order::find($order->id);
+                    NotificationService::payment($user, $orderModel, 'approved');
+                } catch (\Throwable $e) {
+                    // ignore
+                }
+            }
+        }
 
         return redirect()->route('admin.payments.index')->with('status', 'Bukti pembayaran disetujui dan status order diperbarui.');
     }
@@ -70,15 +120,61 @@ class PaymentProofController extends Controller
     public function reject(Request $request, int $proof): RedirectResponse
     {
         $data = $request->validate(['reject_reason' => ['required', 'string', 'max:1000']]);
+        $order = null;
 
-        DB::transaction(function () use ($proof, $data): void {
+        DB::transaction(function () use ($proof, $data, &$order): void {
             $record = DB::table('payment_proofs')->whereKey($proof)->lockForUpdate()->firstOrFail();
             abort_unless($record->status === 'pending', 422, 'Bukti pembayaran sudah diproses.');
 
-            DB::table('payment_proofs')->whereKey($record->id)->update(['status' => 'rejected', 'reject_reason' => $data['reject_reason'], 'reviewed_at' => now(), 'resubmit_deadline_at' => now()->addHours(24), 'updated_at' => now()]);
-            DB::table('admin_notifications')->insert(['type' => 'payment_rejected', 'order_id' => $record->order_id, 'created_at' => now()]);
-            AdminLog::record('reject_payment', null, ['order_id' => $record->order_id, 'proof_id' => $record->id, 'reason' => $data['reject_reason']]);
+            DB::table('payment_proofs')->whereKey($record->id)->update([
+                'status' => 'rejected',
+                'reject_reason' => $data['reject_reason'],
+                'reviewed_at' => now(),
+                'resubmit_deadline_at' => now()->addHours(24),
+                'updated_at' => now(),
+            ]);
+
+            DB::table('orders')->whereKey($record->order_id)->update([
+                'status' => 'pembayaran_gagal',
+                'updated_at' => now(),
+            ]);
+
+            DB::table('order_status_history')->insert([
+                'order_id' => $record->order_id,
+                'from_status' => 'menunggu_pembayaran',
+                'to_status' => 'pembayaran_gagal',
+                'changed_by' => 'admin',
+                'admin_id' => auth('admin')->id(),
+                'note' => $data['reject_reason'],
+                'created_at' => now(),
+            ]);
+
+            AdminLog::record('reject_payment', null, [
+                'order_id' => $record->order_id,
+                'proof_id' => $record->id,
+                'reason' => $data['reject_reason'],
+            ]);
+
+            $order = DB::table('orders')->whereKey($record->order_id)->first();
         });
+
+        // Notifikasi in-app + email di luar transaction
+        if ($order) {
+            $user = \App\Models\User::find($order->user_id);
+
+            if ($user) {
+                try {
+                    $orderModel = Order::find($order->id);
+                    NotificationService::payment($user, $orderModel, 'rejected', $data['reject_reason']);
+                } catch (\Throwable $e) {}
+
+                if ($user->email) {
+                    try {
+                        Mail::to($user->email)->send(new \App\Mail\PaymentRejected(Order::find($order->id), $data['reject_reason']));
+                    } catch (\Throwable $e) {}
+                }
+            }
+        }
 
         return redirect()->route('admin.payments.index')->with('status', 'Bukti pembayaran ditolak.');
     }

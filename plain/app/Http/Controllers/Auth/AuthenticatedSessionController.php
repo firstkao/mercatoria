@@ -23,7 +23,15 @@ class AuthenticatedSessionController extends Controller
         $request->session()->regenerate();
         ActivityLog::record($request->user(), 'login', $request);
 
-        return redirect()->intended(route('account.show'));
+        // Kalau email belum verified → arahkan ke halaman verify
+        if (! $request->user()->hasVerifiedEmail()) {
+            return redirect()->route('verification.notice');
+        }
+
+        // Buang url.intended sisa dari guard admin — biar nggak nyasar ke /office
+        $request->session()->forget('url.intended');
+
+        return redirect()->route('account.show');
     }
 
     public function destroy(Request $request): RedirectResponse

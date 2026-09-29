@@ -19,7 +19,8 @@ class OrderStatusUpdated extends Mailable implements ShouldQueue
 
     public function envelope(): Envelope
     {
-        $statusLabel = str_replace('_', ' ', Str::title($this->order->status));
+        $statusLabel = \App\Enums\OrderStatus::tryFrom($this->order->status)?->label() ?? $this->order->status;
+        // Hasil: "Menunggu Pembayaran" ✅
         return new Envelope(subject: 'Update Pesanan #' . $this->order->order_number . ' - ' . $statusLabel);
     }
 

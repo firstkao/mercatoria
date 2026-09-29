@@ -1,0 +1,299 @@
+/* Print layout: berlaku untuk invoice & packing slip */
+* { box-sizing: border-box; }
+
+body.print-page {
+    margin: 0;
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    background: #f1f5f9;
+    color: #1e293b;
+    font-size: 12px;
+    line-height: 1.5;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+}
+
+/* Toolbar (tidak muncul saat print) */
+.print-toolbar {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 12px 20px;
+    background: #1e293b;
+    color: #fff;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.print-toolbar__actions {
+    display: flex;
+    gap: 8px;
+}
+
+.print-btn {
+    display: inline-block;
+    padding: 8px 14px;
+    border-radius: 6px;
+    border: 1px solid rgba(255,255,255,0.2);
+    background: rgba(255,255,255,0.1);
+    color: #fff;
+    font: inherit;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all .15s;
+}
+
+.print-btn:hover {
+    background: rgba(255,255,255,0.2);
+}
+
+.print-btn--primary {
+    background: #0299e7;
+    border-color: #0299e7;
+}
+
+.print-btn--primary:hover {
+    background: #0284c7;
+    border-color: #0284c7;
+}
+
+/* Paper */
+.paper {
+    max-width: 800px;
+    margin: 24px auto;
+    padding: 40px;
+    background: #fff;
+    border-radius: 6px;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.06);
+}
+
+/* Header */
+.paper__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 24px;
+    padding-bottom: 20px;
+    border-bottom: 2px solid #1e293b;
+    margin-bottom: 24px;
+}
+
+.paper__brand {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.paper__logo {
+    height: 48px;
+    width: auto;
+    display: block;
+}
+
+.paper__brand-name {
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    color: #1e293b;
+}
+
+.paper__brand-info {
+    font-size: 11px;
+    color: #64748b;
+    line-height: 1.6;
+}
+
+.paper__doc {
+    text-align: right;
+}
+
+.paper__doc-title {
+    font-size: 26px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    margin: 0 0 12px;
+    color: #1e293b;
+}
+
+.paper__doc-meta {
+    font-size: 11px;
+    border-collapse: collapse;
+    margin-left: auto;
+}
+
+.paper__doc-meta td {
+    padding: 2px 0 2px 12px;
+    text-align: left;
+    color: #64748b;
+}
+
+.paper__doc-meta td:last-child {
+    color: #1e293b;
+    text-align: right;
+}
+
+/* Parties */
+.paper__parties {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    margin-bottom: 24px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.paper__party-label {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    color: #64748b;
+    margin-bottom: 6px;
+}
+
+.paper__party-name {
+    font-size: 14px;
+    font-weight: 700;
+    margin-bottom: 4px;
+}
+
+.paper__party-info {
+    font-size: 11px;
+    color: #475569;
+    line-height: 1.7;
+}
+
+.paper__party--right {
+    text-align: left;
+}
+
+.paper__party-table {
+    font-size: 11px;
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.paper__party-table td {
+    padding: 3px 0;
+    vertical-align: top;
+}
+
+.paper__party-table td:first-child {
+    color: #64748b;
+    width: 90px;
+}
+
+/* Table */
+.paper-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 20px;
+    font-size: 11px;
+}
+
+.paper-table thead th {
+    background: #f1f5f9;
+    padding: 10px 12px;
+    text-align: left;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #475569;
+    font-weight: 700;
+    border-bottom: 2px solid #cbd5e1;
+}
+
+.paper-table tbody td {
+    padding: 12px;
+    border-bottom: 1px solid #e2e8f0;
+    vertical-align: top;
+}
+
+.paper-table__sub {
+    font-size: 10px;
+    color: #64748b;
+    margin-top: 2px;
+}
+
+.paper-table tfoot td {
+    padding: 8px 12px;
+    font-size: 11px;
+}
+
+.paper-table__total td {
+    padding-top: 14px;
+    border-top: 2px solid #1e293b;
+    font-size: 13px;
+}
+
+/* Notes */
+.paper__note {
+    background: #f8fafc;
+    border-left: 3px solid #0299e7;
+    padding: 12px 16px;
+    border-radius: 4px;
+    font-size: 11px;
+    color: #475569;
+    margin-bottom: 24px;
+}
+
+/* Footer */
+.paper__footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    padding-top: 20px;
+    border-top: 1px solid #e2e8f0;
+    font-size: 10px;
+    color: #94a3b8;
+}
+
+.paper__footer-meta {
+    text-align: right;
+}
+
+/* Checkbox di packing slip */
+.checkbox-box {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    border: 1.5px solid #64748b;
+    border-radius: 3px;
+}
+
+/* ============ PRINT STYLE ============ */
+@media print {
+    body.print-page {
+        background: #fff;
+        font-size: 11px;
+    }
+
+    .print-toolbar {
+        display: none !important;
+    }
+
+    .paper {
+        max-width: none;
+        margin: 0;
+        padding: 0;
+        box-shadow: none;
+        border-radius: 0;
+    }
+
+    /* Hindari page break di tengah baris tabel */
+    .paper-table tr {
+        page-break-inside: avoid;
+    }
+
+    .paper__header,
+    .paper__parties {
+        page-break-inside: avoid;
+    }
+
+    /* Margin cetak */
+    @page {
+        margin: 15mm;
+    }
+}

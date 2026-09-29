@@ -2,24 +2,38 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Storage;
 
+#[Fillable([
+    'title',
+    'subtitle',
+    'image_path',
+    'link_url',
+    'alt_text',
+    'sort_order',
+    'is_active',
+])]
 class HeroSlide extends Model
 {
+    /** @use HasFactory<\Database\Factories\HeroSlideFactory> */
     use HasFactory;
 
-    // Tentukan nama tabel jika tidak menggunakan bentuk jamak standar (opsional)
-    protected $table = 'hero_slides';
+    /**
+     * @return array<string, string>
+     */
+    protected function casts(): array
+    {
+        return [
+            'is_active' => 'boolean',
+            'sort_order' => 'integer',
+        ];
+    }
 
-    // Kolom yang bisa diisi (mass assignable)
-    protected $fill = [
-        'title',
-        'subtitle',
-        'image',
-        'button_text',
-        'button_link',
-        'order',
-        'is_active',
-    ];
+    public function imageUrl(): ?string
+    {
+        return $this->image_path ? Storage::disk('public')->url($this->image_path) : null;
+    }
 }

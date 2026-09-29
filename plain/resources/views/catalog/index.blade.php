@@ -1,4 +1,6 @@
-@extends('layouts.app', ['title' => 'Katalog'])
+@extends('layouts.app')
+
+@section('main_class', 'main--reading')
 
 @section('content')
     <div class="catalog">

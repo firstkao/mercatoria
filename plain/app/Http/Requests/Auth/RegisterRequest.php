@@ -24,6 +24,7 @@ class RegisterRequest extends FormRequest
             'full_name' => Str::squish((string) $this->input('full_name')),
             'email' => Str::lower(trim((string) $this->input('email'))),
             'whatsapp' => self::normalizeWhatsapp((string) $this->input('whatsapp')),
+            'referral_code' => strtoupper(trim((string) $this->input('referral_code'))),
         ]);
     }
 
@@ -63,6 +64,7 @@ class RegisterRequest extends FormRequest
             'accept_terms' => ['accepted'],
             'accept_privacy' => ['accepted'],
             'cf-turnstile-response' => [new Turnstile($this->ip())],
+            'referral_code' => ['nullable', 'string', 'max:20', 'exists:users,referral_code'],
         ];
     }
 
@@ -80,6 +82,7 @@ class RegisterRequest extends FormRequest
             'email.unique' => 'Email ini sudah terdaftar.',
             'accept_terms.accepted' => 'Kamu wajib menyetujui Syarat & Ketentuan.',
             'accept_privacy.accepted' => 'Kamu wajib menyetujui Kebijakan Privasi.',
+            'referral_code.exists' => 'Kode undangan tidak ditemukan.',
         ];
     }
 
@@ -102,7 +105,7 @@ class RegisterRequest extends FormRequest
 
                 if (! $validator->errors()->hasAny(['email', 'whatsapp'])
                     && IdentityRecord::anyBlocked($this->input('email'), $this->input('whatsapp'))) {
-                    $validator->errors()->add('email', 'Email atau nomor WhatsApp ini diblokir. Hubungi admin melalui chat untuk mengajukan banding.');
+                    $validator->errors()->add('email', 'Email atau nomor WhatsApp ini diblokir. Hubungi admin melalui chat untuk membuka blokir.');
                 }
             },
         ];

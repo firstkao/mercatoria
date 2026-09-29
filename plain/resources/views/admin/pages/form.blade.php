@@ -38,7 +38,6 @@
 
                 <div class="field">
                     <span>Isi</span>
-                    {{-- The textarea stays as a fallback if the editor script cannot load. --}}
                     <textarea name="content" id="page-content" rows="24" class="mono-area" data-editor-source>{{ old('content', $page->content) }}</textarea>
                     <div class="editor" data-editor hidden></div>
                     @include('admin.partials.error', ['name' => 'content'])
@@ -59,7 +58,13 @@
                 </label>
                 <label class="field">
                     <span>Urutan di footer</span>
-                    <input type="number" name="sort_order" value="{{ old('sort_order', $page->sort_order ?? 0) }}" min="0" max="999" inputmode="numeric">
+                    <input type="text"
+                           name="sort_order"
+                           value="{{ old('sort_order', $page->sort_order ?? 0) }}"
+                           inputmode="numeric"
+                           pattern="[0-9]*"
+                           autocomplete="off"
+                           placeholder="0">
                 </label>
                 @if (! $isNew && $page->is_published)
                     <a href="{{ route('slug.show', $page) }}" target="_blank" rel="noopener" class="link">Lihat halaman</a>

@@ -25,10 +25,19 @@ class ProductController extends Controller
             ]);
         }
 
-        ActivityLog::record($user, 'view_product', $request, ['product_id' => $product->id]);
+        ActivityLog::record($user, 'view_product', $request, [
+            'product_id' => $product->id,
+            'name' => $product->name,
+            'sku' => $product->sku,
+        ]);
 
         $product->load(['images', 'variants', 'shippingTier', 'game', 'developer']);
         $calculator = PriceCalculator::fromSettings();
+
+        // SEO data
+        $description = $product->description
+            ? \Illuminate\Support\Str::limit(strip_tags($product->description), 155)
+            : 'Beli ' . $product->name . ' original dari Tmall. Kirim ke seluruh Indonesia.';
 
         return view('products.show', [
             'user' => $user,
@@ -42,6 +51,11 @@ class ProductController extends Controller
                 'imageUrl' => $variant->imageUrl(),
             ]),
             'viewQuota' => Setting::integer('view_quota', 10),
+            // SEO
+            'title' => $product->name,
+            'metaDescription' => $description,
+            'metaImage' => $product->images->first()?->url(),
+            'ogType' => 'product',
         ]);
     }
 }

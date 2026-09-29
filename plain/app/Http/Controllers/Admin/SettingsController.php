@@ -4,8 +4,10 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\DisplaySettingsRequest;
+use App\Http\Requests\Admin\GeneralSettingsRequest;
 use App\Http\Requests\Admin\MarketplaceSettingsRequest;
 use App\Http\Requests\Admin\PricingSettingsRequest;
+use App\Http\Requests\Admin\SeoSettingsRequest;
 use App\Http\Requests\Admin\TierSettingsRequest;
 use App\Models\AdminLog;
 use App\Models\Marketplace;
@@ -20,6 +22,24 @@ use Illuminate\View\View;
 class SettingsController extends Controller
 {
     private const PRICING_KEYS = ['exchange_rate', 'cn_id_rate_per_kg', 'btm_jkt_rate_per_kg', 'margin_percent', 'price_rounding'];
+
+    private const GENERAL_KEYS = [
+        'contact_email',
+        'contact_whatsapp',
+        'contact_hours',
+        'social_instagram',
+        'social_tiktok',
+        'social_facebook',
+        'social_x',
+        'store_address',
+    ];
+    
+    private const SEO_KEYS = [
+        'meta_title',
+        'meta_description',
+        'meta_keywords',
+        'meta_image',
+    ];
 
     public function pricing(): View
     {
@@ -109,6 +129,25 @@ class SettingsController extends Controller
         return redirect()->route('admin.settings.display')->with('status', 'Tampilan toko disimpan.');
     }
 
+    // ============================================================
+    // TAMBAHAN BATCH 12: General (kontak & sosmed)
+    // ============================================================
+
+    public function general(): View
+    {
+        return view('admin.settings.general', [
+            'settings' => $this->values(self::GENERAL_KEYS),
+        ]);
+    }
+
+    public function updateGeneral(GeneralSettingsRequest $request): RedirectResponse
+    {
+        $this->store($request->validated(), self::GENERAL_KEYS);
+        AdminLog::record('update_general', null, $request->validated());
+
+        return redirect()->route('admin.settings.general')->with('status', 'Pengaturan umum disimpan.');
+    }
+
     /**
      * @param  array<int, string>  $keys
      * @return array<string, ?string>
@@ -128,5 +167,20 @@ class SettingsController extends Controller
             $value = $data[$key] ?? null;
             Setting::updateOrCreate(['key' => $key], ['value' => $value === null || $value === '' ? null : (string) $value]);
         }
+    }
+    
+        public function seo(): View
+    {
+        return view('admin.settings.seo', [
+            'settings' => $this->values(self::SEO_KEYS),
+        ]);
+    }
+
+    public function updateSeo(\App\Http\Requests\Admin\SeoSettingsRequest $request): RedirectResponse
+    {
+        $this->store($request->validated(), self::SEO_KEYS);
+        AdminLog::record('update_seo', null, $request->validated());
+
+        return redirect()->route('admin.settings.seo')->with('status', 'Pengaturan SEO disimpan.');
     }
 }

@@ -12,7 +12,31 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        $middleware->redirectUsersTo('/akun');
+        // Belum login → mau ke mana
+        $middleware->redirectGuestsTo(function (Request $request) {
+            if ($request->is('office') || $request->is('office/*')) {
+                return route('admin.login');
+            }
+            return route('login');
+        });
+
+        // Sudah login → mau ke mana
+        $middleware->redirectUsersTo(function (Request $request) {
+            if ($request->is('office') || $request->is('office/*')) {
+                return route('admin.dashboard');
+            }
+            return '/akun';
+        });
+
+        // Alias 'verified' (Batch 32)
+        $middleware->alias([
+            'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
+        ]);
+
+        // Maintenance mode (Batch 28)
+        $middleware->web(append: [
+            \App\Http\Middleware\CheckMaintenanceMode::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(

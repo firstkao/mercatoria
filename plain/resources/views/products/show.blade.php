@@ -1,5 +1,35 @@
 @extends('layouts.app', ['title' => $product->name])
 
+@push('head')
+@php($firstVariant = $variants->firstWhere('available', true) ?? $variants->first())
+<script type="application/ld+json">
+{
+    "@context": "https://schema.org",
+    "@type": "Product",
+    "name": "{{ $product->name }}",
+    "description": "{{ \Illuminate\Support\Str::limit(strip_tags($product->description ?? ''), 200) }}",
+    @if ($product->images->isNotEmpty())
+    "image": "{{ $product->images->first()->url() }}",
+    @endif
+    @if ($product->sku)
+    "sku": "{{ $product->sku }}",
+    @endif
+    @if ($product->game)
+    "category": "{{ $product->game->name }}",
+    @endif
+    @if ($firstVariant && $firstVariant['price'] !== null)
+    "offers": {
+        "@type": "Offer",
+        "priceCurrency": "IDR",
+        "price": "{{ $firstVariant['price'] }}",
+        "availability": "{{ $firstVariant['available'] ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock' }}",
+        "url": "{{ url()->current() }}"
+    }
+    @endif
+}
+</script>
+@endpush
+
 @section('content')
     <article class="product" data-product>
         <nav class="breadcrumb" aria-label="Breadcrumb">
@@ -42,6 +72,8 @@
                     <strong data-price>Pilih varian</strong>
                 </p>
 
+                <p class="sold-out-note" data-sold-out hidden>Varian ini sedang habis.</p>
+
                 @if ($variants->isNotEmpty())
                     <fieldset class="variants">
                         <legend>Varian</legend>
@@ -66,11 +98,10 @@
 
                 <form method="POST" action="{{ route('cart.store') }}" class="product__add-to-cart">
                     @csrf
-                    <input type="hidden" name="product_variant_id" value="" data-product-variant-id>
+                    <input type="hidden" name="variant" value="" data-product-variant-id>
                     <input type="hidden" name="quantity" value="1">
                     <button type="submit" class="button button--block" data-add-to-cart disabled>Tambah ke keranjang</button>
                 </form>
-                <p class="hint">Keranjang aktif di tahap berikutnya.</p>
 
                 <dl class="product__meta">
                     @if ($product->game)
@@ -93,6 +124,8 @@
     <script>
         (function () {
             var root = document.querySelector('[data-product]');
+            if (!root) return;
+
             var price = root.querySelector('[data-price]');
             var comparePrice = root.querySelector('[data-compare-price]');
             var mainImage = root.querySelector('[data-main-image]');
@@ -105,10 +138,14 @@
 
                 hiddenVariantId.value = input.value;
                 addToCartButton.disabled = !(input.dataset.available === '1');
-                price.textContent = input.dataset.price;
-                comparePrice.textContent = input.dataset.comparePrice;
-                comparePrice.hidden = !input.dataset.comparePrice;
-                soldOut.hidden = input.dataset.available === '1';
+                if (price) price.textContent = input.dataset.price;
+                if (comparePrice) {
+                    comparePrice.textContent = input.dataset.comparePrice || '';
+                    comparePrice.hidden = !input.dataset.comparePrice;
+                }
+                if (soldOut) {
+                    soldOut.hidden = input.dataset.available === '1';
+                }
                 if (mainImage && input.dataset.image) {
                     mainImage.src = input.dataset.image;
                 }

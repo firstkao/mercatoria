@@ -283,3 +283,363 @@ img { max-width: 100%; height: auto; display: block; }
     .sheet__nav { overflow-y: auto; padding: 20px 0; }
     .sheet__logout { padding: 20px; border-top: 1px solid rgba(255,255,255,0.1); }
 }
+
+/* Chart bars */
+.chart-bars {
+    display: flex;
+    align-items: flex-end;
+    gap: 6px;
+    height: 220px;
+    padding: 16px 0;
+    overflow-x: auto;
+}
+
+.chart-bar {
+    flex: 1;
+    min-width: 30px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-end;
+    height: 100%;
+    position: relative;
+}
+
+.chart-bar__fill {
+    width: 100%;
+    max-width: 40px;
+    background: linear-gradient(180deg, var(--primary), var(--primary-hover));
+    border-radius: 4px 4px 0 0;
+    min-height: 4px;
+    transition: opacity .15s;
+    cursor: pointer;
+}
+
+.chart-bar__fill:hover {
+    opacity: 0.8;
+}
+
+.chart-bar__label {
+    font-size: 10px;
+    color: var(--muted);
+    margin-top: 6px;
+    white-space: nowrap;
+}
+
+/* Chip list */
+.chip-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.chip-list .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.sidebar__user {
+    text-decoration: none;
+    transition: color .15s;
+}
+
+.sidebar__user:hover {
+    color: var(--primary);
+}
+
+/* Nav badge */
+.nav-link {
+    position: relative;
+}
+
+.nav-link__label {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.nav-link__badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 20px;
+    height: 20px;
+    padding: 0 6px;
+    border-radius: 999px;
+    background: var(--danger);
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+    line-height: 1;
+    flex-shrink: 0;
+}
+
+.nav-link.is-active .nav-link__badge {
+    background: #fff;
+    color: var(--primary);
+}
+
+/* Quick action */
+.quick-action {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 18px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: #fff;
+    color: var(--text);
+    text-decoration: none;
+    transition: all .15s;
+}
+
+.quick-action:hover {
+    border-color: var(--primary);
+    background: var(--primary-bg);
+}
+
+.quick-action strong {
+    color: var(--danger);
+    font-size: 1.1rem;
+}
+
+.quick-action__arrow {
+    margin-left: auto;
+    color: var(--primary);
+    font-weight: 700;
+}
+
+/* Maintenance */
+.panel code {
+    background: var(--bg);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 12px;
+}
+
+
+/* ============================================================ */
+/* BATCH 25 — Dashboard: Top list & Stat mini                    */
+/* ============================================================ */
+.top-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.top-list__item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 14px;
+}
+
+.top-list__item:last-child {
+    border-bottom: 0;
+}
+
+.top-list__rank {
+    flex-shrink: 0;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: var(--primary-bg);
+    color: var(--primary);
+    font-weight: 700;
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.top-list__item:nth-child(1) .top-list__rank {
+    background: #fef3c7;
+    color: #b45309;
+}
+
+.top-list__item:nth-child(2) .top-list__rank {
+    background: #e5e7eb;
+    color: #4b5563;
+}
+
+.top-list__item:nth-child(3) .top-list__rank {
+    background: #fed7aa;
+    color: #9a3412;
+}
+
+.top-list__name {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.top-list__value {
+    color: var(--primary);
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.stat-mini-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.stat-mini {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 14px;
+}
+
+.stat-mini:last-child {
+    border-bottom: 0;
+}
+
+.stat-mini strong {
+    color: #0f172a;
+    font-size: 16px;
+}
+
+/* ============================================================ */
+/* BATCH 26 — Preorder banner admin                              */
+/* ============================================================ */
+.preorder-banner-list {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.preorder-banner-item {
+    display: grid;
+    grid-template-columns: 200px 1fr;
+    gap: 20px;
+    padding: 16px;
+    background: var(--bg);
+    border-radius: var(--radius);
+}
+
+.preorder-banner-item__thumb {
+    width: 100%;
+    height: 120px;
+    object-fit: cover;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+}
+
+.preorder-banner-item__fields {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    min-width: 0;
+}
+
+.check--danger {
+    color: var(--danger);
+}
+
+.preorder-banner-preview {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 12px;
+    margin-top: 12px;
+}
+
+@media (max-width: 768px) {
+    .preorder-banner-item {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* ============================================================ */
+/* BATCH 28 — Bulk toolbar                                       */
+/* ============================================================ */
+.bulk-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 12px 20px;
+    background: var(--primary-bg);
+    border: 1px solid #bae6fd;
+    border-radius: var(--radius);
+    margin-bottom: 16px;
+    opacity: 0;
+    max-height: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+    border-width: 0;
+    overflow: hidden;
+    transition: all .2s ease;
+}
+
+.bulk-toolbar.is-active {
+    opacity: 1;
+    max-height: 100px;
+    padding-top: 12px;
+    padding-bottom: 12px;
+    border-width: 1px;
+}
+
+.bulk-toolbar__count {
+    font-size: 14px;
+    color: var(--text);
+}
+
+.bulk-toolbar__count strong {
+    color: var(--primary);
+    font-size: 16px;
+}
+
+.bulk-toolbar__actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.table input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    accent-color: var(--primary);
+    cursor: pointer;
+}
+
+/* ============================================================ */
+/* BATCH 30 — Rank badge & row muted                             */
+/* ============================================================ */
+.rank-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 32px;
+    padding: 3px 8px;
+    border-radius: 6px;
+    font-weight: 700;
+    font-size: 12px;
+}
+
+.rank-badge--top {
+    background: linear-gradient(135deg, #fef3c7, #fde68a);
+    color: #92400e;
+}
+
+.rank-badge--normal {
+    background: var(--bg);
+    color: var(--muted);
+}
+
+.row-muted {
+    opacity: 0.55;
+}

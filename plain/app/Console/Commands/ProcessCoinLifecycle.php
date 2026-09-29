@@ -5,9 +5,8 @@ namespace App\Console\Commands;
 use App\Models\CoinLot;
 use App\Models\Setting;
 use App\Models\User;
+use App\Services\NotificationService;
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
 
 class ProcessCoinLifecycle extends Command
 {
@@ -17,67 +16,142 @@ class ProcessCoinLifecycle extends Command
     public function handle(): int
     {
         $today = now()->timezone('Asia/Jakarta');
-        
+
         $this->info("Menjalankan siklus koin untuk tanggal: " . $today->toDateString());
 
-        DB::transaction(function() use ($today) {
-            // 1. Injeksi Koin Ulang Tahun (1000 Koin)
-            $birthdayReward = Setting::integer('birthday_coin', 1000);
-            $expiryMonths = Setting::integer('coin_expiry_months', 12);
-            
-            // Cari Customer yang berulang tahun hari ini (mengabaikan tahun lahir)
-            $birthdayCustomers = User::where('role', 'customer')
-                ->whereMonth('birth_date', $today->month)
-                ->whereDay('birth_date', $today->day)
-                ->get();
+        $birthdayCoinsGiven = $this->injectBirthdayCoins($today);
+        $expiredLots = $this->expireOldCoins();
+        $remindersSent = $this->sendExpiryReminders();
 
-            $birthdayCoinsGiven = 0;
-            foreach ($birthdayCustomers as $user) {
-                // Pastikan tahun ini belum dapat koin ultah (mencegah double-inject jika cron jalan 2x)
-                $alreadyGot = CoinLot::where('user_id', $user->id)
-                    ->where('source', 'ulang_tahun')
-                    ->where('birthday_year', $today->year)
-                    ->exists();
-
-                if (!$alreadyGot) {
-                    CoinLot::create([
-                        'user_id' => $user->id,
-                        'source' => 'ulang_tahun',
-                        'birthday_year' => $today->year,
-                        'amount' => $birthdayReward,
-                        'remaining' => $birthdayReward,
-                        'earned_at' => now(),
-                        'expires_at' => now()->addMonths($expiryMonths)
-                    ]);
-                    $birthdayCoinsGiven++;
-                    // TODO: Memicu Mailable email notifikasi "Selamat Ulang Tahun" ke $user->email
-                }
-            }
-
-            // 2. Hanguskan Koin Kedaluwarsa
-            $expiredLots = CoinLot::where('remaining', '>', 0)
-                ->where('expires_at', '<=', now())
-                ->update(['remaining' => 0]);
-
-            // 3. Peringatan H-7 Koin Hangus
-            $reminderDays = Setting::integer('coin_expiry_reminder_days', 7);
-            $targetDateStart = now()->addDays($reminderDays)->startOfDay();
-            $targetDateEnd = now()->addDays($reminderDays)->endOfDay();
-
-            $expiringSoon = CoinLot::with('user')
-                ->where('remaining', '>', 0)
-                ->whereBetween('expires_at', [$targetDateStart, $targetDateEnd])
-                ->get();
-
-            $remindersSent = 0;
-            foreach ($expiringSoon as $lot) {
-                // TODO: Memicu Mailable email notifikasi koin hampir hangus ke $lot->user->email
-                $remindersSent++;
-            }
-
-            $this->info("Koin Ultah: $birthdayCoinsGiven akun. Koin Hangus: $expiredLots lot. Email Pengingat: $remindersSent lot.");
-        });
+        $this->info("Koin Ultah: {$birthdayCoinsGiven} akun. Koin Hangus: {$expiredLots} lot. Pengingat: {$remindersSent} notif.");
 
         return self::SUCCESS;
+    }
+
+    /**
+     * 1) Koin ulang tahun untuk customer yang ultah hari ini.
+     */
+    private function injectBirthdayCoins(\Illuminate\Support\Carbon $today): int
+    {
+        $birthdayReward = Setting::integer('birthday_coin', 1000);
+        $expiryMonths = Setting::integer('coin_expiry_months', 12);
+
+        // Skip user yang sudah dianonimkan / tanpa email
+        $birthdayCustomers = User::query()
+            ->where('role', 'customer')
+            ->whereNull('anonymized_at')
+            ->whereNotNull('email')
+            ->whereNotNull('birth_date')
+            ->whereMonth('birth_date', $today->month)
+            ->whereDay('birth_date', $today->day)
+            ->get();
+
+        $given = 0;
+
+        foreach ($birthdayCustomers as $user) {
+            // Cek sudah dapat tahun ini (anti double-run)
+            $alreadyGot = CoinLot::query()
+                ->where('user_id', $user->id)
+                ->where('source', 'ulang_tahun')
+                ->where('birthday_year', $today->year)
+                ->exists();
+
+            if ($alreadyGot) {
+                continue;
+            }
+
+            // Bungkus per user — kalau 1 user error, user lain tetap jalan
+            try {
+                CoinLot::create([
+                    'user_id' => $user->id,
+                    'source' => 'ulang_tahun',
+                    'birthday_year' => $today->year,
+                    'amount' => $birthdayReward,
+                    'remaining' => $birthdayReward,
+                    'earned_at' => now(),
+                    'expires_at' => now()->addMonths($expiryMonths),
+                ]);
+
+                // Notifikasi in-app
+                try {
+                    NotificationService::send(
+                        $user,
+                        'coins',
+                        "🎂 Selamat Ulang Tahun!",
+                        "Kamu dapat {$birthdayReward} koin sebagai hadiah ulang tahun. Koin berlaku " .
+                        $expiryMonths . " bulan. Selamat berbelanja!",
+                        route('account.coins.index'),
+                        'wallet',
+                    );
+                } catch (\Throwable $e) {
+                    // notif gagal, koin tetap masuk
+                }
+
+                $given++;
+            } catch (\Throwable $e) {
+                $this->warn("  ⚠️ Gagal inject koin ultah untuk user #{$user->id}: " . $e->getMessage());
+            }
+        }
+
+        return $given;
+    }
+
+    /**
+     * 2) Hanguskan koin yang sudah lewat expired.
+     */
+    private function expireOldCoins(): int
+    {
+        return CoinLot::query()
+            ->where('remaining', '>', 0)
+            ->whereNotNull('expires_at')
+            ->where('expires_at', '<=', now())
+            ->update(['remaining' => 0]);
+    }
+
+    /**
+     * 3) Kirim pengingat H-7 ke user yang koinnya mau hangus.
+     */
+    private function sendExpiryReminders(): int
+    {
+        $reminderDays = Setting::integer('coin_expiry_reminder_days', 7);
+
+        $targetStart = now()->addDays($reminderDays)->startOfDay();
+        $targetEnd = now()->addDays($reminderDays)->endOfDay();
+
+        $expiringSoon = CoinLot::with('user')
+            ->where('remaining', '>', 0)
+            ->whereNotNull('expires_at')
+            ->whereBetween('expires_at', [$targetStart, $targetEnd])
+            ->get();
+
+        $sent = 0;
+
+        foreach ($expiringSoon as $lot) {
+            $user = $lot->user;
+
+            // Skip user null / anonymized
+            if (! $user || $user->anonymized_at) {
+                continue;
+            }
+
+            try {
+                NotificationService::send(
+                    $user,
+                    'coins',
+                    "⏰ Koin kamu mau hangus",
+                    "Kamu punya {$lot->remaining} koin yang akan hangus pada " .
+                    $lot->expires_at->timezone('Asia/Jakarta')->translatedFormat('j F Y') .
+                    ". Pakai sebelum hangus!",
+                    route('account.coins.index'),
+                    'wallet',
+                );
+
+                $sent++;
+            } catch (\Throwable $e) {
+                $this->warn("  ⚠️ Gagal kirim reminder koin untuk user #{$user->id}: " . $e->getMessage());
+            }
+        }
+
+        return $sent;
     }
 }

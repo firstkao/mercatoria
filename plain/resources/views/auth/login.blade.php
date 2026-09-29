@@ -1,5 +1,7 @@
 @extends('layouts.app', ['title' => 'Masuk'])
 
+@section('main_class', 'main--narrow')
+
 @section('content')
     <section class="card card--narrow">
         <h1>Masuk</h1>

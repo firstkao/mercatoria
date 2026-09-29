@@ -45,7 +45,7 @@ return [
         ],
         'admin' => [
             'driver' => 'session',
-            'provider' => 'admins',
+            'provider' => 'admins', // atau 'users' kalau pakai tabel yang sama
         ],
     ],
 
