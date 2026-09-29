@@ -63,7 +63,14 @@ class PaymentProofController extends Controller
             abort_unless($record->status === 'pending', 422, 'Bukti pembayaran sudah diproses.');
 
             $orderRow = DB::table('orders')->whereKey($record->order_id)->lockForUpdate()->firstOrFail();
-            abort_unless($orderRow->status === 'menunggu_pembayaran', 422, 'Status order tidak dapat diubah.');
+            // Setelah customer upload bukti, order berstatus 'ditahan' (lihat OrderController::proof),
+            // jadi approve harus menerima 'ditahan' selain 'menunggu_pembayaran'.
+            abort_unless(
+                in_array($orderRow->status, ['menunggu_pembayaran', 'ditahan'], true),
+                422,
+                'Status order tidak dapat diubah.'
+            );
+            $fromStatus = $orderRow->status;
 
             DB::table('payment_proofs')->whereKey($record->id)->update([
                 'status' => 'approved',
@@ -79,7 +86,7 @@ class PaymentProofController extends Controller
 
             DB::table('order_status_history')->insert([
                 'order_id' => $orderRow->id,
-                'from_status' => 'menunggu_pembayaran',
+                'from_status' => $fromStatus,
                 'to_status' => 'pembayaran_diterima',
                 'changed_by' => 'admin',
                 'admin_id' => auth('admin')->id(),
@@ -134,6 +141,8 @@ class PaymentProofController extends Controller
                 'updated_at' => now(),
             ]);
 
+            $currentOrder = DB::table('orders')->whereKey($record->order_id)->lockForUpdate()->firstOrFail();
+
             DB::table('orders')->whereKey($record->order_id)->update([
                 'status' => 'pembayaran_gagal',
                 'updated_at' => now(),
@@ -141,7 +150,7 @@ class PaymentProofController extends Controller
 
             DB::table('order_status_history')->insert([
                 'order_id' => $record->order_id,
-                'from_status' => 'menunggu_pembayaran',
+                'from_status' => $currentOrder->status,
                 'to_status' => 'pembayaran_gagal',
                 'changed_by' => 'admin',
                 'admin_id' => auth('admin')->id(),
