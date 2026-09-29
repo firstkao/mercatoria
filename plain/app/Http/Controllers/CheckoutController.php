@@ -15,6 +15,8 @@ use App\Support\PriceCalculator;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 
 class CheckoutController extends Controller
 {
@@ -29,7 +31,7 @@ class CheckoutController extends Controller
 
         $request->validate([
             'payment_scheme' => 'required|in:DP,FP',
-            'marketplace_id' => 'required|exists:marketplaces,id',
+            'marketplace_id' => ['required', Rule::exists('marketplaces', 'id')->where('is_active', true)],
             'discount_type' => 'required|in:none,coin,voucher',
             'voucher_code' => 'nullable|string',
             'customer_note' => 'required|string|min:3|max:1000',
@@ -40,6 +42,10 @@ class CheckoutController extends Controller
         ], [
             'customer_note' => 'catatan pembelian',
         ]);
+
+        // Snapshot isi keranjang; dicek ulang di dalam transaksi (setelah lock) untuk
+        // mencegah double-submit / keranjang yang berubah di tengah jalan.
+        $cartSignature = $cartItems->map(fn ($i) => $i->id . ':' . $i->quantity)->sort()->values()->implode(',');
 
         $mp = Marketplace::findOrFail($request->input('marketplace_id'));
         $scheme = $request->input('payment_scheme');
@@ -126,8 +132,35 @@ class CheckoutController extends Controller
         $order = DB::transaction(function () use (
             $user, $mp, $scheme, $subtotal, $discountType, $discountIdr,
             $netTotal, $payNow, $remaining, $mpFee, $coinEstimate,
-            $calculator, $orderItemsData, $usedCoinAmount, $voucher, $request
+            $calculator, $orderItemsData, $usedCoinAmount, $voucher, $request, $cartSignature
         ) {
+            // 1) Serialisasi semua checkout milik user ini. Request kedua (double-click / paralel)
+            //    akan menunggu di sini sampai request pertama commit.
+            DB::table('users')->where('id', $user->id)->lockForUpdate()->first();
+
+            // 2) Keranjang harus masih persis sama. Kalau request pertama sudah commit,
+            //    keranjang sudah kosong -> request kedua ditolak, bukan bikin order ganda.
+            $currentSignature = $user->cartItems()->get(['id', 'quantity'])
+                ->map(fn ($i) => $i->id . ':' . $i->quantity)->sort()->values()->implode(',');
+
+            if ($currentSignature !== $cartSignature) {
+                throw ValidationException::withMessages([
+                    'checkout' => 'Keranjang berubah atau pesanan sudah dibuat. Silakan cek daftar pesanan atau keranjang Anda.',
+                ]);
+            }
+
+            // 3) Voucher: kunci barisnya lalu validasi ulang, supaya usage_limit /
+            //    per_user_limit tidak bisa ditembus request paralel.
+            if ($voucher) {
+                $lockedVoucher = Voucher::whereKey($voucher->id)->lockForUpdate()->first();
+
+                if (! $lockedVoucher || ! $lockedVoucher->isUsableBy($user)) {
+                    throw ValidationException::withMessages([
+                        'voucher_code' => 'Voucher tidak valid, sudah kedaluwarsa, atau sudah dipakai.',
+                    ]);
+                }
+            }
+
             $order = Order::create([
                 'order_number' => 'ORD-' . strtoupper(Str::random(10)),
                 'user_id' => $user->id,
@@ -157,7 +190,14 @@ class CheckoutController extends Controller
                     ->where('remaining', '>', 0)
                     ->where('expires_at', '>', now())
                     ->orderBy('expires_at')
+                    ->lockForUpdate()
                     ->get();
+
+                if ($lots->sum('remaining') < $usedCoinAmount) {
+                    throw ValidationException::withMessages([
+                        'coin' => 'Saldo koin Anda berubah. Silakan ulangi checkout.',
+                    ]);
+                }
 
                 $needed = $usedCoinAmount;
                 foreach ($lots as $lot) {
@@ -192,7 +232,7 @@ class CheckoutController extends Controller
             } catch (\Throwable $e) {}
 
             return $order;
-        });
+        }, 3);
 
         return redirect()
             ->route('account.orders.show', $order->order_number)
