@@ -59,10 +59,10 @@ class PaymentProofController extends Controller
         $order = null;
 
         DB::transaction(function () use ($proof, &$order): void {
-            $record = DB::table('payment_proofs')->whereKey($proof)->lockForUpdate()->firstOrFail();
+            $record = DB::table('payment_proofs')->where('id', $proof)->lockForUpdate()->firstOrFail();
             abort_unless($record->status === 'pending', 422, 'Bukti pembayaran sudah diproses.');
 
-            $orderRow = DB::table('orders')->whereKey($record->order_id)->lockForUpdate()->firstOrFail();
+            $orderRow = DB::table('orders')->where('id', $record->order_id)->lockForUpdate()->firstOrFail();
             // Setelah customer upload bukti, order berstatus 'ditahan' (lihat OrderController::proof),
             // jadi approve harus menerima 'ditahan' selain 'menunggu_pembayaran'.
             abort_unless(
@@ -72,13 +72,13 @@ class PaymentProofController extends Controller
             );
             $fromStatus = $orderRow->status;
 
-            DB::table('payment_proofs')->whereKey($record->id)->update([
+            DB::table('payment_proofs')->where('id', $record->id)->update([
                 'status' => 'approved',
                 'reviewed_at' => now(),
                 'updated_at' => now(),
             ]);
 
-            DB::table('orders')->whereKey($orderRow->id)->update([
+            DB::table('orders')->where('id', $orderRow->id)->update([
                 'status' => 'pembayaran_diterima',
                 'paid_at' => now(),
                 'updated_at' => now(),
@@ -94,9 +94,9 @@ class PaymentProofController extends Controller
             ]);
 
             // Update user role kalau masih spammer
-            $user = DB::table('users')->whereKey($orderRow->user_id)->first();
+            $user = DB::table('users')->where('id', $orderRow->user_id)->first();
             if ($user && $user->role === 'spammer') {
-                DB::table('users')->whereKey($user->id)->update([
+                DB::table('users')->where('id', $user->id)->update([
                     'role' => 'customer',
                     'became_customer_at' => now(),
                     'view_quota_used' => 0,
@@ -130,10 +130,10 @@ class PaymentProofController extends Controller
         $order = null;
 
         DB::transaction(function () use ($proof, $data, &$order): void {
-            $record = DB::table('payment_proofs')->whereKey($proof)->lockForUpdate()->firstOrFail();
+            $record = DB::table('payment_proofs')->where('id', $proof)->lockForUpdate()->firstOrFail();
             abort_unless($record->status === 'pending', 422, 'Bukti pembayaran sudah diproses.');
 
-            DB::table('payment_proofs')->whereKey($record->id)->update([
+            DB::table('payment_proofs')->where('id', $record->id)->update([
                 'status' => 'rejected',
                 'reject_reason' => $data['reject_reason'],
                 'reviewed_at' => now(),
@@ -141,9 +141,9 @@ class PaymentProofController extends Controller
                 'updated_at' => now(),
             ]);
 
-            $currentOrder = DB::table('orders')->whereKey($record->order_id)->lockForUpdate()->firstOrFail();
+            $currentOrder = DB::table('orders')->where('id', $record->order_id)->lockForUpdate()->firstOrFail();
 
-            DB::table('orders')->whereKey($record->order_id)->update([
+            DB::table('orders')->where('id', $record->order_id)->update([
                 'status' => 'pembayaran_gagal',
                 'updated_at' => now(),
             ]);
@@ -164,7 +164,7 @@ class PaymentProofController extends Controller
                 'reason' => $data['reject_reason'],
             ]);
 
-            $order = DB::table('orders')->whereKey($record->order_id)->first();
+            $order = DB::table('orders')->where('id', $record->order_id)->first();
         });
 
         // Notifikasi in-app + email di luar transaction
