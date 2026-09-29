@@ -10,6 +10,14 @@
         <div class="notice">{{ session('status') }}</div>
     @endif
 
+    @if ($errors->any())
+        <div class="alert alert--danger" style="margin-bottom:16px;">
+            @foreach ($errors->all() as $error)
+                <p style="margin:0;">{{ $error }}</p>
+            @endforeach
+        </div>
+    @endif
+
     @if($cartItems->isEmpty())
         <div class="empty">
             <p>Keranjang masih kosong.</p>
