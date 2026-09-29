@@ -20,6 +20,11 @@ class CancelUnpaidOrders extends Command
             ->whereNotNull('payment_deadline_at')
             ->where('payment_deadline_at', '<', now())
             ->whereDoesntHave('paymentProofs', fn ($q) => $q->whereIn('status', ['pending', 'approved']))
+            // Bukti yang ditolak memberi customer jendela resubmit (resubmit_deadline_at);
+            // jangan batalkan order selama jendela itu masih terbuka.
+            ->whereDoesntHave('paymentProofs', fn ($q) => $q
+                ->where('status', 'rejected')
+                ->where('resubmit_deadline_at', '>', now()))
             ->get();
 
         $canceledCount = 0;
