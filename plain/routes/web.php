@@ -322,6 +322,12 @@ Route::get('/{page}', [LegalPageController::class, 'show'])
 Route::get('/{slug}', function (string $slug) {
     $product = Product::query()->where('slug', $slug)->first();
     if ($product) {
+        // Halaman produk butuh login (kuota lihat untuk spammer, ActivityLog, dll).
+        // Tanpa ini, guest -> $request->user() null -> error 500.
+        if (! auth()->check()) {
+            return redirect()->guest(route('login'));
+        }
+
         return app(ProductController::class)->show(request(), $product);
     }
 
