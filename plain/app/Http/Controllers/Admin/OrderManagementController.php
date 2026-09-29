@@ -14,6 +14,7 @@ use App\Services\NotificationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Validation\Rule;
 
 class OrderManagementController extends Controller
 {
@@ -121,7 +122,7 @@ class OrderManagementController extends Controller
     // ============================================================
     public function updateStatus(Request $request, Order $order)
     {
-        $request->validate(['status' => 'required|string']);
+        $request->validate(['status' => ['required', Rule::enum(OrderStatus::class)]]);
         $oldStatus = $order->status;
         $newStatus = $request->status;
 
@@ -138,8 +139,13 @@ class OrderManagementController extends Controller
                 $order->update(['completed_at' => now()]);
                 $expiry = now()->addMonths(Setting::integer('coin_expiry_months', 12));
 
-                // 1) Cashback koin
-                if ($order->coin_estimate > 0) {
+                // 1) Cashback koin (idempotent: hanya sekali per order,
+                //    walau status digeser keluar-masuk 'selesai')
+                $cashbackAlreadyGiven = CoinLot::where('order_id', $order->id)
+                    ->where('source', 'cashback')
+                    ->exists();
+
+                if ($order->coin_estimate > 0 && ! $cashbackAlreadyGiven) {
                     CoinLot::create([
                         'user_id' => $order->user_id,
                         'source' => 'cashback',
@@ -164,7 +170,11 @@ class OrderManagementController extends Controller
                     ->where('status', 'selesai')
                     ->count();
 
-                if ($completedOrdersCount === 1) {
+                $bonusAlreadyGiven = CoinLot::where('user_id', $order->user_id)
+                    ->where('source', 'bonus_pertama')
+                    ->exists();
+
+                if ($completedOrdersCount === 1 && ! $bonusAlreadyGiven) {
                     $bonus = Setting::integer('customer_bonus_coin', 1000);
                     CoinLot::create([
                         'user_id' => $order->user_id,
@@ -191,6 +201,11 @@ class OrderManagementController extends Controller
                         // ignore — jangan sampai gagal update status
                     }
                 }
+            }
+
+            // Pembatalan manual harus mengembalikan koin, sama seperti pembatalan otomatis.
+            if ($newStatus === 'dibatalkan') {
+                $this->refundCoins($order);
             }
 
             $this->recordHistory($order, $oldStatus, $newStatus, 'admin');
@@ -224,6 +239,25 @@ class OrderManagementController extends Controller
     // ============================================================
     // HELPER: catat riwayat status
     // ============================================================
+    /**
+     * Kembalikan koin yang dipakai order ini ke lot asalnya.
+     * Idempotent: baris coin_spends dihapus setelah dikembalikan.
+     */
+    private function refundCoins(Order $order): void
+    {
+        $spends = DB::table('coin_spends')->where('order_id', $order->id)->get();
+
+        foreach ($spends as $spend) {
+            DB::table('coin_lots')
+                ->where('id', $spend->coin_lot_id)
+                ->increment('remaining', $spend->amount);
+        }
+
+        if ($spends->isNotEmpty()) {
+            DB::table('coin_spends')->where('order_id', $order->id)->delete();
+        }
+    }
+
     private function recordHistory(Order $order, ?string $from, string $to, string $by, ?string $note = null): void
     {
         DB::table('order_status_history')->insert([
