@@ -8,6 +8,7 @@ use App\Models\PaymentMethod;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
+use Illuminate\Support\Facades\Storage; // <-- TAMBAHAN: Import Storage
 
 class PaymentMethodController extends Controller
 {
@@ -28,6 +29,12 @@ class PaymentMethodController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $data = $this->validated($request);
+
+        // TAMBAHAN: Proses upload gambar saat create
+        if ($request->hasFile('qr_image')) {
+            $data['qr_image'] = $request->file('qr_image')->store('qris', 'public');
+        }
+
         $method = PaymentMethod::create($data);
         AdminLog::record('create_payment_method', $method, ['label' => $method->label]);
 
@@ -41,7 +48,17 @@ class PaymentMethodController extends Controller
 
     public function update(Request $request, PaymentMethod $paymentMethod): RedirectResponse
     {
-        $paymentMethod->update($this->validated($request));
+        $data = $this->validated($request);
+
+        // TAMBAHAN: Proses upload gambar baru dan hapus gambar lama saat update
+        if ($request->hasFile('qr_image')) {
+            if ($paymentMethod->qr_image) {
+                Storage::disk('public')->delete($paymentMethod->qr_image);
+            }
+            $data['qr_image'] = $request->file('qr_image')->store('qris', 'public');
+        }
+
+        $paymentMethod->update($data);
         AdminLog::record('update_payment_method', $paymentMethod, ['label' => $paymentMethod->label]);
 
         return redirect()->route('admin.payment-methods.index')->with('status', 'Metode pembayaran diperbarui.');
@@ -51,6 +68,11 @@ class PaymentMethodController extends Controller
     {
         if ($paymentMethod->proofs()->exists()) {
             return back()->withErrors(['method' => 'Metode ini sudah dipakai di bukti pembayaran, tidak bisa dihapus. Nonaktifkan saja.']);
+        }
+
+        // TAMBAHAN: Hapus file gambar dari storage sebelum data dihapus
+        if ($paymentMethod->qr_image) {
+            Storage::disk('public')->delete($paymentMethod->qr_image);
         }
 
         $label = $paymentMethod->label;
@@ -70,6 +92,7 @@ class PaymentMethodController extends Controller
             'account_number' => ['nullable', 'string', 'max:100'],
             'account_name'   => ['nullable', 'string', 'max:100'],
             'instructions'   => ['nullable', 'string', 'max:2000'],
+            'qr_image'       => ['nullable', 'image', 'mimes:jpeg,png,jpg,webp', 'max:2048'], // <-- TAMBAHAN: Validasi gambar
             'sort_order'     => ['nullable', 'integer', 'min:0', 'max:999'],
             'is_active'      => ['nullable', 'boolean'],
         ]);
