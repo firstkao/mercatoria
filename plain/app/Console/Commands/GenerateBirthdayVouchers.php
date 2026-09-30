@@ -77,6 +77,7 @@ class GenerateBirthdayVouchers extends Command
                 'is_active' => true,
             ]);
 
+            // ends_at sudah jam WIB (bukan UTC), jadi jangan dikonversi lagi agar tanggalnya tidak maju sehari.
             // Notifikasi ke user (opsional — jangan sampai ganggu loop)
             try {
                 NotificationService::send(
@@ -85,7 +86,7 @@ class GenerateBirthdayVouchers extends Command
                     '🎂 Selamat Ulang Tahun!',
                     "Kamu dapat voucher diskon Rp" . number_format($nominal, 0, ',', '.') .
                     " (min. belanja Rp" . number_format($minPurchase, 0, ',', '.') . "). Kode: {$code}. Berlaku sampai " .
-                    $voucher->ends_at->timezone('Asia/Jakarta')->translatedFormat('j F Y') . ".",
+                    $voucher->ends_at->translatedFormat('j F Y') . ".",
                     null,
                     'wallet',
                 );
