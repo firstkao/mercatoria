@@ -21,6 +21,20 @@ class DeleteSpammerAccount
             return;
         }
 
+        // Jangan hapus akun yang pembayarannya sedang/sudah diproses: menghapus user ikut
+        // menghapus order dan bukti bayarnya (cascade), padahal customer sudah membayar.
+        // Akun akan dicoba lagi pada run berikutnya, setelah admin menyetujui (jadi customer)
+        // atau menolak bukti tersebut.
+        $hasPaymentInProgress = DB::table('payment_proofs')
+            ->join('orders', 'orders.id', '=', 'payment_proofs.order_id')
+            ->where('orders.user_id', $user->id)
+            ->whereIn('payment_proofs.status', ['pending', 'approved'])
+            ->exists();
+
+        if ($hasPaymentInProgress) {
+            return;
+        }
+
         DB::transaction(function () use ($user, $reason): void {
             $limit = Setting::integer('registration_limit', 3);
             $records = collect([
