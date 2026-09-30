@@ -5,7 +5,8 @@
 ])
 
 @section('content')
-<form method="POST" action="{{ $isNew ? route('admin.payment-methods.store') : route('admin.payment-methods.update', $method) }}" class="panel stack">
+<!-- TAMBAHAN: enctype="multipart/form-data" WAJIB ada agar bisa kirim gambar -->
+<form method="POST" action="{{ $isNew ? route('admin.payment-methods.store') : route('admin.payment-methods.update', $method) }}" class="panel stack" enctype="multipart/form-data">
     @csrf
     @unless($isNew) @method('PUT') @endunless
 
@@ -34,6 +35,21 @@
         @include('admin.partials.error', ['name' => 'instructions'])
     </label>
 
+    <!-- TAMBAHAN: Input File untuk QR Code / Barcode -->
+    <label class="field">
+        <span>Upload QRIS / Barcode (opsional)</span>
+        <input type="file" name="qr_image" accept="image/png, image/jpeg, image/jpg, image/webp">
+        @include('admin.partials.error', ['name' => 'qr_image'])
+        
+        <!-- Preview jika gambar QR sudah ada (saat edit) -->
+        @if(! $isNew && $method->qr_image)
+            <div style="margin-top: 10px; padding: 10px; border: 1px solid #ddd; display: inline-block; border-radius: 8px;">
+                <p style="margin: 0 0 5px 0; font-size: 12px; color: #666;">Gambar saat ini:</p>
+                <img src="{{ asset('storage/' . $method->qr_image) }}" alt="QRIS" style="max-width: 150px; border-radius: 4px;">
+            </div>
+        @endif
+    </label>
+
     <div class="field-row">
         <label class="field field--short">
             <span>Urutan tampil</span>
@@ -51,7 +67,7 @@
         </label>
     </div>
 
-    <div style="display:flex;gap:10px;">
+    <div style="display:flex;gap:10px; margin-top: 20px;">
         <a href="{{ route('admin.payment-methods.index') }}" class="btn">Batal</a>
         <button type="submit" class="btn btn--primary">Simpan</button>
     </div>
