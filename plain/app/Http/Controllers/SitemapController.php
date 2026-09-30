@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\Page;
-use App\Models\Product;
 use Illuminate\Http\Response;
 
 class SitemapController extends Controller
@@ -18,20 +17,8 @@ class SitemapController extends Controller
         // Katalog (login-required, tapi tetap didaftarkan untuk SEO internal)
         $urls[] = ['loc' => route('catalog.index'), 'priority' => '0.9', 'changefreq' => 'daily'];
 
-        // Produk published
-        Product::query()
-            ->published()
-            ->select('slug', 'updated_at')
-            ->chunk(500, function ($products) use (&$urls) {
-                foreach ($products as $product) {
-                    $urls[] = [
-                        'loc' => route('slug.show', $product->slug),
-                        'lastmod' => $product->updated_at?->toAtomString(),
-                        'priority' => '0.8',
-                        'changefreq' => 'weekly',
-                    ];
-                }
-            });
+        // Halaman produk tidak didaftarkan: butuh login, jadi crawler hanya akan
+        // dialihkan ke halaman masuk. Daftarkan lagi kalau produk dibuat publik.
 
         // Halaman statis (dari DB)
         Page::query()
