@@ -113,8 +113,16 @@ class UserController extends Controller
 
     public function destroy(User $user): RedirectResponse
     {
-        if (auth('admin')->id() === $user->id) {
-            return back()->withErrors(['user' => 'Tidak bisa menghapus akun sendiri.']);
+        // orders.user_id = cascadeOnDelete: menghapus user ikut MENGHAPUS PERMANEN semua order,
+        // bukti bayar, dan riwayat statusnya (laporan omzet ikut berubah). Untuk customer yang
+        // sudah punya order, pakai "Anonimkan" supaya riwayat order tetap tersimpan.
+        // (Guard lama membandingkan id admin dengan id user; itu dua tabel berbeda, jadi dihapus.)
+        $orderCount = $user->orders()->count();
+
+        if ($orderCount > 0) {
+            return back()->withErrors([
+                'user' => "Pengguna ini punya {$orderCount} order. Menghapusnya akan ikut menghapus permanen seluruh order, bukti bayar, dan riwayat statusnya. Untuk customer, gunakan tombol Anonimkan agar riwayat order tetap tersimpan.",
+            ]);
         }
 
         $name = $user->full_name;
@@ -159,9 +167,9 @@ class UserController extends Controller
     {
         abort_unless($user->role === UserRole::Customer && ! $user->anonymized_at, 404);
 
-        $name = $user->full_name;
         $anonymizeCustomer->handle($user);
-        AdminLog::record('anonymize_customer', $user, ['nama' => $name]);
+        // Jangan catat nama di log: itu akan menyimpan data pribadi yang baru saja dihapus.
+        AdminLog::record('anonymize_customer', $user);
 
         return redirect()->route('admin.users.show', $user)->with('status', 'Data pribadi customer dihapus. Riwayat order tetap tersimpan.');
     }
