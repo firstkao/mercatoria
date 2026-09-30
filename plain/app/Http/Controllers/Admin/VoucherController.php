@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\AdminLog;
 use App\Models\Voucher;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 class VoucherController extends Controller
 {
@@ -63,7 +64,7 @@ class VoucherController extends Controller
             'code' => 'required|string|unique:vouchers,code,' . $id,
             'name' => 'required|string',
             'discount_type' => 'required|in:nominal,percent',
-            'value' => 'required|integer|min:1',
+            'value' => ['required', 'integer', 'min:1', Rule::when($request->input('discount_type') === 'percent', ['max:100'])],
             'max_discount_idr' => 'nullable|integer|min:1',
             'min_purchase_idr' => 'required|integer|min:0',
             'starts_at' => 'nullable|date',
