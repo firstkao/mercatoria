@@ -46,7 +46,9 @@
    {{-- ===================== PROMO BAR ===================== --}}
     @if (! empty($promoBarText))
         @php
-            $formattedPromoText = str_replace('NEWWEB', '<strong>NEWWEB</strong>', $promoBarText);
+            // Escape dulu (teks datang dari pengaturan admin), baru beri format tebal/miring.
+            // Kata kunci di bawah tidak mengandung karakter khusus HTML, jadi aman di-replace setelah escape.
+            $formattedPromoText = str_replace('NEWWEB', '<strong>NEWWEB</strong>', e($promoBarText));
             $formattedPromoText = str_replace('Rp 25.000', '<em>Rp 25.000</em>', $formattedPromoText);
             $formattedPromoText = str_replace('Rp 150.000', '<em>Rp 150.000</em>', $formattedPromoText);
         @endphp
