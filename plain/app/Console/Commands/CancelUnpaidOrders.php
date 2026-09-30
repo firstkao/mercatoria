@@ -33,8 +33,9 @@ class CancelUnpaidOrders extends Command
         foreach ($expiredOrders as $order) {
             $oldStatus = $order->status;
             $notifyUser = null;
+            $refunded = [];
 
-            DB::transaction(function () use ($order, $oldStatus, $deleteSpammerAccount, &$canceledCount, &$deletedSpammers, &$notifyUser) {
+            DB::transaction(function () use ($order, $oldStatus, $deleteSpammerAccount, &$canceledCount, &$deletedSpammers, &$notifyUser, &$refunded) {
                 $user = $order->user;
 
                 if ($user && method_exists($user, 'isSpammer') && $user->isSpammer()) {
@@ -58,11 +59,16 @@ class CancelUnpaidOrders extends Command
                             ->increment('remaining', $spend->amount);
                     }
                     DB::table('coin_spends')->where('order_id', $order->id)->delete();
+                    $refunded[] = 'koin';
                 }
 
-                // Hapus catatan voucher redemption (voucher tidak dikembalikan untuk pembatal)
+                // Voucher dikembalikan: hapus catatan redemption supaya kuota voucher
+                // (usage_limit / per_user_limit) terbuka lagi untuk pemakaian berikutnya.
                 if (\Illuminate\Support\Facades\Schema::hasTable('voucher_redemptions')) {
-                    DB::table('voucher_redemptions')->where('order_id', $order->id)->delete();
+                    $removed = DB::table('voucher_redemptions')->where('order_id', $order->id)->delete();
+                    if ($removed > 0) {
+                        $refunded[] = 'voucher';
+                    }
                 }
 
                 // Catat ke status history
@@ -87,7 +93,8 @@ class CancelUnpaidOrders extends Command
                         $notifyUser,
                         'order_cancelled',
                         "❌ Pesanan #{$order->order_number} dibatalkan",
-                        'Kamu tidak menyelesaikan pembayaran dalam batas waktu. Pesanan dibatalkan otomatis. Koin yang kamu pakai sudah dikembalikan.',
+                        'Kamu tidak menyelesaikan pembayaran dalam batas waktu. Pesanan dibatalkan otomatis.'
+                            . ($refunded !== [] ? ' ' . ucfirst(implode(' dan ', $refunded)) . ' yang kamu pakai sudah dikembalikan.' : ''),
                         null,
                         'box',
                     );
