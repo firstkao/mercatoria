@@ -2,6 +2,14 @@
 
 use Illuminate\Support\Facades\Schedule;
 
+// Proses antrean email (status order, bukti bayar ditolak, pengingat bayar, pesan kontak).
+// Mailable-nya ShouldQueue dan QUEUE_CONNECTION=database; tanpa worker email hanya menumpuk
+// di tabel `jobs`. Ini jalan lewat cron `schedule:run` yang sudah ada (cocok untuk shared hosting).
+// Aman kalau kamu juga punya worker terpisah: job diambil atomik, tidak diproses dua kali.
+Schedule::command('queue:work --stop-when-empty --max-time=55 --tries=3')
+    ->everyMinute()
+    ->withoutOverlapping(5);
+
 // Kirim email peringatan setiap jam (untuk order umur 20 jam)
 Schedule::command('orders:send-reminders')->hourly();
 
