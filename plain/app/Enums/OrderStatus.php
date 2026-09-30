@@ -17,6 +17,37 @@ enum OrderStatus: string
     case PembayaranGagal = 'pembayaran_gagal';
     case DanaDikembalikan = 'dana_dikembalikan';
 
+    /**
+     * Status yang uangnya sudah diterima dan belum dikembalikan. Hanya order dengan status
+     * ini yang dihitung sebagai pendapatan (bukan menunggu_pembayaran / ditahan / dibatalkan /
+     * pembayaran_gagal / dana_dikembalikan).
+     *
+     * @return list<string>
+     */
+    public static function revenueValues(): array
+    {
+        return [
+            self::PembayaranDiterima->value,
+            self::SedangDiproses->value,
+            self::SampaiWhCn->value,
+            self::DikirimKeIndonesia->value,
+            self::BeaCukai->value,
+            self::SampaiWhIndonesia->value,
+            self::Selesai->value,
+        ];
+    }
+
+    /**
+     * Ekspresi SQL: jumlahkan kolom uang hanya untuk order berstatus pendapatan.
+     * Aman di-inline karena nilainya konstanta enum, bukan input user.
+     */
+    public static function revenueSumSql(string $column = 'pay_now_idr', string $statusColumn = 'status'): string
+    {
+        $in = implode(',', array_map(static fn (string $v): string => "'".$v."'", self::revenueValues()));
+
+        return "COALESCE(SUM(CASE WHEN {$statusColumn} IN ({$in}) THEN {$column} ELSE 0 END), 0)";
+    }
+
     public function label(): string
     {
         return match ($this) {
