@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Enums\OrderStatus;
 use App\Http\Controllers\Controller;
 use App\Models\Order;
 use Illuminate\Http\Request;
@@ -16,14 +17,17 @@ class ReportController extends Controller
         [$from, $until] = $this->range($request);
 
         $orders = Order::query()
-            ->whereBetween('created_at', [$from, $until])
+            ->whereBetween('created_at', [$from->copy()->utc(), $until->copy()->utc()])
             ->whereNotIn('status', ['dibatalkan', 'pembayaran_gagal'])
             ->with('marketplace')
             ->get();
 
-        $totalRevenue = $orders->sum('pay_now_idr');
+        // Pendapatan hanya dari order yang uangnya sudah diterima (bukan yang menunggu bayar / refund).
+        $paidOrders = $orders->whereIn('status', OrderStatus::revenueValues());
+        $totalRevenue = $paidOrders->sum('pay_now_idr');
         $totalOrders = $orders->count();
-        $avgOrderValue = $totalOrders > 0 ? (int) round($totalRevenue / $totalOrders) : 0;
+        $paidCount = $paidOrders->count();
+        $avgOrderValue = $paidCount > 0 ? (int) round($totalRevenue / $paidCount) : 0;
 
         $byStatus = $orders->groupBy('status')->map->count()->sortDesc();
 
@@ -31,7 +35,7 @@ class ReportController extends Controller
             ->groupBy(fn ($order) => $order->marketplace?->name ?? 'Lainnya')
             ->map(fn ($group) => [
                 'count' => $group->count(),
-                'revenue' => $group->sum('pay_now_idr'),
+                'revenue' => $group->whereIn('status', OrderStatus::revenueValues())->sum('pay_now_idr'),
             ])
             ->sortByDesc('revenue');
 
@@ -41,8 +45,8 @@ class ReportController extends Controller
 
         $topProducts = DB::table('order_items')
             ->join('orders', 'orders.id', '=', 'order_items.order_id')
-            ->whereBetween('orders.created_at', [$from, $until])
-            ->whereNotIn('orders.status', ['dibatalkan', 'pembayaran_gagal'])
+            ->whereBetween('orders.created_at', [$from->copy()->utc(), $until->copy()->utc()])
+            ->whereIn('orders.status', OrderStatus::revenueValues())
             ->select('order_items.product_name_snapshot', 'order_items.variant_name_snapshot')
             ->selectRaw('SUM(order_items.quantity) as total_qty')
             ->selectRaw('SUM(order_items.line_total_idr) as total_revenue')
@@ -71,7 +75,7 @@ class ReportController extends Controller
         [$from, $until] = $this->range($request);
 
         $orders = Order::query()
-            ->whereBetween('created_at', [$from, $until])
+            ->whereBetween('created_at', [$from->copy()->utc(), $until->copy()->utc()])
             ->whereNotIn('status', ['dibatalkan', 'pembayaran_gagal'])
             ->with(['user', 'marketplace'])
             ->orderBy('created_at')
@@ -139,19 +143,17 @@ class ReportController extends Controller
     private function dailyRevenue(Carbon $from, Carbon $until): array
     {
         $rows = Order::query()
-            ->whereBetween('created_at', [$from, $until])
-            ->whereNotIn('status', ['dibatalkan', 'pembayaran_gagal'])
-            ->selectRaw('DATE(created_at) as day, SUM(pay_now_idr) as total')
-            ->groupBy('day')
-            ->orderBy('day')
-            ->get();
+            ->whereBetween('created_at', [$from->copy()->utc(), $until->copy()->utc()])
+            ->whereIn('status', OrderStatus::revenueValues())
+            ->get(['created_at', 'pay_now_idr']);
 
-        $out = [];
-        foreach ($rows as $row) {
-            $out[$row->day] = (int) $row->total;
-        }
-
-        return $out;
+        // created_at tersimpan UTC; kelompokkan per tanggal Jakarta supaya order dini hari WIB
+        // tidak tercatat di tanggal sebelumnya.
+        return $rows
+            ->groupBy(fn (Order $order): string => $order->created_at->copy()->timezone('Asia/Jakarta')->format('Y-m-d'))
+            ->map(fn ($group): int => (int) $group->sum('pay_now_idr'))
+            ->sortKeys()
+            ->all();
     }
 
     /**
@@ -170,9 +172,9 @@ class ReportController extends Controller
             $monthEnd = $month->copy()->endOfMonth();
 
             $stats = Order::query()
-                ->whereBetween('created_at', [$monthStart, $monthEnd])
+                ->whereBetween('created_at', [$monthStart->copy()->utc(), $monthEnd->copy()->utc()])
                 ->whereNotIn('status', ['dibatalkan', 'pembayaran_gagal'])
-                ->selectRaw('COALESCE(SUM(pay_now_idr), 0) as revenue, COUNT(*) as orders')
+                ->selectRaw(OrderStatus::revenueSumSql().' as revenue, COUNT(*) as orders')
                 ->first();
 
             $out[] = [
@@ -193,7 +195,7 @@ class ReportController extends Controller
     private function statusDistribution(Carbon $from, Carbon $until): array
     {
         $rows = Order::query()
-            ->whereBetween('created_at', [$from, $until])
+            ->whereBetween('created_at', [$from->copy()->utc(), $until->copy()->utc()])
             ->select('status', DB::raw('COUNT(*) as count'))
             ->groupBy('status')
             ->get();
