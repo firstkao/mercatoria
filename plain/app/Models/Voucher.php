@@ -121,6 +121,7 @@ class Voucher extends Model
             $discount = min($discount, $this->max_discount_idr);
         }
 
-        return $discount;
+        // Diskon tidak boleh melebihi subtotal (voucher persen > 100 membuat total order negatif).
+        return max(0, min($discount, $subtotal));
     }
 }
