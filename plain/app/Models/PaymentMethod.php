@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
     'account_number',
     'account_name',
     'instructions',
+    'qr_image', // <-- TAMBAHKAN BARIS INI
     'sort_order',
     'is_active',
 ])]
