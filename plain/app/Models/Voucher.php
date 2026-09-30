@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Carbon;
 
 #[Fillable([
     'user_id',
@@ -63,13 +64,16 @@ class Voucher extends Model
             return false;
         }
 
-        $now = now();
+        // starts_at / ends_at menyimpan JAM DINDING WIB (yang diketik admin di form datetime-local
+        // dan yang dibuat GenerateBirthdayVouchers), bukan UTC. Karena itu dibandingkan dengan
+        // jam WIB sekarang; membandingkan dengan now() (UTC) membuat promo bergeser 7 jam.
+        $wibNow = Carbon::parse(now('Asia/Jakarta')->format('Y-m-d H:i:s'), 'UTC');
 
-        if ($this->starts_at && $this->starts_at->isFuture()) {
+        if ($this->starts_at && $this->starts_at->gt($wibNow)) {
             return false;
         }
 
-        if ($this->ends_at && $this->ends_at->isPast()) {
+        if ($this->ends_at && $this->ends_at->lt($wibNow)) {
             return false;
         }
 
