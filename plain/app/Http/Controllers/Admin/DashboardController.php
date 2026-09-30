@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Enums\OrderStatus;
 use App\Enums\UserRole;
 use App\Http\Controllers\Controller;
 use App\Models\Product;
@@ -36,9 +37,9 @@ class DashboardController extends Controller
             $dailyLabels[] = $day->translatedFormat('D, j M');
 
             $data = DB::table('orders')
-                ->whereBetween('created_at', [$day, $dayEnd])
+                ->whereBetween('created_at', [$day->copy()->utc(), $dayEnd->copy()->utc()])
                 ->whereNotIn('status', ['dibatalkan', 'pembayaran_gagal'])
-                ->selectRaw('COALESCE(SUM(pay_now_idr), 0) as revenue, COUNT(*) as orders')
+                ->selectRaw(OrderStatus::revenueSumSql().' as revenue, COUNT(*) as orders')
                 ->first();
 
             $dailyRevenue[] = (int) ($data->revenue ?? 0);
@@ -48,24 +49,24 @@ class DashboardController extends Controller
         // Summary hari ini
         $todayStart = now('Asia/Jakarta')->startOfDay();
         $todayData = DB::table('orders')
-            ->where('created_at', '>=', $todayStart)
+            ->where('created_at', '>=', $todayStart->copy()->utc())
             ->whereNotIn('status', ['dibatalkan', 'pembayaran_gagal'])
-            ->selectRaw('COALESCE(SUM(pay_now_idr), 0) as revenue, COUNT(*) as orders')
+            ->selectRaw(OrderStatus::revenueSumSql().' as revenue, COUNT(*) as orders')
             ->first();
 
         // Ringkasan mingguan
         $weekStart = now('Asia/Jakarta')->startOfWeek();
         $weekData = DB::table('orders')
-            ->where('created_at', '>=', $weekStart)
+            ->where('created_at', '>=', $weekStart->copy()->utc())
             ->whereNotIn('status', ['dibatalkan', 'pembayaran_gagal'])
-            ->selectRaw('COALESCE(SUM(pay_now_idr), 0) as revenue, COUNT(*) as orders')
+            ->selectRaw(OrderStatus::revenueSumSql().' as revenue, COUNT(*) as orders')
             ->first();
 
         // Top 5 produk terlaris (30 hari)
         $topProducts = DB::table('order_items')
             ->join('orders', 'orders.id', '=', 'order_items.order_id')
             ->where('orders.created_at', '>=', now()->subDays(30))
-            ->whereNotIn('orders.status', ['dibatalkan', 'pembayaran_gagal'])
+            ->whereIn('orders.status', OrderStatus::revenueValues())
             ->select('order_items.product_name_snapshot')
             ->selectRaw('SUM(order_items.quantity) as total_qty')
             ->groupBy('order_items.product_name_snapshot')
