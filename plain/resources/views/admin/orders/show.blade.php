@@ -24,7 +24,9 @@
 
         {{-- Modul Verifikasi Bukti Pembayaran --}}
         @if($order->paymentProofs->isNotEmpty())
-            @php($latestProof = $order->paymentProofs->last())
+            {{-- ✅ PERAPIAN: pakai helper latestPaymentProof() (urut uploaded_at) --}}
+            {{-- alih-alih ->last() pada collection tanpa ordering eksplisit.      --}}
+            @php($latestProof = $order->latestPaymentProof() ?? $order->paymentProofs->last())
             <section class="panel">
                 <div style="display: flex; justify-content: space-between;">
                     <h2>Bukti Pembayaran</h2>

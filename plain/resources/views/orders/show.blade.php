@@ -35,7 +35,11 @@
             </p>
         </div>
 
-        <form action="{{ route('orders.proof', $order->order_number) }}" method="POST" enctype="multipart/form-data" class="panel stack" style="margin-bottom: 30px;">
+        {{-- ✅ BUG FIX: nama route upload bukti adalah 'account.orders.upload' --}}
+        {{-- (lihat routes/web.php). Sebelumnya di sini tertulis 'orders.proof'   --}}
+        {{-- yang tidak pernah terdaftar → RouteNotFoundException (halaman detail  --}}
+        {{-- pesanan error 500 setiap kali status menunggu pembayaran/gagal).      --}}
+        <form action="{{ route('account.orders.upload', $order->order_number) }}" method="POST" enctype="multipart/form-data" class="panel stack" style="margin-bottom: 30px;">
             @csrf
             <h2>Upload Bukti Transfer</h2>
             <div class="field-row">
