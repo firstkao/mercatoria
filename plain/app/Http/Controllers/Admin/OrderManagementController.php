@@ -202,10 +202,29 @@ class OrderManagementController extends Controller
     {
         $spends = DB::table('coin_spends')->where('order_id', $order->id)->get();
 
+        $expiryMonths = Setting::integer('coin_expiry_months', 12);
+
         foreach ($spends as $spend) {
-            DB::table('coin_lots')
-                ->where('id', $spend->coin_lot_id)
-                ->increment('remaining', $spend->amount);
+            $lot = DB::table('coin_lots')->where('id', $spend->coin_lot_id)->first();
+            $lotExpired = $lot && $lot->expires_at !== null && strtotime($lot->expires_at) <= time();
+
+            if ($lotExpired) {
+                // Lot asal sudah kedaluwarsa — increment ke sana tidak akan pernah
+                // terlihat sebagai saldo aktif. Buat lot refund baru berumur penuh.
+                CoinLot::create([
+                    'user_id' => $order->user_id,
+                    'source' => 'refund_kedaluwarsa',
+                    'order_id' => $order->id,
+                    'amount' => $spend->amount,
+                    'remaining' => $spend->amount,
+                    'earned_at' => now(),
+                    'expires_at' => now()->addMonths($expiryMonths),
+                ]);
+            } else {
+                DB::table('coin_lots')
+                    ->where('id', $spend->coin_lot_id)
+                    ->increment('remaining', $spend->amount);
+            }
         }
 
         if ($spends->isNotEmpty()) {
