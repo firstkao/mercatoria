@@ -7,7 +7,6 @@ use App\Http\Controllers\Controller;
 use App\Models\AdminLog;
 use App\Models\CoinLot;
 use App\Models\Order;
-use App\Models\PaymentProof;
 use App\Models\Referral;
 use App\Models\Setting;
 use App\Services\NotificationService;
@@ -42,80 +41,6 @@ class OrderManagementController extends Controller
         ]);
 
         return view('admin.orders.show', compact('order'));
-    }
-
-    // ============================================================
-    // VERIFY PAYMENT (accept / reject)
-    // ============================================================
-    public function verifyPayment(Request $request, PaymentProof $proof)
-    {
-        $request->validate([
-            'action' => 'required|in:accept,reject',
-            'reject_reason' => 'nullable|string',
-        ]);
-
-        $order = $proof->order;
-        $oldStatus = $order->status;
-
-        DB::transaction(function () use ($request, $proof, $order, $oldStatus) {
-            if ($request->action === 'accept') {
-                $proof->update(['status' => 'accepted', 'reviewed_at' => now()]);
-                $order->update(['status' => 'pembayaran_diterima', 'paid_at' => now()]);
-
-                // Spammer → Customer
-                if ($order->user && $order->user->isSpammer()) {
-                    $order->user->update([
-                        'role' => 'customer',
-                        'became_customer_at' => now(),
-                        'view_quota_used' => 0,
-                    ]);
-                }
-
-                $this->recordHistory($order, $oldStatus, 'pembayaran_diterima', 'admin');
-                AdminLog::record('verify_payment_accept', $order, ['order_number' => $order->order_number]);
-
-                // ✅ Notifikasi in-app: pembayaran diterima
-                if ($order->user) {
-                    try {
-                        NotificationService::payment($order->user, $order, 'approved');
-                    } catch (\Throwable $e) {
-                        // ignore — notifikasi opsional
-                    }
-                }
-            } else {
-                $proof->update([
-                    'status' => 'rejected',
-                    'reject_reason' => $request->reject_reason,
-                    'reviewed_at' => now(),
-                    'resubmit_deadline_at' => now()->addHours(24),
-                ]);
-                $order->update(['status' => 'pembayaran_gagal']);
-
-                $this->recordHistory($order, $oldStatus, 'pembayaran_gagal', 'admin', $request->reject_reason);
-                AdminLog::record('verify_payment_reject', $order, ['order_number' => $order->order_number]);
-
-                // ✅ Notifikasi in-app: pembayaran ditolak
-                if ($order->user) {
-                    try {
-                        NotificationService::payment($order->user, $order, 'rejected', $request->reject_reason);
-                    } catch (\Throwable $e) {
-                        // ignore
-                    }
-                }
-            }
-        });
-
-        // Email penolakan (di luar transaction biar nggak ganggu kalau SMTP error)
-        if ($request->action === 'reject' && $order->user?->email) {
-            try {
-                Mail::to($order->user->email)
-                    ->send(new \App\Mail\PaymentRejected($order, $request->reject_reason ?? ''));
-            } catch (\Throwable $e) {
-                // ignore — email opsional
-            }
-        }
-
-        return back()->with('status', 'Verifikasi pembayaran berhasil disimpan.');
     }
 
     // ============================================================
@@ -162,7 +87,13 @@ class OrderManagementController extends Controller
                     if ($order->user) {
                         try {
                             NotificationService::coinsEarned($order->user, $order->coin_estimate, 'cashback');
-                        } catch (\Throwable $e) {}
+                        } catch (\Throwable $e) {
+                            Log::warning('Gagal kirim notifikasi koin cashback', [
+                                'order_id' => $order->id,
+                                'user_id' => $order->user_id,
+                                'error' => $e->getMessage(),
+                            ]);
+                        }
                     }
                 }
 
@@ -192,14 +123,25 @@ class OrderManagementController extends Controller
                     if ($order->user) {
                         try {
                             NotificationService::coinsEarned($order->user, $bonus, 'bonus_pertama');
-                        } catch (\Throwable $e) {}
+                        } catch (\Throwable $e) {
+                            Log::warning('Gagal kirim notifikasi bonus koin pertama', [
+                                'order_id' => $order->id,
+                                'user_id' => $order->user_id,
+                                'error' => $e->getMessage(),
+                            ]);
+                        }
                     }
 
                     // ✅ Reward referral (kalau ada)
                     try {
                         $this->rewardReferral($order->user, $expiry);
                     } catch (\Throwable $e) {
-                        // ignore — jangan sampai gagal update status
+                        // Jangan sampai gagal update status, tapi catat di log.
+                        Log::error('Gagal memberi reward referral saat order selesai', [
+                            'order_id' => $order->id,
+                            'user_id' => $order->user_id,
+                            'error' => $e->getMessage(),
+                        ]);
                     }
                 }
             }
@@ -224,14 +166,26 @@ class OrderManagementController extends Controller
                     $statusLabel,
                     "Status pesanan kamu berubah menjadi: {$statusLabel}.",
                 );
-            } catch (\Throwable $e) {}
+            } catch (\Throwable $e) {
+                Log::warning('Gagal kirim notifikasi perubahan status order', [
+                    'order_id' => $order->id,
+                    'user_id' => $order->user_id,
+                    'error' => $e->getMessage(),
+                ]);
+            }
         }
 
         // Email update status (opsional)
         if ($order->user?->email) {
             try {
                 Mail::to($order->user->email)->send(new \App\Mail\OrderStatusUpdated($order));
-            } catch (\Throwable $e) {}
+            } catch (\Throwable $e) {
+                Log::warning('Gagal kirim email update status order', [
+                    'order_id' => $order->id,
+                    'user_email' => $order->user->email,
+                    'error' => $e->getMessage(),
+                ]);
+            }
         }
 
         return back()->with('status', 'Status pesanan berhasil diperbarui.');
@@ -315,7 +269,12 @@ class OrderManagementController extends Controller
 
             try {
                 NotificationService::referralRewarded($referrer, $referrerReward, 'referrer');
-            } catch (\Throwable $e) {}
+            } catch (\Throwable $e) {
+                Log::warning('Gagal kirim notifikasi reward referral (referrer)', [
+                    'referrer_id' => $referrer->id,
+                    'error' => $e->getMessage(),
+                ]);
+            }
         }
 
         // Reward untuk yang pakai kode
@@ -332,7 +291,12 @@ class OrderManagementController extends Controller
 
             try {
                 NotificationService::referralRewarded($referee, $refereeReward, 'referee');
-            } catch (\Throwable $e) {}
+            } catch (\Throwable $e) {
+                Log::warning('Gagal kirim notifikasi reward referral (referee)', [
+                    'referee_id' => $referee->id,
+                    'error' => $e->getMessage(),
+                ]);
+            }
         }
 
         AdminLog::record('reward_referral', null, [

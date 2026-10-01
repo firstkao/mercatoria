@@ -26,10 +26,15 @@ class PaymentProofController extends Controller
             ? $request->query('status')
             : 'pending';
 
+        // ✅ BUG FIX: pakai LEFT JOIN untuk payment_methods. Migration
+            // create_payment_proofs membuat payment_method_id sebagai FK NOT NULL,
+            // tapi di DB produksi kolom ini nullable — jika admin menghapus metode
+            // pembayaran yang dipakai sebuah bukti, INNER JOIN membuat baris bukti
+            // tersebut hilang dari daftar (bukti "menghilang" tanpa jejak).
         $proofs = DB::table('payment_proofs')
             ->join('orders', 'orders.id', '=', 'payment_proofs.order_id')
             ->join('users', 'users.id', '=', 'orders.user_id')
-            ->join('payment_methods', 'payment_methods.id', '=', 'payment_proofs.payment_method_id')
+            ->leftJoin('payment_methods', 'payment_methods.id', '=', 'payment_proofs.payment_method_id')
             ->when($status !== 'all', fn ($query) => $query->where('payment_proofs.status', $status))
             ->select('payment_proofs.id', 'payment_proofs.status', 'payment_proofs.amount_idr', 'payment_proofs.uploaded_at', 'orders.order_number', 'orders.pay_now_idr', 'orders.status as order_status', 'users.full_name', 'users.email', 'payment_methods.label as payment_method_label')
             ->latest('payment_proofs.uploaded_at')
@@ -41,10 +46,12 @@ class PaymentProofController extends Controller
 
     public function show(int $proof): View
     {
+        // ✅ PERAPIAN: sama seperti index(), LEFT JOIN agar detail bukti tetap
+        // bisa dibuka walau payment method-nya sudah dihapus.
         $proofRecord = DB::table('payment_proofs')
             ->join('orders', 'orders.id', '=', 'payment_proofs.order_id')
             ->join('users', 'users.id', '=', 'orders.user_id')
-            ->join('payment_methods', 'payment_methods.id', '=', 'payment_proofs.payment_method_id')
+            ->leftJoin('payment_methods', 'payment_methods.id', '=', 'payment_proofs.payment_method_id')
             ->where('payment_proofs.id', $proof)
             ->select('payment_proofs.*', 'orders.order_number', 'orders.pay_now_idr', 'orders.status as order_status', 'users.full_name', 'users.email', 'payment_methods.label as payment_method_label')
             ->firstOrFail();
