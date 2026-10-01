@@ -68,6 +68,18 @@ class Order extends Model
     }
 
     /**
+     * ✅ PERAPIAN: bukti pembayaran terbaru berdasarkan waktu unggah.
+     * paymentProofs() tidak punya orderBy, sedangkan beberapa view memakai
+     * ->last() untuk mengambil "bukti terakhir". Tanpa ordering eksplisit,
+     * hasil depends pada urutan DB (normalnya id ASC, jadi kebetulan benar),
+     * tapi bisa salah begitu relasi di-eager-load dengan join/order lain.
+     */
+    public function latestPaymentProof(): ?PaymentProof
+    {
+        return $this->paymentProofs()->latest('uploaded_at')->latest('id')->first();
+    }
+
+    /**
      * Human-readable label untuk status saat ini.
      */
     public function statusLabel(): string

@@ -88,20 +88,32 @@ class PaymentProofController extends Controller
             // ✅ BUG FIX: Catat history dua langkah (ditahan → pembayaran_diterima
             // melewati satu status). Tanpa ini, timeline customer bolong: order
             // tiba-tiba "lompat" dari Menunggu Pembayaran ke Pembayaran Diterima.
+            // Hanya backfill jika memang belum ada record masuk-keluar 'ditahan'
+            // untuk order ini — supaya proof kedua setelah reject tidak membuat
+            // entri duplikat / membanjiri timeline.
             if ($fromStatus === 'ditahan') {
-                DB::table('order_status_history')->insert([
-                    'order_id' => $orderRow->id,
-                    'from_status' => 'menunggu_pembayaran',
-                    'to_status' => 'ditahan',
-                    // ✅ 'user' (bukan 'customer'): konvensi changed_by di codebase
-                    // ini adalah admin|user|system — lihat timeline.blade.php dan
-                    // OrderManagementController::recordHistory(). Kalau 'customer',
-                    // atribusi "oleh pembeli" tidak muncul di timeline.
-                    'changed_by' => 'user',
-                    'admin_id' => null,
-                    'note' => 'Bukti pembayaran diunggah.',
-                    'created_at' => $record->uploaded_at ?? now(),
-                ]);
+                $alreadyLogged = DB::table('order_status_history')
+                    ->where('order_id', $orderRow->id)
+                    ->where(function ($q): void {
+                        $q->where('to_status', 'ditahan')->orWhere('from_status', 'ditahan');
+                    })
+                    ->exists();
+
+                if (! $alreadyLogged) {
+                    DB::table('order_status_history')->insert([
+                        'order_id' => $orderRow->id,
+                        'from_status' => 'menunggu_pembayaran',
+                        'to_status' => 'ditahan',
+                        // ✅ 'user' (bukan 'customer'): konvensi changed_by di codebase
+                        // ini adalah admin|user|system — lihat timeline.blade.php dan
+                        // OrderManagementController::recordHistory(). Kalau 'customer',
+                        // atribusi "oleh pembeli" tidak muncul di timeline.
+                        'changed_by' => 'user',
+                        'admin_id' => null,
+                        'note' => 'Bukti pembayaran diunggah.',
+                        'created_at' => $record->uploaded_at ?? now(),
+                    ]);
+                }
             }
 
             DB::table('order_status_history')->insert([
