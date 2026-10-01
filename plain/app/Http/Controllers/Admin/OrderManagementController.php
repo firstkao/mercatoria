@@ -59,7 +59,14 @@ class OrderManagementController extends Controller
 
         DB::transaction(function () use ($request, $proof, $order, $oldStatus) {
             if ($request->action === 'accept') {
-                $proof->update(['status' => 'accepted', 'reviewed_at' => now()]);
+                // ✅ BUG FIX: status proof harus 'approved', bukan 'accepted'.
+                // Kontrak di seluruh codebase memakai pending|approved|rejected:
+                // - PaymentProofController::index()/show() filter & label 'approved'
+                // - CancelUnpaidOrders mengabaikan proof berstatus 'pending|approved'
+                //   → dengan 'accepted', order yang sudah DIBAYAR & DISETUJUI lewat
+                //   jalur ini tetap dianggap belum ada bukti sah dan bisa dibatalkan
+                //   otomatis oleh scheduler.
+                $proof->update(['status' => 'approved', 'reviewed_at' => now()]);
                 $order->update(['status' => 'pembayaran_diterima', 'paid_at' => now()]);
 
                 // Spammer → Customer

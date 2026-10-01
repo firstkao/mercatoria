@@ -30,8 +30,18 @@
         <div style="background: var(--warning-bg); border-left: 4px solid var(--warning); padding: 15px; border-radius: 4px; margin-bottom: 25px;">
             <strong style="color: var(--warning-text); display: block; margin-bottom: 10px;">Menunggu Pembayaran</strong>
             <p style="margin: 0; font-size: 14px; color: var(--warning-text);">
-                Segera lakukan pembayaran sebesar <strong>{{ \App\Support\PriceCalculator::formatRupiah($order->pay_now_idr) }}</strong> sebelum batas waktu
-                <strong>{{ $order->payment_deadline_at->timezone('Asia/Jakarta')->translatedFormat('j M Y, H:i') }} WIB</strong>.
+                {{-- ✅ BUG FIX: payment_deadline_at bisa NULL (order lama sebelum kolom
+                     ini ada, atau order yang deadline-nya di-reset). Dulu dipanggil
+                     ->timezone() langsung → "Call to a member function timezone() on
+                     null" → halaman detail pesanan error 500 setiap kali status
+                     menunggu_pembayaran/pembayaran_gagal. Lihat invoice.blade.php:92
+                     yang sudah benar memakai guard null. --}}
+                @if ($order->payment_deadline_at)
+                    Segera lakukan pembayaran sebesar <strong>{{ \App\Support\PriceCalculator::formatRupiah($order->pay_now_idr) }}</strong> sebelum batas waktu
+                    <strong>{{ $order->payment_deadline_at->timezone('Asia/Jakarta')->translatedFormat('j M Y, H:i') }} WIB</strong>.
+                @else
+                    Segera lakukan pembayaran sebesar <strong>{{ \App\Support\PriceCalculator::formatRupiah($order->pay_now_idr) }}</strong> dan unggah bukti transfer secepatnya.
+                @endif
             </p>
         </div>
 
