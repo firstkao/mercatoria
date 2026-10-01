@@ -1,4 +1,4 @@
-(empty)*.patch
-
+# Git bundles
+*.bundle
 # artefak sementara
 *.patch
