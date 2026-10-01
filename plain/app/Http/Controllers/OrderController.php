@@ -10,9 +10,10 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
-use Intervention\Image\ImageManager;
 use Intervention\Image\Drivers\Gd\Driver;
+use Intervention\Image\ImageManager;
 
 class OrderController extends Controller
 {
@@ -56,26 +57,55 @@ class OrderController extends Controller
         );
 
         $request->validate([
-            'payment_method_id' => ['required', 'exists:payment_methods,id'],
+            // ✅ PERBAIKAN: Cek juga is_active agar user tidak bisa pilih
+            // metode pembayaran yang sudah dinonaktifkan admin
+            'payment_method_id' => [
+                'required',
+                Rule::exists('payment_methods', 'id')->where('is_active', true),
+            ],
             'proof' => ['required', 'image', 'mimes:jpeg,png,jpg,webp', 'max:5120'],
+        ], [
+            'payment_method_id.exists' => 'Metode pembayaran tidak valid atau sudah dinonaktifkan.',
         ]);
 
         $file = $request->file('proof');
         $filename = 'payment-proofs/' . Str::random(40) . '.webp';
 
-        $manager = new ImageManager(new Driver());
-        $img = $manager->read($file)->scaleDown(width: 800);
-        Storage::disk('public')->put($filename, (string) $img->toWebp(75));
+        // ✅ PERBAIKAN: Bungkus proses gambar dalam try-catch.
+        // Jika GD/Imagick tidak tersedia di server, user dapat pesan error
+        // yang jelas, bukan 500 error.
+        try {
+            $manager = new ImageManager(new Driver());
+            $img = $manager->read($file)->scaleDown(width: 800);
+            $webpContent = (string) $img->toWebp(75);
+        } catch (\Throwable $e) {
+            return back()->withErrors([
+                'proof' => 'Gagal memproses gambar. Silakan coba lagi atau hubungi admin.',
+            ]);
+        }
 
-        $order->paymentProofs()->create([
-            'payment_method_id' => $request->input('payment_method_id'),
-            'amount_idr' => $order->pay_now_idr,
-            'proof_path' => $filename,
-            'status' => 'pending',
-            'uploaded_at' => now(),
-        ]);
+        // Simpan file ke storage
+        Storage::disk('public')->put($filename, $webpContent);
 
-        $order->update(['status' => 'ditahan']);
+        // ✅ PERBAIKAN: Buat record DB. Jika gagal, hapus file yang sudah
+        // diupload agar tidak ada file sampah (orphaned file) di server.
+        try {
+            $order->paymentProofs()->create([
+                'payment_method_id' => $request->input('payment_method_id'),
+                'amount_idr' => $order->pay_now_idr,
+                'proof_path' => $filename,
+                'status' => 'pending',
+                'uploaded_at' => now(),
+            ]);
+
+            $order->update(['status' => 'ditahan']);
+        } catch (\Throwable $e) {
+            Storage::disk('public')->delete($filename);
+
+            return back()->withErrors([
+                'proof' => 'Gagal menyimpan bukti pembayaran. Silakan coba lagi.',
+            ]);
+        }
 
         ActivityLog::record($request->user(), 'upload_payment_proof', $request, [
             'order_number' => $order->order_number,
