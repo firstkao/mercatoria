@@ -3,6 +3,7 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
@@ -38,9 +39,24 @@ return new class extends Migration
         });
 
         // 2) Kolom warisan dump lama yang NOT NULL tanpa default ('type') akan
-        //    melempar error saat INSERT dari admin. Set default string kosong.
+        //    melempar error MySQL 1364 saat INSERT dari admin. Cara lama:
+        //    `MODIFY type VARCHAR(10) NOT NULL DEFAULT ''` — tapi ini GAGAL di
+        //    sebagian server (kolom aslinya enum, atau MySQL/MariaDB lama
+        //    menolak DEFAULT pada kolom teks/enum), sehingga migration tercatat
+        //    DONE padahal langkah ini tidak pernah berhasil. Sekarang: jadikan
+        //    NULL-able saja (paling kompatibel), karena aplikasi tidak pernah
+        //    membaca/menulis kolom 'type'.
         if (Schema::hasColumn('payment_methods', 'type')) {
-            DB::statement("ALTER TABLE payment_methods MODIFY type VARCHAR(10) NOT NULL DEFAULT ''");
+            try {
+                DB::statement('ALTER TABLE payment_methods MODIFY type VARCHAR(40) NULL');
+            } catch (\Throwable) {
+                // Fallback: minimal buat nullable tanpa mengubah tipe.
+                try {
+                    DB::statement('ALTER TABLE payment_methods MODIFY type ENUM(\'bank\',\'qris\',\'ewallet\',\'other\') NULL');
+                } catch (\Throwable $e) {
+                    Log::warning('Gagal menormalkan kolom payment_methods.type: ' . $e->getMessage());
+                }
+            }
         }
 
         // 3) Migrasi data: qris_image_path -> qr_image, lalu buang kolom lama.
