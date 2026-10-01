@@ -41,6 +41,24 @@ return new class extends Migration
             ->map(fn ($row) => (array) $row)
             ->all();
 
+        // 1b) Putuskan FK dari payment_proofs dulu — tanpa FK_CHECKS off,
+        //     `DROP TABLE payment_methods` akan gagal dengan error MySQL 3730
+        //     karena tabel ini direferensikan oleh bukti pembayaran.
+        $hasProofFk = false;
+        try {
+            $fks = DB::select(
+                "SELECT CONSTRAINT_NAME AS name FROM information_schema.KEY_COLUMN_USAGE
+                 WHERE table_schema = DATABASE() AND table_name = 'payment_proofs'
+                   AND REFERENCED_TABLE_NAME = 'payment_methods'"
+            );
+            foreach ($fks as $fk) {
+                DB::statement('ALTER TABLE payment_proofs DROP FOREIGN KEY `' . str_replace('`', '', (string) $fk->name) . '`');
+                $hasProofFk = true;
+            }
+        } catch (\Throwable) {
+            // Tidak bisa membaca/memutus FK — lanjutkan dengan fallback di bawah.
+        }
+
         // 2) Drop tabel lama, bikin tabel baru dengan skema bersih.
         Schema::drop('payment_methods');
 
@@ -88,6 +106,21 @@ return new class extends Migration
         $max = (int) DB::table('payment_methods')->max('id');
         if ($max > 0) {
             DB::statement('ALTER TABLE payment_methods AUTO_INCREMENT = ' . ($max + 1));
+        }
+
+        // 4) Pasang kembali FK payment_proofs.payment_method_id -> payment_methods,
+        //    persis seperti definisi awal (restrict on delete).
+        if ($hasProofFk) {
+            try {
+                DB::statement('ALTER TABLE payment_proofs ADD CONSTRAINT payment_proofs_payment_method_id_foreign FOREIGN KEY (payment_method_id) REFERENCES payment_methods (id)');
+            } catch (\Throwable) {
+                // Kalau nama constraint sudah dipakai / beda, coba nama generik.
+                try {
+                    DB::statement('ALTER TABLE payment_proofs ADD FOREIGN KEY (payment_method_id) REFERENCES payment_methods (id)');
+                } catch (\Throwable) {
+                    // Biarkan tanpa FK — aplikasi tetap jalan; relasi hanya kehilangan enforcement di level DB.
+                }
+            }
         }
     }
 

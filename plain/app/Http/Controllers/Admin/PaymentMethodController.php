@@ -33,6 +33,8 @@ class PaymentMethodController extends Controller
 
     public function index(): View
     {
+        // Catatan: kolom `type` sudah punya DEFAULT 'bank' di skema baru,
+        // sehingga error MySQL 1364 lama tidak bisa terjadi lagi.
         return view('admin.payment-methods.index', [
             'methods' => PaymentMethod::query()->orderBy('sort_order')->orderBy('id')->get(),
         ]);
