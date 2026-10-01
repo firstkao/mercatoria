@@ -50,13 +50,31 @@ class CancelUnpaidOrders extends Command
                     'cancelled_at' => now(),
                 ]);
 
-                // Kembalikan koin yang terpakai
+                // Kembalikan koin yang terpakai. Kalau lot asalnya sudah kedaluwarsa,
+                // jangan di-crement ke lot mati (tidak akan muncul sebagai saldo aktif):
+                // pindahkan sisa amount ke lot baru berumur penuh sesuai setting.
                 $spentCoins = DB::table('coin_spends')->where('order_id', $order->id)->get();
                 if ($spentCoins->isNotEmpty()) {
+                    $expiryMonths = \App\Models\Setting::integer('coin_expiry_months', 12);
                     foreach ($spentCoins as $spend) {
-                        DB::table('coin_lots')
-                            ->where('id', $spend->coin_lot_id)
-                            ->increment('remaining', $spend->amount);
+                        $lot = DB::table('coin_lots')->where('id', $spend->coin_lot_id)->first();
+                        $lotExpired = $lot && $lot->expires_at !== null && strtotime($lot->expires_at) <= time();
+
+                        if ($lotExpired) {
+                            \App\Models\CoinLot::create([
+                                'user_id' => $order->user_id,
+                                'source' => 'refund_kedaluwarsa',
+                                'order_id' => $order->id,
+                                'amount' => $spend->amount,
+                                'remaining' => $spend->amount,
+                                'earned_at' => now(),
+                                'expires_at' => now()->addMonths($expiryMonths),
+                            ]);
+                        } else {
+                            DB::table('coin_lots')
+                                ->where('id', $spend->coin_lot_id)
+                                ->increment('remaining', $spend->amount);
+                        }
                     }
                     DB::table('coin_spends')->where('order_id', $order->id)->delete();
                     $refunded[] = 'koin';
