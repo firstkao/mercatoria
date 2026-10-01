@@ -5,9 +5,6 @@
 @endsection
 
 @section('content')
-    @if (session('status'))
-        <div class="alert alert--success">{{ session('status') }}</div>
-    @endif
 
     <p class="hint intro">
         Halaman Pre-Order Baru hanya bisa diakses oleh pengguna yang sudah login. Hanya <strong>satu halaman yang aktif</strong> yang akan tampil di <code>/pre-order-baru</code>.

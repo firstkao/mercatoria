@@ -5,9 +5,6 @@
 @endsection
 
 @section('content')
-    @if (session('status'))
-        <div class="alert alert--success">{{ session('status') }}</div>
-    @endif
     @error('game')
         <div class="alert alert--danger">{{ $message }}</div>
     @enderror
