@@ -36,6 +36,13 @@ return new class extends Migration
             'Field'
         );
 
+        // Idempotensi: kalau tabel sudah ber-skema baru (kolom `type` punya
+        // DEFAULT 'bank' hasil rebuild), jangan drop ulang — lewati saja.
+        $typeCol = collect(DB::select("SHOW COLUMNS FROM payment_methods LIKE 'type'"))->first();
+        if ($typeCol !== null && in_array('qr_image', $oldColumns, true) && $typeCol->Default !== null) {
+            return;
+        }
+
         // 1) Baca semua baris lama apa adanya (hanya kolom yang benar-benar ada).
         $rows = DB::table('payment_methods')->get()
             ->map(fn ($row) => (array) $row)
@@ -103,10 +110,9 @@ return new class extends Migration
         }
 
         // Selaraskan auto-increment setelah insert eksplisit ber-ID.
-        $max = (int) DB::table('payment_methods')->max('id');
-        if ($max > 0) {
-            DB::statement('ALTER TABLE payment_methods AUTO_INCREMENT = ' . ($max + 1));
-        }
+        // Catatan: nilai AUTO_INCREMENT InnoDB minimal harus 1, jangan 0.
+        $max = max(1, (int) DB::table('payment_methods')->max('id'));
+        DB::statement('ALTER TABLE payment_methods AUTO_INCREMENT = ' . ($max + 1));
 
         // 4) Pasang kembali FK payment_proofs.payment_method_id -> payment_methods,
         //    persis seperti definisi awal (restrict on delete).

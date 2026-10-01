@@ -2,6 +2,7 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
@@ -26,6 +27,27 @@ return new class extends Migration
     {
         if (! Schema::hasTable('payment_methods')) {
             return;
+        }
+
+        // 0) Deteksi tabel legacy dari SQL dump (kolom `type` NOT NULL tanpa
+        //    default). Struktur begini TIDAK bisa ditambal — MODIFY enum/varchar
+        //    dengan DEFAULT sering gagal diam-diam di MySQL/MariaDB strict mode,
+        //    sehingga error 1364 tetap muncul meski migrate bilang DONE.
+        //    Solusi: jalankan DULU migration rebuild yang men-drop & membuat
+        //    ulang tabel dengan skema bersih (data lama disalin), baru lanjut
+        //    menambahkan kolom yang masih kurang.
+        $col = collect(DB::select("SHOW COLUMNS FROM payment_methods LIKE 'type'"))->first();
+        if ($col !== null && strtoupper((string) $col->Null) === 'NO' && $col->Default === null) {
+            Artisan::call('migrate', [
+                '--path' => 'database/migrations/2026_10_02_000000_rebuild_payment_methods_table.php',
+                '--force' => true,
+            ]);
+
+            // Setelah rebuild, refresh daftar kolom — kalau sudah lengkap, selesai.
+            $colsNow = array_column(DB::select('SHOW COLUMNS FROM payment_methods'), 'Field');
+            if (in_array('instructions', $colsNow, true) && in_array('qr_image', $colsNow, true)) {
+                return;
+            }
         }
 
         // 1) Kolom baru yang dibutuhkan aplikasi, nullable/tanpa default ketat.

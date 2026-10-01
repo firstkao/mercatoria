@@ -7,6 +7,7 @@ use App\Models\AdminLog;
 use App\Models\PaymentMethod;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
@@ -35,9 +36,25 @@ class PaymentMethodController extends Controller
     {
         // Catatan: kolom `type` sudah punya DEFAULT 'bank' di skema baru,
         // sehingga error MySQL 1364 lama tidak bisa terjadi lagi.
-        return view('admin.payment-methods.index', [
-            'methods' => PaymentMethod::query()->orderBy('sort_order')->orderBy('id')->get(),
-        ]);
+        $methods = PaymentMethod::query()->orderBy('sort_order')->orderBy('id')->get();
+
+        // Kalau migration rebuild belum sempat dijalankan (mis. status migrasi
+        // korup), coba perbaiki skema secara otomatis sekali saja — tabel lama
+        // di-drop & dibuat ulang dengan data yang disalin, lalu method dibaca
+        // ulang agar isian opsional (instructions/qr_image) tersedia.
+        if ($methods->contains(fn ($m) => ! array_key_exists('instructions', $m->getAttributes()))) {
+            try {
+                Artisan::call('migrate', [
+                    '--path' => 'database/migrations/2026_10_02_000000_rebuild_payment_methods_table.php',
+                    '--force' => true,
+                ]);
+                $methods = PaymentMethod::query()->orderBy('sort_order')->orderBy('id')->get();
+            } catch (\Throwable $e) {
+                Log::warning('Auto-rebuild payment_methods gagal: ' . $e->getMessage());
+            }
+        }
+
+        return view('admin.payment-methods.index', ['methods' => $methods]);
     }
 
     public function create(): View
@@ -209,6 +226,12 @@ class PaymentMethodController extends Controller
      * Daftar kolom fisik tabel payment_methods.
      * Mengembalikan [] bila tabel/koneksi tidak bisa dibaca.
      *
+     * Catatan penting: kalau hasil SHOW COLUMNS TIDAK mengandung `type`
+     * (tabel lama masih berformat legacy), cache sengaja dikosongkan agar
+     * filterColumns() tidak membuang field `type` dari data insert — kalau
+     * tidak, INSERT akan menabrak kolom NOT NULL tanpa default dan memunculkan
+     * error MySQL 1364 "Field 'type' doesn't have a default value".
+     *
      * @return array<int, string>
      */
     private function existingColumns(): array
@@ -219,10 +242,17 @@ class PaymentMethodController extends Controller
 
         try {
             $rows = DB::select('SHOW COLUMNS FROM payment_methods');
-            $this->columnCache = array_values(array_map(fn ($r) => (string) $r->Field, $rows));
+            $cols = array_values(array_map(fn ($r) => (string) $r->Field, $rows));
         } catch (\Throwable) {
             return [];
         }
+
+        // Struktur belum di-rebuild oleh migration -> jangan batasi kolom.
+        if (! in_array('type', $cols, true)) {
+            return [];
+        }
+
+        $this->columnCache = $cols;
 
         return $this->columnCache;
     }
