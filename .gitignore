@@ -1,1 +1,4 @@
 (empty)*.patch
+
+# artefak sementara
+*.patch
