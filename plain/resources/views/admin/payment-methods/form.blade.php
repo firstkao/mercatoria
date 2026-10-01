@@ -76,6 +76,15 @@
         </label>
     </div>
 
+    {{-- FASE 2: verifikasi otomatis khusus QRIS. --}}
+    <label class="field pm-qris-only" id="pm-autoverify-field" style="{{ (old('type', $method->type ?? 'bank') === 'qris') ? '' : 'display:none;' }}">
+        <span class="switch" style="margin-top:0;">
+            <input type="checkbox" name="auto_verify" value="1" @checked(old('auto_verify', $method->auto_verify ?? false))>
+            <span>Verifikasi Otomatis (khusus QRIS)</span>
+        </span>
+        <small class="muted">Isi <strong>ID Merchant QRIS / NMI</strong> pada kolom Nomor Rekening di atas, lalu aktifkan ini. Bukti bayar QRIS yang payload-nya cocok dengan ID merchant akan lolos verifikasi tanpa review manual.</small>
+    </label>
+
     <div style="display:flex;gap:10px; margin-top: 20px;">
         <a href="{{ route('admin.payment-methods.index') }}" class="btn">Batal</a>
         <button type="submit" class="btn btn--primary">Simpan</button>
@@ -93,6 +102,8 @@
         var isBank = sel.value === 'bank';
         document.querySelectorAll('.pm-bank-only').forEach(function (el) { el.style.display = isBank ? '' : 'none'; });
         document.querySelectorAll('.pm-scan-only').forEach(function (el) { el.style.display = isBank ? 'none' : ''; });
+        // FASE 2: opsi verifikasi otomatis hanya untuk QRIS.
+        document.querySelectorAll('.pm-qris-only').forEach(function (el) { el.style.display = (sel.value === 'qris') ? '' : 'none'; });
         var star = document.querySelector('.pm-required-star');
         if (star) star.style.visibility = isBank ? 'hidden' : 'visible';
     }

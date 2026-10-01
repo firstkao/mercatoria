@@ -15,6 +15,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
     'qr_image',
     'sort_order',
     'is_active',
+    'auto_verify',
 ])]
 class PaymentMethod extends Model
 {
@@ -25,8 +26,18 @@ class PaymentMethod extends Model
     {
         return [
             'is_active' => 'boolean',
+            'auto_verify' => 'boolean',
             'sort_order' => 'integer',
         ];
+    }
+
+    /**
+     * FASE 2: apakah metode ini boleh diverifikasi otomatis?
+     * Hanya QRIS dengan flag auto_verify aktif.
+     */
+    public function isAutoVerifiable(): bool
+    {
+        return $this->type === 'qris' && (bool) ($this->auto_verify ?? false);
     }
 
     /** Label manusiawi untuk tiap jenis metode. */

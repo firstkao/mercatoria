@@ -183,6 +183,7 @@ class PaymentMethodController extends Controller
             'qr_image'       => ['nullable', 'image', 'mimes:jpeg,png,jpg,webp', 'max:2048'],
             'sort_order'     => ['nullable', 'integer', 'min:0', 'max:999'],
             'is_active'      => ['nullable', 'boolean'],
+            'auto_verify'    => ['nullable', 'boolean'],
         ]);
 
         $type = $data['type'];
@@ -201,7 +202,14 @@ class PaymentMethodController extends Controller
             ]);
         }
 
+        // FASE 2: auto-verify hanya masuk akal untuk QRIS (barcode statis tidak
+        // punya payload merchant yang bisa dicocokkan secara andal).
+        if ($type !== 'qris') {
+            $data['auto_verify'] = false;
+        }
+
         $data['is_active'] = ! empty($data['is_active']);
+        $data['auto_verify'] = ! empty($data['auto_verify']) && $type === 'qris';
         $data['sort_order'] = (int) ($data['sort_order'] ?? 0);
 
         return $this->filterColumns($data);
