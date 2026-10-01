@@ -14,6 +14,7 @@ use App\Models\VoucherRedemption;
 use App\Support\PriceCalculator;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
@@ -229,7 +230,12 @@ class CheckoutController extends Controller
             // Hapus reminder cart (biar session baru reset)
             try {
                 CartReminder::where('user_id', $user->id)->delete();
-            } catch (\Throwable $e) {}
+            } catch (\Throwable $e) {
+                Log::warning(
+                    'Gagal menghapus reminder cart setelah checkout: ' . $e->getMessage(),
+                    ['user_id' => $user->id, 'order_id' => $order->id ?? null]
+                );
+            }
 
             return $order;
         }, 3);
