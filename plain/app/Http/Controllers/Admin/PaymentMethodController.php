@@ -8,7 +8,7 @@ use App\Models\PaymentMethod;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
-use Illuminate\Support\Facades\Storage; // <-- TAMBAHAN: Import Storage
+use Illuminate\Support\Facades\Storage;
 
 class PaymentMethodController extends Controller
 {
@@ -30,7 +30,7 @@ class PaymentMethodController extends Controller
     {
         $data = $this->validated($request);
 
-        // TAMBAHAN: Proses upload gambar saat create
+        // Proses upload gambar saat create
         if ($request->hasFile('qr_image')) {
             $data['qr_image'] = $request->file('qr_image')->store('qris', 'public');
         }
@@ -50,7 +50,11 @@ class PaymentMethodController extends Controller
     {
         $data = $this->validated($request);
 
-        // TAMBAHAN: Proses upload gambar baru dan hapus gambar lama saat update
+        // ✅ PERBAIKAN: Hapus qr_image dari $data agar tidak menimpa dengan null 
+        // jika user tidak mengupload gambar baru saat edit
+        unset($data['qr_image']);
+
+        // Proses upload gambar baru dan hapus gambar lama saat update
         if ($request->hasFile('qr_image')) {
             if ($paymentMethod->qr_image) {
                 Storage::disk('public')->delete($paymentMethod->qr_image);
@@ -70,7 +74,7 @@ class PaymentMethodController extends Controller
             return back()->withErrors(['method' => 'Metode ini sudah dipakai di bukti pembayaran, tidak bisa dihapus. Nonaktifkan saja.']);
         }
 
-        // TAMBAHAN: Hapus file gambar dari storage sebelum data dihapus
+        // Hapus file gambar dari storage sebelum data dihapus
         if ($paymentMethod->qr_image) {
             Storage::disk('public')->delete($paymentMethod->qr_image);
         }
@@ -92,7 +96,7 @@ class PaymentMethodController extends Controller
             'account_number' => ['nullable', 'string', 'max:100'],
             'account_name'   => ['nullable', 'string', 'max:100'],
             'instructions'   => ['nullable', 'string', 'max:2000'],
-            'qr_image'       => ['nullable', 'image', 'mimes:jpeg,png,jpg,webp', 'max:2048'], // <-- TAMBAHAN: Validasi gambar
+            'qr_image'       => ['nullable', 'image', 'mimes:jpeg,png,jpg,webp', 'max:2048'],
             'sort_order'     => ['nullable', 'integer', 'min:0', 'max:999'],
             'is_active'      => ['nullable', 'boolean'],
         ]);
