@@ -34,11 +34,11 @@
                             <td style="color: var(--accent-strong); font-weight: bold;">{{ \App\Support\PriceCalculator::formatRupiah($order->pay_now_idr) }}</td>
                             <td>{{ $order->payment_scheme }}</td>
                             <td>
-                                <span class="badge
-                                    {{ in_array($order->status, ['dibatalkan', 'pembayaran_gagal']) ? 'badge--danger' : '' }}
-                                    {{ $order->status === 'selesai' ? 'badge--on' : '' }}
-                                ">
-                                    {{ str_replace('_', ' ', \Illuminate\Support\Str::title($order->status)) }}
+                                {{-- ✅ Rapikan: pakai helper model (label + badge warna
+                                     dari OrderStatus enum) agar konsisten dengan halaman
+                                     detail; sebelumnya manual str_replace/Str::title. --}}
+                                <span class="badge {{ $order->statusBadgeClass() }}">
+                                    {{ $order->statusLabel() }}
                                 </span>
                             </td>
                             <td>

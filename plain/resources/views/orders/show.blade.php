@@ -11,6 +11,21 @@
         <div class="notice">{{ session('status') }}</div>
     @endif
 
+    {{-- ✅ BUG FIX: dulu view ini TIDAK menampilkan pesan error upload sama sekali.
+         Controller mengirim back()->withErrors(['proof' => ...]) (mis. bukti masih
+         diverifikasi admin / gagal simpan), tapi karena tidak ada blok error,
+         user hanya melihat halaman diam tanpa tahu apa yang terjadi. --}}
+    @if ($errors->any())
+        <div style="background: var(--danger-bg, #fdecea); border-left: 4px solid var(--danger, #d9534f); padding: 15px; border-radius: 4px; margin-bottom: 25px;">
+            <strong style="color: var(--danger, #d9534f); display: block; margin-bottom: 8px;">Periksa kembali</strong>
+            <ul style="margin: 0; padding-left: 20px; font-size: 14px;">
+                @foreach ($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
+
     @if(in_array($order->status, ['menunggu_pembayaran', 'pembayaran_gagal']))
         <div style="background: var(--warning-bg); border-left: 4px solid var(--warning); padding: 15px; border-radius: 4px; margin-bottom: 25px;">
             <strong style="color: var(--warning-text); display: block; margin-bottom: 10px;">Menunggu Pembayaran</strong>
@@ -81,5 +96,9 @@
     </div>
 </section>
 
-@include('orders.partials.timeline', ['order' => $order])
+{{-- ✅ BUG FIX: dulu view ini meng-include 'orders.partials.timeline' yang
+     tidak pernah ada (folder resources/views/orders/partials/ tidak ada)
+     → setiap customer membuka detail pesanan = 500 View does not exist.
+     File timeline yang benar berada di orders/timeline.blade.php. --}}
+@include('orders.timeline', ['order' => $order])
 @endsection

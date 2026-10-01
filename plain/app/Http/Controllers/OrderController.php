@@ -77,29 +77,61 @@ class OrderController extends Controller
         ]);
 
         $file = $request->file('proof');
-        $filename = 'payment-proofs/' . Str::random(40) . '.webp';
+
+        // ✅ BUG FIX: jangan paksakan ekstensi '.webp' untuk semua file.
+        // Validasi menerima jpeg/png/jpg/webp; sebelumnya file JPEG disimpan
+        // dengan nama xxx.webp sehingga admin melihat "bukti" berlabel webp
+        // yang isinya data JPEG (membingungkan browser saat preview/download).
+        // Format asli dipertahankan; konversi ke webp hanya bila aman dilakukan.
+        $extension = strtolower($file->getClientOriginalExtension() ?: ($file->guessExtension() ?? 'jpg'));
+        if (! in_array($extension, ['jpg', 'jpeg', 'png', 'webp'], true)) {
+            $extension = 'jpg';
+        }
 
         // ✅ PERBAIKAN: Bungkus proses gambar dalam try-catch.
         // Jika GD/Imagick tidak tersedia di server, user dapat pesan error
         // yang jelas, bukan 500 error.
+        $storedContent = null;
         try {
             $manager = new ImageManager(new Driver());
             $img = $manager->read($file)->scaleDown(width: 800);
-            $webpContent = (string) $img->toWebp(75);
+            // Simpan sebagai webp HANYA jika hasilnya benar-benar WebP;
+            // jika tidak, gunakan format asli agar ekstensi & isi file cocok.
+            $encoded = (string) $img->toWebp(75);
+            if (str_starts_with($encoded, 'RIFF') && str_contains($encoded, 'WEBP')) {
+                $storedContent = $encoded;
+                $extension = 'webp';
+            } else {
+                $storedContent = (string) (in_array($extension, ['jpg', 'jpeg', 'webp'], true)
+                    ? $img->toJpeg(80)
+                    : $img->toPng());
+            }
         } catch (\Throwable $e) {
-            return back()->withErrors([
-                'proof' => 'Gagal memproses gambar. Silakan coba lagi atau hubungi admin.',
-            ]);
+            // Pipeline gambar gagal (GD tidak mendukung format, dsb.) —
+            // simpan file apa adanya daripada menolak upload.
+            try {
+                $storedContent = file_get_contents($file->getRealPath());
+            } catch (\Throwable $e2) {
+                return back()->withErrors([
+                    'proof' => 'Gagal memproses gambar. Silakan coba lagi atau hubungi admin.',
+                ]);
+            }
         }
 
-        // Simpan file ke storage
-        Storage::disk('public')->put($filename, $webpContent);
+        $filename = 'payment-proofs/' . Str::random(40) . '.' . $extension;
+
+        // Simpan file ke storage (setelah nama & konten final ditentukan)
+        Storage::disk('public')->put($filename, $storedContent);
 
         // ✅ PERBAIKAN: Buat record DB. Jika gagal, hapus file yang sudah
         // diupload agar tidak ada file sampah (orphaned file) di server.
         try {
             $order->paymentProofs()->create([
                 'payment_method_id' => $request->input('payment_method_id'),
+                // ✅ BUG FIX: isi payment_stage. Kolom ini didefinisikan di
+                // migration (default 'dp') tapi tidak pernah diisi eksplisit;
+                // saat ini seluruh order full-payment, jadi stage = 'lunas'.
+                'payment_stage' => 'lunas',
                 'amount_idr' => $order->pay_now_idr,
                 'proof_path' => $filename,
                 'status' => 'pending',

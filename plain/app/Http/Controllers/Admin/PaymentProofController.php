@@ -13,6 +13,7 @@ use App\Services\NotificationService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
@@ -92,7 +93,11 @@ class PaymentProofController extends Controller
                     'order_id' => $orderRow->id,
                     'from_status' => 'menunggu_pembayaran',
                     'to_status' => 'ditahan',
-                    'changed_by' => 'customer',
+                    // ✅ 'user' (bukan 'customer'): konvensi changed_by di codebase
+                    // ini adalah admin|user|system — lihat timeline.blade.php dan
+                    // OrderManagementController::recordHistory(). Kalau 'customer',
+                    // atribusi "oleh pembeli" tidak muncul di timeline.
+                    'changed_by' => 'user',
                     'admin_id' => null,
                     'note' => 'Bukti pembayaran diunggah.',
                     'created_at' => $record->uploaded_at ?? now(),
@@ -159,7 +164,13 @@ class PaymentProofController extends Controller
                     $orderModel = Order::find($order->id);
                     NotificationService::payment($user, $orderModel, 'approved');
                 } catch (\Throwable $e) {
-                    // ignore
+                    // ✅ Rapikan: jangan telan diam-diam — approval tetap sukses,
+                    // tapi kegagalan notifikasi dicatat agar bisa ditelusuri.
+                    Log::warning('Gagal kirim notifikasi pembayaran disetujui', [
+                        'order_id' => $order->id,
+                        'user_id' => $user->id,
+                        'error' => $e->getMessage(),
+                    ]);
                 }
             }
         }
@@ -186,8 +197,18 @@ class PaymentProofController extends Controller
 
             $currentOrder = DB::table('orders')->where('id', $record->order_id)->lockForUpdate()->firstOrFail();
 
+            // ✅ BUG FIX: Reset payment_deadline_at. Order dg status 'ditahan'
+            // TIDAK dicek oleh scheduler pembatalan (CancelUnpaidOrders hanya
+            // memindai menunggu_pembayaran/pembayaran_gagal). Selama ini saat
+            // reject, order langsung bisa dibatalkan otomatis padahal email
+            // notifikasi menjanjikan "jendela resubmit 24 jam" — karena
+            // payment_deadline_at lama sudah lewat. Jendela resubmit di proof
+            // (resubmit_deadline_at) dan di order kini disamakan: now + 24 jam.
+            $newDeadline = now()->addHours(24);
+
             DB::table('orders')->where('id', $record->order_id)->update([
                 'status' => 'pembayaran_gagal',
+                'payment_deadline_at' => $newDeadline,
                 'updated_at' => now(),
             ]);
 
@@ -218,12 +239,25 @@ class PaymentProofController extends Controller
                 try {
                     $orderModel = Order::find($order->id);
                     NotificationService::payment($user, $orderModel, 'rejected', $data['reject_reason']);
-                } catch (\Throwable $e) {}
+                } catch (\Throwable $e) {
+                    // ✅ Rapikan: catat kegagalan notifikasi (bukan ditelan diam-diam)
+                    Log::warning('Gagal kirim notifikasi pembayaran ditolak', [
+                        'order_id' => $order->id,
+                        'user_id' => $user->id,
+                        'error' => $e->getMessage(),
+                    ]);
+                }
 
                 if ($user->email) {
                     try {
                         Mail::to($user->email)->send(new \App\Mail\PaymentRejected(Order::find($order->id), $data['reject_reason']));
-                    } catch (\Throwable $e) {}
+                    } catch (\Throwable $e) {
+                        Log::warning('Gagal kirim email penolakan pembayaran', [
+                            'order_id' => $order->id,
+                            'user_email' => $user->email,
+                            'error' => $e->getMessage(),
+                        ]);
+                    }
                 }
             }
         }
