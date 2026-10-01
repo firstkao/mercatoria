@@ -8,12 +8,16 @@ use App\Models\PaymentMethod;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
 
 class PaymentMethodController extends Controller
 {
+    /** Cache kolom fisik tabel payment_methods dalam satu request. */
+    private array $columnCache = [];
+
     public function index(): View
     {
         return view('admin.payment-methods.index', [
@@ -30,8 +34,7 @@ class PaymentMethodController extends Controller
 
     public function store(Request $request): RedirectResponse
     {
-        // Simpan tanpa validasi ketat dulu: kalau DB belum di-migrate, field
-        // opsional (mis. Instructions) tidak boleh hilang saat retry form.
+        // Simpan input mentah agar field opsional tidak hilang saat retry form.
         $input = $request->except('_token', '_method');
 
         try {
@@ -53,14 +56,28 @@ class PaymentMethodController extends Controller
         try {
             $method = PaymentMethod::create($data);
         } catch (\Illuminate\Database\QueryException $e) {
-            // Penyebab 500 paling umum: struktur DB produksi (dari SQL dump lama)
-            // berbeda dari kode — kolom `type` NOT NULL tanpa default, atau kolom
-            // instructions/qr_image belum ada karena migration belum jalan.
             Log::error('Gagal menyimpan metode pembayaran: ' . $e->getMessage());
+
+            // Percobaan terakhir sebelum menyerah: sinkronkan struktur tabel
+            // secara langsung (kolom hilang / NOT NULL tanpa default), lalu
+            // ulangi insert satu kali. Ini memperbaiki akar masalah "Nothing
+            // to migrate" — migration lama terlanjur tercatat DONE padahal
+            // gagal sebagian, sehingga `php artisan migrate` tidak lagi
+            // mencoba menambah kolom yang sebenarnya belum ada.
+            if ($this->repairSchema()) {
+                try {
+                    $method = PaymentMethod::create($this->filterColumns($data));
+                    AdminLog::record('create_payment_method', $method, ['label' => $method->label]);
+
+                    return redirect()->route('admin.payment-methods.index')->with('status', 'Metode pembayaran ditambahkan.');
+                } catch (\Throwable $retry) {
+                    Log::error('Retry simpan metode pembayaran setelah repair: ' . $retry->getMessage());
+                }
+            }
 
             return redirect()->back()
                 ->withInput($input)
-                ->withErrors(['label' => 'Gagal menyimpan ke database: struktur tabel payment_methods belum cocok dengan aplikasi. Jalankan `php artisan migrate` di server, lalu coba simpan lagi.']);
+                ->withErrors(['label' => 'Gagal menyimpan ke database (' . $this->shortDbError($e) . '). Struktur tabel payment_methods belum cocok dengan aplikasi — hubungi developer untuk memperbaiki skema.']);
         }
 
         AdminLog::record('create_payment_method', $method, ['label' => $method->label]);
@@ -83,8 +100,7 @@ class PaymentMethodController extends Controller
             return redirect()->back()->withInput($input)->withErrors($e->errors());
         }
 
-        // ✅ PERBAIKAN: Hapus qr_image dari $data agar tidak menimpa dengan null 
-        // jika user tidak mengupload gambar baru saat edit
+        // Jangan timpa qr_image dengan null jika user tidak upload gambar baru.
         unset($data['qr_image']);
 
         // Proses upload gambar baru dan hapus gambar lama saat update.
@@ -105,9 +121,21 @@ class PaymentMethodController extends Controller
         } catch (\Illuminate\Database\QueryException $e) {
             Log::error('Gagal memperbarui metode pembayaran: ' . $e->getMessage());
 
+            if ($this->repairSchema()) {
+                try {
+                    $paymentMethod->refresh();
+                    $paymentMethod->update($this->filterColumns($data));
+                    AdminLog::record('update_payment_method', $paymentMethod, ['label' => $paymentMethod->label]);
+
+                    return redirect()->route('admin.payment-methods.index')->with('status', 'Metode pembayaran diperbarui.');
+                } catch (\Throwable) {
+                    // jatuh ke pesan error di bawah
+                }
+            }
+
             return redirect()->back()
                 ->withInput($input)
-                ->withErrors(['label' => 'Gagal menyimpan ke database: struktur tabel payment_methods belum cocok dengan aplikasi. Jalankan `php artisan migrate` di server, lalu coba simpan lagi.']);
+                ->withErrors(['label' => 'Gagal menyimpan ke database (' . $this->shortDbError($e) . '). Struktur tabel payment_methods belum cocok dengan aplikasi — hubungi developer untuk memperbaiki skema.']);
         }
 
         AdminLog::record('update_payment_method', $paymentMethod, ['label' => $paymentMethod->label]);
@@ -151,16 +179,58 @@ class PaymentMethodController extends Controller
         $data['is_active'] = ! empty($data['is_active']);
         $data['sort_order'] = (int) ($data['sort_order'] ?? 0);
 
-        // Jangan pernah menulis kolom yang belum ada di tabel — mencegah
-        // QueryException (error 500) saat migration belum jalan di produksi.
-        if (! $this->tableHasQrImage()) {
-            unset($data['qr_image']);
-        }
-        if (! Schema::hasColumn('payment_methods', 'instructions')) {
-            unset($data['instructions']);
+        return $this->filterColumns($data);
+    }
+
+    /** Buang key yang kolomnya benar-benar tidak ada di tabel. */
+    private function filterColumns(array $data): array
+    {
+        $known = $this->existingColumns();
+        if ($known === []) {
+            return $data;
         }
 
-        return $data;
+        return array_filter(
+            $data,
+            fn ($k) => in_array($k, $known, true),
+            ARRAY_FILTER_USE_KEY
+        );
+    }
+
+    /**
+     * Daftar kolom fisik tabel payment_methods.
+     * Mengembalikan [] bila tabel/koneksi tidak bisa dibaca.
+     *
+     * @return array<int, string>
+     */
+    private function existingColumns(): array
+    {
+        if ($this->columnCache !== []) {
+            return $this->columnCache;
+        }
+
+        try {
+            $conn = DB::connection()->getDriverName();
+            $db = DB::connection()->getDatabaseName();
+
+            $rows = match ($conn) {
+                'sqlite' => DB::select("PRAGMA table_info(payment_methods)"),
+                'mysql'  => DB::select("SHOW COLUMNS FROM payment_methods"),
+                default  => DB::select(
+                    "SELECT column_name AS name FROM information_schema.columns WHERE table_schema = ? AND table_name = 'payment_methods'",
+                    [$db]
+                ),
+            };
+
+            $this->columnCache = array_values(array_filter(array_map(
+                fn ($r) => (string) ($r->name ?? $r->Field ?? ''),
+                $rows
+            )));
+        } catch (\Throwable) {
+            return [];
+        }
+
+        return $this->columnCache;
     }
 
     private function tableHasQrImage(): bool
@@ -170,5 +240,104 @@ class PaymentMethodController extends Controller
         } catch (\Throwable) {
             return false;
         }
+    }
+
+    /**
+     * Sinkronkan skema secara langsung (idempoten, aman dipanggil berkali-kali):
+     * - tambahkan kolom yang hilang (instructions, qr_image),
+     * - pindahkan data qris_image_path -> qr_image lalu buang kolom lama,
+     * - beri DEFAULT pada kolom NOT NULL tanpa default (mis. `type` warisan
+     *   SQL dump lama) supaya INSERT tanpa nilai itu tidak gagal.
+     */
+    private function repairSchema(): bool
+    {
+        try {
+            if (! Schema::hasTable('payment_methods')) {
+                return false;
+            }
+
+            $cols = $this->existingColumns();
+            if ($cols === []) {
+                return false;
+            }
+
+            if (! in_array('instructions', $cols, true)) {
+                DB::statement('ALTER TABLE payment_methods ADD COLUMN instructions TEXT NULL');
+            }
+            if (! in_array('qr_image', $cols, true)) {
+                DB::statement('ALTER TABLE payment_methods ADD COLUMN qr_image VARCHAR(255) NULL');
+            }
+            if (in_array('qris_image_path', $cols, true)) {
+                DB::statement('UPDATE payment_methods SET qr_image = qris_image_path WHERE qr_image IS NULL AND qris_image_path IS NOT NULL');
+                DB::statement('ALTER TABLE payment_methods DROP COLUMN qris_image_path');
+            }
+
+            // Kolom NOT NULL tanpa default (penyebab umum "Field 'x' doesn't
+            // have a default value") → beri default netral sesuai tipenya.
+            foreach ($this->notNullColumnsWithoutDefault() as $col) {
+                if (in_array($col['name'], ['id', 'created_at', 'updated_at'], true)) {
+                    continue;
+                }
+                $type = (string) $col['type'];
+                $default = match (true) {
+                    in_array($type, ['int', 'bigint', 'smallint', 'mediumint', 'decimal', 'float', 'double'], true) => '0',
+                    in_array($type, ['varchar', 'char', 'text', 'tinytext', 'mediumtext', 'longtext'], true) => "''",
+                    default => null,
+                };
+                if ($default === null) {
+                    DB::statement("ALTER TABLE payment_methods MODIFY {$col['name']} {$type} NULL");
+                } else {
+                    DB::statement("ALTER TABLE payment_methods MODIFY {$col['name']} {$type} NOT NULL DEFAULT {$default}");
+                }
+            }
+
+            $this->columnCache = [];
+
+            return true;
+        } catch (\Throwable $e) {
+            Log::error('Gagal memperbaiki skema payment_methods: ' . $e->getMessage());
+
+            return false;
+        }
+    }
+
+    /**
+     * Kolom NOT NULL tanpa default pada MySQL.
+     *
+     * @return array<int, array{name: string, type: string}>
+     */
+    private function notNullColumnsWithoutDefault(): array
+    {
+        try {
+            if (DB::connection()->getDriverName() !== 'mysql') {
+                return [];
+            }
+
+            $rows = DB::select(
+                "SELECT COLUMN_NAME AS name, DATA_TYPE AS type
+                 FROM information_schema.columns
+                 WHERE table_schema = DATABASE() AND table_name = 'payment_methods'
+                   AND IS_NULLABLE = 'NO' AND COLUMN_DEFAULT IS NULL"
+            );
+
+            $out = [];
+            foreach ($rows as $r) {
+                $out[] = ['name' => (string) $r->name, 'type' => (string) $r->type];
+            }
+
+            return $out;
+        } catch (\Throwable) {
+            return [];
+        }
+    }
+
+    /** Pesan error DB pendek & aman ditampilkan ke admin. */
+    private function shortDbError(\Illuminate\Database\QueryException $e): string
+    {
+        $clean = preg_replace('/\s*\(Connection:.*$/is', '', $e->getMessage());
+        $clean = preg_replace('/^SQLSTATE\[[^\]]+\]:\s*(SQLSTATE\[[^\]]+\]:\s*)?/', '', (string) $clean);
+        $clean = preg_replace('/SQL:.*$/s', '', (string) $clean);
+
+        return mb_substr(trim((string) $clean), 0, 160);
     }
 }
