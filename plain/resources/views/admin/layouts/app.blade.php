@@ -21,7 +21,7 @@
             ]],
             ['label' => 'Penjualan', 'items' => [
                 ['route' => 'admin.orders.index', 'active' => 'admin.orders.*', 'label' => 'Pesanan', 'icon' => 'box', 'badge' => 'pendingOrders'],
-                ['route' => 'admin.payments.index', 'active' => 'admin.payments.*', 'label' => 'Pembayaran', 'icon' => 'wallet', 'badge' => 'pendingProofs'],
+                ['route' => 'admin.payments.index', 'active' => 'admin.payments.*', 'label' => 'Pembayaran', 'icon' => 'rupiah', 'badge' => 'pendingProofs'],
                 ['route' => 'admin.payment-methods.index', 'active' => 'admin.payment-methods.*', 'label' => 'Metode Bayar', 'icon' => 'wallet'],
                 ['route' => 'admin.cart-reminders.index', 'active' => 'admin.cart-reminders.*', 'label' => 'Cart Reminder', 'icon' => 'users'],
             ]],
@@ -55,7 +55,7 @@
         ];
         $tabs = [
             ['route' => 'admin.dashboard', 'active' => 'admin.dashboard', 'label' => 'Ringkasan', 'icon' => 'home'],
-            ['route' => 'admin.payments.index', 'active' => 'admin.payments.*', 'label' => 'Pembayaran', 'icon' => 'wallet'],
+            ['route' => 'admin.payments.index', 'active' => 'admin.payments.*', 'label' => 'Pembayaran', 'icon' => 'rupiah'],
             ['route' => 'admin.products.index', 'active' => 'admin.products.*', 'label' => 'Produk', 'icon' => 'box'],
             ['route' => 'admin.users.index', 'active' => 'admin.users.*', 'label' => 'Pengguna', 'icon' => 'users'],
         ];
