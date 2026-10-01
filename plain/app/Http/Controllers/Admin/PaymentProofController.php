@@ -54,7 +54,7 @@ class PaymentProofController extends Controller
         ]);
     }
 
-        public function approve(int $proof): RedirectResponse
+    public function approve(int $proof): RedirectResponse
     {
         $order = null;
 
@@ -84,6 +84,21 @@ class PaymentProofController extends Controller
                 'updated_at' => now(),
             ]);
 
+            // ✅ BUG FIX: Catat history dua langkah (ditahan → pembayaran_diterima
+            // melewati satu status). Tanpa ini, timeline customer bolong: order
+            // tiba-tiba "lompat" dari Menunggu Pembayaran ke Pembayaran Diterima.
+            if ($fromStatus === 'ditahan') {
+                DB::table('order_status_history')->insert([
+                    'order_id' => $orderRow->id,
+                    'from_status' => 'menunggu_pembayaran',
+                    'to_status' => 'ditahan',
+                    'changed_by' => 'customer',
+                    'admin_id' => null,
+                    'note' => 'Bukti pembayaran diunggah.',
+                    'created_at' => $record->uploaded_at ?? now(),
+                ]);
+            }
+
             DB::table('order_status_history')->insert([
                 'order_id' => $orderRow->id,
                 'from_status' => $fromStatus,
@@ -91,7 +106,6 @@ class PaymentProofController extends Controller
                 'changed_by' => 'admin',
                 'admin_id' => auth('admin')->id(),
                 'created_at' => now(),
-                'updated_at' => now(),
             ]);
 
             // ✅ Update user role kalau masih spammer
@@ -136,22 +150,6 @@ class PaymentProofController extends Controller
 
             $order = $orderRow;
         });
-
-        // Notifikasi in-app di luar transaction
-        if ($order) {
-            $user = \App\Models\User::find($order->user_id);
-            if ($user) {
-                try {
-                    $orderModel = Order::find($order->id);
-                    NotificationService::payment($user, $orderModel, 'approved');
-                } catch (\Throwable $e) {
-                    // ignore
-                }
-            }
-        }
-
-        return redirect()->route('admin.payments.index')->with('status', 'Bukti pembayaran disetujui dan status order diperbarui.');
-    }
 
         // Notifikasi in-app di luar transaction
         if ($order) {

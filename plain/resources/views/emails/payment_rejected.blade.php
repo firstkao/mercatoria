@@ -5,5 +5,5 @@
         <strong>{{ $reason }}</strong>
     </div>
     <p>Silakan unggah ulang bukti transfer yang benar dalam waktu <strong>24 jam</strong> sejak email ini diterima agar pesanan Anda tidak dibatalkan otomatis oleh sistem.</p>
-    <a href="{{ route('account.orders.show', $order) }}" style="display: inline-block; background: #0ea5e9; color: #fff; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Unggah Bukti Baru</a>
+    <a href="{{ route('account.orders.show', $order->order_number) }}" style="display: inline-block; background: #0ea5e9; color: #fff; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Unggah Bukti Baru</a>
 </div>

@@ -56,6 +56,14 @@ class OrderController extends Controller
             'Status pesanan tidak memungkinkan upload bukti.'
         );
 
+        // ✅ BUG FIX: Cegah double-submit — jika masih ada bukti berstatus pending,
+        // user harus menunggu review admin sebelum upload lagi.
+        abort_unless(
+            ! $order->paymentProofs()->where('status', 'pending')->exists(),
+            422,
+            'Bukti pembayaran kamu masih dalam verifikasi admin.'
+        );
+
         $request->validate([
             // ✅ PERBAIKAN: Cek juga is_active agar user tidak bisa pilih
             // metode pembayaran yang sudah dinonaktifkan admin

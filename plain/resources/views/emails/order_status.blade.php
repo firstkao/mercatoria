@@ -11,5 +11,5 @@
     @endif
 
     <p>Anda dapat melihat rincian lengkap pesanan melalui tombol di bawah ini:</p>
-    <a href="{{ route('account.orders.show', $order) }}" style="display: inline-block; background: #0ea5e9; color: #fff; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Cek Pesanan Saya</a>
+    <a href="{{ route('account.orders.show', $order->order_number) }}" style="display: inline-block; background: #0ea5e9; color: #fff; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Cek Pesanan Saya</a>
 </div>
