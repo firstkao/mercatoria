@@ -5,10 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Enums\OrderStatus;
 use App\Http\Controllers\Controller;
 use App\Models\AdminLog;
-use App\Models\CoinLot;
 use App\Models\Order;
-use App\Models\Referral;
-use App\Models\Setting;
 use App\Services\NotificationService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -143,33 +140,16 @@ class PaymentProofController extends Controller
                 ]);
             }
 
-            // ✅ BUG FIX: Bagikan koin ke user (sebelumnya tidak ada!)
-            if ($orderRow->coin_estimate > 0) {
-                $expiryMonths = Setting::integer('coin_expiry_months', 12);
-
-                CoinLot::create([
-                    'user_id' => $orderRow->user_id,
-                    'order_id' => $orderRow->id,
-                    'amount' => $orderRow->coin_estimate,
-                    'remaining' => $orderRow->coin_estimate,
-                    'source' => 'purchase',
-                    'earned_at' => now(),
-                    'expires_at' => now()->addMonths($expiryMonths),
-                ]);
-            }
-
-            // ✅ TODO: Logika referral (jika ada)
-            // if ($user && $user->referral_code) {
-            //     $referral = Referral::where('code', $user->referral_code)->first();
-            //     if ($referral) {
-            //         // Berikan komisi ke referrer
-            //     }
-            // }
+            // ❌ REVERT: Koin TIDAK diberikan di sini. Di codebase ini koin
+            // customer adalah CASHBACK yang cair saat order 'selesai'
+            // (OrderManagementController::updateStatus). Memberikan lot kedua
+            // ('purchase') saat approve = menggandakan saldo koin customer.
+            // Kolom coin_estimate di orders memang bernama "estimasi", dan
+            // email notifikasi order_status juga menjanjikan koin saat selesai.
 
             AdminLog::record('approve_payment', null, [
                 'order_id' => $orderRow->id,
                 'proof_id' => $record->id,
-                'coin_awarded' => $orderRow->coin_estimate,
             ]);
 
             $order = $orderRow;
