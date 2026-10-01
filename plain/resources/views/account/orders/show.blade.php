@@ -4,8 +4,40 @@
 <section class="card" style="max-width: 900px;">
     <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 15px; margin-bottom: 20px;">
         <h1 style="margin: 0; font-family: monospace;">#{{ $order->order_number }}</h1>
-        <span class="badge" style="font-size: 14px;">{{ str_replace('_', ' ', Str::title($order->status)) }}</span>
+        {{-- ✅ BUG FIX: pakai helper model (label & badge warna dari OrderStatus enum).
+             Sebelumnya hanya str_replace('_', ' ', Str::title(...)) tanpa kelas badge,
+             dan tidak ada penanda visual saat order berstatus 'ditahan' --}}
+        <span class="badge {{ $order->statusBadgeClass() }}" style="font-size: 14px;">{{ $order->statusLabel() }}</span>
     </div>
+
+    @if ($order->status === 'ditahan')
+        {{-- ✅ BUG FIX: status 'ditahan' sebelumnya tidak punya blok informasi sama
+             sekali di halaman ini — customer bingung ("bukti sudah upload, terus apa?").
+             Guard double-submit juga menolak upload ulang tanpa penjelasan di UI. --}}
+        <div style="background: var(--warning-bg); border-left: 4px solid var(--warning); padding: 15px; border-radius: 4px; margin-bottom: 25px;">
+            <strong style="color: var(--warning-text); display: block; margin-bottom: 10px;">Menunggu Verifikasi Admin</strong>
+            <p style="margin: 0; font-size: 14px; color: var(--warning-text);">
+                Bukti pembayaran kamu sudah kami terima dan sedang diverifikasi.
+                Kamu akan dapat upload ulang jika bukti ditolak. Silakan cek halaman ini berkala.
+            </p>
+        </div>
+    @endif
+
+    @if (session('status'))
+        <div class="notice">{{ session('status') }}</div>
+    @endif
+
+    {{-- ✅ BUG FIX: tampilkan pesan error upload (validasi / guard double-submit) --}}
+    @if ($errors->any())
+        <div style="background: var(--danger-bg, #fdecea); border-left: 4px solid var(--danger, #d9534f); padding: 15px; border-radius: 4px; margin-bottom: 25px;">
+            <strong style="color: var(--danger, #d9534f); display: block; margin-bottom: 8px;">Periksa kembali</strong>
+            <ul style="margin: 0; padding-left: 20px; font-size: 14px;">
+                @foreach ($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
 
     @if(in_array($order->status, ['menunggu_pembayaran', 'pembayaran_gagal']))
         <div style="background: var(--warning-bg); border-left: 4px solid var(--warning); padding: 15px; border-radius: 4px; margin-bottom: 25px;">

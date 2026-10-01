@@ -92,7 +92,11 @@ class PaymentProofController extends Controller
                     'order_id' => $orderRow->id,
                     'from_status' => 'menunggu_pembayaran',
                     'to_status' => 'ditahan',
-                    'changed_by' => 'customer',
+                    // ✅ 'user' (bukan 'customer'): konvensi changed_by di codebase
+                    // ini adalah admin|user|system — lihat timeline.blade.php dan
+                    // OrderManagementController::recordHistory(). Kalau 'customer',
+                    // atribusi "oleh pembeli" tidak muncul di timeline.
+                    'changed_by' => 'user',
                     'admin_id' => null,
                     'note' => 'Bukti pembayaran diunggah.',
                     'created_at' => $record->uploaded_at ?? now(),
@@ -186,8 +190,18 @@ class PaymentProofController extends Controller
 
             $currentOrder = DB::table('orders')->where('id', $record->order_id)->lockForUpdate()->firstOrFail();
 
+            // ✅ BUG FIX: Reset payment_deadline_at. Order dg status 'ditahan'
+            // TIDAK dicek oleh scheduler pembatalan (CancelUnpaidOrders hanya
+            // memindai menunggu_pembayaran/pembayaran_gagal). Selama ini saat
+            // reject, order langsung bisa dibatalkan otomatis padahal email
+            // notifikasi menjanjikan "jendela resubmit 24 jam" — karena
+            // payment_deadline_at lama sudah lewat. Jendela resubmit di proof
+            // (resubmit_deadline_at) dan di order kini disamakan: now + 24 jam.
+            $newDeadline = now()->addHours(24);
+
             DB::table('orders')->where('id', $record->order_id)->update([
                 'status' => 'pembayaran_gagal',
+                'payment_deadline_at' => $newDeadline,
                 'updated_at' => now(),
             ]);
 
