@@ -232,6 +232,9 @@ img { max-width: 100%; height: auto; display: block; }
 .danger-zone { margin-top: 48px; border-top: 1px solid var(--border); padding-top: 24px; }
 .manual-block { margin-top: 32px; background: #fff1f2; border-color: #fecaca; }
 
+/* Bugfix #1 (mobile view): tabbar & sheet disembunyikan secara default,
+   hanya ditampilkan di dalam @media (max-width: 768px) di bawah.
+   Tanpa aturan ini, tombol mobile ikut muncul di tampilan desktop. */
 .tabbar { display: none; }
 .sheet { display: none; }
 

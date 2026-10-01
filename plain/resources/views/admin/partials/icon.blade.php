@@ -19,6 +19,8 @@
         'menu' => 'M4 7h16M4 12h16M4 17h16',
         'external' => 'M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5',
         'bell' => 'M6 8a6 6 0 0 1 12 0c0 7 3 8 3 8H3s3-1 3-8M10.3 21a1.94 1.94 0 0 0 3.4 0',
+        /* Bugfix #2: ikon 'wallet' untuk menu Pembayaran & Metode Pembayaran
+           (sebelumnya nama ini tidak terdaftar di $paths sehingga SVG kosong). */
         'wallet' => 'M3 7a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v1M3 7v10a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2H5a2 2 0 0 1-2-2M16 13h.01',
         'coin' => 'M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM12 7v10M15 9.5c0-1.4-1.3-2.5-3-2.5s-3 1.1-3 2.5 1.3 2.5 3 2.5 3 1.1 3 2.5-1.3 2.5-3 2.5-3-1.1-3-2.5',
     ];

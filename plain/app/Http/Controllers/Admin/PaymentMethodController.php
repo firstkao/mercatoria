@@ -32,8 +32,10 @@ class PaymentMethodController extends Controller
         $data = $this->validated($request);
 
         // Proses upload gambar saat create.
-        // Simpan hanya jika kolom qr_image benar-benar ada di tabel — kalau
-        // migration belum dijalankan, upload gambar tidak boleh memicu error 500.
+        // Bugfix #3 (error 500 saat simpan metode pembayaran): DB produksi dibuat
+        // dari SQL dump lama yang belum punya kolom qr_image, sehingga insert ke
+        // kolom itu melempar QueryException. Simpan hanya jika kolomnya benar-benar
+        // ada — kalau migration belum jalan, tampilkan pesan jelas, bukan crash 500.
         if ($request->hasFile('qr_image')) {
             if (! $this->tableHasQrImage()) {
                 return redirect()->route('admin.payment-methods.index')
