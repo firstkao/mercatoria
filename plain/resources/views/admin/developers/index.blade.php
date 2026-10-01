@@ -51,6 +51,17 @@
                     @endforeach
                 </tbody>
             </table>
+        <ul class="cards only-mobile">
+            @foreach($developers as $developer)
+                <li>
+                    <div class="card-row card-row--stack">
+                        <span class="card-row__title">{{ $developer->name }}</span>
+                        <p class="card-row__meta">{{ $developer->slug }} &middot; {{ number_format($developer->games_count, 0, ',', '.') }} game &middot; {{ number_format($developer->products_count, 0, ',', '.') }} produk</p>
+                        <div style="margin-top:6px"><a href="{{ route('admin.developers.edit', $developer) }}" class="link">Edit</a></div>
+                    </div>
+                </li>
+            @endforeach
+        </ul>
         </div>
     @endif
 @endsection

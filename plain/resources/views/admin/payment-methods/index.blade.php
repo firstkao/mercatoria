@@ -49,6 +49,20 @@
                     @endforeach
                 </tbody>
             </table>
+        <ul class="cards only-mobile">
+            @foreach($methods as $method)
+                <li>
+                    <div class="card-row card-row--stack">
+                        <div class="card-row__head">
+                            <span class="card-row__title">{{ $method->label }}</span>
+                            <span @class(['badge', 'badge--on' => $method->is_active, 'badge--muted' => !$method->is_active])>{{ $method->is_active ? 'Aktif' : 'Nonaktif' }}</span>
+                        </div>
+                        <p class="card-row__meta mono">{{ $method->account_number ?: '&mdash;' }} a.n {{ $method->account_name ?: '&mdash;' }}</p>
+                        <div style="margin-top:6px"><a href="{{ route('admin.payment-methods.edit', $method) }}" class="link">Edit</a></div>
+                    </div>
+                </li>
+            @endforeach
+        </ul>
         </div>
     @endif
 @endsection

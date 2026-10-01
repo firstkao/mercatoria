@@ -84,6 +84,19 @@
                     @endforeach
                 </tbody>
             </table>
+        <ul class="cards only-mobile">
+            @foreach($referrals as $ref)
+                <li>
+                    <div class="card-row card-row--stack">
+                        <div class="card-row__head">
+                            <span class="card-row__title">{{ $ref->referrer?->full_name ?? '&mdash;' }} &rarr; {{ $ref->referee?->full_name ?? '&mdash;' }}</span>
+                            @if ($ref->status === 'rewarded')<span class="badge badge--on">Berhasil</span>@else<span class="badge badge--muted">{{ $ref->status }}</span>@endif
+                        </div>
+                        <p class="card-row__meta mono">{{ $ref->referral_code }} &middot; {{ $ref->created_at->timezone('Asia/Jakarta')->translatedFormat('j M Y') }}</p>
+                    </div>
+                </li>
+            @endforeach
+        </ul>
         </div>
         @include('admin.partials.pagination', ['paginator' => $referrals])
     @endif

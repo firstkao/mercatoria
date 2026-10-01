@@ -62,6 +62,20 @@
                     @endforeach
                 </tbody>
             </table>
+        <ul class="cards only-mobile">
+            @foreach($games as $game)
+                <li>
+                    <div class="card-row">
+                        @if ($game->image_path)<img src="{{ $game->imageUrl() }}" alt="" class="card-row__thumb">@endif
+                        <div class="card-row__body">
+                            <span class="card-row__title">{{ $game->name }}</span>
+                            <span class="card-row__meta">{{ $game->developer?->name ?? '&mdash;' }} &middot; {{ number_format($game->products_count, 0, ',', '.') }} produk</span>
+                            <div style="margin-top:6px"><a href="{{ route('admin.games.edit', $game) }}" class="link">Edit</a></div>
+                        </div>
+                    </div>
+                </li>
+            @endforeach
+        </ul>
         </div>
     @endif
 @endsection

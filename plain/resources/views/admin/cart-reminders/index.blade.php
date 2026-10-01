@@ -69,6 +69,19 @@
                     @endforeach
                 </tbody>
             </table>
+        <ul class="cards only-mobile">
+            @foreach ($reminders as $reminder)
+                <li>
+                    <div class="card-row card-row--stack">
+                        <div class="card-row__head">
+                            <span class="card-row__title">@if ($reminder->user)<a href="{{ route('admin.users.show', $reminder->user) }}" class="link">{{ $reminder->user->displayName() }}</a>@else<span class="muted">&mdash;</span>@endif</span>
+                            <span class="badge">#{{ $reminder->reminder_number }}</span>
+                        </div>
+                        <p class="card-row__meta">{{ $reminder->item_count }} item &middot; Dikirim {{ $reminder->sent_at->timezone('Asia/Jakarta')->translatedFormat('j M Y, H:i') }} WIB</p>
+                    </div>
+                </li>
+            @endforeach
+        </ul>
         </div>
 
         @include('admin.partials.pagination', ['paginator' => $reminders])

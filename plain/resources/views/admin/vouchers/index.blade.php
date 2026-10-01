@@ -70,6 +70,21 @@
             @endforeach
         </tbody>
     </table>
+        <ul class="cards only-mobile">
+            @foreach($vouchers as $voucher)
+                <li>
+                    <div class="card-row card-row--stack">
+                        <div class="card-row__head">
+                            <span class="card-row__title mono">{{ $voucher->code }}</span>
+                            <span class="badge {{ $voucher->is_active ? 'badge--on' : 'badge--danger' }}">{{ $voucher->is_active ? 'Aktif' : 'Nonaktif' }}</span>
+                        </div>
+                        <p class="card-row__meta">{{ $voucher->name }} &middot; {{ $voucher->discount_type === 'nominal' ? \App\Support\PriceCalculator::formatRupiah($voucher->value) : $voucher->value . '%' }}</p>
+                        <p class="card-row__meta">Dipakai {{ $voucher->redemptions_count ?? 0 }}&times; &middot; {{ $voucher->starts_at ? $voucher->starts_at->format('d/m/Y') : 'Selamanya' }}</p>
+                        <div style="margin-top:8px"><a href="{{ route('admin.vouchers.edit', $voucher) }}" class="btn btn--small">Edit</a></div>
+                    </div>
+                </li>
+            @endforeach
+        </ul>
     <div style="padding: 20px;">{{ $vouchers->links('admin.partials.pagination') }}</div>
 </div>
 @endsection
