@@ -22,6 +22,9 @@
         /* Bugfix #2: ikon 'wallet' untuk menu Pembayaran & Metode Pembayaran
            (sebelumnya nama ini tidak terdaftar di $paths sehingga SVG kosong). */
         'wallet' => 'M3 7a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v1M3 7v10a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2H5a2 2 0 0 1-2-2M16 13h.01',
+        /* Bugfix ronde 2 #1: menu 'Pembayaran' pakai ikon rupiah (Rp) agar
+           berbeda dari 'Metode Bayar' yang tetap memakai wallet. */
+        'rupiah' => 'M8 21V5a3 3 0 0 1 3-3h1.5a3 3 0 0 1 0 6H8m5 0 4 9M4 14h7M4 18h7',
         'coin' => 'M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM12 7v10M15 9.5c0-1.4-1.3-2.5-3-2.5s-3 1.1-3 2.5 1.3 2.5 3 2.5 3 1.1 3 2.5-1.3 2.5-3 2.5-3-1.1-3-2.5',
     ];
 @endphp
