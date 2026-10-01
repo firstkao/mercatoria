@@ -38,7 +38,7 @@
                                 </span>
                             </td>
                             <td>
-                                <a href="{{ route('account.orders.show', $order) }}" class="button button--small">Detail & Bayar</a>
+                                <a href="{{ route('account.orders.show', $order->order_number) }}" class="button button--small">Detail & Bayar</a>
                             </td>
                         </tr>
                     @endforeach

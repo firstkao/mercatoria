@@ -16,7 +16,7 @@
             </p>
         </div>
 
-        <form action="{{ route('account.orders.upload', $order) }}" method="POST" enctype="multipart/form-data" class="panel stack" style="margin-bottom: 30px;">
+        <form action="{{ route('account.orders.upload', $order->order_number) }}" method="POST" enctype="multipart/form-data" class="panel stack" style="margin-bottom: 30px;">
             @csrf
             <h2>Upload Bukti Transfer</h2>
             <div class="field-row">
