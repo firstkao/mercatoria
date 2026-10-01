@@ -25,6 +25,10 @@
             <strong class="stat__value">{{ number_format($stats['pending'], 0, ',', '.') }}</strong>
         </div>
         <div class="stat">
+            <span class="stat__label">Klik Link</span>
+            <strong class="stat__value">{{ number_format($stats['clicks'], 0, ',', '.') }}</strong>
+        </div>
+        <div class="stat">
             <span class="stat__label">Koin Terbayar</span>
             <strong class="stat__value">{{ number_format($stats['coins_paid'], 0, ',', '.') }}</strong>
         </div>
@@ -41,7 +45,7 @@
                         <th>Diundang</th>
                         <th>Kode</th>
                         <th>Status</th>
-                        <th>Reward</th>
+                        <th>Reward Pengajak</th>
                         <th>Tanggal</th>
                     </tr>
                 </thead>
@@ -74,7 +78,7 @@
                             </td>
                             <td class="small">
                                 @if ($ref->status === 'rewarded')
-                                    +{{ number_format($ref->referrer_reward, 0, ',', '.') }} / +{{ number_format($ref->referee_reward, 0, ',', '.') }}
+                                    +{{ number_format($ref->referrer_reward, 0, ',', '.') }} koin
                                 @else
                                     —
                                 @endif

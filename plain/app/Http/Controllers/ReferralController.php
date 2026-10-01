@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Referral;
+use App\Models\ReferralClick;
 use App\Models\Setting;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -22,7 +23,10 @@ class ReferralController extends Controller
             'total' => $user->referralsMade()->count(),
             'rewarded' => $user->referralsMade()->where('status', Referral::STATUS_REWARDED)->count(),
             'pending' => $user->referralsMade()->where('status', Referral::STATUS_PENDING)->count(),
-            'coins' => $user->referralsMade()->where('status', Referral::STATUS_REWARDED)->sum('referrer_reward'),
+            'coins' => (int) $user->referralsMade()->where('status', Referral::STATUS_REWARDED)->sum('referrer_reward'),
+            'clicks' => ReferralClick::where('referrer_id', $user->id)->count(),
+            'click_coins' => (int) Setting::integer('referral_reward_click', 10)
+                * ReferralClick::where('referrer_id', $user->id)->count(),
         ];
 
         return view('account.referral', [
@@ -30,7 +34,7 @@ class ReferralController extends Controller
             'referrals' => $referrals,
             'stats' => $stats,
             'rewardReferrer' => Setting::integer('referral_reward_referrer', 5000),
-            'rewardReferee' => Setting::integer('referral_reward_referee', 2000),
+            'rewardClick' => Setting::integer('referral_reward_click', 10),
             'title' => 'Undang Teman',
         ]);
     }

@@ -245,7 +245,10 @@ class OrderManagementController extends Controller
         }
 
         $referrerReward = Setting::integer('referral_reward_referrer', 5000);
-        $refereeReward = Setting::integer('referral_reward_referee', 2000);
+
+        // Kebijakan: referee TIDAK dapat bonus tambahan dari referral.
+        // Ia hanya dapat welcome/first-order bonus + cashback transaksi seperti user biasa.
+        $refereeReward = 0;
 
         $referral->update([
             'status' => Referral::STATUS_REWARDED,

@@ -43,7 +43,8 @@ class AppServiceProvider extends ServiceProvider
                 'birthday_voucher_min' => '100000',
                 'birthday_voucher_valid_days' => '3',
                 'referral_reward_referrer' => '5000',
-                'referral_reward_referee' => '2000',
+                'referral_reward_click' => '10',
+                'referral_reward_referee' => '0', // referee tidak dapat bonus tambahan (hanya welcome + cashback order)
                 'wa_widget_enabled' => '1',
                 'wa_widget_label' => 'Chat CS',
                 'wa_widget_greeting' => 'Halo, saya mau tanya tentang produk di MERCATORIA.',
