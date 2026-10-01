@@ -289,11 +289,10 @@ Route::middleware('auth')->group(function (): void {
         // Checkout
         Route::post('/checkout', [CheckoutController::class, 'store'])->name('checkout.store');
 
-        // Pesanan
-        Route::get('/pesanan', [OrderController::class, 'index'])->name('orders.index');
-        Route::get('/pesanan/{orderNumber}/invoice', [OrderController::class, 'invoice'])->name('orders.invoice');
-        Route::get('/pesanan/{orderNumber}', [OrderController::class, 'show'])->name('orders.show');
-        Route::post('/pesanan/{orderNumber}/bukti-pembayaran', [OrderController::class, 'proof'])->name('orders.proof');
+        // Pesanan (canonical: /akun/pesanan/... — lihat blok "Akun" di bawah.
+        // ✅ BUG FIX: sebelumnya ada dua set route kembar (/pesanan/* dan
+        // /akun/pesanan/*) yg menunjuk controller & view yang sama; route lama
+        // dihapus supaya tidak ada ambiguitas penamaan.)
 
         // Akun
         Route::get('/akun', [AccountController::class, 'show'])->name('account.show');
@@ -301,10 +300,16 @@ Route::middleware('auth')->group(function (): void {
         Route::get('/akun/profil', [ProfileController::class, 'edit'])->name('account.profile.edit');
         Route::put('/akun/profil', [ProfileController::class, 'update'])->name('account.profile.update');
 
-        // Alias account.orders.*
+        // Pesanan milik akun (canonical)
         Route::get('/akun/pesanan', [OrderController::class, 'index'])->name('account.orders.index');
+        Route::get('/akun/pesanan/{orderNumber}/invoice', [OrderController::class, 'invoice'])->name('account.orders.invoice');
         Route::get('/akun/pesanan/{orderNumber}', [OrderController::class, 'show'])->name('account.orders.show');
         Route::post('/akun/pesanan/{orderNumber}/bukti-pembayaran', [OrderController::class, 'proof'])->name('account.orders.upload');
+
+        // Redirect permanen dari URL lama /pesanan/* (bookmark & email terdahulu)
+        Route::redirect('/pesanan', '/akun/pesanan');
+        Route::redirect('/pesanan/{orderNumber}', '/akun/pesanan/{orderNumber}')->where('orderNumber', '[A-Za-z0-9_-]+');
+        Route::redirect('/pesanan/{orderNumber}/invoice', '/akun/pesanan/{orderNumber}/invoice')->where('orderNumber', '[A-Za-z0-9_-]+');
     });
 
     // Logout

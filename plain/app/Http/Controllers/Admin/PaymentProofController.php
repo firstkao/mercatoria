@@ -13,6 +13,7 @@ use App\Services\NotificationService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
@@ -163,7 +164,13 @@ class PaymentProofController extends Controller
                     $orderModel = Order::find($order->id);
                     NotificationService::payment($user, $orderModel, 'approved');
                 } catch (\Throwable $e) {
-                    // ignore
+                    // ✅ Rapikan: jangan telan diam-diam — approval tetap sukses,
+                    // tapi kegagalan notifikasi dicatat agar bisa ditelusuri.
+                    Log::warning('Gagal kirim notifikasi pembayaran disetujui', [
+                        'order_id' => $order->id,
+                        'user_id' => $user->id,
+                        'error' => $e->getMessage(),
+                    ]);
                 }
             }
         }
@@ -232,12 +239,25 @@ class PaymentProofController extends Controller
                 try {
                     $orderModel = Order::find($order->id);
                     NotificationService::payment($user, $orderModel, 'rejected', $data['reject_reason']);
-                } catch (\Throwable $e) {}
+                } catch (\Throwable $e) {
+                    // ✅ Rapikan: catat kegagalan notifikasi (bukan ditelan diam-diam)
+                    Log::warning('Gagal kirim notifikasi pembayaran ditolak', [
+                        'order_id' => $order->id,
+                        'user_id' => $user->id,
+                        'error' => $e->getMessage(),
+                    ]);
+                }
 
                 if ($user->email) {
                     try {
                         Mail::to($user->email)->send(new \App\Mail\PaymentRejected(Order::find($order->id), $data['reject_reason']));
-                    } catch (\Throwable $e) {}
+                    } catch (\Throwable $e) {
+                        Log::warning('Gagal kirim email penolakan pembayaran', [
+                            'order_id' => $order->id,
+                            'user_email' => $user->email,
+                            'error' => $e->getMessage(),
+                        ]);
+                    }
                 }
             }
         }
