@@ -54,7 +54,7 @@ class PaymentProofController extends Controller
         ]);
     }
 
-    public function approve(int $proof): RedirectResponse
+        public function approve(int $proof): RedirectResponse
     {
         $order = null;
 
@@ -63,13 +63,13 @@ class PaymentProofController extends Controller
             abort_unless($record->status === 'pending', 422, 'Bukti pembayaran sudah diproses.');
 
             $orderRow = DB::table('orders')->where('id', $record->order_id)->lockForUpdate()->firstOrFail();
-            // Setelah customer upload bukti, order berstatus 'ditahan' (lihat OrderController::proof),
-            // jadi approve harus menerima 'ditahan' selain 'menunggu_pembayaran'.
+
             abort_unless(
                 in_array($orderRow->status, ['menunggu_pembayaran', 'ditahan'], true),
                 422,
                 'Status order tidak dapat diubah.'
             );
+
             $fromStatus = $orderRow->status;
 
             DB::table('payment_proofs')->where('id', $record->id)->update([
@@ -91,22 +91,67 @@ class PaymentProofController extends Controller
                 'changed_by' => 'admin',
                 'admin_id' => auth('admin')->id(),
                 'created_at' => now(),
+                'updated_at' => now(),
             ]);
 
-            // Update user role kalau masih spammer
-            $user = DB::table('users')->where('id', $orderRow->user_id)->first();
+            // ✅ Update user role kalau masih spammer
+            $user = DB::table('users')->where('id', $orderRow->user_id)->lockForUpdate()->first();
             if ($user && $user->role === 'spammer') {
                 DB::table('users')->where('id', $user->id)->update([
                     'role' => 'customer',
                     'became_customer_at' => now(),
                     'view_quota_used' => 0,
+                    'updated_at' => now(),
                 ]);
             }
 
-            AdminLog::record('approve_payment', null, ['order_id' => $orderRow->id, 'proof_id' => $record->id]);
+            // ✅ BUG FIX: Bagikan koin ke user (sebelumnya tidak ada!)
+            if ($orderRow->coin_estimate > 0) {
+                $expiryMonths = Setting::integer('coin_expiry_months', 12);
+
+                CoinLot::create([
+                    'user_id' => $orderRow->user_id,
+                    'order_id' => $orderRow->id,
+                    'amount' => $orderRow->coin_estimate,
+                    'remaining' => $orderRow->coin_estimate,
+                    'source' => 'purchase',
+                    'earned_at' => now(),
+                    'expires_at' => now()->addMonths($expiryMonths),
+                ]);
+            }
+
+            // ✅ TODO: Logika referral (jika ada)
+            // if ($user && $user->referral_code) {
+            //     $referral = Referral::where('code', $user->referral_code)->first();
+            //     if ($referral) {
+            //         // Berikan komisi ke referrer
+            //     }
+            // }
+
+            AdminLog::record('approve_payment', null, [
+                'order_id' => $orderRow->id,
+                'proof_id' => $record->id,
+                'coin_awarded' => $orderRow->coin_estimate,
+            ]);
 
             $order = $orderRow;
         });
+
+        // Notifikasi in-app di luar transaction
+        if ($order) {
+            $user = \App\Models\User::find($order->user_id);
+            if ($user) {
+                try {
+                    $orderModel = Order::find($order->id);
+                    NotificationService::payment($user, $orderModel, 'approved');
+                } catch (\Throwable $e) {
+                    // ignore
+                }
+            }
+        }
+
+        return redirect()->route('admin.payments.index')->with('status', 'Bukti pembayaran disetujui dan status order diperbarui.');
+    }
 
         // Notifikasi in-app di luar transaction
         if ($order) {
