@@ -50,9 +50,12 @@ class CancelUnpaidOrders extends Command
                     'cancelled_at' => now(),
                 ]);
 
-                // Kembalikan koin yang terpakai. Kalau lot asalnya sudah kedaluwarsa,
-                // jangan di-crement ke lot mati (tidak akan muncul sebagai saldo aktif):
-                // pindahkan sisa amount ke lot baru berumur penuh sesuai setting.
+                // Bugfix (logika koin): Kembalikan koin yang terpakai. Kalau lot
+                // asalnya sudah kedaluwarsa, JANGAN increment ke lot mati — saldo
+                // query selalu memfilter expires_at > now(), sehingga koin hasil
+                // refund ke lot expired hilang permanen dari pandangan customer.
+                // Sebagai gantinya, buat lot baru 'refund_kedaluwarsa' berumur penuh
+                // sesuai setting coin_expiry_months.
                 $spentCoins = DB::table('coin_spends')->where('order_id', $order->id)->get();
                 if ($spentCoins->isNotEmpty()) {
                     $expiryMonths = \App\Models\Setting::integer('coin_expiry_months', 12);

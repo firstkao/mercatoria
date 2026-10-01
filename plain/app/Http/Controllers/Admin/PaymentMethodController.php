@@ -8,6 +8,7 @@ use App\Models\PaymentMethod;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
 
 class PaymentMethodController extends Controller
@@ -30,8 +31,16 @@ class PaymentMethodController extends Controller
     {
         $data = $this->validated($request);
 
-        // Proses upload gambar saat create
+        // Proses upload gambar saat create.
+        // Bugfix #3 (error 500 saat simpan metode pembayaran): DB produksi dibuat
+        // dari SQL dump lama yang belum punya kolom qr_image, sehingga insert ke
+        // kolom itu melempar QueryException. Simpan hanya jika kolomnya benar-benar
+        // ada — kalau migration belum jalan, tampilkan pesan jelas, bukan crash 500.
         if ($request->hasFile('qr_image')) {
+            if (! $this->tableHasQrImage()) {
+                return redirect()->route('admin.payment-methods.index')
+                    ->withErrors(['qr_image' => 'Kolom qr_image belum ada di database. Jalankan `php artisan migrate` terlebih dahulu.']);
+            }
             $data['qr_image'] = $request->file('qr_image')->store('qris', 'public');
         }
 
@@ -54,8 +63,12 @@ class PaymentMethodController extends Controller
         // jika user tidak mengupload gambar baru saat edit
         unset($data['qr_image']);
 
-        // Proses upload gambar baru dan hapus gambar lama saat update
+        // Proses upload gambar baru dan hapus gambar lama saat update.
         if ($request->hasFile('qr_image')) {
+            if (! $this->tableHasQrImage()) {
+                return redirect()->route('admin.payment-methods.index')
+                    ->withErrors(['qr_image' => 'Kolom qr_image belum ada di database. Jalankan `php artisan migrate` terlebih dahulu.']);
+            }
             if ($paymentMethod->qr_image) {
                 Storage::disk('public')->delete($paymentMethod->qr_image);
             }
@@ -104,6 +117,21 @@ class PaymentMethodController extends Controller
         $data['is_active'] = ! empty($data['is_active']);
         $data['sort_order'] = (int) ($data['sort_order'] ?? 0);
 
+        // Jangan pernah menulis kolom qr_image kalau kolomnya belum ada di
+        // tabel (migration 2026_10_01 belum jalan) — mencegah QueryException.
+        if (! $this->tableHasQrImage()) {
+            unset($data['qr_image']);
+        }
+
         return $data;
+    }
+
+    private function tableHasQrImage(): bool
+    {
+        try {
+            return Schema::hasColumn('payment_methods', 'qr_image');
+        } catch (\Throwable) {
+            return false;
+        }
     }
 }
