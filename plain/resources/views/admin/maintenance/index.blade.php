@@ -43,6 +43,7 @@
     {{-- Detail storage --}}
     <section class="panel">
         <h2>Detail Storage</h2>
+        <div class="table-wrap">
         <table class="table">
             <thead>
                 <tr>
@@ -66,6 +67,7 @@
                 @endforeach
             </tbody>
         </table>
+        </div>
     </section>
 
     {{-- Backup list --}}
@@ -74,6 +76,7 @@
         @if ($backups->isEmpty())
             <p class="muted" style="padding:1rem;">Belum ada backup.</p>
         @else
+            <div class="table-wrap">
             <table class="table">
                 <thead>
                     <tr>
@@ -103,6 +106,7 @@
                     @endforeach
                 </tbody>
             </table>
+            </div>
         @endif
     </section>
 

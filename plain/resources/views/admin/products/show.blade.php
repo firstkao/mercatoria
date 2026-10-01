@@ -66,6 +66,7 @@
 @if ($product->variants->isNotEmpty())
     <div class="panel panel--flush">
         <h3 style="padding:1rem 1rem 0;">Varian ({{ $product->variants->count() }})</h3>
+        <div class="table-wrap">
         <table class="table">
             <thead>
                 <tr>
@@ -102,6 +103,7 @@
                 @endforeach
             </tbody>
         </table>
+        </div>
     </div>
 @endif
 

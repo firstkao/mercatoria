@@ -65,6 +65,7 @@
             @if ($byMarketplace->isEmpty())
                 <p class="muted">Belum ada data.</p>
             @else
+                <div class="table-wrap">
                 <table class="table">
                     <thead>
                         <tr>
@@ -83,6 +84,7 @@
                         @endforeach
                     </tbody>
                 </table>
+                </div>
             @endif
         </section>
     </div>
@@ -93,6 +95,7 @@
         @if ($topProducts->isEmpty())
             <p class="muted" style="padding:1rem;">Belum ada data.</p>
         @else
+            <div class="table-wrap">
             <table class="table">
                 <thead>
                     <tr>
@@ -115,6 +118,7 @@
                     @endforeach
                 </tbody>
             </table>
+            </div>
         @endif
     </section>
 @endsection

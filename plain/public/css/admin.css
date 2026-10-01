@@ -257,6 +257,12 @@ img { max-width: 100%; height: auto; display: block; }
 
     .form-grid { grid-template-columns: 1fr; }
     .form-grid__side { position: static; }
+
+    /* Mobile: tabel dibungkus .table-wrap agar bisa digeser horizontal,
+       bukan seluruh panel ikut bergeser. */
+    .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    .table-wrap > .table { min-width: 640px; }
+    .table th, .table td { padding: 12px; }
     .variant__grid { grid-template-columns: 1fr 1fr; }
     .variant__name { grid-column: 1 / -1; }
     .variant__footer { flex-direction: column; align-items: flex-start; gap: 16px; }
