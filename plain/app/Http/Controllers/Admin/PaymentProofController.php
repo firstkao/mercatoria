@@ -33,7 +33,7 @@ class PaymentProofController extends Controller
             ->join('users', 'users.id', '=', 'orders.user_id')
             ->leftJoin('payment_methods', 'payment_methods.id', '=', 'payment_proofs.payment_method_id')
             ->when($status !== 'all', fn ($query) => $query->where('payment_proofs.status', $status))
-            ->select('payment_proofs.id', 'payment_proofs.status', 'payment_proofs.amount_idr', 'payment_proofs.uploaded_at', 'orders.order_number', 'orders.pay_now_idr', 'orders.status as order_status', 'users.full_name', 'users.email', 'payment_methods.label as payment_method_label')
+            ->select('payment_proofs.id', 'payment_proofs.status', 'payment_proofs.amount_idr', 'payment_proofs.uploaded_at', 'orders.order_number', 'orders.pay_now_idr', 'orders.status as order_status', 'users.full_name', 'users.email', DB::raw("COALESCE(payment_methods.label, '(metode dihapus)') as payment_method_label"))
             ->latest('payment_proofs.uploaded_at')
             ->paginate(25)
             ->withQueryString();
@@ -50,7 +50,7 @@ class PaymentProofController extends Controller
             ->join('users', 'users.id', '=', 'orders.user_id')
             ->leftJoin('payment_methods', 'payment_methods.id', '=', 'payment_proofs.payment_method_id')
             ->where('payment_proofs.id', $proof)
-            ->select('payment_proofs.*', 'orders.order_number', 'orders.pay_now_idr', 'orders.status as order_status', 'users.full_name', 'users.email', 'payment_methods.label as payment_method_label')
+            ->select('payment_proofs.*', 'orders.order_number', 'orders.pay_now_idr', 'orders.status as order_status', 'users.full_name', 'users.email', DB::raw("COALESCE(payment_methods.label, '(metode dihapus)') as payment_method_label"))
             ->firstOrFail();
 
         return view('admin.payments.show', [
@@ -69,11 +69,15 @@ class PaymentProofController extends Controller
 
             $orderRow = DB::table('orders')->where('id', $record->order_id)->lockForUpdate()->firstOrFail();
 
-            abort_unless(
-                in_array($orderRow->status, ['menunggu_pembayaran', 'ditahan'], true),
-                422,
-                'Status order tidak dapat diubah.'
-            );
+            // ✅ BUG FIX: Guard transisi. Kalau admin sudah menggeser status
+            // manual (mis. langsung ke sedang_diproses) sementara bukti masih
+            // pending, approve TIDAK BOLEH memaksa status kembali ke
+            // pembayaran_diterima — itu memundurkan pipeline dan memicu
+            // cashback/bonus/referral ganda saat order digeser ke 'selesai'
+            // lagi (updateStatus hanya idempotent utk source 'cashback',
+            // tidak utk bonus_pertama/referral). Bukti tetap ditandai
+            // approved + paid_at diisi; status order dibiarkan.
+            $forceOrderStatus = in_array($orderRow->status, ['menunggu_pembayaran', 'ditahan'], true);
 
             $fromStatus = $orderRow->status;
 
@@ -83,11 +87,18 @@ class PaymentProofController extends Controller
                 'updated_at' => now(),
             ]);
 
-            DB::table('orders')->where('id', $orderRow->id)->update([
-                'status' => 'pembayaran_diterima',
-                'paid_at' => now(),
-                'updated_at' => now(),
-            ]);
+            if ($forceOrderStatus) {
+                DB::table('orders')->where('id', $orderRow->id)->update([
+                    'status' => 'pembayaran_diterima',
+                    'paid_at' => now(),
+                    'updated_at' => now(),
+                ]);
+            } else {
+                DB::table('orders')->where('id', $orderRow->id)->update([
+                    'paid_at' => DB::raw('COALESCE(paid_at, NOW())'),
+                    'updated_at' => now(),
+                ]);
+            }
 
             // ✅ BUG FIX: Catat history dua langkah (ditahan → pembayaran_diterima
             // melewati satu status). Tanpa ini, timeline customer bolong: order
@@ -123,9 +134,12 @@ class PaymentProofController extends Controller
             DB::table('order_status_history')->insert([
                 'order_id' => $orderRow->id,
                 'from_status' => $fromStatus,
-                'to_status' => 'pembayaran_diterima',
+                'to_status' => $forceOrderStatus ? 'pembayaran_diterima' : $fromStatus,
                 'changed_by' => 'admin',
                 'admin_id' => auth('admin')->id(),
+                'note' => $forceOrderStatus
+                    ? null
+                    : 'Bukti pembayaran disetujui (status order sudah diubah manual, tidak diotomatisasi).',
                 'created_at' => now(),
             ]);
 

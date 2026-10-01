@@ -26,9 +26,21 @@
         </div>
     @endif
 
-    @if(in_array($order->status, ['menunggu_pembayaran', 'pembayaran_gagal']))
+    {{-- ✅ BUG FIX: banner khusus untuk order yang masih di gerbang pembayaran.
+         Status 'ditahan' (bukti sudah diunggah, menunggu verifikasi admin) punya
+         pesan sendiri — dulu customer hanya melihat badge tanpa penjelasan apa pun. --}}
+    @if ($order->status === 'ditahan')
+        <div style="background: var(--primary-bg, #eef4ff); border-left: 4px solid var(--primary, #3b82f6); padding: 15px; border-radius: 4px; margin-bottom: 25px;">
+            <strong style="display: block; margin-bottom: 10px;">Bukti Pembayaran Sedang Diperiksa</strong>
+            <p style="margin: 0; font-size: 14px;">
+                Terima kasih, bukti transfer kamu sudah kami terima dan sedang diverifikasi admin.
+                {{ \App\Support\PriceCalculator::formatRupiah($order->pay_now_idr) }}
+                Kamu tidak perlu mengunggah bukti lagi — jika ditolak, kami kirim email/notifikasi beserta alasannya dan kamu punya 24 jam untuk unggah ulang.
+            </p>
+        </div>
+    @elseif(in_array($order->status, ['menunggu_pembayaran', 'pembayaran_gagal']))
         <div style="background: var(--warning-bg); border-left: 4px solid var(--warning); padding: 15px; border-radius: 4px; margin-bottom: 25px;">
-            <strong style="color: var(--warning-text); display: block; margin-bottom: 10px;">Menunggu Pembayaran</strong>
+            <strong style="color: var(--warning-text); display: block; margin-bottom: 10px;">{{ $order->status === 'pembayaran_gagal' ? 'Bukti Pembayaran Ditolak — Unggah Ulang' : 'Menunggu Pembayaran' }}</strong>
             <p style="margin: 0; font-size: 14px; color: var(--warning-text);">
                 {{-- ✅ BUG FIX: payment_deadline_at bisa NULL (order lama sebelum kolom
                      ini ada, atau order yang deadline-nya di-reset). Dulu dipanggil
@@ -37,10 +49,18 @@
                      menunggu_pembayaran/pembayaran_gagal. Lihat invoice.blade.php:92
                      yang sudah benar memakai guard null. --}}
                 @if ($order->payment_deadline_at)
-                    Segera lakukan pembayaran sebesar <strong>{{ \App\Support\PriceCalculator::formatRupiah($order->pay_now_idr) }}</strong> sebelum batas waktu
+                    {{ $order->status === 'pembayaran_gagal' ? 'Bukti pembayaran kamu belum kami validasi. Perbaiki sesuai alasan penolakan dan unggah ulang pembayaran sebesar' : 'Segera lakukan pembayaran sebesar' }} <strong>{{ \App\Support\PriceCalculator::formatRupiah($order->pay_now_idr) }}</strong> sebelum batas waktu
                     <strong>{{ $order->payment_deadline_at->timezone('Asia/Jakarta')->translatedFormat('j M Y, H:i') }} WIB</strong>.
                 @else
                     Segera lakukan pembayaran sebesar <strong>{{ \App\Support\PriceCalculator::formatRupiah($order->pay_now_idr) }}</strong> dan unggah bukti transfer secepatnya.
+                @endif
+                {{-- ✅ BUG FIX: janji email penolakan adalah jendela resubmit 24 jam;
+                     tampilkan juga countdown-nya di halaman supaya customer tahu
+                     batas unggah ulangnya (bukan cuma batas bayar awal). --}}
+                @php($resubmit = $order->latestPaymentProof()?->status === 'rejected' ? $order->latestPaymentProof()->resubmit_deadline_at : null)
+                @if ($order->status === 'pembayaran_gagal' && $resubmit)
+                    <br>
+                    <span style="font-size: 13px;">Batas unggah ulang bukti: <strong>{{ $resubmit->timezone('Asia/Jakarta')->translatedFormat('j M Y, H:i') }} WIB</strong>.</span>
                 @endif
             </p>
         </div>

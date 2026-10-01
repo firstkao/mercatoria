@@ -40,7 +40,11 @@
                     <p class="muted">Ditransfer via: <strong>{{ $latestProof->method->label ?? 'Unknown' }}</strong> | Nominal: <strong>{{ \App\Support\PriceCalculator::formatRupiah($latestProof->amount_idr) }}</strong></p>
                 </div>
 
-                @if($latestProof->status === 'pending')
+                {{-- ✅ BUG FIX: Tombol approve/reject hanya untuk order yang
+                     masih di gerbang pembayaran (menunggu_pembayaran/ditahan).
+                     Kalau admin sudah menggeser status manual, submit dari sini
+                     dulu akan kena 422 "Status order tidak dapat diubah". --}}
+                @if($latestProof->status === 'pending' && in_array($order->status, ['menunggu_pembayaran', 'ditahan'], true))
                     <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--border);">
                         <form method="POST" action="{{ route('admin.payments.approve', $latestProof->id) }}" style="margin-bottom: 15px;">
                             @csrf

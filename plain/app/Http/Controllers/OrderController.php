@@ -128,10 +128,10 @@ class OrderController extends Controller
         try {
             $order->paymentProofs()->create([
                 'payment_method_id' => $request->input('payment_method_id'),
-                // ✅ BUG FIX: isi payment_stage. Kolom ini didefinisikan di
-                // migration (default 'dp') tapi tidak pernah diisi eksplisit;
-                // saat ini seluruh order full-payment, jadi stage = 'lunas'.
-                'payment_stage' => 'lunas',
+                // ✅ BUG FIX: isi payment_stage sesuai skema order — dulu
+                // di-hardcode 'lunas' walau kolomnya varchar(10) dan order DP
+                // akan salah label. FP -> lunas, selain itu dp.
+                'payment_stage' => $order->payment_scheme === 'FP' ? 'lunas' : 'dp',
                 'amount_idr' => $order->pay_now_idr,
                 'proof_path' => $filename,
                 'status' => 'pending',

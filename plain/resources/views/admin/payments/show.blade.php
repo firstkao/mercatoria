@@ -10,7 +10,7 @@
             <div><dt>Pembeli</dt><dd>{{ $proof->full_name }} ({{ $proof->email }})</dd></div>
             <div><dt>Metode Pembayaran</dt><dd>{{ $proof->payment_method_label }}</dd></div>
             <div><dt>Jumlah</dt><dd>Rp {{ number_format($proof->amount_idr, 0, ',', '.') }}</dd></div>
-            <div><dt>Status Order</dt><dd>{{ $proof->order_status }}</dd></div>
+            <div><dt>Status Order</dt><dd>{{ \App\Enums\OrderStatus::tryFrom($proof->order_status)?->label() ?? $proof->order_status }}</dd></div>
             <div><dt>Status Bukti</dt><dd>
                 <span @class(['badge', 'badge--on' => $proof->status === 'approved', 'badge--danger' => $proof->status === 'rejected'])>
                     @if ($proof->status === 'pending') Menunggu verifikasi
@@ -41,7 +41,9 @@
     </div>
 
     {{-- Actions --}}
-    @if ($proof->status === 'pending')
+    {{-- ✅ BUG FIX: aksi verifikasi hanya untuk order yang masih di gerbang
+         pembayaran; kalau status sudah digeser manual, bukti hanya dibaca. --}}
+    @if ($proof->status === 'pending' && in_array($proof->order_status, ['menunggu_pembayaran', 'ditahan'], true))
         <div class="panel stack">
             <h2>Verifikasi</h2>
             <form method="POST" action="{{ route('admin.payments.approve', $proof->id) }}">

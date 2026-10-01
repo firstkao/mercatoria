@@ -16,14 +16,20 @@ class SendPaymentReminders extends Command
 {
     public function handle(): int
     {
-        // Window 20-21 jam untuk mencegah pengiriman berulang
-        $startWindow = now()->subHours(21);
-        $endWindow = now()->subHours(20);
+        // ✅ BUG FIX: dulu pakai window created_at 20–21 jam. Itu salah untuk dua
+        // kasus: (a) order DP — pengingat malah dikirim ~21 jam setelah order
+        // dibuat padahal deadline bayar SISA 21 jam (harusnya saat deadline
+        // MENDEKAT); (b) order yang statusnya sudah digeser admin ke
+        // pembayaran_gagal tapi deadline-nya masih jauh — tidak pernah diingatkan.
+        // Sekarang berbasis payment_deadline_at: kirim saat tersisa 3–4 jam,
+        // dengan window 1 jam agar tidak berulang (scheduler jalan tiap jam).
+        $deadlineStart = now()->addHours(3);
+        $deadlineEnd = now()->addHours(4);
 
         $ordersToRemind = Order::query()
             ->with('user')
-            ->where('status', 'menunggu_pembayaran')
-            ->whereBetween('created_at', [$startWindow, $endWindow])
+            ->whereIn('status', ['menunggu_pembayaran', 'pembayaran_gagal'])
+            ->whereBetween('payment_deadline_at', [$deadlineStart, $deadlineEnd])
             ->whereDoesntHave('paymentProofs', fn ($q) => $q->whereIn('status', ['pending', 'approved']))
             ->get();
 
