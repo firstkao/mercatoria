@@ -5,49 +5,58 @@
 ])
 
 @section('content')
-<!-- TAMBAHAN: enctype="multipart/form-data" WAJIB ada agar bisa kirim gambar -->
 <form method="POST" action="{{ $isNew ? route('admin.payment-methods.store') : route('admin.payment-methods.update', $method) }}" class="panel stack" enctype="multipart/form-data">
     @csrf
     @unless($isNew) @method('PUT') @endunless
 
     <label class="field">
+        <span>Jenis Pembayaran</span>
+        <select name="type" id="pm-type" required>
+            @foreach($types as $value => $labelOption)
+                <option value="{{ $value }}" @selected(old('type', $method->type ?? 'bank') === $value)>{{ $labelOption }}</option>
+            @endforeach
+        </select>
+        @include('admin.partials.error', ['name' => 'type'])
+    </label>
+
+    <label class="field">
         <span>Label</span>
-        <input type="text" name="label" value="{{ old('label', $method->label) }}" maxlength="100" required placeholder="Contoh: BCA / QRIS / Mandiri">
+        <input type="text" name="label" value="{{ old('label', $method->label) }}" maxlength="100" required placeholder="Contoh: BCA / QRIS / Tokopedia Barcode">
         @include('admin.partials.error', ['name' => 'label'])
     </label>
 
-    <div class="field-row">
+    <!-- Bank: nomor rekening + atas nama (wajib untuk jenis Transfer Bank) -->
+    <div class="field-row pm-bank-only">
         <label class="field">
-            <span>Nomor Rekening (opsional)</span>
+            <span>Nomor Rekening <em style="color:var(--danger)">*</em></span>
             <input type="text" name="account_number" value="{{ old('account_number', $method->account_number) }}" maxlength="100" placeholder="1234567890">
             @include('admin.partials.error', ['name' => 'account_number'])
         </label>
         <label class="field">
-            <span>Atas Nama (opsional)</span>
-            <input type="text" name="account_name" value="{{ old('account_name', $method->account_name) }}" maxlength="100">
+            <span>Atas Nama <em style="color:var(--danger)">*</em></span>
+            <input type="text" name="account_name" value="{{ old('account_name', $method->account_name) }}" maxlength="100" placeholder="PT Contoh Abadi">
             @include('admin.partials.error', ['name' => 'account_name'])
         </label>
     </div>
 
-    <label class="field">
-        <span>Instruksi (opsional)</span>
-        <textarea name="instructions" rows="4" maxlength="2000" placeholder="Cara transfer, dsb.">{{ old('instructions', $method->instructions) }}</textarea>
-        @include('admin.partials.error', ['name' => 'instructions'])
-    </label>
-
-    <!-- TAMBAHAN: Input File untuk QR Code / Barcode -->
-    <label class="field">
-        <span>Upload QRIS / Barcode (opsional)</span>
+    <!-- QR/Barcode: upload gambar (wajib untuk jenis scan) -->
+    <label class="field pm-scan-only">
+        <span>Foto QR Code / Barcode <em style="color:var(--danger)" class="pm-required-star">*</em></span>
         <input type="file" name="qr_image" accept="image/png, image/jpeg, image/jpg, image/webp">
         @include('admin.partials.error', ['name' => 'qr_image'])
-        
-        <!-- Preview jika gambar QR sudah ada (saat edit) -->
+
         @if(! $isNew && $method->qr_image)
             <div style="margin-top: 10px; padding: 10px; border: 1px solid #ddd; display: inline-block; border-radius: 8px;">
                 <p style="margin: 0 0 5px 0; font-size: 12px; color: #666;">Gambar saat ini:</p>
-                <img src="{{ asset('storage/' . $method->qr_image) }}" alt="QRIS" style="max-width: 150px; border-radius: 4px;">
+                <img src="{{ asset('storage/' . $method->qr_image) }}" alt="QR/Barcode" style="max-width: 150px; border-radius: 4px;">
             </div>
         @endif
+    </label>
+
+    <label class="field">
+        <span>Instruksi (opsional)</span>
+        <textarea name="instructions" rows="4" maxlength="2000" placeholder="Cara transfer, batas waktu pembayaran, dsb.">{{ old('instructions', $method->instructions) }}</textarea>
+        @include('admin.partials.error', ['name' => 'instructions'])
     </label>
 
     <div class="field-row">
@@ -72,6 +81,25 @@
         <button type="submit" class="btn btn--primary">Simpan</button>
     </div>
 </form>
+
+<script>
+// Tampilkan hanya isian yang relevan per jenis pembayaran:
+// - bank    -> rekening + atas nama
+// - qris/barcode -> cukup foto QR/barcode
+(function () {
+    var sel = document.getElementById('pm-type');
+    if (! sel) return;
+    function sync() {
+        var isBank = sel.value === 'bank';
+        document.querySelectorAll('.pm-bank-only').forEach(function (el) { el.style.display = isBank ? '' : 'none'; });
+        document.querySelectorAll('.pm-scan-only').forEach(function (el) { el.style.display = isBank ? 'none' : ''; });
+        var star = document.querySelector('.pm-required-star');
+        if (star) star.style.visibility = isBank ? 'hidden' : 'visible';
+    }
+    sel.addEventListener('change', sync);
+    sync();
+})();
+</script>
 
 @unless($isNew)
     <form method="POST" action="{{ route('admin.payment-methods.destroy', $method) }}" class="danger-zone"

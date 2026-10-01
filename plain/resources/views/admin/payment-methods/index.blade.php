@@ -16,8 +16,10 @@
                 <thead>
                     <tr>
                         <th>Label</th>
+                        <th>Jenis</th>
                         <th>Nomor Rekening</th>
                         <th>Atas Nama</th>
+                        <th>QR/Barcode</th>
                         <th>Urutan</th>
                         <th>Status</th>
                         <th>Aksi</th>
@@ -27,8 +29,16 @@
                     @foreach ($methods as $method)
                         <tr>
                             <td><strong>{{ $method->label }}</strong></td>
+                            <td class="muted">{{ \App\Models\PaymentMethod::typeLabel($method->type ?? null) }}</td>
                             <td class="mono">{{ $method->account_number ?: '—' }}</td>
                             <td class="muted">{{ $method->account_name ?: '—' }}</td>
+                            <td>
+                                @if(! empty($method->qr_image))
+                                    <a href="{{ asset('storage/' . $method->qr_image) }}" target="_blank" class="link">Lihat</a>
+                                @else
+                                    <span class="muted">—</span>
+                                @endif
+                            </td>
                             <td class="muted">{{ $method->sort_order }}</td>
                             <td>
                                 <span @class(['badge', 'badge--on' => $method->is_active, 'badge--muted' => ! $method->is_active])>
@@ -57,6 +67,7 @@
                             <span class="card-row__title">{{ $method->label }}</span>
                             <span @class(['badge', 'badge--on' => $method->is_active, 'badge--muted' => !$method->is_active])>{{ $method->is_active ? 'Aktif' : 'Nonaktif' }}</span>
                         </div>
+                        <p class="card-row__meta muted">{{ \App\Models\PaymentMethod::typeLabel($method->type ?? null) }}</p>
                         <p class="card-row__meta mono">{{ $method->account_number ?: '&mdash;' }} a.n {{ $method->account_name ?: '&mdash;' }}</p>
                         <div style="margin-top:6px"><a href="{{ route('admin.payment-methods.edit', $method) }}" class="link">Edit</a></div>
                     </div>

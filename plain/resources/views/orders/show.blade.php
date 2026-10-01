@@ -87,6 +87,48 @@
                     <input type="file" name="proof" accept="image/jpeg,image/png,image/webp" required style="padding: 5px;">
                 </label>
             </div>
+
+            {{-- Tampilkan instruksi & media metode yang dipilih (rekening untuk bank, gambar untuk QR/barcode) --}}
+            <div id="pm-detail" class="panel stack" style="background:#f7f7f8;padding:12px;border-radius:8px;display:none;">
+                <p id="pm-instructions" style="white-space:pre-wrap;margin:0;font-size:13px;"></p>
+                <a id="pm-image-link" href="#" target="_blank" style="display:none;">
+                    <img id="pm-image" src="" alt="QR/Barcode" style="max-width:220px;border-radius:8px;display:block;margin-top:8px;">
+                </a>
+            </div>
+            <script>
+            (function () {
+                var methods = @json($paymentMethods->map(fn ($pm) => [
+                    'id' => $pm->id,
+                    'type' => $pm->type ?? 'bank',
+                    'account_number' => $pm->account_number,
+                    'account_name' => $pm->account_name,
+                    'instructions' => $pm->instructions,
+                    'qr_image' => ! empty($pm->qr_image) ? asset('storage/' . $pm->qr_image) : null,
+                ]));
+                var sel = document.querySelector('select[name="payment_method_id"]');
+                var box = document.getElementById('pm-detail');
+                if (! sel || ! box) return;
+                function sync() {
+                    var m = methods.find(function (x) { return String(x.id) === sel.value; });
+                    if (! m) { box.style.display = 'none'; return; }
+                    var lines = [];
+                    if (m.account_number) lines.push('Transfer ke: ' + m.account_number + (m.account_name ? ' a.n ' + m.account_name : ''));
+                    if (m.instructions) lines.push(m.instructions);
+                    document.getElementById('pm-instructions').textContent = lines.join('\n');
+                    var imgLink = document.getElementById('pm-image-link');
+                    if (m.qr_image) {
+                        document.getElementById('pm-image').src = m.qr_image;
+                        imgLink.href = m.qr_image;
+                        imgLink.style.display = 'block';
+                    } else {
+                        imgLink.style.display = 'none';
+                    }
+                    box.style.display = 'block';
+                }
+                sel.addEventListener('change', sync);
+                sync();
+            })();
+            </script>
             <button type="submit" class="button button--block" style="margin-top: 10px;">Upload & Konfirmasi</button>
         </form>
     @endif
