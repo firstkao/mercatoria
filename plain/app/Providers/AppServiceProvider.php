@@ -74,6 +74,12 @@ class AppServiceProvider extends ServiceProvider
                     Setting::create(['key' => $key, 'value' => $value]);
                 }
             }
+
+            // Sekali saja: kebijakan baru -> referee tidak dapat bonus tambahan referral.
+            // (Yang diundang cukup welcome/first-order bonus + cashback transaksi biasa.)
+            if ((string) Setting::where('key', 'referral_reward_referee')->value('value') === '2000') {
+                Setting::where('key', 'referral_reward_referee')->update(['value' => '0']);
+            }
         }
 
         // ============================================================
