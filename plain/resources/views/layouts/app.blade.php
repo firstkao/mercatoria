@@ -98,7 +98,10 @@
                     @endif
                 @endif
 
-                <a href="{{ url('/konfirmasi-pembayaran') }}" class="site-nav__link">Konfirmasi Pembayaran</a>
+                <a href="{{ route('account.orders.index') }}" class="site-nav__link">Pesanan Saya</a>
+                {{-- FASE 1: 'Konfirmasi Pembayaran' tidak lagi global di header.
+                     Bukti bayar diunggah per-order (lewat Pesanan Saya -> Detail &
+                     Bayar), karena konfirmasi hanya relevan setelah ada order --}}
             </nav>
 
             {{-- TENGAH: Logo --}}

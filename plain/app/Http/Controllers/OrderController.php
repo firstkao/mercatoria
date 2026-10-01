@@ -3,11 +3,16 @@
 namespace App\Http\Controllers;
 
 use App\Models\ActivityLog;
+use App\Enums\OrderStatus;
 use App\Models\Order;
 use App\Models\PaymentMethod;
 use App\Models\Setting;
+use App\Services\NotificationService;
+use App\Support\QrisPayloadReader;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
@@ -21,7 +26,17 @@ class OrderController extends Controller
     {
         $orders = $request->user()->orders()->latest()->paginate(20);
 
-        return view('orders.index', compact('orders'));
+        // FASE 1: "Tagihan Menunggu" — order yang butuh aksi bayar/unggah bukti.
+        $unpaid = $orders->getCollection()
+            ->whereIn('status', [
+                OrderStatus::MenungguPembayaran->value,
+                OrderStatus::PembayaranGagal->value,
+            ])
+            ->sortByDesc('payment_deadline_at')
+            ->take(5)
+            ->values();
+
+        return view('orders.index', compact('orders', 'unpaid'));
     }
 
     public function show(Request $request, string $orderNumber): View
@@ -139,6 +154,96 @@ class OrderController extends Controller
             ]);
 
             $order->update(['status' => 'ditahan']);
+
+            // =========================================================
+            // FASE 2 — Verifikasi otomatis QRIS.
+            // Bila metode = qris & auto_verify aktif, coba baca payload QR
+            // dari gambar bukti dan cocokkan ID merchant dengan rekening/
+            // merchant id metode. Cocok -> langsung approved + status order
+            // 'pembayaran_diterima' (admin tidak perlu review manual).
+            // Gagal/tidak cocok -> biarkan 'ditahan' (review manual seperti
+            // biasa). Keputusan auto-verification dicatat ke payment_proofs
+            // lewat kolom status/reviewed_at agar audit trail tetap ada.
+            // =========================================================
+            $method = PaymentMethod::find($request->input('payment_method_id'));
+            if ($method !== null && $method->isAutoVerifiable()) {
+                try {
+                    $payload = QrisPayloadReader::read(
+                        Storage::disk('public')->path($filename)
+                    );
+                    $matched = QrisPayloadReader::matchesMerchant(
+                        $payload,
+                        $method->account_number ?: $method->account_name
+                    );
+
+                    if ($matched) {
+                        DB::transaction(function () use ($order, $filename): void {
+                            $proofRow = DB::table('payment_proofs')
+                                ->where('order_id', $order->id)
+                                ->where('proof_path', $filename)
+                                ->lockForUpdate()
+                                ->first();
+
+                            if ($proofRow === null) {
+                                return;
+                            }
+
+                            DB::table('payment_proofs')->where('id', $proofRow->id)->update([
+                                'status' => 'approved',
+                                'reviewed_at' => now(),
+                                'updated_at' => now(),
+                            ]);
+
+                            $fromStatus = $order->status;
+
+                            DB::table('orders')->where('id', $order->id)->update([
+                                'status' => 'pembayaran_diterima',
+                                'paid_at' => now(),
+                                'updated_at' => now(),
+                            ]);
+
+                            DB::table('order_status_history')->insert([
+                                'order_id' => $order->id,
+                                'from_status' => $fromStatus,
+                                'to_status' => 'pembayaran_diterima',
+                                'changed_by' => 'system',
+                                'admin_id' => null,
+                                'note' => 'Verifikasi otomatis QRIS (merchant ID cocok)',
+                                'created_at' => now(),
+                                'updated_at' => now(),
+                            ]);
+                        });
+
+                        try {
+                            NotificationService::payment(
+                                $order->user,
+                                $order->fresh(),
+                                'approved'
+                            );
+                        } catch (\Throwable $e) {
+                            Log::warning('Gagal kirim notifikasi auto-approve QRIS', [
+                                'order' => $order->order_number,
+                                'error' => $e->getMessage(),
+                            ]);
+                        }
+
+                        ActivityLog::record($request->user(), 'auto_verify_payment', $request, [
+                            'order_number' => $order->order_number,
+                            'payment_method' => $method->label,
+                        ]);
+
+                        return redirect()
+                            ->route('account.orders.show', $orderNumber)
+                            ->with('status', 'Pembayaran kamu terverifikasi otomatis. Pesanan sedang diproses.');
+                    }
+                } catch (\Throwable $e) {
+                    // Decoder gagal total — aman, jatuh ke review manual.
+                    Log::info('Auto-verify QRIS dilewati (decoder gagal/tidak cocok)', [
+                        'order' => $order->order_number,
+                        'error' => $e->getMessage(),
+                    ]);
+                }
+            }
         } catch (\Throwable $e) {
             Storage::disk('public')->delete($filename);
 

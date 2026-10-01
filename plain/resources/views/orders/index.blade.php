@@ -8,6 +8,28 @@
         <div class="notice">{{ session('status') }}</div>
     @endif
 
+    {{-- FASE 1: "Tagihan Menunggu" — pintasan aksi bayar/unggah bukti.
+         Menggantikan menu global 'Konfirmasi Pembayaran': konfirmasi hanya
+         relevan per-order, jadi CTA-nya muncul di sini untuk order yang
+         benar-benar butuh pembayaran. --}}
+    @if ($unpaid->isNotEmpty())
+        <div class="panel stack" style="border-left: 4px solid var(--accent-strong); margin-bottom: 20px;">
+            <h2 style="margin:0;">Tagihan Menunggu</h2>
+            @foreach($unpaid as $u)
+                <div style="display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap; padding:8px 0; border-top:1px solid #eee;">
+                    <div>
+                        <strong style="font-family:monospace;">{{ $u->order_number }}</strong>
+                        <span class="muted"> · {{ \App\Support\PriceCalculator::formatRupiah($u->pay_now_idr) }} ({{ $u->payment_scheme === 'FP' ? 'lunas' : 'DP' }})</span>
+                        @if($u->payment_deadline_at)
+                            <div class="muted" style="font-size:12px;">Batas bayar: {{ $u->payment_deadline_at->timezone('Asia/Jakarta')->translatedFormat('j M Y, H:i') }} WIB</div>
+                        @endif
+                    </div>
+                    <a href="{{ route('account.orders.show', $u->order_number) }}#upload-bukti" class="button button--small">Bayar &amp; Unggah Bukti</a>
+                </div>
+            @endforeach
+        </div>
+    @endif
+
     @if($orders->isEmpty())
         <div class="empty">
             <p>Kamu belum memiliki pesanan.</p>
