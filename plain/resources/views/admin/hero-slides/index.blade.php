@@ -68,6 +68,20 @@
                     @endforeach
                 </tbody>
             </table>
+        <ul class="cards only-mobile">
+            @foreach ($slides as $slide)
+                <li>
+                    <div class="card-row">
+                        @if ($slide->image_path)<img src="{{ $slide->imageUrl() }}" alt="" class="card-row__thumb">@endif
+                        <div class="card-row__body">
+                            <span class="card-row__title">{{ $slide->title ?: '&mdash;' }}</span>
+                            <span class="card-row__meta">{{ $slide->is_active ? 'Aktif' : 'Nonaktif' }} &middot; urutan {{ $slide->sort_order }}</span>
+                            <div style="margin-top:6px"><a href="{{ route('admin.hero-slides.edit', $slide) }}" class="link">Edit</a></div>
+                        </div>
+                    </div>
+                </li>
+            @endforeach
+        </ul>
         </div>
     @endif
 @endsection

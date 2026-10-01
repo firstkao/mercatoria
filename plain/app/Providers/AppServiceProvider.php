@@ -43,7 +43,8 @@ class AppServiceProvider extends ServiceProvider
                 'birthday_voucher_min' => '100000',
                 'birthday_voucher_valid_days' => '3',
                 'referral_reward_referrer' => '5000',
-                'referral_reward_referee' => '2000',
+                'referral_reward_click' => '10',
+                'referral_reward_referee' => '0', // referee tidak dapat bonus tambahan (hanya welcome + cashback order)
                 'wa_widget_enabled' => '1',
                 'wa_widget_label' => 'Chat CS',
                 'wa_widget_greeting' => 'Halo, saya mau tanya tentang produk di MERCATORIA.',
@@ -72,6 +73,12 @@ class AppServiceProvider extends ServiceProvider
                 if (! Setting::where('key', $key)->exists()) {
                     Setting::create(['key' => $key, 'value' => $value]);
                 }
+            }
+
+            // Sekali saja: kebijakan baru -> referee tidak dapat bonus tambahan referral.
+            // (Yang diundang cukup welcome/first-order bonus + cashback transaksi biasa.)
+            if ((string) Setting::where('key', 'referral_reward_referee')->value('value') === '2000') {
+                Setting::where('key', 'referral_reward_referee')->update(['value' => '0']);
             }
         }
 

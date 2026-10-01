@@ -56,6 +56,20 @@
                     @endforeach
                 </tbody>
             </table>
+        <ul class="cards only-mobile">
+            @foreach($messages as $message)
+                <li>
+                    <a href="{{ route('admin.contact.show', $message) }}" class="card-row card-row--stack">
+                        <div class="card-row__head">
+                            <span class="card-row__title">{{ $message->subject }}</span>
+                            @unless ($message->read_at)<span class="badge badge--warn">Baru</span>@endunless
+                        </div>
+                        <p class="card-row__meta">{{ $message->name }} &middot; {{ $message->email }}</p>
+                        <p class="card-row__meta">{{ $message->created_at->timezone('Asia/Jakarta')->translatedFormat('j M Y H:i') }}</p>
+                    </a>
+                </li>
+            @endforeach
+        </ul>
         </div>
 
         @include('admin.partials.pagination', ['paginator' => $messages])

@@ -54,6 +54,21 @@
                 @endforeach
             </tbody>
         </table>
+        <ul class="cards only-mobile">
+            @foreach($orders as $order)
+                <li>
+                    <a href="{{ route('admin.orders.show', $order) }}" class="card-row card-row--stack">
+                        <div class="card-row__head">
+                            <span class="card-row__title mono">{{ $order->order_number }}</span>
+                            <span class="badge {{ $order->status === 'ditahan' ? 'badge--warn' : '' }} {{ $order->status === 'selesai' ? 'badge--on' : '' }}">{{ str_replace('_', ' ', Str::title($order->status)) }}</span>
+                        </div>
+                        <p class="card-row__meta">{{ $order->user->full_name ?? 'Data Dihapus' }}</p>
+                        <p class="card-row__meta">Bayar sekarang: {{ \App\Support\PriceCalculator::formatRupiah($order->pay_now_idr) }} · Skema {{ $order->payment_scheme }}</p>
+                        <p class="card-row__meta">{{ $order->created_at->timezone('Asia/Jakarta')->format('d/m/Y H:i') }}</p>
+                    </a>
+                </li>
+            @endforeach
+        </ul>
         <div style="padding: 20px;">
             {{ $orders->links('admin.partials.pagination') }}
         </div>

@@ -25,6 +25,10 @@
             <strong class="stat__value">{{ number_format($stats['pending'], 0, ',', '.') }}</strong>
         </div>
         <div class="stat">
+            <span class="stat__label">Klik Link</span>
+            <strong class="stat__value">{{ number_format($stats['clicks'], 0, ',', '.') }}</strong>
+        </div>
+        <div class="stat">
             <span class="stat__label">Koin Terbayar</span>
             <strong class="stat__value">{{ number_format($stats['coins_paid'], 0, ',', '.') }}</strong>
         </div>
@@ -41,7 +45,7 @@
                         <th>Diundang</th>
                         <th>Kode</th>
                         <th>Status</th>
-                        <th>Reward</th>
+                        <th>Reward Pengajak</th>
                         <th>Tanggal</th>
                     </tr>
                 </thead>
@@ -74,7 +78,7 @@
                             </td>
                             <td class="small">
                                 @if ($ref->status === 'rewarded')
-                                    +{{ number_format($ref->referrer_reward, 0, ',', '.') }} / +{{ number_format($ref->referee_reward, 0, ',', '.') }}
+                                    +{{ number_format($ref->referrer_reward, 0, ',', '.') }} koin
                                 @else
                                     —
                                 @endif
@@ -84,6 +88,19 @@
                     @endforeach
                 </tbody>
             </table>
+        <ul class="cards only-mobile">
+            @foreach($referrals as $ref)
+                <li>
+                    <div class="card-row card-row--stack">
+                        <div class="card-row__head">
+                            <span class="card-row__title">{{ $ref->referrer?->full_name ?? '&mdash;' }} &rarr; {{ $ref->referee?->full_name ?? '&mdash;' }}</span>
+                            @if ($ref->status === 'rewarded')<span class="badge badge--on">Berhasil</span>@else<span class="badge badge--muted">{{ $ref->status }}</span>@endif
+                        </div>
+                        <p class="card-row__meta mono">{{ $ref->referral_code }} &middot; {{ $ref->created_at->timezone('Asia/Jakarta')->translatedFormat('j M Y') }}</p>
+                    </div>
+                </li>
+            @endforeach
+        </ul>
         </div>
         @include('admin.partials.pagination', ['paginator' => $referrals])
     @endif

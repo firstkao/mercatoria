@@ -4,7 +4,7 @@
 <section class="card" style="max-width: 900px;">
     <p class="eyebrow">Referral</p>
     <h1>Undang Teman, Dapat Koin 🎁</h1>
-    <p class="muted">Bagikan kode undanganmu. Setiap kali teman mendaftar pakai kode dan menyelesaikan order pertamanya, kalian berdua dapat bonus koin.</p>
+    <p class="muted">Bagikan kodemu ke teman. Kamu dapat <strong>{{ number_format($rewardClick, 0, ',', '.') }} koin</strong> setiap ada orang yang membuka link undanganmu, dan <strong>{{ number_format($rewardReferrer, 0, ',', '.') }} koin</strong> begitu mereka mendaftar DAN menyelesaikan order pertamanya. Temannya sendiri cukup dapat welcome bonus &amp; cashback order biasa — tanpa bonus tambahan.</p>
 
     @if (session('status'))
         <div class="notice">{{ session('status') }}</div>
@@ -24,21 +24,28 @@
 
     <div class="referral-rewards">
         <div class="referral-reward">
-            <span class="referral-reward__icon">👥</span>
-            <strong>Kamu dapat</strong>
-            <span class="referral-reward__amount">{{ number_format($rewardReferrer, 0, ',', '.') }} koin</span>
-            <small class="muted">per teman yang berhasil</small>
+            <span class="referral-reward__icon">🔗</span>
+            <strong>Teman buka linkmu</strong>
+            <span class="referral-reward__amount">+{{ number_format($rewardClick, 0, ',', '.') }} koin</span>
+            <small class="muted">per orang unik per hari (anti-spam)</small>
         </div>
         <div class="referral-reward">
-            <span class="referral-reward__icon">🎉</span>
-            <strong>Temanmu dapat</strong>
-            <span class="referral-reward__amount">{{ number_format($rewardReferee, 0, ',', '.') }} koin</span>
-            <small class="muted">setelah order pertama selesai</small>
+            <span class="referral-reward__icon">🛒</span>
+            <strong>Teman daftar &amp; beli</strong>
+            <span class="referral-reward__amount">{{ number_format($rewardReferrer, 0, ',', '.') }} koin</span>
+            <small class="muted">sekali, saat order pertamanya selesai</small>
         </div>
     </div>
 
     {{-- Stats --}}
     <div class="account-stats" style="margin-top:24px;">
+        <div class="account-stat">
+            <span class="account-stat__icon">🔗</span>
+            <div>
+                <span class="account-stat__label">Klik Link</span>
+                <strong class="account-stat__value">{{ $stats['clicks'] }}</strong>
+            </div>
+        </div>
         <div class="account-stat">
             <span class="account-stat__icon">👥</span>
             <div>

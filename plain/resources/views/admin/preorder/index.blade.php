@@ -70,6 +70,20 @@
                     @endforeach
                 </tbody>
             </table>
+        <ul class="cards only-mobile">
+            @foreach($pages as $page)
+                <li>
+                    <div class="card-row card-row--stack">
+                        <div class="card-row__head">
+                            <span class="card-row__title">{{ $page->title }}</span>
+                            @if ($page->is_active)<span class="badge badge--on">Aktif</span>@else<span class="badge badge--muted">Nonaktif</span>@endif
+                        </div>
+                        <p class="card-row__meta">{{ $page->slug }} &middot; {{ $page->banners_count }} banner</p>
+                        <div style="margin-top:6px"><a href="{{ route('admin.preorder.edit', $page) }}" class="btn btn--small">Kelola</a></div>
+                    </div>
+                </li>
+            @endforeach
+        </ul>
         </div>
     @endif
 @endsection

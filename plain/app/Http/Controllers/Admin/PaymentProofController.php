@@ -33,6 +33,8 @@ class PaymentProofController extends Controller
             ->join('users', 'users.id', '=', 'orders.user_id')
             ->leftJoin('payment_methods', 'payment_methods.id', '=', 'payment_proofs.payment_method_id')
             ->when($status !== 'all', fn ($query) => $query->where('payment_proofs.status', $status))
+            // ✅ BUG FIX: orders pakai kolom `status` (bukan `order_status`) —
+            // query lama melempar "Unknown column" → halaman bukti bayar error 500.
             ->select('payment_proofs.id', 'payment_proofs.status', 'payment_proofs.amount_idr', 'payment_proofs.uploaded_at', 'orders.order_number', 'orders.pay_now_idr', 'orders.status as order_status', 'users.full_name', 'users.email', DB::raw("COALESCE(payment_methods.label, '(metode dihapus)') as payment_method_label"))
             ->latest('payment_proofs.uploaded_at')
             ->paginate(25)
@@ -50,6 +52,7 @@ class PaymentProofController extends Controller
             ->join('users', 'users.id', '=', 'orders.user_id')
             ->leftJoin('payment_methods', 'payment_methods.id', '=', 'payment_proofs.payment_method_id')
             ->where('payment_proofs.id', $proof)
+            // ✅ BUG FIX: sama seperti index(), kolom orders adalah `status`.
             ->select('payment_proofs.*', 'orders.order_number', 'orders.pay_now_idr', 'orders.status as order_status', 'users.full_name', 'users.email', DB::raw("COALESCE(payment_methods.label, '(metode dihapus)') as payment_method_label"))
             ->firstOrFail();
 

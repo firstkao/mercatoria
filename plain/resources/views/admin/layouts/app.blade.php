@@ -8,7 +8,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{{ asset('css/admin.css') }}?v=5">
+    <link rel="stylesheet" href="{{ asset('css/admin.css') }}?v=7">
     @stack('head')
 </head>
 <body>
@@ -150,7 +150,7 @@
         </button>
     </nav>
 
-    <div class="sheet" id="mobile-menu" hidden data-menu>
+    <div class="sheet" id="mobile-menu" hidden style="display:none" data-menu>
         <div class="sheet__backdrop" data-menu-toggle></div>
         <div class="sheet__panel" role="dialog" aria-label="Semua menu">
             <div class="sheet__head">
@@ -168,12 +168,19 @@
     </div>
 
     <script>
-        document.querySelectorAll('[data-menu-toggle]').forEach(function (element) {
-            element.addEventListener('click', function () {
-                var sheet = document.querySelector('[data-menu]');
-                sheet.hidden = !sheet.hidden;
-                document.querySelector('.tabbar [data-menu-toggle]').setAttribute('aria-expanded', String(!sheet.hidden));
-            });
+        function toggleMenu() {
+            var sheet = document.querySelector('[data-menu]');
+            sheet.hidden = !sheet.hidden;
+            sheet.style.display = sheet.hidden ? 'none' : 'flex';
+            document.querySelector('.tabbar [data-menu-toggle]').setAttribute('aria-expanded', String(!sheet.hidden));
+        }
+        // Bind hanya pada tombol (bukan backdrop anak) agar satu klik = satu toggle
+        document.querySelectorAll('button[data-menu-toggle]').forEach(function (element) {
+            element.addEventListener('click', toggleMenu);
+        });
+        // Klik backdrop => tutup
+        document.querySelector('.sheet__backdrop').addEventListener('click', function () {
+            if (!document.querySelector('[data-menu]').hidden) toggleMenu();
         });
     </script>
     <script src="{{ asset('js/admin-bulk.js') }}" defer></script>

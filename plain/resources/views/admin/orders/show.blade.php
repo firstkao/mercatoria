@@ -77,6 +77,7 @@
         {{-- Rincian Produk --}}
         <section class="panel">
             <h2>Rincian Barang</h2>
+            <div class="table-wrap">
             <table class="table">
                 <thead>
                     <tr>
@@ -100,6 +101,7 @@
                     @endforeach
                 </tbody>
             </table>
+            </div>
         </section>
 
         {{-- Catatan Internal Admin --}}

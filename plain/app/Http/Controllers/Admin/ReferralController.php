@@ -3,7 +3,9 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\CoinLot;
 use App\Models\Referral;
+use App\Models\ReferralClick;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
@@ -26,9 +28,8 @@ class ReferralController extends Controller
             'total' => Referral::count(),
             'pending' => Referral::where('status', Referral::STATUS_PENDING)->count(),
             'rewarded' => Referral::where('status', Referral::STATUS_REWARDED)->count(),
-            'coins_paid' => (int) Referral::where('status', Referral::STATUS_REWARDED)
-                ->selectRaw('SUM(referrer_reward + referee_reward) as total')
-                ->value('total'),
+            'clicks' => ReferralClick::count(),
+            'coins_paid' => (int) CoinLot::whereIn('source', ['referral', 'referral_click'])->sum('amount'),
         ];
 
         return view('admin.referrals.index', [

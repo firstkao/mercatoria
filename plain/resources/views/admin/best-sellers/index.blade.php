@@ -60,6 +60,7 @@
         <div class="empty"><p>Tidak ada produk yang cocok.</p></div>
     @else
         <div class="panel panel--flush">
+            <div class="table-wrap">
             <table class="table">
                 <thead>
                     <tr>
@@ -120,6 +121,7 @@
                     @endforeach
                 </tbody>
             </table>
+            </div>
         </div>
 
         @include('admin.partials.pagination', ['paginator' => $products])
