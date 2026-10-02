@@ -37,7 +37,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&family=Roboto:wght@500;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{{ asset('css/app.css') }}?v=10">
+    <link rel="stylesheet" href="{{ asset('css/app.css') }}?v=11">
     @stack('head')
 </head>
 <body>
@@ -189,23 +189,12 @@
                         @endif
                     </a>
 
-                    @php
-                        // Badge tagihan menunggu: order yang butuh aksi bayar/unggah bukti.
-                        // PENTING: pakai auth()->user()?->id, JANGAN auth()->id() — di beberapa
-                        // setup (session/cache-based guard) id() bisa mengembalikan string dan
-                        // MySQL 8 menolak string sebagai nilai BIGINT (HTTP 500).
-                        // Query dibungkus try/catch supaya halaman publik tidak ikut mati
-                        // bila tabel orders bermasalah — badge cukup diam (0), bukan crash.
-                        $headerUnpaidCount = 0;
-                        try {
-                            $__headerUserId = (int) (auth()->user()?->id ?? 0);
-                            if ($__headerUserId > 0) {
-                                $headerUnpaidCount = \App\Models\Order::where('user_id', $__headerUserId)
-                                    ->whereIn('status', ['menunggu_pembayaran', 'pembayaran_gagal'])
-                                    ->count();
-                            }
-                        } catch (\Throwable $e) {}
-                    @endphp
+                    {{-- Badge tagihan dihitung di View Composer (AppServiceProvider) dan
+                         dikirim lewat view()->share('headerUnpaidCount'). Jangan hitung via
+                         @php inline: kalau view ini pernah ter-compile tanpa blok tersebut
+                         (mis. setelah refactor/pull parsial), Blade tetap menghasilkan
+                         "Undefined variable" saat render. ?? 0 di sini = safety net. --}}
+                    @php $headerUnpaidCount = $headerUnpaidCount ?? 0; @endphp
                     <div class="nav-dropdown header-account">
                         <button type="button" class="header-icon" aria-label="Akun" title="Akun">
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
