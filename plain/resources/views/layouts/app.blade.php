@@ -37,7 +37,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&family=Roboto:wght@500;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{{ asset('css/app.css') }}?v=15">
+    <link rel="stylesheet" href="{{ asset('css/app.css') }}?v=16">
     @stack('head')
 </head>
 <body>
@@ -160,6 +160,13 @@
                     </a>
                 @endif
 
+                {{-- Permintaan user: Threads selalu tampil di header (link resmi). --}}
+                <a href="https://www.threads.com/@mercatoria_id" target="_blank" rel="noopener" class="header-icon" aria-label="Threads" title="Threads">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M17.3 17.47c-.32.26-1.06.48-1.8.54-.9.07-1.81-.11-2.69-.5-1.7-.74-2.93-2.08-3.41-3.52l1.7-.54c.34 1.05 1.27 2.06 2.56 2.62.7.3 1.39.45 2.06.45.25 0 .5-.02.73-.07.48-.09.78-.25.9-.34.37-.3.37-.84.37-1.3v-.02c-.53.2-1.2.34-1.96.34-2.6 0-4.7-1.7-4.7-4.06 0-2.36 2.1-4.06 4.7-4.06 1.8 0 3.34.9 4.1 2.36l-1.5.8c-.47-.9-1.5-1.5-2.6-1.5-1.6 0-2.8.96-2.8 2.4s1.2 2.4 2.8 2.4c.7 0 1.36-.18 1.86-.5V11.9c0-1.2-.5-1.9-1.6-1.9h-.9v-1.6h.9c2.1 0 3.2 1.2 3.2 3.5v3.6c0 .6 0 1.2-.3 1.7-.2.4-.5.8-.9 1.1z"/>
+                    </svg>
+                </a>
+
                 @if (! empty($contactWhatsapp))
                     @php($waNum = preg_replace('/\D/', '', $contactWhatsapp))
                     @if (str_starts_with($waNum, '0'))
@@ -233,12 +240,9 @@
                                 @endif
                             </a>
                             <a href="{{ route('account.coins.index') }}" class="nav-dropdown__item">Koin Saya</a>
-                            <a href="{{ route('notifications.index') }}" class="nav-dropdown__item">
-                                Notifikasi
-                                @if (($unreadNotifHeader ?? 0) > 0)
-                                    <span class="badge badge--danger small" style="margin-left:6px;">{{ $unreadNotifHeader }}</span>
-                                @endif
-                            </a>
+                            {{-- Permintaan user: item "Notifikasi" dihapus dari dropdown
+                                 profil karena ikon lonceng + badge sudah berdiri sendiri
+                                 di header (hindari duplikasi akses). --}}
                             <a href="{{ route('account.profile.edit') }}" class="nav-dropdown__item">Edit Profil</a>
                             <form method="POST" action="{{ route('logout') }}">
                                 @csrf
@@ -317,6 +321,12 @@
                             </svg>
                         </a>
                     @endif
+                    {{-- Permintaan user: Threads selalu tampil di footer (link resmi). --}}
+                    <a href="https://www.threads.com/@mercatoria_id" target="_blank" rel="noopener" aria-label="Threads">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M17.3 17.47c-.32.26-1.06.48-1.8.54-.9.07-1.81-.11-2.69-.5-1.7-.74-2.93-2.08-3.41-3.52l1.7-.54c.34 1.05 1.27 2.06 2.56 2.62.7.3 1.39.45 2.06.45.25 0 .5-.02.73-.07.48-.09.78-.25.9-.34.37-.3.37-.84.37-1.3v-.02c-.53.2-1.2.34-1.96.34-2.6 0-4.7-1.7-4.7-4.06 0-2.36 2.1-4.06 4.7-4.06 1.8 0 3.34.9 4.1 2.36l-1.5.8c-.47-.9-1.5-1.5-2.6-1.5-1.6 0-2.8.96-2.8 2.4s1.2 2.4 2.8 2.4c.7 0 1.36-.18 1.86-.5V11.9c0-1.2-.5-1.9-1.6-1.9h-.9v-1.6h.9c2.1 0 3.2 1.2 3.2 3.5v3.6c0 .6 0 1.2-.3 1.7-.2.4-.5.8-.9 1.1z"/>
+                        </svg>
+                    </a>
                     @if (! empty($contactWhatsapp))
                         @php($waNumFooter = preg_replace('/\D/', '', $contactWhatsapp))
                         @if (str_starts_with($waNumFooter, '0'))

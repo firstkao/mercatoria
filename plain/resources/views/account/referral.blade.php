@@ -131,10 +131,31 @@
             ? document.getElementById('referral-code').textContent.trim()
             : '{{ $user->referralUrl() }}';
 
+        // BUG FIX: jangan pakai alert() bawaan browser (blocking, jelek secara UI/UX).
+        // Ganti dengan toast kustom yang muncul di bawah-tengah layar & auto-hide.
+        function showCopiedToast(msg) {
+            var t = document.getElementById('copy-toast');
+            if (!t) {
+                t = document.createElement('div');
+                t.id = 'copy-toast';
+                t.className = 'copy-toast';
+                t.setAttribute('role', 'status');
+                document.body.appendChild(t);
+            }
+            t.textContent = msg;
+            t.classList.add('copy-toast--show');
+            clearTimeout(t._hideTimer);
+            t._hideTimer = setTimeout(function () {
+                t.classList.remove('copy-toast--show');
+            }, 2000);
+        }
+
+        function doneCopy(mode) {
+            showCopiedToast(mode === 'code' ? 'Kode berhasil disalin ✓' : 'Link berhasil disalin ✓');
+        }
+
         if (navigator.clipboard) {
-            navigator.clipboard.writeText(text).then(function () {
-                alert(mode === 'code' ? 'Kode disalin!' : 'Link disalin!');
-            });
+            navigator.clipboard.writeText(text).then(doneCopy);
         } else {
             var ta = document.createElement('textarea');
             ta.value = text;
@@ -142,7 +163,7 @@
             ta.select();
             document.execCommand('copy');
             document.body.removeChild(ta);
-            alert(mode === 'code' ? 'Kode disalin!' : 'Link disalin!');
+            doneCopy(mode);
         }
     }
 </script>

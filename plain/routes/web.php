@@ -272,8 +272,8 @@ Route::middleware('auth')->group(function (): void {
     // Notifikasi (canonical: /akun/notifikasi — lihat blok "Akun" di bawah.
     // URL lama /notifikasi/* tetap dilayani via redirect permanen.)
 
-    // Referral (undang teman)
-    Route::get('/undang', [ReferralController::class, 'index'])->name('referral.index');
+    // Referral sudah pindah ke dalam grup /akun (canonical: /akun/undang)
+    // supaya anak-menu ikut induknya; URL lama di-redirect permanen di bawah.
 
     // Pre-Order (login only)
     Route::get('/pre-order-baru', [PreorderPageController::class, 'show'])->name('preorder.show');
@@ -295,6 +295,11 @@ Route::middleware('auth')->group(function (): void {
         Route::get('/akun/koin', [CoinController::class, 'index'])->name('account.coins.index');
         Route::get('/akun/profil', [ProfileController::class, 'edit'])->name('account.profile.edit');
         Route::put('/akun/profil', [ProfileController::class, 'update'])->name('account.profile.update');
+
+        // Referral / undang teman (canonical: /akun/undang — bug fix: dulu
+        // jalurnya /undang sehingga tidak terasa satu area dengan akun)
+        Route::get('/akun/undang', [ReferralController::class, 'index'])->name('referral.index');
+        Route::redirect('/undang', '/akun/undang'); // bookmark URL lama
 
         // Notifikasi milik akun (canonical: /akun/notifikasi — bug fix: dulu
         // jalurnya /notifikasi sehingga tidak terasa satu area dengan profil)
