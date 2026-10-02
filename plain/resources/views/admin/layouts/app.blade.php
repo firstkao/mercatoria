@@ -34,7 +34,7 @@
             ['label' => 'Pelanggan', 'items' => [
                 ['route' => 'admin.users.index', 'active' => 'admin.users.*', 'label' => 'Pengguna', 'icon' => 'users'],
                 ['route' => 'admin.referrals.index', 'active' => 'admin.referrals.*', 'label' => 'Referral', 'icon' => 'users'],
-                ['route' => 'admin.contact.index', 'active' => 'admin.contact.*', 'label' => 'Pesan kontak', 'icon' => 'file', 'badge' => 'unreadContact'],
+                // BUG 5 STRICT MODE: menu "Pesan kontak" (admin.contact.*) dihapus dari sidebar admin.
                 ['route' => 'admin.identities.index', 'active' => ['admin.identities.*', 'admin.names.*'], 'label' => 'Blokir & banding', 'icon' => 'shield'],
                 ['route' => 'admin.logs.index', 'active' => 'admin.logs.*', 'label' => 'Log aktivitas', 'icon' => 'list'],
             ]],

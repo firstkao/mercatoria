@@ -30,17 +30,19 @@ class ProductController extends Controller
         // cek spammer/kuota hanya kalau ada user login. Dulu tanpa guard ini,
         // tamu yang buka /produk/... langsung kena 500 "isSpammer() on null".
         //
-        // PERBAIKAN RONDE INI: cek kuota dibungkus try/catch. Kalau terjadi
-        // error tak terduga (mis. kolom view_quota_used belum ada karena DB
-        // dibuat dari SQL dump lama sebelum migration quota jalan), kita JANGAN
-        // biarkan seluruh halaman produk ikut mati (500). Fallback: anggap
-        // kuota masih tersedia dan log penyebab aslinya.
+        // STRICT MODE (permintaan user): spammer kuota habis TIDAK BOLEH
+        // mengakses detail produk sama sekali (hanya Home & Akun). Cek awal
+        // pakai hasExhaustedQuota() -> redirect + flash 'error' persis spec;
+        // consumeViewQuota() tetap jalan untuk menghitung kuota bila masih ada.
         try {
-            if ($user !== null && $user->isSpammer() && ! $user->consumeViewQuota($product)) {
-                // Spammer 10/10: detail produk terkunci -> lempar ke /akun
-                // dengan pesan + arahan chat admin via WA (permintaan #3).
+            if ($user !== null && $user->isSpammer() && $user->hasExhaustedQuota()) {
                 return redirect()->route('account.show')
-                    ->with('error', 'Kuota lihat produk kamu sudah habis ('.$user->view_quota_used.' dari '.Setting::integer('view_quota', 10).'). Chat admin via WhatsApp untuk melakukan reset kuota.');
+                    ->with('error', 'Kuota Anda habis. Silakan hubungi admin untuk reset.');
+            }
+
+            if ($user !== null && $user->isSpammer() && ! $user->consumeViewQuota($product)) {
+                return redirect()->route('account.show')
+                    ->with('error', 'Kuota Anda habis. Silakan hubungi admin untuk reset.');
             }
         } catch (\Throwable $e) {
             report($e);

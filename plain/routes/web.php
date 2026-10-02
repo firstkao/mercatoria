@@ -12,7 +12,6 @@ use App\Http\Controllers\Admin\ActivityLogController;
 use App\Http\Controllers\Admin\AuthController as AdminAuthController;
 use App\Http\Controllers\Admin\BestSellerController;
 use App\Http\Controllers\Admin\CartReminderController;
-use App\Http\Controllers\Admin\ContactMessageController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\DeveloperController;
 use App\Http\Controllers\Admin\GameController;
@@ -182,10 +181,9 @@ Route::prefix('office')->name('admin.')->middleware('auth:admin')->group(functio
     // Log Aktivitas
     Route::get('/logs', [ActivityLogController::class, 'index'])->name('logs.index');
 
-    // Pesan Kontak (admin) — HANYA DI SINI, path-nya /office/contact
-    Route::get('/contact', [ContactMessageController::class, 'index'])->name('contact.index');
-    Route::get('/contact/{message}', [ContactMessageController::class, 'show'])->name('contact.show');
-    Route::delete('/contact/{message}', [ContactMessageController::class, 'destroy'])->name('contact.destroy');
+    // BUG 5 STRICT MODE: fitur admin "Pesan Kontak" (ContactMessageController)
+    // DIHAPUS sesuai permintaan user. Form kontak publik tetap jalan — pesan
+    // masuk ke DB + email CS, hanya panel admin-nya yang tidak disediakan lagi.
 
     // Laporan
     Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
