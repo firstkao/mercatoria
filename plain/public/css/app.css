@@ -239,14 +239,20 @@ img { max-width: 100%; height: auto; display: block; }
 .header-icon:hover { background: #f4f5f7; color: var(--accent-strong); }
 
 /* Ikon Threads: pakai logo PNG resmi (icons8) sesuai permintaan user.
-   img dibikin bulat seukuran ikon sosmed lain + object-fit biar tidak gepeng. */
+   Masalah lama: PNG icons8 punya padding internal — glyph aslinya cuma ~65%
+   dari kanvas 100px, jadi dipaksa 20x20 terlihat "kecil sendiri" dibanding
+   ikon sosmed lain (SVG IG/X/WA memenuhi viewBox). Solusi: gambar di-render
+   34px lalu di-crop ke kotak 20px bulat (object-fit:none + object-position
+   center), sehingga glyph-nya ±22px dan visualnya setimbang dengan yang lain. */
 .header-icon--threads img,
 .footer-social a img[alt="Threads"] {
     width: 20px;
     height: 20px;
     border-radius: 50%;
-    object-fit: cover;
+    overflow: hidden;
     display: block;
+    object-fit: none;
+    object-position: center;
 }
 
 .header-cart-total {

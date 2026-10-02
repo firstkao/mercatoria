@@ -163,6 +163,42 @@ class UserController extends Controller
         return back()->with('status', 'Kuota lihat produk direset.');
     }
 
+    // ============================================================
+    // PERMINTAAN USER #2: admin perlu tempat yang jelas untuk
+    // "membuka kunci" akun spammer. Selama ini tombol reset kuota
+    // hanya muncul di halaman detail user (kalau tahu URL-nya), dan
+    // tidak ada cara cepat mengembalikan peran spammer -> customer.
+    // ============================================================
+
+    /** Pulihkan spammer menjadi customer biasa: kuota direset + tanggal hapus dicabut. */
+    public function unlock(User $user): RedirectResponse
+    {
+        abort_unless($user->role === UserRole::Spammer, 422, 'Pengguna ini bukan spammer.');
+
+        $user->forceFill([
+            'role' => UserRole::Customer,
+            'view_quota_used' => 0,
+            'expires_at' => null,
+        ])->save();
+
+        AdminLog::record('unlock_spammer', $user, ['nama' => $user->full_name]);
+
+        return redirect()
+            ->route('admin.users.show', $user)
+            ->with('status', 'Akun dibuka: '.e($user->full_name).' kembali jadi Customer dan kuota lihat direset.');
+    }
+
+    /** Perpanjang masa tunggu spammer +30 hari (bukan "unlock"; unlock = ubah peran). */
+    public function extend(User $user): RedirectResponse
+    {
+        abort_unless($user->role === UserRole::Spammer, 422, 'Pengguna ini bukan spammer.');
+
+        $user->forceFill(['expires_at' => now()->addDays(30)])->save();
+        AdminLog::record('extend_spammer', $user, ['nama' => $user->full_name, 'perpanjangan' => '30 hari']);
+
+        return back()->with('status', 'Masa tunggu spammer diperpanjang 30 hari dari sekarang.');
+    }
+
     public function anonymize(User $user, AnonymizeCustomer $anonymizeCustomer): RedirectResponse
     {
         abort_unless($user->role === UserRole::Customer && ! $user->anonymized_at, 404);

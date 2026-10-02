@@ -92,7 +92,13 @@ Route::get('/cari', [SearchController::class, 'index'])->name('search.index');
 // klik menu Game/Developer langsung kena 500 ("Call to a member function
 // isSpammer() on null" di ProductController).
 Route::get('/katalog', [CatalogController::class, 'index'])->name('catalog.index');
-Route::get('/produk/{product}', [ProductController::class, 'show'])->name('products.show');
+
+// Permintaan user #1: URL produk canonical adalah /{slug} TANPA prefix
+// /produk. Route '/produk/{product}' tetap didaftarkan lalu redirect 301 ke
+// slug bersih supaya bookmark/link lama tidak mati dan tidak duplikat SEO.
+Route::get('/produk/{product}', function (Product $product) {
+    return redirect(route('products.show', $product), 301);
+})->name('products.legacy');
 
 // Pre-Order Baru — GLOBAL juga (menu header tampil untuk semua pengunjung).
 Route::get('/pre-order-baru', [PreorderPageController::class, 'show'])->name('preorder.show');
@@ -150,6 +156,9 @@ Route::prefix('office')->name('admin.')->middleware('auth:admin')->group(functio
 
     // Pelanggan & Pengguna
     Route::post('/users/{user}/reset-quota', [UserController::class, 'resetQuota'])->name('users.reset-quota');
+    // Permintaan user #2: aksi "buka kunci" spammer dari panel admin.
+    Route::post('/users/{user}/unlock', [UserController::class, 'unlock'])->name('users.unlock');
+    Route::post('/users/{user}/extend', [UserController::class, 'extend'])->name('users.extend');
     Route::post('/users/{user}/send-reset', [UserController::class, 'sendPasswordReset'])->name('users.send-reset');
     Route::post('/users/{user}/anonymize', [UserController::class, 'anonymize'])->name('users.anonymize');
     Route::resource('/users', UserController::class);
@@ -346,16 +355,13 @@ Route::get('/{page}', [LegalPageController::class, 'show'])
     ->whereIn('page', ['syarat-dan-ketentuan', 'kebijakan-privasi', 'faq'])
     ->name('legal.show');
 
-// Slug untuk produk & halaman
+// Slug untuk produk & halaman — INI route canonical produk: /{slug}
+// (permintaan user #1: plain.mercatoria.id/honkai-star-rail-... bukan
+// /produk/...). Produk kini GLOBAL (guest boleh buka; guard null untuk
+// spammer/ActivityLog sudah ada di ProductController::show).
 Route::get('/{slug}', function (string $slug) {
     $product = Product::query()->where('slug', $slug)->first();
     if ($product) {
-        // Halaman produk butuh login (kuota lihat untuk spammer, ActivityLog, dll).
-        // Tanpa ini, guest -> $request->user() null -> error 500.
-        if (! auth()->check()) {
-            return redirect()->guest(route('login'));
-        }
-
         return app(ProductController::class)->show(request(), $product);
     }
 

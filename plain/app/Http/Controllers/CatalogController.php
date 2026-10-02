@@ -97,8 +97,17 @@ class CatalogController extends Controller
             ->paginate(24)
             ->withQueryString();
 
+        // Permintaan user #3: spammer yang kuota lihatnya habis (mis. 10/10)
+        // tidak boleh dikunci total di /akun saja — katalog tetap bisa dibuka,
+        // hanya halaman produk detail yang terkunci sampai admin reset kuota.
+        // Jadi kalau kuota habis, tampilkan banner "terkunci" alih-alih
+        // menyuruh buka produk satu-satu yang pasti ditolak ProductController.
+        $user = $request->user();
+        $quotaExhausted = $user !== null && $user->isSpammer() && $user->remainingViewQuota() <= 0;
+
         return view('catalog.index', [
-            'user' => $request->user(),
+            'user' => $user,
+            'quotaExhausted' => $quotaExhausted,
             'products' => $products,
             'games' => $games,
             'developers' => $developers,
