@@ -96,8 +96,14 @@ Route::get('/katalog', [CatalogController::class, 'index'])->name('catalog.index
 // Permintaan user #1: URL produk canonical adalah /{slug} TANPA prefix
 // /produk. Route '/produk/{product}' tetap didaftarkan lalu redirect 301 ke
 // slug bersih supaya bookmark/link lama tidak mati dan tidak duplikat SEO.
+// BUG FIX (500 di semua halaman publik): route ini memakai nama
+// 'products.show' padahal TIDAK ada lagi route bernama products.show yang
+// global — route canonical produk sekarang adalah slug.show (/{slug}).
+// Akibatnya setiap render view publik (home, katalog, search, footer, sale)
+// melempar RouteNotDefinedException -> 500. Redirect legacy kini menunjuk
+// ke route('slug.show', $product->slug).
 Route::get('/produk/{product}', function (Product $product) {
-    return redirect(route('products.show', $product), 301);
+    return redirect(route('slug.show', $product->slug), 301);
 })->name('products.legacy');
 
 // Pre-Order Baru — GLOBAL juga (menu header tampil untuk semua pengunjung).
