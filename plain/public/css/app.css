@@ -1307,6 +1307,7 @@ input[type="number"] { -moz-appearance: textfield; appearance: textfield; }
 /* ============================================================ */
 /* 23. WHATSAPP WIDGET                                           */
 /* ============================================================ */
+/* Ikon WhatsApp bulat melayang — tanpa label "Chat CS", tanpa tombol X */
 .wa-widget {
     position: fixed;
     right: 20px;
@@ -1314,52 +1315,24 @@ input[type="number"] { -moz-appearance: textfield; appearance: textfield; }
     z-index: 50;
     display: flex;
     align-items: center;
-    gap: 8px;
-}
-.wa-widget__link {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 8px 8px 8px 20px;
+    justify-content: center;
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
     background: #25D366;
     color: #fff;
-    border-radius: 999px;
     box-shadow: 0 8px 20px rgba(37,211,102,.35);
     transition: all .2s;
 }
-.wa-widget__link:hover { background: #1ebe5b; transform: translateY(-2px); }
-.wa-widget__label { font-weight: 600; font-size: 14px; white-space: nowrap; display: none; }
+.wa-widget:hover { background: #1ebe5b; transform: translateY(-2px); }
 .wa-widget__icon {
-    width: 48px;
-    height: 48px;
-    border-radius: 50%;
-    background: #fff;
-    color: #25D366;
     display: flex;
     align-items: center;
     justify-content: center;
-    flex-shrink: 0;
+    line-height: 0;
 }
-.wa-widget__close {
-    width: 24px;
-    height: 24px;
-    border-radius: 50%;
-    border: 0;
-    background: rgba(0,0,0,.6);
-    color: #fff;
-    font-size: 16px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0;
-}
-.wa-widget__close:hover { background: rgba(0,0,0,.85); }
-@media (min-width: 768px) { .wa-widget__label { display: inline; } }
 @media (max-width: 767px) {
-    .wa-widget { right: 14px; bottom: 14px; }
-    .wa-widget__link { padding: 8px; }
-    .wa-widget__icon { width: 52px; height: 52px; }
+    .wa-widget { right: 14px; bottom: 14px; width: 52px; height: 52px; }
 }
 
 /* ============================================================ */

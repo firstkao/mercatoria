@@ -188,7 +188,6 @@ class AppServiceProvider extends ServiceProvider
                 'metaKeywords' => Setting::get('meta_keywords'),
                 'metaImage' => Setting::get('meta_image'),
                 'waWidgetEnabled' => Setting::get('wa_widget_enabled', '1') !== '0',
-                'waWidgetLabel' => Setting::get('wa_widget_label', 'Chat CS'),
                 'waWidgetGreeting' => Setting::get('wa_widget_greeting', 'Halo, saya mau tanya tentang produk di MERCATORIA.'),
                 'hasActiveSale' => $hasActiveSale,
                 'cartCount' => $cartCount,

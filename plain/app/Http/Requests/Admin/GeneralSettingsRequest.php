@@ -27,7 +27,6 @@ class GeneralSettingsRequest extends FormRequest
 
             // WA widget (Batch 23)
             'wa_widget_enabled' => ['nullable', 'boolean'],
-            'wa_widget_label' => ['nullable', 'string', 'max:50'],
             'wa_widget_greeting' => ['nullable', 'string', 'max:500'],
 
             // Cart reminder (Batch 31)
@@ -64,7 +63,6 @@ class GeneralSettingsRequest extends FormRequest
             'social_facebook' => 'Facebook',
             'social_x' => 'X',
             'wa_widget_enabled' => 'tombol WhatsApp',
-            'wa_widget_label' => 'label tombol WA',
             'wa_widget_greeting' => 'pesan sapaan WA',
             'cart_reminder_1_hours' => 'reminder cart #1',
             'cart_reminder_2_hours' => 'reminder cart #2',
