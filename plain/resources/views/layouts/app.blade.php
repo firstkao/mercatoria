@@ -37,7 +37,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&family=Roboto:wght@500;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{{ asset('css/app.css') }}?v=16">
+    <link rel="stylesheet" href="{{ asset('css/app.css') }}?v=18">
     @stack('head')
 </head>
 <body>
@@ -88,21 +88,16 @@
                     </div>
                 @endif
 
-                {{-- Pre-order dipindah ke dropdown "Lainnya" supaya menu kiri tetap bersih:
-                     hanya Beranda, Game, Developer (+ Lainnya bila ada pre-order). --}}
-                @if (Route::has('preorder.show'))
-                    @php
-                        $hasPreorder = false;
-                        try { $hasPreorder = (bool) \App\Models\PreorderPage::current(); } catch (\Throwable $e) {}
-                    @endphp
-                    @if ($hasPreorder)
-                        <div class="nav-dropdown">
-                            <button type="button" class="site-nav__link nav-dropdown__trigger">Lainnya <span class="nav-dropdown__caret">▾</span></button>
-                            <div class="nav-dropdown__menu">
-                                <a href="{{ route('preorder.show') }}" class="nav-dropdown__item">Pre-order Baru</a>
-                            </div>
-                        </div>
-                    @endif
+                {{-- Permintaan user: "Pre-order Baru" jadi menu utama di header (global,
+                     bisa dilihat tanpa login), isinya halaman PO aktif. Editor admin
+                     sudah semodel Elementor: blok teks + banner foto bebas diatur
+                     urutan/posisi via form & drag sort_order. --}}
+                @php
+                    $hasPreorder = false;
+                    try { $hasPreorder = (bool) \App\Models\PreorderPage::current(); } catch (\Throwable $e) {}
+                @endphp
+                @if ($hasPreorder && Route::has('preorder.show'))
+                    <a href="{{ route('preorder.show') }}" class="site-nav__link {{ request()->routeIs('preorder.show') ? 'is-active' : '' }}">Pre-order Baru</a>
                 @endif
 
                 {{-- UX: 'Pesanan Saya' dipindah dari navbar kiri ke ikon Akun (kanan).
@@ -136,7 +131,7 @@
 
                 @if (! empty($socialInstagram))
                     <a href="{{ $socialInstagram }}" target="_blank" rel="noopener" class="header-icon" aria-label="Instagram" title="Instagram">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
                             <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
                             <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
@@ -146,7 +141,7 @@
 
                 @if (! empty($socialFacebook))
                     <a href="{{ $socialFacebook }}" target="_blank" rel="noopener" class="header-icon" aria-label="Facebook" title="Facebook">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
                             <path d="M22 12a10 10 0 1 0-11.56 9.88v-6.99H7.9V12h2.54V9.8c0-2.5 1.49-3.89 3.77-3.89 1.09 0 2.24.2 2.24.2v2.46h-1.26c-1.24 0-1.63.77-1.63 1.56V12h2.78l-.45 2.89h-2.33v6.99A10 10 0 0 0 22 12z"/>
                         </svg>
                     </a>
@@ -154,16 +149,19 @@
 
                 @if (! empty($socialX))
                     <a href="{{ $socialX }}" target="_blank" rel="noopener" class="header-icon" aria-label="X" title="X">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
                             <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
                         </svg>
                     </a>
                 @endif
 
-                {{-- Permintaan user: Threads selalu tampil di header (link resmi). --}}
+                {{-- Permintaan user: Threads selalu tampil di header (link resmi).
+                     Ukuran disamakan dgn sosmed lain (20px, bukan 16px yg bikin kecil sendiri). --}}
                 <a href="https://www.threads.com/@mercatoria_id" target="_blank" rel="noopener" class="header-icon" aria-label="Threads" title="Threads">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M17.3 17.47c-.32.26-1.06.48-1.8.54-.9.07-1.81-.11-2.69-.5-1.7-.74-2.93-2.08-3.41-3.52l1.7-.54c.34 1.05 1.27 2.06 2.56 2.62.7.3 1.39.45 2.06.45.25 0 .5-.02.73-.07.48-.09.78-.25.9-.34.37-.3.37-.84.37-1.3v-.02c-.53.2-1.2.34-1.96.34-2.6 0-4.7-1.7-4.7-4.06 0-2.36 2.1-4.06 4.7-4.06 1.8 0 3.34.9 4.1 2.36l-1.5.8c-.47-.9-1.5-1.5-2.6-1.5-1.6 0-2.8.96-2.8 2.4s1.2 2.4 2.8 2.4c.7 0 1.36-.18 1.86-.5V11.9c0-1.2-.5-1.9-1.6-1.9h-.9v-1.6h.9c2.1 0 3.2 1.2 3.2 3.5v3.6c0 .6 0 1.2-.3 1.7-.2.4-.5.8-.9 1.1z"/>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 21c4.97 0 9-4.03 9-9s-4.03-9-9-9-9 4.03-9 9c0 3.41 1.9 6.37 4.7 7.9"/>
+                        <path d="M12 16.5c-2.2 0-3.9-1.45-3.9-3.4S9.8 9.7 12 9.7c1.6 0 2.9.75 3.5 1.9"/>
+                        <path d="M14.2 13.9c.35-.45.55-1.05.55-1.7 0-1.5-1.1-2.5-2.75-2.5"/>
                     </svg>
                 </a>
 
@@ -173,7 +171,7 @@
                         @php($waNum = '62' . substr($waNum, 1))
                     @endif
                     <a href="https://wa.me/{{ $waNum }}" target="_blank" rel="noopener" class="header-icon" aria-label="WhatsApp" title="WhatsApp">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
                             <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/>
                         </svg>
                     </a>
@@ -240,6 +238,10 @@
                                 @endif
                             </a>
                             <a href="{{ route('account.coins.index') }}" class="nav-dropdown__item">Koin Saya</a>
+                            {{-- Permintaan user: menu referral/undang belum ada di dropdown profil. --}}
+                            @if (Route::has('referral.index'))
+                                <a href="{{ route('referral.index') }}" class="nav-dropdown__item">Undang Teman</a>
+                            @endif
                             {{-- Permintaan user: item "Notifikasi" dihapus dari dropdown
                                  profil karena ikon lonceng + badge sudah berdiri sendiri
                                  di header (hindari duplikasi akses). --}}
@@ -301,7 +303,7 @@
                 <div class="footer-social">
                     @if (! empty($socialInstagram))
                         <a href="{{ $socialInstagram }}" target="_blank" rel="noopener" aria-label="Instagram">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                 <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
                                 <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
                             </svg>
@@ -309,21 +311,21 @@
                     @endif
                     @if (! empty($socialFacebook))
                         <a href="{{ $socialFacebook }}" target="_blank" rel="noopener" aria-label="Facebook">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
                                 <path d="M22 12a10 10 0 1 0-11.56 9.88v-6.99H7.9V12h2.54V9.8c0-2.5 1.49-3.89 3.77-3.89 1.09 0 2.24.2 2.24.2v2.46h-1.26c-1.24 0-1.63.77-1.63 1.56V12h2.78l-.45 2.89h-2.33v6.99A10 10 0 0 0 22 12z"/>
                             </svg>
                         </a>
                     @endif
                     @if (! empty($socialX))
                         <a href="{{ $socialX }}" target="_blank" rel="noopener" aria-label="X">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
                                 <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
                             </svg>
                         </a>
                     @endif
                     {{-- Permintaan user: Threads selalu tampil di footer (link resmi). --}}
                     <a href="https://www.threads.com/@mercatoria_id" target="_blank" rel="noopener" aria-label="Threads">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
                             <path d="M17.3 17.47c-.32.26-1.06.48-1.8.54-.9.07-1.81-.11-2.69-.5-1.7-.74-2.93-2.08-3.41-3.52l1.7-.54c.34 1.05 1.27 2.06 2.56 2.62.7.3 1.39.45 2.06.45.25 0 .5-.02.73-.07.48-.09.78-.25.9-.34.37-.3.37-.84.37-1.3v-.02c-.53.2-1.2.34-1.96.34-2.6 0-4.7-1.7-4.7-4.06 0-2.36 2.1-4.06 4.7-4.06 1.8 0 3.34.9 4.1 2.36l-1.5.8c-.47-.9-1.5-1.5-2.6-1.5-1.6 0-2.8.96-2.8 2.4s1.2 2.4 2.8 2.4c.7 0 1.36-.18 1.86-.5V11.9c0-1.2-.5-1.9-1.6-1.9h-.9v-1.6h.9c2.1 0 3.2 1.2 3.2 3.5v3.6c0 .6 0 1.2-.3 1.7-.2.4-.5.8-.9 1.1z"/>
                         </svg>
                     </a>
@@ -333,7 +335,7 @@
                             @php($waNumFooter = '62' . substr($waNumFooter, 1))
                         @endif
                         <a href="https://wa.me/{{ $waNumFooter }}" target="_blank" rel="noopener" aria-label="WhatsApp">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
                                 <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/>
                             </svg>
                         </a>

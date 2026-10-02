@@ -23,15 +23,19 @@ class SearchController extends Controller
         $developers = collect();
 
         if ($q !== '') {
+            // BUG FIX fungsi: escape wildcard LIKE (% dan _ di query user dulu) —
+            // sebelumnya kata "100%" bisa menghasilkan hasil ngawur.
+            $like = '%'.addcslashes($q, '%_\\').'%';
+
             $products = Product::query()
                 ->published()
-                ->where(function ($inner) use ($q) {
-                    $inner->where('name', 'like', "%{$q}%")
-                        ->orWhere('sku', 'like', "%{$q}%")
-                        ->orWhere('description', 'like', "%{$q}%")
-                        ->orWhereHas('game', fn ($g) => $g->where('name', 'like', "%{$q}%"))
-                        ->orWhereHas('developer', fn ($d) => $d->where('name', 'like', "%{$q}%"))
-                        ->orWhereHas('variants', fn ($v) => $v->where('name', 'like', "%{$q}%")->orWhere('sku', 'like', "%{$q}%"));
+                ->where(function ($inner) use ($like) {
+                    $inner->where('name', 'like', $like)
+                        ->orWhere('sku', 'like', $like)
+                        ->orWhere('description', 'like', $like)
+                        ->orWhereHas('game', fn ($g) => $g->where('name', 'like', $like))
+                        ->orWhereHas('developer', fn ($d) => $d->where('name', 'like', $like))
+                        ->orWhereHas('variants', fn ($v) => $v->where('name', 'like', $like)->orWhere('sku', 'like', $like));
                 })
                 ->with(['images', 'variants', 'shippingTier'])
                 ->latest()
@@ -40,17 +44,17 @@ class SearchController extends Controller
 
             $pages = Page::query()
                 ->where('is_published', true)
-                ->where(fn ($inner) => $inner->where('title', 'like', "%{$q}%")->orWhere('content', 'like', "%{$q}%"))
+                ->where(fn ($inner) => $inner->where('title', 'like', $like)->orWhere('content', 'like', $like))
                 ->take(6)
                 ->get();
 
             $games = Game::query()
-                ->where('name', 'like', "%{$q}%")
+                ->where('name', 'like', $like)
                 ->take(6)
                 ->get();
 
             $developers = Developer::query()
-                ->where('name', 'like', "%{$q}%")
+                ->where('name', 'like', $like)
                 ->take(6)
                 ->get();
         }
