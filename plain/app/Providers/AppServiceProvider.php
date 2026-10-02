@@ -173,12 +173,13 @@ class AppServiceProvider extends ServiceProvider
             } catch (\Throwable $e) {}
 
             // ===== Badge tagihan menunggu di header (akun) =====
-            // Dihitung di composer (bukan @php inline di blade) supaya tidak ada
-            // risiko "Undefined variable" dari compiled view basi. Pakai
-            // auth()->user()?->id + cast (int): di beberapa setup (session/cache
-            // guard) auth()->id() bisa mengembalikan string yang ditolak MySQL 8.
-            // Try/catch: halaman publik tidak boleh ikut mati bila tabel orders
-            // bermasalah — badge cukup diam (0), bukan crash.
+            // Dihitung di composer + dishare secara global supaya TIDAK ada
+            // risiko "Undefined variable" dari compiled view basi maupun saat
+            // render halaman error publik. Pakai auth()->user()?->id + cast
+            // (int): di beberapa setup (session/cache guard) auth()->id() bisa
+            // mengembalikan string yang ditolak MySQL 8. Try/catch: halaman
+            // publik tidak boleh ikut mati bila tabel orders bermasalah —
+            // badge cukup diam (0), bukan crash.
             $headerUnpaidCount = 0;
             try {
                 $__headerUserId = (int) (auth()->user()?->id ?? 0);
@@ -186,6 +187,17 @@ class AppServiceProvider extends ServiceProvider
                     $headerUnpaidCount = Order::where('user_id', $__headerUserId)
                         ->whereIn('status', ['menunggu_pembayaran', 'pembayaran_gagal'])
                         ->count();
+                }
+            } catch (\Throwable $e) {}
+
+            // Safety net untuk render DI LUAR composer (mis. errors/500.blade.php
+            // extends layouts.app tapi dirender lewat Handler tanpa memicu
+            // composer). Tanpa baris ini, pemakaian $headerUnpaidCount di blade
+            // bisa melempar "Undefined variable" dan mengubah error page menjadi
+            // 500 kedua. Hanya diisi kalau belum pernah di-share.
+            try {
+                if (! array_key_exists('headerUnpaidCount', \Illuminate\Support\Facades\View::getShared())) {
+                    view()->share('headerUnpaidCount', $headerUnpaidCount);
                 }
             } catch (\Throwable $e) {}
 
