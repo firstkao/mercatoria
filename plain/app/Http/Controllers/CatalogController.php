@@ -30,9 +30,24 @@ class CatalogController extends Controller
         $games->each(fn ($game) => $game->setAttribute('products_count', (int) ($productCountsByGame[$game->id] ?? 0)));
         $developers->each(fn ($dev) => $dev->setAttribute('products_count', (int) ($productCountsByDeveloper[$dev->id] ?? 0)));
 
-        // Filter harga (rupiah).
-        $minPrice = is_numeric($request->query('min_price')) ? max(0, (int) $request->query('min_price')) : null;
-        $maxPrice = is_numeric($request->query('max_price')) ? max(0, (int) $request->query('max_price')) : null;
+        // Batas atas slider harga: dari harga jual produk termahal (dibulatkan ke
+        // Rp50.000 terdekat, minimum Rp500.000) supaya range slider realistis.
+        $rate = (float) (Setting::get('exchange_rate') ?: 0);
+        $kgRate = (float) (Setting::get('cn_id_rate_per_kg') ?: 0) + (float) (Setting::get('btm_jkt_rate_per_kg') ?: 0);
+        $margin = (float) (Setting::get('margin_percent') ?: 11.0);
+        $priceExpr = '(('.$rate.' * pv.price_yuan + '.$kgRate.' * pv.weight_grams / 1000) * (1 + '.$margin.' / 100))';
+
+        $maxVariantPrice = (float) ProductVariant::query()
+            ->from('product_variants as pv')
+            ->join('products', 'products.id', '=', 'pv.product_id')
+            ->whereNotNull('pv.price_yuan')
+            ->selectRaw('MAX('.$priceExpr.') AS aggregate')
+            ->value('aggregate');
+        $sliderMax = max(500000, (int) (ceil($maxVariantPrice / 50000) * 50000));
+
+        // Filter harga (rupiah), dipotong agar tidak melewati batas slider.
+        $minPrice = is_numeric($request->query('min_price')) ? min(max(0, (int) $request->query('min_price')), $sliderMax) : null;
+        $maxPrice = is_numeric($request->query('max_price')) ? min(max(0, (int) $request->query('max_price')), $sliderMax) : null;
         if ($minPrice !== null && $maxPrice !== null && $minPrice > $maxPrice) {
             [$minPrice, $maxPrice] = [$maxPrice, $minPrice];
         }
@@ -86,6 +101,7 @@ class CatalogController extends Controller
             'selectedTag' => $selectedTag,
             'minPrice' => $minPrice,
             'maxPrice' => $maxPrice,
+            'sliderMax' => $sliderMax,
             'calculator' => $calculator,
             'viewQuota' => Setting::integer('view_quota', 10),
         ]);

@@ -56,10 +56,10 @@
                 </ul>
             </div>
 
-            {{-- Filter Harga --}}
+            {{-- Filter Harga (dual range slider) --}}
             <div class="sidebar-section">
                 <h3 class="sidebar-section__title">Filter Harga</h3>
-                <form method="GET" action="{{ route('catalog.index') }}" class="price-filter">
+                <form method="GET" action="{{ route('catalog.index') }}" class="price-filter" id="price-filter-form">
                     @if ($selectedGame)
                         <input type="hidden" name="game" value="{{ $selectedGame->slug }}">
                     @endif
@@ -69,12 +69,26 @@
                     @if ($selectedTag)
                         <input type="hidden" name="tag" value="{{ $selectedTag }}">
                     @endif
-                    <div class="price-filter__inputs">
-                        <input type="number" name="min_price" min="0" step="1000" placeholder="Min" value="{{ request('min_price') }}">
-                        <span>-</span>
-                        <input type="number" name="max_price" min="0" step="1000" placeholder="Max" value="{{ request('max_price') }}">
+
+                    <div class="price-filter__display">
+                        <span id="price-min-label">Rp{{ number_format($minPrice ?? 0, 0, ',', '.') }}</span>
+                        <span class="muted">–</span>
+                        <span id="price-max-label">Rp{{ number_format($maxPrice ?? $sliderMax, 0, ',', '.') }}</span>
                     </div>
-                    <button type="submit" class="price-filter__btn">TERAPKAN</button>
+
+                    <div class="price-filter__slider">
+                        <input type="range" name="min_price" id="price-min" min="0" max="{{ $sliderMax }}" step="10000"
+                               value="{{ $minPrice ?? 0 }}" data-role="min">
+                        <input type="range" name="max_price" id="price-max" min="0" max="{{ $sliderMax }}" step="10000"
+                               value="{{ $maxPrice ?? $sliderMax }}" data-role="max">
+                        <div class="price-filter__track"><div class="price-filter__track-fill" id="price-track-fill"></div></div>
+                    </div>
+
+                    <div class="price-filter__actions">
+                        <button type="submit" class="price-filter__btn">TERAPKAN</button>
+                        <a href="{{ route('catalog.index', array_filter(['game' => $selectedGame?->slug, 'developer' => $selectedDeveloper?->slug, 'tag' => $selectedTag])) }}"
+                           class="price-filter__reset">Reset</a>
+                    </div>
                 </form>
             </div>
 
@@ -174,4 +188,37 @@
         </main>
     </div>
 </div>
+
+<script>
+(function () {
+    var min = document.getElementById('price-min');
+    var max = document.getElementById('price-max');
+    if (!min || !max) return;
+    var fill = document.getElementById('price-track-fill');
+    var labelMin = document.getElementById('price-min-label');
+    var labelMax = document.getElementById('price-max-label');
+    var top = parseInt(max.max, 10);
+
+    function fmt(n) { return 'Rp' + n.toLocaleString('id-ID'); }
+
+    function sync(source) {
+        var lo = parseInt(min.value, 10), hi = parseInt(max.value, 10);
+        // Cegah handle saling menyilang.
+        if (lo > hi) {
+            if (source === min) { min.value = hi; lo = hi; }
+            else { max.value = lo; hi = lo; }
+        }
+        labelMin.textContent = fmt(lo);
+        labelMax.textContent = fmt(hi);
+        if (fill) {
+            fill.style.left = (lo / top * 100) + '%';
+            fill.style.right = (100 - hi / top * 100) + '%';
+        }
+    }
+
+    min.addEventListener('input', function () { sync(min); });
+    max.addEventListener('input', function () { sync(max); });
+    sync(null);
+})();
+</script>
 @endsection

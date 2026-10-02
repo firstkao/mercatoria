@@ -1661,17 +1661,85 @@ input[type="number"] { -moz-appearance: textfield; appearance: textfield; }
 .sidebar-section__list .count { color: var(--muted); font-size: 12px; }
 .small { font-size: 12px; }
 
-.price-filter__inputs { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
-.price-filter__inputs input {
-    width: 100%;
-    font: inherit;
+/* --- Filter Harga: dual range slider --- */
+.price-filter__display {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 6px;
     font-size: 13px;
-    border: 1px solid var(--border-strong);
-    border-radius: 8px;
-    padding: 7px 9px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 12px;
 }
-.price-filter__btn {
+
+.price-filter__slider {
+    position: relative;
+    height: 34px;
+    margin-bottom: 4px;
+}
+/* Track statis di belakang kedua handle */
+.price-filter__track {
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    height: 4px;
+    transform: translateY(-50%);
+    background: #e2e8f0;
+    border-radius: 999px;
+    pointer-events: none;
+}
+.price-filter__track-fill {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: var(--accent-strong, #2563eb);
+    border-radius: 999px;
+}
+/* Dua input range ditumpuk; hanya thumb yang bisa ditangkap pointer */
+.price-filter__slider input[type="range"] {
+    position: absolute;
+    top: 0;
+    left: 0;
     width: 100%;
+    height: 34px;
+    margin: 0;
+    background: transparent;
+    -webkit-appearance: none;
+    appearance: none;
+    pointer-events: none;
+}
+.price-filter__slider input[type="range"]:focus { outline: none; }
+.price-filter__slider input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: #fff;
+    border: 2px solid var(--accent-strong, #2563eb);
+    box-shadow: 0 1px 3px rgba(15, 23, 42, .25);
+    cursor: grab;
+    pointer-events: auto;
+}
+.price-filter__slider input[type="range"]::-moz-range-thumb {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: #fff;
+    border: 2px solid var(--accent-strong, #2563eb);
+    box-shadow: 0 1px 3px rgba(15, 23, 42, .25);
+    cursor: grab;
+    pointer-events: auto;
+}
+.price-filter__slider input[type="range"]:active::-webkit-slider-thumb { cursor: grabbing; }
+
+.price-filter__actions { display: flex; align-items: center; gap: 10px; }
+.price-filter__btn {
+    flex: 1;
     font: inherit;
     font-size: 13px;
     font-weight: 700;
@@ -1684,6 +1752,13 @@ input[type="number"] { -moz-appearance: textfield; appearance: textfield; }
     cursor: pointer;
 }
 .price-filter__btn:hover { opacity: .9; }
+.price-filter__reset {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--muted);
+    text-decoration: underline;
+}
+.price-filter__reset:hover { color: var(--accent-strong); }
 
 /* Panel utama: ikut "box" supaya tidak full-width mentok layar */
 .catalog-new__main {
