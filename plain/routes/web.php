@@ -86,6 +86,17 @@ Route::post('/kontak', [ContactController::class, 'store'])->middleware('throttl
 // Search
 Route::get('/cari', [SearchController::class, 'index'])->name('search.index');
 
+// Katalog & produk — GLOBAL (guest boleh lihat; sesuai permintaan user:
+// dropdown game/developer header/footer harus bisa diklik tanpa login).
+// Dulu route ini ada di dalam grup middleware('auth') sehingga tamu yang
+// klik menu Game/Developer langsung kena 500 ("Call to a member function
+// isSpammer() on null" di ProductController).
+Route::get('/katalog', [CatalogController::class, 'index'])->name('catalog.index');
+Route::get('/produk/{product}', [ProductController::class, 'show'])->name('products.show');
+
+// Pre-Order Baru — GLOBAL juga (menu header tampil untuk semua pengunjung).
+Route::get('/pre-order-baru', [PreorderPageController::class, 'show'])->name('preorder.show');
+
 // Promo (Batch 24)
 Route::get('/promo', [SaleController::class, 'index'])->name('sale.index');
 
@@ -259,10 +270,6 @@ Route::middleware('auth')->group(function (): void {
         ->middleware('throttle:3,1')
         ->name('verification.resend');
 
-    // Katalog & produk (bisa diakses walau belum verified)
-    Route::get('/katalog', [CatalogController::class, 'index'])->name('catalog.index');
-    Route::get('/produk/{product}', [ProductController::class, 'show'])->name('products.show');
-
     // Cart
     Route::get('/keranjang', [CartController::class, 'index'])->name('cart.index');
     Route::post('/keranjang', [CartController::class, 'store'])->name('cart.store');
@@ -275,8 +282,8 @@ Route::middleware('auth')->group(function (): void {
     // Referral sudah pindah ke dalam grup /akun (canonical: /akun/undang)
     // supaya anak-menu ikut induknya; URL lama di-redirect permanen di bawah.
 
-    // Pre-Order (login only)
-    Route::get('/pre-order-baru', [PreorderPageController::class, 'show'])->name('preorder.show');
+    // Pre-Order (halaman publik /pre-order-baru sudah pindah ke blok GLOBAL;
+    // route lama di sini dihapus agar tidak duplikat/ambigu)
 
     // ========================================================
     // WAJIB VERIFIED EMAIL

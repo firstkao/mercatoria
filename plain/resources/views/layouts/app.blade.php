@@ -37,7 +37,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&family=Roboto:wght@500;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{{ asset('css/app.css') }}?v=21">
+    <link rel="stylesheet" href="{{ asset('css/app.css') }}?v=22">
     @stack('head')
 </head>
 <body>
@@ -155,9 +155,9 @@
                 {{-- Permintaan user: Threads selalu tampil di header (link resmi).
                      Pakai logo resmi Threads (fill), bukan stroke custom yang bikin
                      ikon terlihat kecil/kurus sendiri dibanding sosmed lain. --}}
-                <a href="https://www.threads.com/@mercatoria_id" target="_blank" rel="noopener" class="header-icon" aria-label="Threads" title="Threads">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M17.285 17.456c-.32.26-1.062.48-1.802.546-.904.08-1.815-.11-2.694-.5-1.704-.75-2.937-2.1-3.41-3.54l1.702-.54c.34 1.05 1.27 2.06 2.56 2.62.7.3 1.39.45 2.06.45.25 0 .5-.02.73-.07.48-.09.78-.25.9-.34.37-.3.37-.84.37-1.3v-.02c-.53.2-1.2.34-1.96.34-2.6 0-4.7-1.7-4.7-4.06 0-2.36 2.1-4.06 4.7-4.06 1.8 0 3.34.9 4.1 2.36l-1.5.8c-.47-.9-1.5-1.5-2.6-1.5-1.6 0-2.8.96-2.8 2.4s1.2 2.4 2.8 2.4c.7 0 1.36-.18 1.86-.5V11.9c0-1.2-.5-1.9-1.6-1.9h-.9v-1.6h.9c2.1 0 3.2 1.2 3.2 3.5v3.6c0 .6 0 1.2-.3 1.7-.2.4-.5.8-.9 1.1z"/>
+                <a href="https://www.threads.com/@mercatoria_id" target="_blank" rel="noopener" class="header-icon header-icon--threads" aria-label="Threads" title="Threads">
+                    <svg width="20" height="20" viewBox="0 0 448 512" fill="currentColor" aria-hidden="true">
+                        <path d="M316.3 404c-8.1-10.9-15.5-22.5-24.9-38.7C334.6 334.4 360 310.4 360 255.5c0-30.5-14.3-54.2-37.7-66.8-24.3-12.9-52.6-13.8-71.2-4.8c2.2-12.1 7.7-27.6 18.6-40.8c0 0-43.7 0-77.7 53.4c0 0 27.1 14.3 27.1 38.2c0 13.9-11.3 25.3-25.2 25.3c-13.9 0-25.2-11.4-25.2-25.3c0-23.9 27.1-38.2 27.1-38.2c-34-53.4-77.7-53.4-77.7-53.4c10.9 13.2 16.4 28.7 18.6 40.8c-18.6-9-46.9-8.1-71.2 4.8C44.3 201.3 30 225 30 255.5c0 54.9 25.4 78.9 68.6 109.8c-9.4 16.2-16.8 27.8-24.9 38.7c-8.1 10.9-17.4 21.1-27.4 30.3c0 0 36.3 13.7 74.7-21.9c0 0 24.1-22.8 44.9-44.5c13.4 13.4 28.6 26.4 49.1 33.1c30.2 9.3 63.9 1.5 93.7-26.4c-10 9.2-19.3 19.4-27.4 30.3c0 0 36.3 13.7 74.7-21.9c0 0 24.1-22.8 44.9-44.5c13.4 13.4 28.6 26.4 49.1 33.1c30.2 9.3 63.9 1.5 93.7-26.4"/>
                     </svg>
                 </a>
 
@@ -323,8 +323,8 @@
                          Path logo resmi (fill) + ukuran 21px biar bobot visualnya
                          setara IG/FB/X/WA yang stroke-nya lebih tebal. --}}
                     <a href="https://www.threads.com/@mercatoria_id" target="_blank" rel="noopener" aria-label="Threads">
-                        <svg width="21" height="21" viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M17.3 17.47c-.32.26-1.06.48-1.8.54-.9.07-1.81-.11-2.69-.5-1.7-.74-2.93-2.08-3.41-3.52l1.7-.54c.34 1.05 1.27 2.06 2.56 2.62.7.3 1.39.45 2.06.45.25 0 .5-.02.73-.07.48-.09.78-.25.9-.34.37-.3.37-.84.37-1.3v-.02c-.53.2-1.2.34-1.96.34-2.6 0-4.7-1.7-4.7-4.06 0-2.36 2.1-4.06 4.7-4.06 1.8 0 3.34.9 4.1 2.36l-1.5.8c-.47-.9-1.5-1.5-2.6-1.5-1.6 0-2.8.96-2.8 2.4s1.2 2.4 2.8 2.4c.7 0 1.36-.18 1.86-.5V11.9c0-1.2-.5-1.9-1.6-1.9h-.9v-1.6h.9c2.1 0 3.2 1.2 3.2 3.5v3.6c0 .6 0 1.2-.3 1.7-.2.4-.5.8-.9 1.1z"/>
+                        <svg width="21" height="21" viewBox="0 0 448 512" fill="currentColor" aria-hidden="true">
+                            <path d="M316.3 404c-8.1-10.9-15.5-22.5-24.9-38.7C334.6 334.4 360 310.4 360 255.5c0-30.5-14.3-54.2-37.7-66.8-24.3-12.9-52.6-13.8-71.2-4.8c2.2-12.1 7.7-27.6 18.6-40.8c0 0-43.7 0-77.7 53.4c0 0 27.1 14.3 27.1 38.2c0 13.9-11.3 25.3-25.2 25.3c-13.9 0-25.2-11.4-25.2-25.3c0-23.9 27.1-38.2 27.1-38.2c-34-53.4-77.7-53.4-77.7-53.4c10.9 13.2 16.4 28.7 18.6 40.8c-18.6-9-46.9-8.1-71.2 4.8C44.3 201.3 30 225 30 255.5c0 54.9 25.4 78.9 68.6 109.8c-9.4 16.2-16.8 27.8-24.9 38.7c-8.1 10.9-17.4 21.1-27.4 30.3c0 0 36.3 13.7 74.7-21.9c0 0 24.1-22.8 44.9-44.5c13.4 13.4 28.6 26.4 49.1 33.1c30.2 9.3 63.9 1.5 93.7-26.4c-10 9.2-19.3 19.4-27.4 30.3c0 0 36.3 13.7 74.7-21.9c0 0 24.1-22.8 44.9-44.5c13.4 13.4 28.6 26.4 49.1 33.1c30.2 9.3 63.9 1.5 93.7-26.4"/>
                         </svg>
                     </a>
                     @if (! empty($contactWhatsapp))

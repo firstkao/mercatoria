@@ -18,18 +18,23 @@ class ProductController extends Controller
 
         $user = $request->user();
 
-        if ($user->isSpammer() && ! $user->consumeViewQuota($product)) {
+        // Guard guest: halaman produk kini GLOBAL (guest boleh lihat), jadi
+        // cek spammer/kuota hanya kalau ada user login. Dulu tanpa guard ini,
+        // tamu yang buka /produk/... langsung kena 500 "isSpammer() on null".
+        if ($user !== null && $user->isSpammer() && ! $user->consumeViewQuota($product)) {
             return view('products.locked', [
                 'hasCartItems' => $user->hasCartItems(),
                 'viewQuota' => Setting::integer('view_quota', 10),
             ]);
         }
 
-        ActivityLog::record($user, 'view_product', $request, [
-            'product_id' => $product->id,
-            'name' => $product->name,
-            'sku' => $product->sku,
-        ]);
+        if ($user !== null) {
+            ActivityLog::record($user, 'view_product', $request, [
+                'product_id' => $product->id,
+                'name' => $product->name,
+                'sku' => $product->sku,
+            ]);
+        }
 
         $product->load(['images', 'variants', 'shippingTier', 'game', 'developer']);
         $calculator = PriceCalculator::fromSettings();
