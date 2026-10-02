@@ -189,19 +189,21 @@
                         @endif
                     </a>
 
-                    {{-- Badge tagihan dihitung di View Composer (AppServiceProvider) dan
-                         dikirim lewat view()->share('headerUnpaidCount'). Jangan hitung via
-                         @php inline: kalau view ini pernah ter-compile tanpa blok tersebut
-                         (mis. setelah refactor/pull parsial), Blade tetap menghasilkan
-                         "Undefined variable" saat render. ?? 0 di sini = safety net. --}}
-                    @php $headerUnpaidCount = $headerUnpaidCount ?? 0; @endphp
+                    {{-- Badge tagihan menunggu (akun) dihitung di View Composer
+                         AppServiceProvider untuk layouts.app dan dikirim sebagai
+                         $headerUnpaidCount. Fallback nol memakai null-coalescing
+                         di setiap pemakaian. JANGAN pernah menaruh blok PHP inline
+                         atau menulis directive-nya persis seperti saat compile di
+                         dalam komentar ini — parser tetap mendeteksinya bahkan di
+                         dalam komentar, dan bisa bocor mentah ke halaman ketika
+                         compiled view basi. --}}
                     <div class="nav-dropdown header-account">
                         <button type="button" class="header-icon" aria-label="Akun" title="Akun">
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                 <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
                                 <circle cx="12" cy="7" r="4"></circle>
                             </svg>
-                            @if ($headerUnpaidCount > 0)
+                            @if (($headerUnpaidCount ?? 0) > 0)
                                 <span class="cart-badge">{{ $headerUnpaidCount > 99 ? '99+' : $headerUnpaidCount }}</span>
                             @endif
                         </button>
@@ -209,7 +211,7 @@
                             <a href="{{ route('account.show') }}" class="nav-dropdown__item">Dashboard Saya</a>
                             <a href="{{ route('account.orders.index') }}" class="nav-dropdown__item">
                                 Pesanan Saya
-                                @if ($headerUnpaidCount > 0)
+                                @if (($headerUnpaidCount ?? 0) > 0)
                                     <span class="badge badge--danger small" style="margin-left:6px;">{{ $headerUnpaidCount }} tagihan</span>
                                 @endif
                             </a>
