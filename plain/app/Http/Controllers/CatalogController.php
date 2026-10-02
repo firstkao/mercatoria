@@ -9,6 +9,7 @@ use App\Models\ProductVariant;
 use App\Models\Setting;
 use App\Support\PriceCalculator;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 
 class CatalogController extends Controller
@@ -57,6 +58,16 @@ class CatalogController extends Controller
 
         $products = Product::query()
             ->published()
+            // MERCATORIA SEARCH ENGINE v16.9 — Filter stok: sembunyikan produk
+            // yang benar-benar habis (tidak ada 1 varian AVAILABLE pun).
+            // Pakai whereExists (bukan join) agar tidak ada baris dobel, jadi
+            // distinct() tidak diperlukan dan pagination tetap akurat.
+            ->whereExists(function ($sub) {
+                $sub->select(DB::raw(1))
+                    ->from('product_variants as pv')
+                    ->whereColumn('pv.product_id', 'products.id')
+                    ->where('pv.status', ProductVariant::STATUS_AVAILABLE);
+            })
             ->when($selectedGame, fn ($query) => $query->where('game_id', $selectedGame->id))
             ->when($selectedDeveloper, fn ($query) => $query->where('developer_id', $selectedDeveloper->id))
             ->when($selectedTag, fn ($query) => $query->where('tag', $selectedTag))
@@ -88,11 +99,20 @@ class CatalogController extends Controller
 
                 $query->orderBy($minPriceSql, $sort === 'price_asc' ? 'asc' : 'desc');
             }, fn ($query) => match ($sort) {
-                // "Terpopuler": skor best-seller dari dashboard admin, tertinggi dulu.
-                'popular' => $query->orderByDesc('best_seller_score')->orderByDesc('best_seller_rank')->latest(),
+                // "Terpopuler" v16.9 (AMAN): total kuantitas terjual dari
+                // order_items via correlated subquery + COALESCE — produk
+                // dengan 0 penjualan TETAP muncul (bukan inner join/whereHas
+                // yang akan membuang mereka). Tetap disort berdasar kolom
+                // products.id dulu agar deterministik.
+                'popular', 'popularity' => $query
+                    ->orderByDesc(DB::raw('(SELECT COALESCE(SUM(oi.quantity), 0) FROM order_items oi JOIN product_variants pv2 ON pv2.id = oi.product_variant_id WHERE pv2.product_id = products.id)'))
+                    ->orderBy('products.name'),
+                // Fallback lama pakai skor best-seller manual dashboard admin.
+                'best_seller' => $query->orderByDesc('best_seller_score')->orderByDesc('best_seller_rank')->latest(),
                 // Standar baru sesuai permintaan user: urut nama A-Z.
                 'name' => $query->orderBy('name'),
-                default => $query->latest(),
+                // v16.9 default = Nama ASC (bukan terbaru lagi).
+                default => $query->orderBy('products.name'),
             })
             ->paginate(24)
             ->withQueryString();
