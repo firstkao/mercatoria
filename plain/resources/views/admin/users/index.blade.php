@@ -55,6 +55,15 @@
                             <td class="muted nowrap">{{ $user->registered_at?->timezone('Asia/Jakarta')->translatedFormat('j M Y') ?? '—' }}</td>
                             <td class="nowrap">
                                 <a href="{{ route('admin.users.edit', $user) }}" class="link">Edit</a>
+                                {{-- Permintaan user #2: aksi buka kunci spammer langsung dari daftar. --}}
+                                @if ($user->isSpammer())
+                                    <form method="POST" action="{{ route('admin.users.unlock', $user) }}"
+                                          onsubmit="return confirm('Buka kunci {{ $user->displayName() }} menjadi Customer?');"
+                                          style="display:inline;">
+                                        @csrf
+                                        <button type="submit" class="link" style="color:var(--success,#16a34a);">🔓 Buka Kunci</button>
+                                    </form>
+                                @endif
                                 <form method="POST" action="{{ route('admin.users.destroy', $user) }}"
                                       onsubmit="return confirm('Yakin hapus {{ $user->displayName() }}? Riwayat order tetap tersimpan.');"
                                       style="display:inline;">
@@ -82,6 +91,14 @@
                     </a>
                     <div style="display:flex;gap:.5rem;padding:.5rem 0;">
                         <a href="{{ route('admin.users.edit', $user) }}" class="link">Edit</a>
+                        @if ($user->isSpammer())
+                            <form method="POST" action="{{ route('admin.users.unlock', $user) }}"
+                                  onsubmit="return confirm('Buka kunci {{ $user->displayName() }} menjadi Customer?');"
+                                  style="display:inline;">
+                                @csrf
+                                <button type="submit" class="link" style="color:var(--success,#16a34a);">🔓 Buka Kunci</button>
+                            </form>
+                        @endif
                         <form method="POST" action="{{ route('admin.users.destroy', $user) }}"
                               onsubmit="return confirm('Yakin hapus {{ $user->displayName() }}?');"
                               style="display:inline;">
