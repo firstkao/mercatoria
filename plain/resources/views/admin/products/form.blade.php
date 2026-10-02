@@ -259,7 +259,8 @@
                     return;
                 }
                 if (list.children.length === 1) {
-                    alert('Produk harus punya minimal satu varian.');
+                    // BUG FIX: ganti alert() browser dengan modal popup global.
+                    if (window.showModal) { window.showModal('Produk harus punya minimal satu varian.', 'error'); }
                     return;
                 }
                 if (confirm('Hapus varian ini? Perubahan berlaku setelah Simpan.')) {

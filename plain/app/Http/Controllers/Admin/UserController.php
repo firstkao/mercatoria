@@ -170,35 +170,29 @@ class UserController extends Controller
     // tidak ada cara cepat mengembalikan peran spammer -> customer.
     // ============================================================
 
-    /** Pulihkan spammer menjadi customer biasa: kuota direset + tanggal hapus dicabut. */
+    /** Reset kuota spammer: HANYA mereset kuota + mencabut tanggal blokir.
+     *  USER TETAP SPAMMER. Status hanya berubah jadi customer jika ada order
+     *  dengan status verified/selesai (diecek otomatis oleh evaluateSpammerStatus). */
     public function unlock(User $user): RedirectResponse
     {
         abort_unless($user->role === UserRole::Spammer, 422, 'Pengguna ini bukan spammer.');
 
-        // Status hanya berubah jadi customer jika ada pembelian terverifikasi.
-        // (BUG 3 STRICT MODE) Tombol "Buka Kunci" tidak boleh lagi menaikkan
-        // peran spammer -> customer secara cuma-cuma; user HARUS tetap spammer
-        // sampai punya minimal 1 order selesai/terverifikasi pembayaran.
-        if (! $user->hasVerifiedPurchase()) {
-            return redirect()
-                ->route('admin.users.show', $user)
-                ->with('error', 'Tidak bisa membuka kunci: user ini belum punya pembelian terverifikasi (order selesai / pembayaran diterima). Gunakan Reset Kuota bila hanya ingin menyegarkan kuota — status tetap Spammer.');
-        }
-
+        // STATUS UPDATE: User hanya berubah jadi customer jika ada pembelian terverifikasi.
+        // Reset kuota tidak mengubah status. Tombol ini TIDAK lagi menaikkan peran
+        // spammer -> customer secara cuma-cuma — user HARUS tetap spammer.
         $user->forceFill([
-            'role' => UserRole::Customer,
             'view_quota_used' => 0,
             'expires_at' => null,
         ])->save();
 
-        AdminLog::record('unlock_spammer', $user, ['nama' => $user->full_name]);
+        AdminLog::record('reset_quota_spammer', $user, ['nama' => $user->full_name]);
 
         return redirect()
             ->route('admin.users.show', $user)
-            ->with('status', 'Akun dibuka: '.e($user->full_name).' kembali jadi Customer dan kuota lihat direset.');
+            ->with('status', 'Kuota lihat '.e($user->full_name).' direset. Status tetap Spammer sampai yang bersangkutan punya pembelian terverifikasi.');
     }
 
-    /** Perpanjang masa tunggu spammer +30 hari (bukan "unlock"; unlock = ubah peran). */
+    /** Perpanjang masa tunggu spammer +30 hari (tetap spammer). */
     public function extend(User $user): RedirectResponse
     {
         abort_unless($user->role === UserRole::Spammer, 422, 'Pengguna ini bukan spammer.');
