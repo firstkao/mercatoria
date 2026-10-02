@@ -37,7 +37,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&family=Roboto:wght@500;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{{ asset('css/app.css') }}?v=19">
+    <link rel="stylesheet" href="{{ asset('css/app.css') }}?v=20">
     @stack('head')
 </head>
 <body>
@@ -88,15 +88,12 @@
                     </div>
                 @endif
 
-                {{-- Permintaan user: "Pre-order Baru" jadi menu utama di header (global,
-                     bisa dilihat tanpa login), isinya halaman PO aktif. Editor admin
-                     sudah semodel Elementor: blok teks + banner foto bebas diatur
-                     urutan/posisi via form & drag sort_order. --}}
-                @php
-                    $hasPreorder = false;
-                    try { $hasPreorder = (bool) \App\Models\PreorderPage::current(); } catch (\Throwable $e) {}
-                @endphp
-                @if ($hasPreorder && Route::has('preorder.show'))
+                {{-- "Pre-order Baru" = menu utama header (global, tanpa login).
+                     Dulu dibungkus cek "ada PO aktif", tapi kalau belum ada halaman
+                     PO yang dibuat admin maka menu hilang total dan terlihat seperti
+                     bug. Sekarang selalu tampil; halaman /pre-order-baru menampilkan
+                     empty-state rapi bila memang belum ada PO. --}}
+                @if (Route::has('preorder.show'))
                     <a href="{{ route('preorder.show') }}" class="site-nav__link {{ request()->routeIs('preorder.show') ? 'is-active' : '' }}">Pre-order Baru</a>
                 @endif
 
@@ -156,12 +153,11 @@
                 @endif
 
                 {{-- Permintaan user: Threads selalu tampil di header (link resmi).
-                     Ukuran disamakan dgn sosmed lain (20px, bukan 16px yg bikin kecil sendiri). --}}
+                     Pakai logo resmi Threads (fill), bukan stroke custom yang bikin
+                     ikon terlihat kecil/kurus sendiri dibanding sosmed lain. --}}
                 <a href="https://www.threads.com/@mercatoria_id" target="_blank" rel="noopener" class="header-icon" aria-label="Threads" title="Threads">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M12 21c4.97 0 9-4.03 9-9s-4.03-9-9-9-9 4.03-9 9c0 3.41 1.9 6.37 4.7 7.9"/>
-                        <path d="M12 16.5c-2.2 0-3.9-1.45-3.9-3.4S9.8 9.7 12 9.7c1.6 0 2.9.75 3.5 1.9"/>
-                        <path d="M14.2 13.9c.35-.45.55-1.05.55-1.7 0-1.5-1.1-2.5-2.75-2.5"/>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M17.285 17.456c-.32.26-1.062.48-1.802.546-.904.08-1.815-.11-2.694-.5-1.704-.75-2.937-2.1-3.41-3.54l1.702-.54c.34 1.05 1.27 2.06 2.56 2.62.7.3 1.39.45 2.06.45.25 0 .5-.02.73-.07.48-.09.78-.25.9-.34.37-.3.37-.84.37-1.3v-.02c-.53.2-1.2.34-1.96.34-2.6 0-4.7-1.7-4.7-4.06 0-2.36 2.1-4.06 4.7-4.06 1.8 0 3.34.9 4.1 2.36l-1.5.8c-.47-.9-1.5-1.5-2.6-1.5-1.6 0-2.8.96-2.8 2.4s1.2 2.4 2.8 2.4c.7 0 1.36-.18 1.86-.5V11.9c0-1.2-.5-1.9-1.6-1.9h-.9v-1.6h.9c2.1 0 3.2 1.2 3.2 3.5v3.6c0 .6 0 1.2-.3 1.7-.2.4-.5.8-.9 1.1z"/>
                     </svg>
                 </a>
 
@@ -323,9 +319,11 @@
                             </svg>
                         </a>
                     @endif
-                    {{-- Permintaan user: Threads selalu tampil di footer (link resmi). --}}
+                    {{-- Permintaan user: Threads selalu tampil di footer (link resmi).
+                         Path logo resmi (fill) + ukuran 21px biar bobot visualnya
+                         setara IG/FB/X/WA yang stroke-nya lebih tebal. --}}
                     <a href="https://www.threads.com/@mercatoria_id" target="_blank" rel="noopener" aria-label="Threads">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                        <svg width="21" height="21" viewBox="0 0 24 24" fill="currentColor">
                             <path d="M17.3 17.47c-.32.26-1.06.48-1.8.54-.9.07-1.81-.11-2.69-.5-1.7-.74-2.93-2.08-3.41-3.52l1.7-.54c.34 1.05 1.27 2.06 2.56 2.62.7.3 1.39.45 2.06.45.25 0 .5-.02.73-.07.48-.09.78-.25.9-.34.37-.3.37-.84.37-1.3v-.02c-.53.2-1.2.34-1.96.34-2.6 0-4.7-1.7-4.7-4.06 0-2.36 2.1-4.06 4.7-4.06 1.8 0 3.34.9 4.1 2.36l-1.5.8c-.47-.9-1.5-1.5-2.6-1.5-1.6 0-2.8.96-2.8 2.4s1.2 2.4 2.8 2.4c.7 0 1.36-.18 1.86-.5V11.9c0-1.2-.5-1.9-1.6-1.9h-.9v-1.6h.9c2.1 0 3.2 1.2 3.2 3.5v3.6c0 .6 0 1.2-.3 1.7-.2.4-.5.8-.9 1.1z"/>
                         </svg>
                     </a>

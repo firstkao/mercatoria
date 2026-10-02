@@ -1,6 +1,17 @@
-@extends('layouts.app', ['title' => $page->title])
+@extends('layouts.app', ['title' => $page?->title ?? 'Pre-order Baru'])
 
 @section('content')
+    {{-- Empty-state: menu header selalu tampil, jadi halaman ini bisa diakses
+         walau admin belum membuat halaman PO aktif. --}}
+    @unless ($page)
+        <div class="preorder-empty">
+            <div class="preorder-empty__icon">📦</div>
+            <h1>Belum ada Pre-order Aktif</h1>
+            <p>Santai, gelombang pre-order berikutnya sedang disiapkan.<br>
+               Sambil ngopi dulu, cek <a href="{{ route('catalog.index') }}">katalog produk</a> yang sudah ready ya!</p>
+        </div>
+    @endunless
+    @if ($page)
     <article class="preorder-page">
         {{-- Banner carousel (kalau ada lebih dari 1) --}}
         @if ($banners->isNotEmpty())
@@ -48,6 +59,7 @@
             {!! $page->html() !!}
         </section>
     </article>
+    @endif
 @endsection
 
 @push('scripts')
