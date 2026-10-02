@@ -175,6 +175,16 @@ class UserController extends Controller
     {
         abort_unless($user->role === UserRole::Spammer, 422, 'Pengguna ini bukan spammer.');
 
+        // Status hanya berubah jadi customer jika ada pembelian terverifikasi.
+        // (BUG 3 STRICT MODE) Tombol "Buka Kunci" tidak boleh lagi menaikkan
+        // peran spammer -> customer secara cuma-cuma; user HARUS tetap spammer
+        // sampai punya minimal 1 order selesai/terverifikasi pembayaran.
+        if (! $user->hasVerifiedPurchase()) {
+            return redirect()
+                ->route('admin.users.show', $user)
+                ->with('error', 'Tidak bisa membuka kunci: user ini belum punya pembelian terverifikasi (order selesai / pembayaran diterima). Gunakan Reset Kuota bila hanya ingin menyegarkan kuota — status tetap Spammer.');
+        }
+
         $user->forceFill([
             'role' => UserRole::Customer,
             'view_quota_used' => 0,

@@ -224,6 +224,40 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->role === UserRole::Spammer;
     }
 
+    /**
+     * Helper STRICT MODE (permintaan user): spammer dengan kuota habis tidak
+     * boleh mengakses katalog & detail produk sama sekali — hanya Home & Akun.
+     * Dibungkus try/catch supaya DB lama tanpa kolom view_quota_used tetap aman.
+     */
+    public function hasExhaustedQuota(): bool
+    {
+        try {
+            return $this->remainingViewQuota() <= 0;
+        } catch (\Throwable) {
+            return false;
+        }
+    }
+
+    /**
+     * // Status hanya berubah jadi customer jika ada pembelian terverifikasi.
+     * Satu order "selesai" ATAU satu bukti pembayaran berstatus diterima
+     * dianggap pembelian terverifikasi.
+     */
+    public function hasVerifiedPurchase(): bool
+    {
+        try {
+            return \App\Models\Order::query()
+                ->where('user_id', $this->getKey())
+                ->whereIn('status', [
+                    \App\Enums\OrderStatus::Selesai->value,
+                    \App\Enums\OrderStatus::PembayaranDiterima->value,
+                ])
+                ->exists();
+        } catch (\Throwable) {
+            return false;
+        }
+    }
+
     public function remainingViewQuota(): int
     {
         return max(0, Setting::integer('view_quota', 10) - $this->view_quota_used);

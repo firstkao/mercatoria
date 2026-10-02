@@ -18,6 +18,23 @@
             <div class="notice">{{ session('status') }}</div>
         @endif
 
+        {{-- STRICT MODE (permintaan user #2/#4): tampilkan flash 'error' dari
+             redirect katalog/produk dalam alert MERAH + tombol WA. --}}
+        @if (session('error'))
+            <div role="alert" style="background:#fdecea;border:1px solid #e74c3c;border-radius:10px;padding:20px;margin-bottom:20px;">
+                <strong style="color:#c0392b;display:block;font-size:16px;margin-bottom:8px;">
+                    ⚠️ {{ session('error') }}
+                </strong>
+                @php($waNumErr = preg_replace('/\D/', '', $contactWhatsapp !== '' ? $contactWhatsapp : '6281219683709'))
+                @if (str_starts_with($waNumErr, '0'))
+                    @php($waNumErr = '62' . substr($waNumErr, 1))
+                @endif
+                <a href="https://wa.me/{{ $waNumErr }}" target="_blank" rel="noopener"
+                   class="button button--small"
+                   style="display:inline-block;background:#25D366;color:#fff;padding:10px 18px;border-radius:8px;text-decoration:none;">Chat Admin via WhatsApp</a>
+            </div>
+        @endif
+
         {{-- Kuota spammer --}}
         @if ($user->isSpammer())
             @php($remaining = $user->remainingViewQuota())

@@ -37,7 +37,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&family=Roboto:wght@500;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{{ asset('css/app.css') }}?v=26">
+    <link rel="stylesheet" href="{{ asset('css/app.css') }}?v=27">
     @stack('head')
 </head>
 <body>
@@ -152,11 +152,9 @@
                     </a>
                 @endif
 
-                {{-- Permintaan user: ikon Threads pakai logo resmi dari icons8
-                     (PNG) biar bobot visualnya pas sama IG/X/WA. --}}
+                {{-- BUG 1 STRICT MODE: ikon Threads = IMG Flaticon 16x16, PERSIS sesuai instruksi. --}}
                 <a href="https://www.threads.com/@mercatoria_id" target="_blank" rel="noopener" class="header-icon header-icon--threads" aria-label="Threads" title="Threads">
-                    {{-- Permintaan user: PNG icons8 di-render 34px lalu di-crop 20px (CSS) supaya glyph-nya tidak terlihat kecil. --}}
-                    <img src="https://img.icons8.com/?size=100&id=AS2a6aA9BwK3&format=png&color=000000" alt="Threads" width="34" height="34" loading="lazy">
+                    <img src="https://cdn-icons-png.flaticon.com/128/12105/12105337.png" alt="Threads" width="16" height="16" style="width:16px; height:16px;">
                 </a>
 
                 @if (! empty($contactWhatsapp))
@@ -329,9 +327,9 @@
                             </svg>
                         </a>
                     @endif
-                    {{-- Permintaan user: ikon Threads footer pakai logo resmi icons8 (PNG). --}}
+                    {{-- BUG 1 STRICT MODE: ikon Threads footer = IMG Flaticon 16x16, PERSIS sesuai instruksi. --}}
                     <a href="https://www.threads.com/@mercatoria_id" target="_blank" rel="noopener" aria-label="Threads">
-                        <img src="https://img.icons8.com/?size=100&id=AS2a6aA9BwK3&format=png&color=000000" alt="Threads" width="20" height="20" loading="lazy">
+                        <img src="https://cdn-icons-png.flaticon.com/128/12105/12105337.png" alt="Threads" width="16" height="16" style="width:16px; height:16px;">
                     </a>
                     @if (! empty($contactWhatsapp))
                         @php($waNumFooter = preg_replace('/\D/', '', $contactWhatsapp))

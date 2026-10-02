@@ -14,8 +14,17 @@ use Illuminate\View\View;
 
 class CatalogController extends Controller
 {
-    public function index(Request $request): View
+    public function index(Request $request)
     {
+        // STRICT MODE (permintaan user): spammer yang kuota lihat produknya
+        // habis TIDAK BOLEH mengakses katalog sama sekali — hanya Home & Akun.
+        if ($u = auth()->user()) {
+            if ($u->isSpammer() && $u->hasExhaustedQuota()) {
+                return redirect()->route('account.show')
+                    ->with('error', 'Kuota Anda habis. Silakan hubungi admin untuk reset.');
+            }
+        }
+
         $games = Game::query()->orderBy('sort_order')->orderBy('name')->get(['id', 'name', 'slug']);
         $developers = Developer::query()->orderBy('name')->get(['id', 'name', 'slug']);
 

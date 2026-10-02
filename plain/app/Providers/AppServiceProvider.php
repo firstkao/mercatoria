@@ -287,13 +287,8 @@ class AppServiceProvider extends ServiceProvider
                 }
             } catch (\Throwable $e) {}
 
-            try {
-                if (class_exists(\App\Models\ContactMessage::class)) {
-                    $badges['unreadContact'] = \App\Models\ContactMessage::query()
-                        ->whereNull('read_at')
-                        ->count();
-                }
-            } catch (\Throwable $e) {}
+            // BUG 5 STRICT MODE: badge "Pesan kontak" dihapus dari sidebar
+            // karena panel admin-nya sudah tidak ada (pesan tetap masuk DB+email).
 
             $view->with('adminBadges', $badges);
         });
