@@ -81,13 +81,13 @@
 
                     {{-- Permintaan user #2: tempat "buka kunci" akun spammer. --}}
                     <hr style="margin:14px 0;border:none;border-top:1px solid var(--border,#e5e7eb);">
-                    <p class="muted small">Buka kunci = kembalikan jadi Customer (kuota direset, tanggal hapus dicabut). Perpanjang = tetap spammer, masa tunggu +30 hari.</p>
+                    <p class="muted small">Reset Kuota = kuota lihat direset &amp; tanggal blokir dicabut — User tetap Spammer sampai ada pembelian terverifikasi. Perpanjang = tetap spammer, masa tunggu +30 hari.</p>
                     <div style="display:flex;gap:8px;">
-                        <form method="POST" action="{{ route('admin.users.unlock', $user) }}" onsubmit="return confirm('Buka kunci akun ini menjadi Customer?');" style="flex:1;">
+                        <form method="POST" action="{{ route('admin.users.unlock', $user) }}" onsubmit="return confirm('Reset kuota akun ini? Status tetap Spammer (tidak berubah jadi Customer).');" style="flex:1;">
                             @csrf
-                            <button type="submit" class="btn btn--primary btn--block">🔓 Buka Kunci</button>
+                            <button type="submit" class="btn btn--primary btn--block">🔓 Reset Kuota (User tetap Spammer sampai ada pembelian terverifikasi)</button>
                         </form>
-                        <form method="POST" action="{{ route('admin.users.extend', $user) }}" onsubmit="return confirm('Perpanjang masa tunggu 30 hari?');" style="flex:1;">
+                        <form method="POST" action="{{ route('admin.users.extend', $user) }}" onsubmit="return confirm('Perpanjang masa tunggu 30 hari?');">
                             @csrf
                             <button type="submit" class="btn btn--block">+30 Hari</button>
                         </form>

@@ -510,5 +510,7 @@
     </script>
 
     @stack('scripts')
+    {{-- BUG FIX: modal popup pengganti window.alert() browser. --}}
+    @include('partials.modal-alert')
 </body>
 </html>

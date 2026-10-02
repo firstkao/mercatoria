@@ -55,13 +55,13 @@
                             <td class="muted nowrap">{{ $user->registered_at?->timezone('Asia/Jakarta')->translatedFormat('j M Y') ?? '—' }}</td>
                             <td class="nowrap">
                                 <a href="{{ route('admin.users.edit', $user) }}" class="link">Edit</a>
-                                {{-- Permintaan user #2: aksi buka kunci spammer langsung dari daftar. --}}
+                                {{-- Permintaan user #2: aksi reset kuota spammer langsung dari daftar. --}}
                                 @if ($user->isSpammer())
                                     <form method="POST" action="{{ route('admin.users.unlock', $user) }}"
-                                          onsubmit="return confirm('Buka kunci {{ $user->displayName() }} menjadi Customer?');"
+                                          onsubmit="return confirm('Reset kuota {{ $user->displayName() }}? Status tetap Spammer (tidak berubah jadi Customer).');"
                                           style="display:inline;">
                                         @csrf
-                                        <button type="submit" class="link" style="color:var(--success,#16a34a);">🔓 Buka Kunci</button>
+                                        <button type="submit" class="link" style="color:var(--success,#16a34a);">🔓 Reset Kuota</button>
                                     </form>
                                 @endif
                                 <form method="POST" action="{{ route('admin.users.destroy', $user) }}"
@@ -93,10 +93,10 @@
                         <a href="{{ route('admin.users.edit', $user) }}" class="link">Edit</a>
                         @if ($user->isSpammer())
                             <form method="POST" action="{{ route('admin.users.unlock', $user) }}"
-                                  onsubmit="return confirm('Buka kunci {{ $user->displayName() }} menjadi Customer?');"
+                                  onsubmit="return confirm('Reset kuota {{ $user->displayName() }}? Status tetap Spammer (tidak berubah jadi Customer).');"
                                   style="display:inline;">
                                 @csrf
-                                <button type="submit" class="link" style="color:var(--success,#16a34a);">🔓 Buka Kunci</button>
+                                <button type="submit" class="link" style="color:var(--success,#16a34a);">🔓 Reset Kuota</button>
                             </form>
                         @endif
                         <form method="POST" action="{{ route('admin.users.destroy', $user) }}"
