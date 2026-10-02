@@ -1,29 +1,44 @@
 @extends('layouts.app', ['title' => $q !== '' ? "Cari: {$q}" : 'Cari Produk'])
 
 @section('content')
-    <div class="catalog">
+    <div class="catalog search-page">
         <div class="catalog__head">
             <h1>{{ $q !== '' ? 'Hasil Pencarian' : 'Cari Produk' }}</h1>
+            @if ($q !== '')
+                @php($total = $products->count() + $pages->count() + $games->count() + $developers->count())
+                <p class="muted" style="margin:4px 0 0;">
+                    {{ $total }} hasil untuk "<strong>{{ $q }}</strong>"
+                    &middot; <a href="{{ route('search.index') }}" class="link">cari ulang</a>
+                </p>
+            @endif
         </div>
 
+        {{-- Form pencarian dipercantik: input besar + ikon, tombol cari menyatu --}}
         <form method="GET" action="{{ route('search.index') }}" class="search-page-form">
-            <input type="search" name="q" value="{{ $q }}" placeholder="Cari produk, SKU, game, atau developer…" autofocus required>
-            <button type="submit" class="button">Cari</button>
+            <span class="search-page-form__field">
+                <span class="search-page-form__icon" aria-hidden="true">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="11" cy="11" r="8"></circle>
+                        <path d="m21 21-4.3-4.3"></path>
+                    </svg>
+                </span>
+                <input type="search" name="q" value="{{ $q }}" placeholder="Cari produk, SKU, game, atau developer…" autofocus>
+            </span>
+            <button type="submit" class="button button--primary">Cari</button>
         </form>
 
         @if ($q === '')
-            <p class="card muted center">Masukkan kata kunci untuk mencari produk.</p>
+            <div class="card muted center" style="padding:40px 20px;">
+                <p style="margin:0 0 8px;font-size:15px;">Masukkan kata kunci untuk mencari produk.</p>
+                <p style="margin:0;font-size:13px;">Contoh: <em>figure</em>, <em>acrylic stand</em>, <em>Genshin</em>, atau kode SKU.</p>
+            </div>
         @else
-            @php($total = $products->count() + $pages->count() + $games->count() + $developers->count())
-
             @if ($total === 0)
                 <div class="empty">
                     <p>Tidak ada hasil untuk <strong>"{{ $q }}"</strong>.</p>
                     <p class="muted">Coba kata kunci lain, atau <a href="{{ route('catalog.index') }}" class="link">jelajahi katalog</a>.</p>
                 </div>
             @else
-                <p class="muted" style="margin-bottom:24px;">{{ $total }} hasil untuk <strong>"{{ $q }}"</strong>.</p>
-
                 {{-- Games --}}
                 @if ($games->isNotEmpty())
                     <section style="margin-bottom:32px;">
