@@ -39,7 +39,7 @@
             @endif
         </nav>
 
-        @if ($user->isSpammer())
+        @if (($user ?? null)?->isSpammer())
             @include('partials.quota-banner')
         @endif
 
@@ -96,12 +96,20 @@
                     </fieldset>
                 @endif
 
-                <form method="POST" action="{{ route('cart.store') }}" class="product__add-to-cart">
-                    @csrf
-                    <input type="hidden" name="variant" value="" data-product-variant-id>
-                    <input type="hidden" name="quantity" value="1">
-                    <button type="submit" class="button button--block" data-add-to-cart disabled>Tambah ke keranjang</button>
-                </form>
+                @auth
+                    <form method="POST" action="{{ route('cart.store') }}" class="product__add-to-cart">
+                        @csrf
+                        <input type="hidden" name="variant" value="" data-product-variant-id>
+                        <input type="hidden" name="quantity" value="1">
+                        <button type="submit" class="button button--block" data-add-to-cart disabled>Tambah ke keranjang</button>
+                    </form>
+                @else
+                    {{-- Halaman produk kini global (guest boleh lihat), tapi
+                         keranjang butuh login: arahkan ke halaman masuk dulu. --}}
+                    <div class="product__add-to-cart">
+                        <a href="{{ route('login') }}" class="button button--block">Masuk untuk belanja</a>
+                    </div>
+                @endauth
 
                 <dl class="product__meta">
                     @if ($product->game)
