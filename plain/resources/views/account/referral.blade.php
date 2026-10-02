@@ -27,7 +27,7 @@
             <span class="referral-reward__icon">🔗</span>
             <strong>Teman buka linkmu</strong>
             <span class="referral-reward__amount">+{{ number_format($rewardClick, 0, ',', '.') }} koin</span>
-            <small class="muted">per orang unik per hari (anti-spam)</small>
+            <small class="muted">sekali per IP unik, selamanya (anti-spam)</small>
         </div>
         <div class="referral-reward">
             <span class="referral-reward__icon">🛒</span>

@@ -25,7 +25,7 @@ class RegisteredUserController extends Controller
     public function create(Request $request): View
     {
         // Satu link untuk dua fungsi: /daftar?ref=KODE
-        // 1) Klik link -> pengajak dapat +10 koin (anti-spam: 1x per IP per hari per kode)
+        // 1) Klik link -> pengajak dapat +10 koin (anti-spam: 1x per IP SELAMANYA per kode)
         // 2) Daftar & beli -> pengajak dapat +5000 koin (lihat rewardReferral di OrderManagementController)
         $refCode = strtoupper(trim((string) $request->query('ref')));
 
@@ -43,7 +43,9 @@ class RegisteredUserController extends Controller
 
     /**
      * Reward klik link referral (+10 koin default).
-     * Idempotent per (referrer, ip, tanggal) berkat unique index referral_clicks.
+     * Idempotent PERMANEN per (referrer, ip) berkat unique index referral_clicks:
+     * satu IP hanya pernah dihitung sekali seumur hidup untuk kode pengajak itu,
+     * bukan sekali per hari.
      */
     private function rewardReferralClick(string $refCode, ?string $ip): void
     {
@@ -58,13 +60,10 @@ class RegisteredUserController extends Controller
                 return; // kode tidak dikenal -> anggap saja halaman daftar biasa
             }
 
-            $today = now()->toDateString();
-
-            // Sudah pernah dihitung hari ini dari IP ini? Skip (tanpa insert).
+            // Sudah pernah dihitung dari IP ini (kapan pun, selamanya)? Skip (tanpa insert).
             $already = ReferralClick::query()
                 ->where('referrer_id', $referrer->id)
                 ->where('ip_address', $ip)
-                ->where('clicked_on', $today)
                 ->exists();
 
             if ($already) {
@@ -75,7 +74,7 @@ class RegisteredUserController extends Controller
             ReferralClick::create([
                 'referrer_id' => $referrer->id,
                 'ip_address' => $ip,
-                'clicked_on' => $today,
+                'clicked_on' => now()->toDateString(),
             ]);
 
             $amount = Setting::integer('referral_reward_click', 10);
