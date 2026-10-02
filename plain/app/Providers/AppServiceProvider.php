@@ -190,14 +190,32 @@ class AppServiceProvider extends ServiceProvider
                 }
             } catch (\Throwable $e) {}
 
+            // ===== Badge notifikasi unread di header (lonceng) =====
+            // SAMA SEKALI jangan dihitung via blok PHP inline di blade: bila
+            // compiled view basi / ter-pull parsial, Blade tetap menghasilkan
+            // "Undefined variable" saat render (persis bug 500 sebelumnya).
+            // Dihitung di sini, dishare global + dikirim eksplisit lewat with().
+            $unreadNotifHeader = 0;
+            try {
+                if ($__headerUserId > 0) {
+                    $unreadNotifHeader = \App\Models\UserNotification::query()
+                        ->where('user_id', $__headerUserId)
+                        ->whereNull('read_at')
+                        ->count();
+                }
+            } catch (\Throwable $e) {}
+
             // Safety net untuk render DI LUAR composer (mis. errors/500.blade.php
             // extends layouts.app tapi dirender lewat Handler tanpa memicu
-            // composer). Tanpa baris ini, pemakaian $headerUnpaidCount di blade
-            // bisa melempar "Undefined variable" dan mengubah error page menjadi
+            // composer). Tanpa blok ini, pemakaian variabel di blade bisa
+            // melempar "Undefined variable" dan mengubah error page menjadi
             // 500 kedua. Hanya diisi kalau belum pernah di-share.
             try {
-                if (! array_key_exists('headerUnpaidCount', \Illuminate\Support\Facades\View::getShared())) {
-                    view()->share('headerUnpaidCount', $headerUnpaidCount);
+                $__shared = \Illuminate\Support\Facades\View::getShared();
+                foreach (['headerUnpaidCount' => $headerUnpaidCount, 'unreadNotifHeader' => $unreadNotifHeader] as $__k => $__v) {
+                    if (! array_key_exists($__k, $__shared)) {
+                        view()->share($__k, $__v);
+                    }
                 }
             } catch (\Throwable $e) {}
 
@@ -222,6 +240,7 @@ class AppServiceProvider extends ServiceProvider
                 'cartCount' => $cartCount,
                 'cartTotal' => $cartTotal,
                 'headerUnpaidCount' => $headerUnpaidCount,
+                'unreadNotifHeader' => $unreadNotifHeader,
                 'navGames' => $navGames,
                 'navDevelopers' => $navDevelopers,
                 'footerPages' => $footerPages,
