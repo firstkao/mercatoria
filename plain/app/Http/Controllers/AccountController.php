@@ -32,15 +32,39 @@ class AccountController extends Controller
             ->whereIn('status', ['pembayaran_diterima', 'sedang_diproses', 'sampai_wh_cn', 'dikirim_ke_indonesia', 'bea_cukai', 'sampai_wh_indonesia', 'selesai'])
             ->sum('pay_now_idr');
 
-        // Koin aktif
-        $activeCoins = DB::table('coin_lots')
-            ->where('user_id', $user->id)
-            ->where('remaining', '>', 0)
-            ->where(fn ($q) => $q->whereNull('expires_at')->orWhere('expires_at', '>', now()))
-            ->sum('remaining');
+        // Koin aktif — dibungkus try/catch: kalau tabel coin_lots belum ada di
+        // server (migrasi belum jalan), /akun tetap terbuka, bukan 500.
+        try {
+            $activeCoins = Schema::hasTable('coin_lots')
+                ? DB::table('coin_lots')
+                    ->where('user_id', $user->id)
+                    ->where('remaining', '>', 0)
+                    ->where(fn ($q) => $q->whereNull('expires_at')->orWhere('expires_at', '>', now()))
+                    ->sum('remaining')
+                : 0;
+        } catch (\Throwable) {
+            $activeCoins = 0;
+        }
 
-        // Unread notif
-        $unreadNotif = $user->unreadNotificationsCount();
+        // Wishlist count — fallback 0. Catatan: fitur wishlist belum ada di
+        // project ini; view account.show juga tidak memakai variabel ini, tapi
+        // tetap dihitung defensif supaya param view tidak pernah Undefined.
+        $wishlistCount = 0;
+        try {
+            if (Schema::hasTable('wishlists')) {
+                $wishlistCount = DB::table('wishlists')->where('user_id', $user->id)->count();
+            }
+        } catch (\Throwable) {
+            $wishlistCount = 0;
+        }
+
+        // Unread notif — dibungkus try/catch: kalau tabel user_notifications
+        // belum ada di server (migrasi belum jalan), /akun tetap terbuka.
+        try {
+            $unreadNotif = $user->unreadNotificationsCount();
+        } catch (\Throwable) {
+            $unreadNotif = 0;
+        }
 
         // Recent orders
         $recentOrders = Order::where('user_id', $user->id)
@@ -56,11 +80,15 @@ class AccountController extends Controller
             ->take(5)
             ->get();
 
-        // Recent notifications
-        $recentNotifs = $user->notifications()
-            ->whereNull('read_at')
-            ->take(3)
-            ->get();
+        // Recent notifications (aman terhadap tabel yang belum ada)
+        try {
+            $recentNotifs = $user->notifications()
+                ->whereNull('read_at')
+                ->take(3)
+                ->get();
+        } catch (\Throwable) {
+            $recentNotifs = collect();
+        }
 
         return view('account.show', [
             'user' => $user,

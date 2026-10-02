@@ -37,7 +37,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&family=Roboto:wght@500;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{{ asset('css/app.css') }}?v=13">
+    <link rel="stylesheet" href="{{ asset('css/app.css') }}?v=14">
     @stack('head')
 </head>
 <body>
@@ -197,6 +197,38 @@
                          dalam komentar ini — parser tetap mendeteksinya bahkan di
                          dalam komentar, dan bisa bocor mentah ke halaman ketika
                          compiled view basi. --}}
+                    @php
+                        // Ikon lonceng notifikasi + badge angka unread. Dihitung
+                        // sekali per request (memo container) dan dibungkus
+                        // try/catch supaya tabel yang belum termigrasi tidak
+                        // merobohkan seluruh halaman. Variabel prefix __ agar
+                        // tidak bentrok dengan variabel view mana pun.
+                        $__notifUserId = auth()->id();
+                        $__unreadNotifHeader = 0;
+                        if ($__notifUserId) {
+                            try {
+                                $__cacheKey = '__header_unread_notif_' . $__notifUserId;
+                                if (! app()->bound($__cacheKey)) {
+                                    app()->instance($__cacheKey, \App\Models\UserNotification::query()
+                                        ->where('user_id', $__notifUserId)
+                                        ->whereNull('read_at')
+                                        ->count());
+                                }
+                                $__unreadNotifHeader = app($__cacheKey);
+                            } catch (\Throwable $e) {
+                                $__unreadNotifHeader = 0;
+                            }
+                        }
+                    @endphp
+                    <a href="{{ route('notifications.index') }}" class="header-icon" aria-label="Notifikasi" title="Notifikasi">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                                <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                            </svg>
+                            @if ($__unreadNotifHeader > 0)
+                                <span class="cart-badge cart-badge--notif">{{ $__unreadNotifHeader > 99 ? '99+' : $__unreadNotifHeader }}</span>
+                            @endif
+                        </a>
                     <div class="nav-dropdown header-account">
                         <button type="button" class="header-icon" aria-label="Akun" title="Akun">
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -216,7 +248,12 @@
                                 @endif
                             </a>
                             <a href="{{ route('account.coins.index') }}" class="nav-dropdown__item">Koin Saya</a>
-                            <a href="{{ route('notifications.index') }}" class="nav-dropdown__item">Notifikasi</a>
+                            <a href="{{ route('notifications.index') }}" class="nav-dropdown__item">
+                                Notifikasi
+                                @if ($__unreadNotifHeader > 0)
+                                    <span class="badge badge--danger small" style="margin-left:6px;">{{ $__unreadNotifHeader }}</span>
+                                @endif
+                            </a>
                             <a href="{{ route('account.profile.edit') }}" class="nav-dropdown__item">Edit Profil</a>
                             <form method="POST" action="{{ route('logout') }}">
                                 @csrf
