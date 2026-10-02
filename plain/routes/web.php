@@ -269,12 +269,8 @@ Route::middleware('auth')->group(function (): void {
     Route::patch('/keranjang/{item}', [CartController::class, 'update'])->name('cart.update');
     Route::delete('/keranjang/{item}', [CartController::class, 'destroy'])->name('cart.destroy');
 
-    // Notifikasi
-    Route::get('/notifikasi', [NotificationController::class, 'index'])->name('notifications.index');
-    Route::put('/notifikasi/baca-semua', [NotificationController::class, 'readAll'])->name('notifications.read-all');
-    Route::delete('/notifikasi/hapus-semua', [NotificationController::class, 'destroyAll'])->name('notifications.destroy-all');
-    Route::get('/notifikasi/{notification}', [NotificationController::class, 'read'])->name('notifications.read');
-    Route::delete('/notifikasi/{notification}', [NotificationController::class, 'destroy'])->name('notifications.destroy');
+    // Notifikasi (canonical: /akun/notifikasi — lihat blok "Akun" di bawah.
+    // URL lama /notifikasi/* tetap dilayani via redirect permanen.)
 
     // Referral (undang teman)
     Route::get('/undang', [ReferralController::class, 'index'])->name('referral.index');
@@ -299,6 +295,21 @@ Route::middleware('auth')->group(function (): void {
         Route::get('/akun/koin', [CoinController::class, 'index'])->name('account.coins.index');
         Route::get('/akun/profil', [ProfileController::class, 'edit'])->name('account.profile.edit');
         Route::put('/akun/profil', [ProfileController::class, 'update'])->name('account.profile.update');
+
+        // Notifikasi milik akun (canonical: /akun/notifikasi — bug fix: dulu
+        // jalurnya /notifikasi sehingga tidak terasa satu area dengan profil)
+        Route::get('/akun/notifikasi', [NotificationController::class, 'index'])->name('notifications.index');
+        Route::put('/akun/notifikasi/baca-semua', [NotificationController::class, 'readAll'])->name('notifications.read-all');
+        Route::delete('/akun/notifikasi/hapus-semua', [NotificationController::class, 'destroyAll'])->name('notifications.destroy-all');
+        Route::get('/akun/notifikasi/{notification}', [NotificationController::class, 'read'])->name('notifications.read');
+        Route::delete('/akun/notifikasi/{notification}', [NotificationController::class, 'destroy'])->name('notifications.destroy');
+
+        // Redirect permanen dari URL lama /notifikasi/* (bookmark terdahulu).
+        // Catatan: {notification} dipatok [0-9]+ supaya tab "Semua"/"Belum
+        // dibaca" (/notifikasi?filter=unread → /akun/notifikasi) tidak ikut ke sini.
+        Route::redirect('/notifikasi/baca-semua', '/akun/notifikasi/baca-semua');
+        Route::redirect('/notifikasi/hapus-semua', '/akun/notifikasi/hapus-semua');
+        Route::redirect('/notifikasi/{notification}', '/akun/notifikasi/{notification}')->where('notification', '[0-9]+');
 
         // Pesanan milik akun (canonical)
         Route::get('/akun/pesanan', [OrderController::class, 'index'])->name('account.orders.index');

@@ -260,6 +260,10 @@ img { max-width: 100%; height: auto; display: block; }
     line-height: 18px;
     text-align: center;
 }
+/* Badge angka pada lonceng notifikasi header (merah, seperti bell notifikasi umum) */
+.cart-badge--notif {
+    background: #e74c3c !important;
+}
 
 /* Verify banner */
 .verify-banner {
