@@ -238,12 +238,15 @@ img { max-width: 100%; height: auto; display: block; }
 }
 .header-icon:hover { background: #f4f5f7; color: var(--accent-strong); }
 
-/* Ikon Threads pakai viewBox 448x512 (portrait) — tanpa rule ini SVG-nya
-   di-letterbox jadi terlihat kecil sendiri dibanding sosmed lain. */
-.header-icon--threads svg,
-.footer-social a svg[viewBox="0 0 448 512"] {
-    width: 22px;
-    height: auto;
+/* Ikon Threads: pakai logo PNG resmi (icons8) sesuai permintaan user.
+   img dibikin bulat seukuran ikon sosmed lain + object-fit biar tidak gepeng. */
+.header-icon--threads img,
+.footer-social a img[alt="Threads"] {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    object-fit: cover;
+    display: block;
 }
 
 .header-cart-total {

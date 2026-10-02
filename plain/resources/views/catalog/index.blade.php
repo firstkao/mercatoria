@@ -124,10 +124,11 @@
                             <input type="hidden" name="developer" value="{{ $selectedDeveloper->slug }}">
                         @endif
                         <select name="sort" onchange="this.form.submit()">
-                            <option value="">Pengurutan standar</option>
-                            <option value="newest" @selected(request('sort') === 'newest')">Terbaru</option>
-                            <option value="price_asc" @selected(request('sort') === 'price_asc')">Harga: Rendah ke Tinggi</option>
-                            <option value="price_desc" @selected(request('sort') === 'price_desc')">Harga: Tinggi ke Rendah</option>
+                            <option value="" @selected(request('sort') === '' || request('sort') === null)>Urutkan berdasarkan Nama</option>
+                            <option value="newest" @selected(request('sort') === 'newest')>Urutkan berdasarkan Terbaru</option>
+                            <option value="popular" @selected(request('sort') === 'popular')>Urutkan berdasarkan Terpopuler</option>
+                            <option value="price_asc" @selected(request('sort') === 'price_asc')>Urutkan berdasarkan Termurah</option>
+                            <option value="price_desc" @selected(request('sort') === 'price_desc')>Urutkan berdasarkan Termahal</option>
                         </select>
                         <noscript><button type="submit">Urutkan</button></noscript>
                     </form>
