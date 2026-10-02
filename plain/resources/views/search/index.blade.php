@@ -7,7 +7,7 @@
             @if ($q !== '')
                 @php($total = $products->count() + $pages->count() + $games->count() + $developers->count())
                 <p class="muted" style="margin:4px 0 0;">
-                    {{ $total }} hasil untuk "<strong>{{ $q }}</strong>"
+                    Menampilkan {{ $products->firstItem() ?? 0 }}–{{ $products->lastItem() ?? 0 }} dari {{ $products->total() }} produk untuk "<strong>{{ $q }}</strong>"
                     &middot; <a href="{{ route('search.index') }}" class="link">cari ulang</a>
                 </p>
             @endif
@@ -24,6 +24,14 @@
                 </span>
                 <input type="search" name="q" value="{{ $q }}" placeholder="Cari produk, SKU, game, atau developer…" autofocus>
             </span>
+            {{-- Safe sorting v16.9: urut nama (standar) / terbaru / terpopuler / termurah / termahal --}}
+            <select name="sort" class="search-page-form__sort" onchange="this.form.submit()" aria-label="Urutkan hasil">
+                <option value="name" @selected(($sort ?? '') === 'name' || ($sort ?? '') === '')>Urut: Nama (A-Z)</option>
+                <option value="newest" @selected(($sort ?? '') === 'newest')>Urut: Terbaru</option>
+                <option value="popular" @selected(($sort ?? '') === 'popular')>Urut: Terpopuler</option>
+                <option value="price" @selected(($sort ?? '') === 'price')>Urut: Termurah</option>
+                <option value="price-desc" @selected(($sort ?? '') === 'price-desc')>Urut: Termahal</option>
+            </select>
             <button type="submit" class="button button--primary">Cari</button>
         </form>
 
@@ -97,6 +105,13 @@
                                 </li>
                             @endforeach
                         </ul>
+
+                        {{-- Pagination v16.9: 30 produk/halaman, sort & q ikut terbawa --}}
+                        @if ($products->hasPages())
+                            <div class="pagination-new" style="margin-top:24px;">
+                                {{ $products->links('partials.pagination') }}
+                            </div>
+                        @endif
                     </section>
                 @endif
 
