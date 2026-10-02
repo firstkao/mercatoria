@@ -133,10 +133,8 @@
                 <span class="account-action__icon">⚙️</span>
                 <span class="account-action__label">Edit Profil</span>
             </a>
-            <a href="{{ route('catalog.index') }}" class="account-action">
-                <span class="account-action__icon">🛍️</span>
-                <span class="account-action__label">Katalog</span>
-            </a>
+            {{-- Permintaan user: menu "Katalog" dihapus dari dashboard akun
+                 (sudah ada di header publik, tidak perlu duplikat di sini). --}}
         </div>
 
         {{-- Pesanan terbaru --}}

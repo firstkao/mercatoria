@@ -58,6 +58,6 @@ class ProfileController extends Controller
             ActivityLog::record($user, 'update_profile', $request);
         });
 
-        return redirect()->route('account.show')->with('status', 'Profil berhasil diperbarui.');
+        return redirect()->back()->with('status', 'Profil berhasil diperbarui.');
     }
 }

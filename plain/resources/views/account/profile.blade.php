@@ -6,6 +6,13 @@
         <h1>Edit Profil</h1>
         <p class="muted">Nama dan alamat dapat diubah. Tanggal lahir dan email tidak dapat diubah sendiri.</p>
 
+        {{-- BUG FIX: dulu redirect sukses menunjuk dashboard sehingga notif
+             "berhasil diperbarui" tak pernah terlihat di sini. Sekarang
+             controller pakai back() + blok status ini menampilkannya. --}}
+        @if (session('status'))
+            <div class="notice" role="status">{{ session('status') }}</div>
+        @endif
+
         <form method="POST" action="{{ route('account.profile.update') }}" class="form" novalidate>
             @csrf
             @method('PUT')
