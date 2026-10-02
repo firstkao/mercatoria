@@ -21,14 +21,44 @@
         {{-- Kuota spammer --}}
         @if ($user->isSpammer())
             @php($remaining = $user->remainingViewQuota())
-            <div class="quota {{ $remaining <= 2 ? 'quota--warning' : '' }}" role="status" style="margin-bottom:20px;">
-                <strong>Sisa lihat produk: {{ $remaining }} dari {{ $viewQuota }}</strong>
-                <p>
-                    Akun ini akan terhapus otomatis pada
-                    {{ $user->expires_at?->timezone('Asia/Jakarta')->translatedFormat('j F Y, H:i') }} WIB
-                    jika belum ada pembayaran yang terverifikasi.
-                </p>
-            </div>
+
+            {{-- PERMINTAAN #3: kalau kuota sudah 10/10, tampilkan banner merah
+                 yang SAMA seperti di katalog — instruksi chat admin via WA
+                 untuk reset kuota — persis di paling atas dashboard akun. --}}
+            @if ($remaining <= 0)
+                <div class="quota quota--warning" role="alert" style="background:#fdecea;border:1px solid #e74c3c;border-radius:10px;padding:20px;margin-bottom:20px;">
+                    <strong style="color:#c0392b;display:block;font-size:16px;margin-bottom:8px;">
+                        ⚠️ Kuota lihat produk Anda telah habis ({{ $viewQuota }}/{{ $viewQuota }}).
+                    </strong>
+                    <p style="margin:0 0 14px;color:#7a3b34;">
+                        Silakan chat admin via WhatsApp untuk melakukan reset kuota.
+                        Setelah direset, kamu bisa menjelajah katalog & membuka produk lagi seperti biasa.
+                    </p>
+                    @php($waNum = preg_replace('/\D/', '', $contactWhatsapp ?? ''))
+                    @if (str_starts_with($waNum, '0'))
+                        @php($waNum = '62' . substr($waNum, 1))
+                    @endif
+                    @if ($waNum !== '')
+                        <a href="https://wa.me/{{ $waNum }}?text={{ rawurlencode('Halo admin, kuota lihat produk saya sudah habis. Mohon reset kuota saya ya.') }}"
+                           target="_blank" rel="noopener"
+                           class="btn btn--primary"
+                           style="display:inline-block;background:#25D366;color:#fff;padding:10px 18px;border-radius:8px;font-weight:600;text-decoration:none;">
+                            💬 Chat Admin via WhatsApp
+                        </a>
+                    @else
+                        <span class="muted small">Nomor WhatsApp admin belum diatur — hubungi admin melalui halaman Kontak.</span>
+                    @endif
+                </div>
+            @else
+                <div class="quota {{ $remaining <= 2 ? 'quota--warning' : '' }}" role="status" style="margin-bottom:20px;">
+                    <strong>Sisa lihat produk: {{ $remaining }} dari {{ $viewQuota }}</strong>
+                    <p>
+                        Akun ini akan terhapus otomatis pada
+                        {{ $user->expires_at?->timezone('Asia/Jakarta')->translatedFormat('j F Y, H:i') }} WIB
+                        jika belum ada pembayaran yang terverifikasi.
+                    </p>
+                </div>
+            @endif
         @endif
 
         {{-- Stat cards --}}

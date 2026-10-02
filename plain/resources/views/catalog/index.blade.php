@@ -141,16 +141,38 @@
                 @endif
             @endauth
 
-            {{-- Permintaan user #3: spammer tetap boleh jelajah katalog; kalau
-                 kuota habis, banner ini menjelaskan produk mana yang terkunci. --}}
+            {{-- Permintaan user: spammer dengan kuota 10/10 TETAP BISA membuka
+                 katalog (halaman render normal, bukan 500). Tapi karena detail
+                 produk terkunci, grid produk kita sembunyikan dan diganti
+                 banner merah berisi instruksi chat admin via WhatsApp. --}}
             @if ($quotaExhausted ?? false)
-                <div class="quota quota--warning" role="status">
-                    <strong>Kuota lihat produk kamu sudah habis ({{ $viewQuota }}/{{ $viewQuota }}).</strong>
-                    <p>Katalog ini tetap bisa kamu jelajahi, tapi halaman detail produk akan terkunci sampai admin mereset kuota / akunmu dipulihkan.</p>
+                <div class="quota quota--warning" role="alert" style="background:#fdecea;border:1px solid #e74c3c;border-radius:10px;padding:20px;margin-bottom:20px;">
+                    <strong style="color:#c0392b;display:block;font-size:16px;margin-bottom:8px;">
+                        ⚠️ Kuota lihat produk Anda telah habis ({{ $viewQuota ?? 10 }}/{{ $viewQuota ?? 10 }}).
+                    </strong>
+                    <p style="margin:0 0 14px;color:#7a3b34;">
+                        Silakan chat admin via WhatsApp untuk melakukan reset kuota.
+                        Setelah direset, kamu bisa menjelajah katalog & membuka produk lagi seperti biasa.
+                    </p>
+                    @php($waNum = preg_replace('/\D/', '', $contactWhatsapp ?? ''))
+                    @if (str_starts_with($waNum, '0'))
+                        @php($waNum = '62' . substr($waNum, 1))
+                    @endif
+                    @if ($waNum !== '')
+                        <a href="https://wa.me/{{ $waNum }}?text={{ rawurlencode('Halo admin, kuota lihat produk saya sudah habis. Mohon reset kuota saya ya.') }}"
+                           target="_blank" rel="noopener"
+                           class="btn btn--primary"
+                           style="display:inline-block;background:#25D366;color:#fff;padding:10px 18px;border-radius:8px;font-weight:600;text-decoration:none;">
+                            💬 Chat Admin via WhatsApp
+                        </a>
+                    @else
+                        <span class="muted small">Nomor WhatsApp admin belum diatur — hubungi admin melalui halaman Kontak.</span>
+                    @endif
                 </div>
-            @endif
 
-            @if ($products->isEmpty())
+                {{-- Grid produk disembunyikan selama kuota habis (produk
+                     toh tidak bisa dibuka), tapi layout tetap utuh. --}}
+            @elseif ($products->isEmpty())
                 <div class="empty">Belum ada produk.</div>
             @else
                 <ul class="product-grid-new">
