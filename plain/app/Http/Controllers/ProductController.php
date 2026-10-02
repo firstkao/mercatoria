@@ -34,7 +34,11 @@ class ProductController extends Controller
             // lagi membuka katalog/detail produk — dia diarahkan paksa ke
             // area /akun dengan pesan jelas. (Dulu render view 'products.locked'
             // yang tetap memakai layout publik -> memicu error berantai.)
-            return redirect()->route('account.notifications.index')
+            // BUG FIX: route bernama 'account.notifications.index' tidak
+            // pernah ada (nama aslinya 'notifications.index' di grup auth)
+            // -> setiap spammer 10/10 yang buka produk kena 500
+            // RouteNotDefinedException. Arahkan ke dashboard /akun saja.
+            return redirect()->route('account.show')
                 ->with('error', 'Kuota lihat produk kamu sudah habis ('.$user->view_quota_used.' dari '.Setting::integer('view_quota', 10).'). Akun sedang dikunci — hubungi admin untuk reset kuota.');
         }
 

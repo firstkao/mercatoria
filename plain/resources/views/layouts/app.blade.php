@@ -37,7 +37,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&family=Roboto:wght@500;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{{ asset('css/app.css') }}?v=23">
+    <link rel="stylesheet" href="{{ asset('css/app.css') }}?v=24">
     @stack('head')
 </head>
 <body>
@@ -417,7 +417,7 @@
                     @if (isset($footerProducts) && $footerProducts->isNotEmpty())
                         @foreach ($footerProducts->take(4) as $fp)
                             @php($fpPrices = $fp->variants->map(fn ($v) => $v->sellingPrice($calculator ?? \App\Support\PriceCalculator::fromSettings()))->filter())
-                            <a href="{{ route('products.show', $fp) }}" class="footer-produk__item">
+                            <a href="{{ route('slug.show', $fp->slug) }}" class="footer-produk__item">
                                 <div class="footer-produk__thumb">
                                     @if ($fp->images->isNotEmpty())
                                         <img src="{{ $fp->images->first()->url() }}" alt="{{ $fp->name }}">

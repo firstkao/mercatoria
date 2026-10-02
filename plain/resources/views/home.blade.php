@@ -161,7 +161,7 @@
                 <h2 class="home-section__title home-section__title--caps">MERCH BARU</h2>
                 <div class="product-grid-v2">
                     @foreach ($latestProducts as $product)
-                        <a href="{{ route('products.show', $product) }}" class="product-card-v2">
+                        <a href="{{ route('slug.show', $product->slug) }}" class="product-card-v2">
                             <div class="product-card-v2__image">
                                 @if ($product->images->isNotEmpty())
                                     <img src="{{ $product->images->first()->url() }}" alt="{{ $product->name }}" loading="lazy">
@@ -193,7 +193,7 @@
                 <h2 class="home-section__title home-section__title--caps">PRODUK TERLARIS</h2>
                 <div class="product-grid-v2">
                     @foreach ($bestSellerProducts as $product)
-                        <a href="{{ route('products.show', $product) }}" class="product-card-v2">
+                        <a href="{{ route('slug.show', $product->slug) }}" class="product-card-v2">
                             <div class="product-card-v2__image">
                                 @if ($product->images->isNotEmpty())
                                     <img src="{{ $product->images->first()->url() }}" alt="{{ $product->name }}" loading="lazy">

@@ -39,7 +39,7 @@
                 @foreach ($products as $product)
                     @php($discountPct = $product->maxDiscountPercent())
                     <li class="product-card">
-                        <a href="{{ route('products.show', $product) }}">
+                        <a href="{{ route('slug.show', $product->slug) }}">
                             <div class="product-card__image">
                                 @if ($product->images->isNotEmpty())
                                     <img src="{{ $product->images->first()->url() }}" alt="{{ $product->name }}" loading="lazy">

@@ -70,7 +70,7 @@
                         <ul class="product-grid">
                             @foreach ($products as $product)
                                 <li class="product-card">
-                                    <a href="{{ route('products.show', $product) }}">
+                                    <a href="{{ route('slug.show', $product->slug) }}">
                                         <div class="product-card__image">
                                             @if ($product->images->isNotEmpty())
                                                 <img src="{{ $product->images->first()->url() }}" alt="{{ $product->name }}" loading="lazy">
