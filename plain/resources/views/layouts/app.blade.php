@@ -37,7 +37,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&family=Roboto:wght@500;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{{ asset('css/app.css') }}?v=12">
+    <link rel="stylesheet" href="{{ asset('css/app.css') }}?v=13">
     @stack('head')
 </head>
 <body>
@@ -257,7 +257,7 @@
         <div class="container">
             {{-- Grid Utama: 4 Kolom --}}
             <div class="site-footer__grid footer-grid">
-            {{-- Kolom 1: Brand + Social + Marketplace --}}
+                {{-- Kolom 1: Brand + Social + Marketplace --}}
             <div class="footer-col footer-col--brand">
                 <a href="{{ route('home') }}" class="footer-brand">
                     @if ($hasLogo ?? false)
@@ -348,7 +348,7 @@
                 </ul>
             </div>
 
-            {{-- Kolom 3: Developer --}}
+            {{-- Kolom 3: Developer + Jelajahi (satu kolom, sesuai desain user) --}}
             <div class="footer-col">
                 <h4 class="footer-col__title">Developer</h4>
                 <ul class="footer-col__list">
@@ -368,6 +368,19 @@
                         <li><a href="#">Tencent Games</a></li>
                         <li><a href="#">Yongshi Technology</a></li>
                     @endif
+                </ul>
+
+                {{-- Jelajahi (di dalam kolom 3) --}}
+                <h4 class="footer-jelajahi__title">Jelajahi</h4>
+                <ul class="footer-col__list footer-jelajahi__links">
+                    @forelse ($footerPages as $fpage)
+                        <li><a href="{{ route('slug.show', $fpage->slug) }}">{{ $fpage->title }}</a></li>
+                    @empty
+                        <li><a href="{{ route('reseller.create') }}">Reseller</a></li>
+                        <li><a href="{{ route('legal.show', 'faq') }}">Tanya Jawab Umum</a></li>
+                        <li><a href="{{ route('legal.show', 'kebijakan-privasi') }}">Kebijakan Privasi</a></li>
+                        <li><a href="{{ route('legal.show', 'syarat-dan-ketentuan') }}">Syarat &amp; Ketentuan</a></li>
+                    @endforelse
                 </ul>
             </div>
 
@@ -429,21 +442,6 @@
                     @endif
                 </div>
             </div>
-            </div>
-
-            {{-- Jelajahi Section --}}
-            <div class="footer-jelajahi">
-                <h4 class="footer-jelajahi__title">Jelajahi</h4>
-                <div class="footer-jelajahi__links">
-                    @forelse ($footerPages as $fp)
-                        <a href="{{ route('slug.show', $fp->slug) }}">{{ $fp->title }}</a>
-                    @empty
-                        <a href="{{ route('reseller.create') }}">Reseller</a>
-                        <a href="{{ route('legal.show', 'faq') }}">Tanya Jawab Umum</a>
-                        <a href="{{ route('legal.show', 'kebijakan-privasi') }}">Kebijakan Privasi</a>
-                        <a href="{{ route('legal.show', 'syarat-dan-ketentuan') }}">Syarat &amp; Ketentuan</a>
-                    @endforelse
-                </div>
             </div>
         </div>
 

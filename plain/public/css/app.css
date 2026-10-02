@@ -447,28 +447,14 @@ img { max-width: 100%; height: auto; display: block; }
     padding-right: 40px;
 }
 
-/* Jelajahi (baris link horizontal di bawah grid) */
-.footer-jelajahi {
-    border-top: 1px solid rgba(255, 255, 255, .08);
-    margin-top: 44px;
-    padding-top: 24px;
-    display: flex;
-    align-items: baseline;
-    flex-wrap: wrap;
-    gap: 10px 28px;
-}
+/* Jelajahi (sub-section di dalam kolom 3 footer) */
 .footer-jelajahi__title {
     font-size: 13px;
     font-weight: 700;
     letter-spacing: .08em;
     text-transform: uppercase;
     color: #fff;
-    margin: 0;
-}
-.footer-jelajahi__links {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px 24px;
+    margin: 24px 0 10px;
 }
 .footer-jelajahi__links a {
     color: #b8b6c2;
@@ -495,10 +481,6 @@ img { max-width: 100%; height: auto; display: block; }
     letter-spacing: .14em;
     color: #7a7785;
     text-transform: uppercase;
-}
-
-@media (max-width: 768px) {
-    .footer-jelajahi { flex-direction: column; align-items: flex-start; gap: 12px; }
 }
 
 /* ============================================================ */
