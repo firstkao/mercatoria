@@ -6,6 +6,13 @@
         <h1>Edit Profil</h1>
         <p class="muted">Nama dan alamat dapat diubah. Tanggal lahir dan email tidak dapat diubah sendiri.</p>
 
+        {{-- GATEKEEPER #5: profil billing kosong/junk → dilempar ke sini dengan pesan merah. --}}
+        @if (session('gatekeeper_error'))
+            <div class="notice" role="alert" style="background:#fdecea;border:1px solid #e74c3c;border-radius:10px;padding:16px;color:#c0392b;font-weight:600;">
+                {{ session('gatekeeper_error') }}
+            </div>
+        @endif
+
         {{-- BUG FIX: dulu redirect sukses menunjuk dashboard sehingga notif
              "berhasil diperbarui" tak pernah terlihat di sini. Sekarang
              controller pakai back() + blok status ini menampilkannya. --}}

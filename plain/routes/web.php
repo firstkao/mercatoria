@@ -285,11 +285,14 @@ Route::middleware('auth')->group(function (): void {
         ->middleware('throttle:3,1')
         ->name('verification.resend');
 
-    // Cart
-    Route::get('/keranjang', [CartController::class, 'index'])->name('cart.index');
-    Route::post('/keranjang', [CartController::class, 'store'])->name('cart.store');
-    Route::patch('/keranjang/{item}', [CartController::class, 'update'])->name('cart.update');
-    Route::delete('/keranjang/{item}', [CartController::class, 'destroy'])->name('cart.destroy');
+    // Cart — GATEKEEPER #5: sebelum boleh menyentuh keranjang/checkout,
+    // profil billing harus lengkap & bukan junk data (asdasd/qwerty/dst).
+    Route::middleware('data.integrity')->group(function (): void {
+        Route::get('/keranjang', [CartController::class, 'index'])->name('cart.index');
+        Route::post('/keranjang', [CartController::class, 'store'])->name('cart.store');
+        Route::patch('/keranjang/{item}', [CartController::class, 'update'])->name('cart.update');
+        Route::delete('/keranjang/{item}', [CartController::class, 'destroy'])->name('cart.destroy');
+    });
 
     // Notifikasi (canonical: /akun/notifikasi — lihat blok "Akun" di bawah.
     // URL lama /notifikasi/* tetap dilayani via redirect permanen.)
@@ -304,8 +307,10 @@ Route::middleware('auth')->group(function (): void {
     // WAJIB VERIFIED EMAIL
     // ========================================================
     Route::middleware('verified')->group(function (): void {
-        // Checkout
-        Route::post('/checkout', [CheckoutController::class, 'store'])->name('checkout.store');
+        // Checkout — GATEKEEPER #5 juga (profil billing wajib valid sebelum bayar).
+        Route::middleware('data.integrity')->group(function (): void {
+            Route::post('/checkout', [CheckoutController::class, 'store'])->name('checkout.store');
+        });
 
         // Pesanan (canonical: /akun/pesanan/... — lihat blok "Akun" di bawah.
         // ✅ BUG FIX: sebelumnya ada dua set route kembar (/pesanan/* dan

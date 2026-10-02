@@ -270,6 +270,18 @@
         @endif
     @endauth
 
+    {{-- GATEKEEPER notices (IP blacklist / guest barrier / data integrity) --}}
+    @if (session('gatekeeper_error'))
+        <div class="verify-banner" style="background:#c0392b;" role="alert">
+            <div class="container">{{ session('gatekeeper_error') }}</div>
+        </div>
+    @endif
+    @if (session('gatekeeper_notice'))
+        <div class="verify-banner" style="background:#e67e22;" role="status">
+            <div class="container">{{ session('gatekeeper_notice') }}</div>
+        </div>
+    @endif
+
     <main id="main" class="@yield('main_class', 'main--default')">
     @yield('content')
     </main>

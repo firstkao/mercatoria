@@ -33,9 +33,18 @@ return Application::configure(basePath: dirname(__DIR__))
             'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
         ]);
 
+        // Alias Gatekeeper (adaptasi MERCATORIA GATEKEEPER v17.4 dari WP)
+        $middleware->alias([
+            'ip.blacklist' => \App\Http\Middleware\IpBlacklistMiddleware::class,
+            'guest.barrier' => \App\Http\Middleware\GuestBarrierMiddleware::class,
+            'data.integrity' => \App\Http\Middleware\DataIntegrityMiddleware::class,
+        ]);
+
         // Maintenance mode (Batch 28)
         $middleware->web(append: [
             \App\Http\Middleware\CheckMaintenanceMode::class,
+            // GATEKEEPER #2: IP blacklist → hanya homepage yang boleh diakses IP banned.
+            \App\Http\Middleware\IpBlacklistMiddleware::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
