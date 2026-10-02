@@ -226,6 +226,7 @@ class AppServiceProvider extends ServiceProvider
                 'navDevelopers' => $navDevelopers,
                 'footerPages' => $footerPages,
                 'footerShopeeUrl' => Setting::get('footer_shopee_url'),
+                'footerTocoUrl' => Setting::get('footer_toco_url', Setting::get('footer_tokopedia_url')),
                 'footerTokopediaUrl' => Setting::get('footer_tokopedia_url'),
                 'footerTiktokShopUrl' => Setting::get('footer_tiktok_shop_url'),
                 'footerCopyright' => Setting::get('footer_copyright'),

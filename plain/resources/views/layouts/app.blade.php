@@ -37,7 +37,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&family=Roboto:wght@500;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{{ asset('css/app.css') }}?v=11">
+    <link rel="stylesheet" href="{{ asset('css/app.css') }}?v=12">
     @stack('head')
 </head>
 <body>
@@ -254,8 +254,10 @@
 
     {{-- ===================== FOOTER ===================== --}}
     <footer class="site-footer">
-        <div class="container site-footer__grid">
-            {{-- Kolom 1: Brand --}}
+        <div class="container">
+            {{-- Grid Utama: 4 Kolom --}}
+            <div class="site-footer__grid footer-grid">
+            {{-- Kolom 1: Brand + Social + Marketplace --}}
             <div class="footer-col footer-col--brand">
                 <a href="{{ route('home') }}" class="footer-brand">
                     @if ($hasLogo ?? false)
@@ -264,10 +266,12 @@
                         <span class="footer-brand__mark">M</span>
                         <span class="footer-brand__block">
                             <span class="footer-brand__text">MERCATORIA</span>
+                            <span class="footer-brand__tagline">MERCH FOR BETTER FUTURE</span>
                         </span>
                     @endif
                 </a>
 
+                {{-- Social Media Icons --}}
                 <div class="footer-social">
                     @if (! empty($socialInstagram))
                         <a href="{{ $socialInstagram }}" target="_blank" rel="noopener" aria-label="Instagram">
@@ -304,62 +308,82 @@
                     @endif
                 </div>
 
-               <div class="footer-links">
-                    @if (! empty($footerShopeeUrl))
-                        <a href="{{ $footerShopeeUrl }}" target="_blank" rel="noopener" class="footer-btn">SHOPEE →</a>
-                    @endif
+                {{-- Marketplace Buttons (TOCO & SHOPEE) --}}
+                <div class="footer-links footer-marketplace">
                     @if (! empty($footerTocoUrl))
-                        <a href="{{ $footerTocoUrl }}" target="_blank" rel="noopener" class="footer-btn">TOCO →</a>
+                        <a href="{{ $footerTocoUrl }}" target="_blank" rel="noopener" class="footer-btn">TOCO <span>→</span></a>
+                    @endif
+                    @if (! empty($footerTokopediaUrl))
+                        <a href="{{ $footerTokopediaUrl }}" target="_blank" rel="noopener" class="footer-btn">TOKOPEDIA <span>→</span></a>
+                    @endif
+                    @if (! empty($footerShopeeUrl))
+                        <a href="{{ $footerShopeeUrl }}" target="_blank" rel="noopener" class="footer-btn">SHOPEE <span>→</span></a>
+                    @endif
+                    @if (! empty($footerTiktokShopUrl))
+                        <a href="{{ $footerTiktokShopUrl }}" target="_blank" rel="noopener" class="footer-btn">TIKTOK SHOP <span>→</span></a>
                     @endif
                 </div>
             </div>
 
             {{-- Kolom 2: Game --}}
-            @if ($navGames->isNotEmpty())
-                <div class="footer-col">
-                    <h4 class="footer-col__title">Game</h4>
-                    <ul class="footer-col__list">
+            <div class="footer-col">
+                <h4 class="footer-col__title">Game</h4>
+                <ul class="footer-col__list">
+                    @if ($navGames->isNotEmpty())
                         @foreach ($navGames as $game)
                             <li><a href="{{ route('catalog.index', ['game' => $game->slug]) }}">{{ $game->name }}</a></li>
                         @endforeach
-                    </ul>
-                </div>
-            @endif
+                    @else
+                        <li><a href="#">Aether Gazer</a></li>
+                        <li><a href="#">Arknights</a></li>
+                        <li><a href="#">Arknights: Endfield</a></li>
+                        <li><a href="#">Azur Lane</a></li>
+                        <li><a href="#">Beyond The World</a></li>
+                        <li><a href="#">Duet Night Abyss</a></li>
+                        <li><a href="#">Genshin Impact</a></li>
+                        <li><a href="#">Honkai Impact 3</a></li>
+                        <li><a href="#">Honkai: Star Rail</a></li>
+                        <li><a href="#">Light and Night</a></li>
+                    @endif
+                </ul>
+            </div>
 
-            {{-- Kolom 3: Developer + Jelajahi --}}
+            {{-- Kolom 3: Developer --}}
             <div class="footer-col">
-                @if ($navDevelopers->isNotEmpty())
-                    <h4 class="footer-col__title">Developer</h4>
-                    <ul class="footer-col__list">
+                <h4 class="footer-col__title">Developer</h4>
+                <ul class="footer-col__list">
+                    @if ($navDevelopers->isNotEmpty())
                         @foreach ($navDevelopers as $developer)
                             <li><a href="{{ route('catalog.index', ['developer' => $developer->slug]) }}">{{ $developer->name }}</a></li>
                         @endforeach
-                    </ul>
-                @endif
-
-                <h4 class="footer-col__title" style="margin-top:32px;">Jelajahi</h4>
-                <ul class="footer-col__list">
-                    @forelse ($footerPages as $fp)
-                        <li><a href="{{ route('slug.show', $fp->slug) }}">{{ $fp->title }}</a></li>
-                    @empty
-                        <li><a href="{{ route('reseller.create') }}">Reseller</a></li>
-                        <li><a href="{{ route('legal.show', 'faq') }}">Tanya Jawab Umum</a></li>
-                        <li><a href="{{ route('legal.show', 'kebijakan-privasi') }}">Kebijakan Privasi</a></li>
-                    @endforelse
+                    @else
+                        <li><a href="#">Aisno Games</a></li>
+                        <li><a href="#">BluePoch</a></li>
+                        <li><a href="#">HyperGryph</a></li>
+                        <li><a href="#">Kuro Games</a></li>
+                        <li><a href="#">Manjuu Game</a></li>
+                        <li><a href="#">miHoYo</a></li>
+                        <li><a href="#">NetEase Games</a></li>
+                        <li><a href="#">Papergames</a></li>
+                        <li><a href="#">Tencent Games</a></li>
+                        <li><a href="#">Yongshi Technology</a></li>
+                    @endif
                 </ul>
             </div>
 
             {{-- Kolom 4: Produk Terpopuler --}}
-            @if (isset($footerProducts) && $footerProducts->isNotEmpty())
-                <div class="footer-col">
-                    <h4 class="footer-col__title">Produk Terpopuler</h4>
-                    <div class="footer-produk">
-                        @foreach ($footerProducts as $fp)
+            <div class="footer-col footer-products-col">
+                <h4 class="footer-col__title">Produk Terpopuler</h4>
+                <div class="footer-produk">
+                    @if (isset($footerProducts) && $footerProducts->isNotEmpty())
+                        @foreach ($footerProducts->take(4) as $fp)
                             @php($fpPrices = $fp->variants->map(fn ($v) => $v->sellingPrice($calculator ?? \App\Support\PriceCalculator::fromSettings()))->filter())
                             <a href="{{ route('products.show', $fp) }}" class="footer-produk__item">
                                 <div class="footer-produk__thumb">
                                     @if ($fp->images->isNotEmpty())
-                                        <img src="{{ $fp->images->first()->url() }}" alt="">
+                                        <img src="{{ $fp->images->first()->url() }}" alt="{{ $fp->name }}">
+                                    @else
+                                        <div class="footer-produk__placeholder">No Image</div>
                                     @endif
                                 </div>
                                 <div class="footer-produk__info">
@@ -372,14 +396,61 @@
                                 </div>
                             </a>
                         @endforeach
-                    </div>
+                    @else
+                        {{-- Fallback produk dummy selagi belum ada data --}}
+                        <a href="#" class="footer-produk__item">
+                            <div class="footer-produk__thumb"><div class="footer-produk__placeholder">IMG</div></div>
+                            <div class="footer-produk__info">
+                                <span class="footer-produk__name">[WHERE WINDS MEET] Chirp Wooden Assembly Toy</span>
+                                <span class="footer-produk__price">Rp405.000</span>
+                            </div>
+                        </a>
+                        <a href="#" class="footer-produk__item">
+                            <div class="footer-produk__thumb"><div class="footer-produk__placeholder">IMG</div></div>
+                            <div class="footer-produk__info">
+                                <span class="footer-produk__name">[PATH TO NOWHERE] PTN X Happy Zoo Chibi Acrylic Ornament</span>
+                                <span class="footer-produk__price">Rp220.000</span>
+                            </div>
+                        </a>
+                        <a href="#" class="footer-produk__item">
+                            <div class="footer-produk__thumb"><div class="footer-produk__placeholder">IMG</div></div>
+                            <div class="footer-produk__info">
+                                <span class="footer-produk__name">[GENSHIN IMPACT] PVC Figure 1/7 Yae Miko</span>
+                                <span class="footer-produk__price">Rp3.985.000</span>
+                            </div>
+                        </a>
+                        <a href="#" class="footer-produk__item">
+                            <div class="footer-produk__thumb"><div class="footer-produk__placeholder">IMG</div></div>
+                            <div class="footer-produk__info">
+                                <span class="footer-produk__name">[WUTHERING WAVES] Porcelain Orchid Shadow Series Wall Painting</span>
+                                <span class="footer-produk__price">Rp285.000</span>
+                            </div>
+                        </a>
+                    @endif
                 </div>
-            @endif
+            </div>
+            </div>
+
+            {{-- Jelajahi Section --}}
+            <div class="footer-jelajahi">
+                <h4 class="footer-jelajahi__title">Jelajahi</h4>
+                <div class="footer-jelajahi__links">
+                    @forelse ($footerPages as $fp)
+                        <a href="{{ route('slug.show', $fp->slug) }}">{{ $fp->title }}</a>
+                    @empty
+                        <a href="{{ route('reseller.create') }}">Reseller</a>
+                        <a href="{{ route('legal.show', 'faq') }}">Tanya Jawab Umum</a>
+                        <a href="{{ route('legal.show', 'kebijakan-privasi') }}">Kebijakan Privasi</a>
+                        <a href="{{ route('legal.show', 'syarat-dan-ketentuan') }}">Syarat &amp; Ketentuan</a>
+                    @endforelse
+                </div>
+            </div>
         </div>
 
+        {{-- Bottom Bar --}}
         <div class="container site-footer__bottom">
-            <span>{{ $footerCopyright ?: '© ' . date('Y') . ' MERCATORIA' }}</span>
-            <span>{{ $footerPoweredBy ?? 'Powered by MERCATORIA' }}</span>
+            <span class="copyright">{{ $footerCopyright ?: '© ' . date('Y') . ' MERCATORIA' }}</span>
+            <span class="powered-by">{{ $footerPoweredBy ?? 'Powered by MERCATORIA' }}</span>
         </div>
     </footer>
 
