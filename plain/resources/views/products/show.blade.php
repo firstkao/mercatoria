@@ -1,5 +1,14 @@
 @extends('layouts.app', ['title' => $product->name])
 
+@php
+    // Null safety (permintaan user): semua variabel yang berpotensi tidak
+    // didefinisikan diberi default di sini supaya view TIDAK PERNAH melempar
+    // "Undefined variable" -> 500, walau controller versi lama ikut ter-deploy.
+    $calculator = $calculator ?? \App\Support\PriceCalculator::fromSettings();
+    $variants = collect($variants ?? []);
+    $viewQuota = $viewQuota ?? 10;
+@endphp
+
 @push('head')
 @php($firstVariant = $variants->firstWhere('available', true) ?? $variants->first())
 <script type="application/ld+json">
@@ -113,10 +122,10 @@
 
                 <dl class="product__meta">
                     @if ($product->game)
-                        <div><dt>Game</dt><dd>{{ $product->game->name }}</dd></div>
+                        <div><dt>Game</dt><dd>{{ $product->game->name ?? 'General' }}</dd></div>
                     @endif
                     @if ($product->developer)
-                        <div><dt>Developer</dt><dd>{{ $product->developer->name }}</dd></div>
+                        <div><dt>Developer</dt><dd>{{ $product->developer->name ?? 'Unknown' }}</dd></div>
                     @endif
                 </dl>
 
