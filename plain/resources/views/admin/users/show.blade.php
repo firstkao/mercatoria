@@ -78,6 +78,20 @@
                         @csrf
                         <button type="submit" class="btn btn--block" @disabled($user->view_quota_used === 0)>Reset kuota</button>
                     </form>
+
+                    {{-- Permintaan user #2: tempat "buka kunci" akun spammer. --}}
+                    <hr style="margin:14px 0;border:none;border-top:1px solid var(--border,#e5e7eb);">
+                    <p class="muted small">Buka kunci = kembalikan jadi Customer (kuota direset, tanggal hapus dicabut). Perpanjang = tetap spammer, masa tunggu +30 hari.</p>
+                    <div style="display:flex;gap:8px;">
+                        <form method="POST" action="{{ route('admin.users.unlock', $user) }}" onsubmit="return confirm('Buka kunci akun ini menjadi Customer?');" style="flex:1;">
+                            @csrf
+                            <button type="submit" class="btn btn--primary btn--block">🔓 Buka Kunci</button>
+                        </form>
+                        <form method="POST" action="{{ route('admin.users.extend', $user) }}" onsubmit="return confirm('Perpanjang masa tunggu 30 hari?');" style="flex:1;">
+                            @csrf
+                            <button type="submit" class="btn btn--block">+30 Hari</button>
+                        </form>
+                    </div>
                 </section>
             @elseif (! $user->anonymized_at)
                 <section class="panel stack">

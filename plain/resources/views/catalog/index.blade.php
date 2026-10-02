@@ -141,6 +141,15 @@
                 @endif
             @endauth
 
+            {{-- Permintaan user #3: spammer tetap boleh jelajah katalog; kalau
+                 kuota habis, banner ini menjelaskan produk mana yang terkunci. --}}
+            @if ($quotaExhausted ?? false)
+                <div class="quota quota--warning" role="status">
+                    <strong>Kuota lihat produk kamu sudah habis ({{ $viewQuota }}/{{ $viewQuota }}).</strong>
+                    <p>Katalog ini tetap bisa kamu jelajahi, tapi halaman detail produk akan terkunci sampai admin mereset kuota / akunmu dipulihkan.</p>
+                </div>
+            @endif
+
             @if ($products->isEmpty())
                 <div class="empty">Belum ada produk.</div>
             @else
