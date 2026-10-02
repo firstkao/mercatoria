@@ -48,6 +48,14 @@ class AccountController extends Controller
             ->take(5)
             ->get();
 
+        // FASE 1 (lanjutan): "Tagihan Menunggu" dipindah ke dashboard akun,
+        // karena menu 'Pesanan Saya' tidak lagi muncul di navbar kiri.
+        $unpaidOrders = Order::where('user_id', $user->id)
+            ->whereIn('status', ['menunggu_pembayaran', 'pembayaran_gagal'])
+            ->orderByRaw('COALESCE(payment_deadline_at, created_at) asc')
+            ->take(5)
+            ->get();
+
         // Recent notifications
         $recentNotifs = $user->notifications()
             ->whereNull('read_at')
@@ -63,6 +71,7 @@ class AccountController extends Controller
             'wishlistCount' => $wishlistCount,
             'unreadNotif' => $unreadNotif,
             'recentOrders' => $recentOrders,
+            'unpaidOrders' => $unpaidOrders,
             'recentNotifs' => $recentNotifs,
             'title' => 'Dashboard Saya',
         ]);

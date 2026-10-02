@@ -37,7 +37,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&family=Roboto:wght@500;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{{ asset('css/app.css') }}?v=8">
+    <link rel="stylesheet" href="{{ asset('css/app.css') }}?v=9">
     @stack('head')
 </head>
 <body>
@@ -98,10 +98,10 @@
                     @endif
                 @endif
 
-                <a href="{{ route('account.orders.index') }}" class="site-nav__link">Pesanan Saya</a>
-                {{-- FASE 1: 'Konfirmasi Pembayaran' tidak lagi global di header.
-                     Bukti bayar diunggah per-order (lewat Pesanan Saya -> Detail &
-                     Bayar), karena konfirmasi hanya relevan setelah ada order --}}
+                {{-- UX: 'Pesanan Saya' dipindah dari navbar kiri ke ikon Akun (kanan).
+                     Navbar kiri kini fokus navigasi katalog; semua hal personal
+                     (pesanan, tagihan, koin, profil) hidup di bawah satu pintu "Akun".
+                     CTA Tagihan Menunggu ikut pindah ke dashboard akun + badge lonceng. --}}
             </nav>
 
             {{-- TENGAH: Logo --}}
@@ -182,12 +182,42 @@
                         @endif
                     </a>
 
-                    <a href="{{ route('account.show') }}" class="header-icon" aria-label="Akun" title="Akun">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                            <circle cx="12" cy="7" r="4"></circle>
-                        </svg>
-                    </a>
+                    @php
+                        // Badge tagihan menunggu: order yang butuh aksi bayar/unggah bukti.
+                        $headerUnpaidCount = 0;
+                        try {
+                            $headerUnpaidCount = \App\Models\Order::where('user_id', auth()->id())
+                                ->whereIn('status', ['menunggu_pembayaran', 'pembayaran_gagal'])
+                                ->count();
+                        } catch (\Throwable $e) {}
+                    @endphp
+                    <div class="nav-dropdown header-account">
+                        <button type="button" class="header-icon" aria-label="Akun" title="Akun">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                                <circle cx="12" cy="7" r="4"></circle>
+                            </svg>
+                            @if ($headerUnpaidCount > 0)
+                                <span class="cart-badge">{{ $headerUnpaidCount > 99 ? '99+' : $headerUnpaidCount }}</span>
+                            @endif
+                        </button>
+                        <div class="nav-dropdown__menu nav-dropdown__menu--right">
+                            <a href="{{ route('account.show') }}" class="nav-dropdown__item">Dashboard Saya</a>
+                            <a href="{{ route('account.orders.index') }}" class="nav-dropdown__item">
+                                Pesanan Saya
+                                @if ($headerUnpaidCount > 0)
+                                    <span class="badge badge--danger small" style="margin-left:6px;">{{ $headerUnpaidCount }} tagihan</span>
+                                @endif
+                            </a>
+                            <a href="{{ route('account.coins.index') }}" class="nav-dropdown__item">Koin Saya</a>
+                            <a href="{{ route('notifications.index') }}" class="nav-dropdown__item">Notifikasi</a>
+                            <a href="{{ route('account.profile.edit') }}" class="nav-dropdown__item">Edit Profil</a>
+                            <form method="POST" action="{{ route('logout') }}">
+                                @csrf
+                                <button type="submit" class="nav-dropdown__item" style="width:100%;text-align:left;background:none;border:0;cursor:pointer;font:inherit;color:#c0392b;">Keluar</button>
+                            </form>
+                        </div>
+                    </div>
                 @else
                     <a href="{{ route('login') }}" class="header-icon" aria-label="Masuk" title="Masuk">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">

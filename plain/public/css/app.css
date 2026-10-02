@@ -162,6 +162,10 @@ img { max-width: 100%; height: auto; display: block; }
 }
 .nav-dropdown:hover .nav-dropdown__menu,
 .nav-dropdown:focus-within .nav-dropdown__menu { display: block; }
+
+/* Dropdown akun (pojok kanan header) — rata kanan biar tidak keluar viewport */
+.header-account .nav-dropdown__menu { left: auto; right: 0; min-width: 210px; }
+.header-account > .header-icon { cursor: pointer; font: inherit; color: var(--text); background: none; }
 .nav-dropdown__item {
     display: block;
     padding: 9px 14px;
