@@ -87,7 +87,13 @@ class CatalogController extends Controller
                     ->whereColumn('pv.product_id', 'products.id');
 
                 $query->orderBy($minPriceSql, $sort === 'price_asc' ? 'asc' : 'desc');
-            }, fn ($query) => $query->latest())
+            }, fn ($query) => match ($sort) {
+                // "Terpopuler": skor best-seller dari dashboard admin, tertinggi dulu.
+                'popular' => $query->orderByDesc('best_seller_score')->orderByDesc('best_seller_rank')->latest(),
+                // Standar baru sesuai permintaan user: urut nama A-Z.
+                'name' => $query->orderBy('name'),
+                default => $query->latest(),
+            })
             ->paginate(24)
             ->withQueryString();
 
