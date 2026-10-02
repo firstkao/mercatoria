@@ -37,7 +37,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&family=Roboto:wght@500;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{{ asset('css/app.css') }}?v=9">
+    <link rel="stylesheet" href="{{ asset('css/app.css') }}?v=10">
     @stack('head')
 </head>
 <body>
@@ -88,13 +88,20 @@
                     </div>
                 @endif
 
+                {{-- Pre-order dipindah ke dropdown "Lainnya" supaya menu kiri tetap bersih:
+                     hanya Beranda, Game, Developer (+ Lainnya bila ada pre-order). --}}
                 @if (Route::has('preorder.show'))
                     @php
                         $hasPreorder = false;
                         try { $hasPreorder = (bool) \App\Models\PreorderPage::current(); } catch (\Throwable $e) {}
                     @endphp
                     @if ($hasPreorder)
-                        <a href="{{ route('preorder.show') }}" class="site-nav__link">Pre-order Baru</a>
+                        <div class="nav-dropdown">
+                            <button type="button" class="site-nav__link nav-dropdown__trigger">Lainnya <span class="nav-dropdown__caret">▾</span></button>
+                            <div class="nav-dropdown__menu">
+                                <a href="{{ route('preorder.show') }}" class="nav-dropdown__item">Pre-order Baru</a>
+                            </div>
+                        </div>
                     @endif
                 @endif
 
@@ -184,11 +191,19 @@
 
                     @php
                         // Badge tagihan menunggu: order yang butuh aksi bayar/unggah bukti.
+                        // PENTING: pakai auth()->user()?->id, JANGAN auth()->id() — di beberapa
+                        // setup (session/cache-based guard) id() bisa mengembalikan string dan
+                        // MySQL 8 menolak string sebagai nilai BIGINT (HTTP 500).
+                        // Query dibungkus try/catch supaya halaman publik tidak ikut mati
+                        // bila tabel orders bermasalah — badge cukup diam (0), bukan crash.
                         $headerUnpaidCount = 0;
                         try {
-                            $headerUnpaidCount = \App\Models\Order::where('user_id', auth()->id())
-                                ->whereIn('status', ['menunggu_pembayaran', 'pembayaran_gagal'])
-                                ->count();
+                            $__headerUserId = (int) (auth()->user()?->id ?? 0);
+                            if ($__headerUserId > 0) {
+                                $headerUnpaidCount = \App\Models\Order::where('user_id', $__headerUserId)
+                                    ->whereIn('status', ['menunggu_pembayaran', 'pembayaran_gagal'])
+                                    ->count();
+                            }
                         } catch (\Throwable $e) {}
                     @endphp
                     <div class="nav-dropdown header-account">
