@@ -207,6 +207,38 @@
                     {{-- Radio varian SELALU dirender (JS butuh), tapi chip-nya
                          disembunyikan kalau cuma ada 1 varian (sesuai desain). --}}
                     @if ($variants->isNotEmpty())
+                        {{-- Dinamis: label fieldset mengikuti nama atribut varian. Sumber prioritas:
+                             key 'attribute' pada baris varian (bila controller menyediakannya),
+                             lalu parsing "Atribut: Nilai" dari nama varian (mis. "Karakter: Raiden"),
+                             terakhir fallback statis "Pilih Varian".
+                             CATATAN: semua radio TETAP dalam SATU fieldset & satu group name="variant"
+                             karena JS update harga/gambar/tombol memetakan 1 produk = 1 varian terpilih.
+                             Struktur class/data-attr label TEPERSIS sama, logic JS tidak disentuh. --}}
+                        @php
+                            $firstVariant = $variants->first();
+                            $firstAttribute = trim((string) ($firstVariant['attribute'] ?? ''));
+                            if ($firstAttribute === '' && preg_match('/^(.{2,24}?):/u', trim((string) $firstVariant['name']), $m)) {
+                                $firstAttribute = trim($m[1]);
+                            }
+                        @endphp
+                        <fieldset class="variants">
+                            <legend>Pilih {{ $firstAttribute !== '' ? \Illuminate\Support\Str::ucfirst($firstAttribute) : 'Varian' }}</legend>
+                            @foreach ($variants as $variant)
+                                <label class="variant {{ $variant['available'] ? '' : 'variant--sold' }}">
+                                    <input type="radio" name="variant" value="{{ $variant['id'] }}"
+                                           data-price="{{ $variant['price'] !== null ? \App\Support\PriceCalculator::formatRupiah($variant['price']) : 'Harga belum tersedia' }}"
+                                           data-compare-price="{{ $variant['comparePrice'] !== null ? \App\Support\PriceCalculator::formatRupiah($variant['comparePrice']) : '' }}"
+                                           data-image="{{ $variant['imageUrl'] }}"
+                                           data-available="{{ $variant['available'] && $variant['price'] !== null ? '1' : '0' }}"
+                                           @checked($loop->first)>
+                                    <span>
+                                        {{ $variant['name'] }}
+                                        @unless ($variant['available'])
+                                            <small>Out of stock</small>
+                                        @endunless
+                                    </span>
+                                </label>
+                            @endforeach
                         <fieldset class="product-boxed-variants" @if ($variants->count() === 1) hidden @endif>
                             <legend>Pilih Varian</legend>
                             <div class="variant-chips">
