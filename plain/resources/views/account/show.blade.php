@@ -6,9 +6,9 @@
         <div class="account-hero">
             <div>
                 <p class="eyebrow">Akun saya</p>
-                <h1 style="margin:4px 0 8px;">Halo, {{ $user->full_name }} 👋</h1>
+                <h1 style="margin:4px 0 8px;">Halo, {{ $user->full_name ?? 'User' }} 👋</h1>
                 <p class="muted" style="margin:0;">
-                    <span class="badge badge--{{ $user->role->value }}">{{ $user->role->label() }}</span>
+                    <span class="badge badge--{{ $user->role->value ?? 'default' }}">{{ $user->role->label() ?? 'User' }}</span>
                     <span class="muted" style="margin-left:8px;">Terdaftar {{ $user->registered_at?->timezone('Asia/Jakarta')->translatedFormat('F Y') ?? '—' }}</span>
                 </p>
             </div>
@@ -19,14 +19,16 @@
         @endif
 
         {{-- ========================================== --}}
-        {{-- KUOTA SPAMMER (FIXED: Clean UI, No Duplication) --}}
+        {{-- KUOTA SPAMMER (FIXED: Pure Blade Syntax) --}}
         {{-- ========================================== --}}
         @if ($user->isSpammer())
-            @php($remaining = $user->remainingViewQuota())
+            @php
+                $remaining = $user->remainingViewQuota() ?? 0;
+                $viewQuota = $viewQuota ?? 10;
+            @endphp
 
             @if ($remaining <= 0)
                 @php
-                    // Ambil nomor WA, bersihkan dari karakter non-angka
                     $waNum = preg_replace('/\D/', '', $contactWhatsapp ?? '');
                     if (str_starts_with($waNum, '0')) {
                         $waNum = '62' . substr($waNum, 1);
@@ -35,8 +37,8 @@
                     if ($waNum === '') {
                         $waNum = '6281234567890'; // GANTI DENGAN NOMOR ADMIN ASLI LU
                     }
-                    // Pesan otomatis dengan email user (TIDAK ditampilkan di UI, cuma di URL)
-                    $waMessage = rawurlencode('Halo admin, kuota lihat produk saya sudah habis. Mohon reset kuota saya ya. Email saya: ' . $user->email);
+                    // Pesan otomatis (Email TIDAK ditampilkan di UI, hanya di URL)
+                    $waMessage = rawurlencode('Halo admin, kuota lihat produk saya sudah habis. Mohon reset kuota saya ya. Email saya: ' . ($user->email ?? ''));
                 @endphp
                 
                 {{-- Banner Hijau Tunggal (Profesional & Jelas) --}}
