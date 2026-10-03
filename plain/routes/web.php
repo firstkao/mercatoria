@@ -384,3 +384,13 @@ Route::get('/{slug}', function (string $slug) {
 
     abort(404);
 })->name('slug.show');
+
+// BUG FIX (log: "Route [products.show] not defined"): nama route publik
+// 'products.show' tidak pernah terdaftar sejak refactor ke slug.show, tapi
+// masih ada kemungkinan view lama / compiled view basi / link eksternal
+// memanggilnya. Route ALIAS di bawah mendaftarkan 'products.show' yang sah
+// (tetap redirect 301 ke URL kanonik /{slug}) supaya error itu mustahil
+// terjadi lagi. Ini BUKAN perubahan desain: URL utama tetap tanpa prefix.
+Route::get('/produk/{product:slug}', function (Product $product) {
+    return redirect(route('slug.show', ['slug' => $product->slug]), 301);
+})->name('products.show');
