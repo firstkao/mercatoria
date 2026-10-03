@@ -127,6 +127,17 @@
     @php
         // Logo pembayaran: taruh file di public/images/payments/{bca,qris,shopeepay}.(svg|png|webp).
         // Kalau file belum ada, otomatis jatuh ke teks biasa (tidak ada gambar rusak).
+        // Label varian. Prioritas: (1) dashboard products.variant_label, (2) key 'attribute' dari controller,
+        // (3) parsing "Atribut: Nilai" dari nama varian pertama, (4) fallback "Varian".
+        $labelVariant = $variants->first();   // bukan $firstVariant: nama itu sudah dipakai JSON-LD di atas
+        $variantLabel = trim((string) ($product->variant_label ?? ''));
+        if ($variantLabel === '') {
+            $variantLabel = trim((string) ($labelVariant['attribute'] ?? ''));
+        }
+        if ($variantLabel === '' && $labelVariant && preg_match('/^(.{2,24}?):/u', trim((string) ($labelVariant['name'] ?? '')), $m)) {
+            $variantLabel = trim($m[1]);
+        }
+        $variantLabel = $variantLabel !== '' ? \Illuminate\Support\Str::ucfirst($variantLabel) : 'Varian';
         $payLogos = ['bca' => 'BCA', 'qris' => 'QRIS', 'shopeepay' => 'ShopeePay'];
         $payLogoUrl = function (string $key): ?string {
             foreach (['svg', 'png', 'webp'] as $ext) {
@@ -195,7 +206,7 @@
                     <div class="product-boxed-price-wrap">
                         <p class="product-boxed-price">
                             <del data-compare-price hidden></del>
-                            <strong data-price>{{ $variants->isEmpty() ? 'Harga belum tersedia' : 'Pilih varian' }}</strong>
+                            <strong data-price>{{ $variants->isEmpty() ? 'Harga belum tersedia' : 'Pilih ' . mb_strtolower($variantLabel) }}</strong>
                         </p>
                         <p class="product-boxed-coin">
                             Beli produk ini sekarang dan dapatkan <strong>800 Koin</strong>!
@@ -207,40 +218,8 @@
                     {{-- Radio varian SELALU dirender (JS butuh), tapi chip-nya
                          disembunyikan kalau cuma ada 1 varian (sesuai desain). --}}
                     @if ($variants->isNotEmpty())
-                        {{-- Dinamis: label fieldset mengikuti nama atribut varian. Sumber prioritas:
-                             key 'attribute' pada baris varian (bila controller menyediakannya),
-                             lalu parsing "Atribut: Nilai" dari nama varian (mis. "Karakter: Raiden"),
-                             terakhir fallback statis "Pilih Varian".
-                             CATATAN: semua radio TETAP dalam SATU fieldset & satu group name="variant"
-                             karena JS update harga/gambar/tombol memetakan 1 produk = 1 varian terpilih.
-                             Struktur class/data-attr label TEPERSIS sama, logic JS tidak disentuh. --}}
-                        @php
-                            $firstVariant = $variants->first();
-                            $firstAttribute = trim((string) ($firstVariant['attribute'] ?? ''));
-                            if ($firstAttribute === '' && preg_match('/^(.{2,24}?):/u', trim((string) $firstVariant['name']), $m)) {
-                                $firstAttribute = trim($m[1]);
-                            }
-                        @endphp
-                        <fieldset class="variants">
-                            <legend>Pilih {{ $firstAttribute !== '' ? \Illuminate\Support\Str::ucfirst($firstAttribute) : 'Varian' }}</legend>
-                            @foreach ($variants as $variant)
-                                <label class="variant {{ $variant['available'] ? '' : 'variant--sold' }}">
-                                    <input type="radio" name="variant" value="{{ $variant['id'] }}"
-                                           data-price="{{ $variant['price'] !== null ? \App\Support\PriceCalculator::formatRupiah($variant['price']) : 'Harga belum tersedia' }}"
-                                           data-compare-price="{{ $variant['comparePrice'] !== null ? \App\Support\PriceCalculator::formatRupiah($variant['comparePrice']) : '' }}"
-                                           data-image="{{ $variant['imageUrl'] }}"
-                                           data-available="{{ $variant['available'] && $variant['price'] !== null ? '1' : '0' }}"
-                                           @checked($loop->first)>
-                                    <span>
-                                        {{ $variant['name'] }}
-                                        @unless ($variant['available'])
-                                            <small>Out of stock</small>
-                                        @endunless
-                                    </span>
-                                </label>
-                            @endforeach
                         <fieldset class="product-boxed-variants" @if ($variants->count() === 1) hidden @endif>
-                            <legend>Pilih Varian</legend>
+                            <legend>Pilih {{ $variantLabel }}</legend>
                             <div class="variant-chips">
                                 @foreach ($variants as $variant)
                                     @php $buyable = $variant['available'] && $variant['price'] !== null; @endphp
@@ -469,7 +448,7 @@
                         var qty = cartForm.querySelector('[data-qty-input]');
                         var multi = root.querySelectorAll('input[name=variant]').length > 1;
                         var meta = [];
-                        if (multi && chosen && chosen.dataset.name) meta.push('Varian: ' + chosen.dataset.name);
+                        if (multi && chosen && chosen.dataset.name) meta.push(@json($variantLabel) + ': ' + chosen.dataset.name);
                         meta.push('Jumlah: ' + (qty ? qty.value : 1));
 
                         cm('[data-cm-name]').textContent = (root.querySelector('.product-boxed-title') || {}).textContent || '';
