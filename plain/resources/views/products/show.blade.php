@@ -255,31 +255,12 @@
                             </div>
                             <button type="submit" class="product-boxed-add-to-cart button" data-add-to-cart disabled>Tambah ke keranjang</button>
                         </form>
-                    @else
-                        {{-- Guest: qty tetap tampil di samping tombol (sesuai desain), tombol -> halaman login --}}
-                        <div class="product-boxed-buyrow">
-                            <div class="product-boxed-qty" data-qty-control>
-                                <button type="button" class="product-boxed-qty-btn" data-qty-minus aria-label="Kurangi">-</button>
-                                <input type="number" value="1" min="1" max="99" class="product-boxed-qty-input" data-qty-input inputmode="numeric">
-                                <button type="button" class="product-boxed-qty-btn" data-qty-plus aria-label="Tambah">+</button>
-                            </div>
-                            <a href="{{ route('login') }}" class="product-boxed-add-to-cart button">Masuk untuk belanja</a>
-                        </div>
                     @endauth
 
                     {{-- 4. Info meta: SKU, lalu Game -> Developer -> Tag (link katalog berfilter) --}}
                     <dl class="product__meta product-boxed-meta">
                         @if ($product->sku)
                             <div class="is-full"><dt>SKU:</dt><dd>{{ $product->sku }}</dd></div>
-                        @endif
-                        @if ($product->game)
-                            <div><dt>Kategori:</dt><dd>{{ $product->game->name }}</dd></div>
-                        @endif
-                        @if ($product->tagLabel())
-                            <div><dt>Tag:</dt><dd>{{ $product->tagLabel() }}</dd></div>
-                        @endif
-                        @if ($product->developer)
-                            <div><dt>Brand:</dt><dd>{{ $product->developer->name }}</dd></div>
                         @endif
 
                         {{-- 1. Game (dulu Kategori) --}}
