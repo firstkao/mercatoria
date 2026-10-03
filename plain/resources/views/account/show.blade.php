@@ -29,7 +29,9 @@
                 @if (str_starts_with($waNumErr, '0'))
                     @php($waNumErr = '62' . substr($waNumErr, 1))
                 @endif
-                <a href="https://wa.me/{{ $waNumErr }}" target="_blank" rel="noopener"
+                {{-- PERMINTAAN user: sertakan email di pesan WA agar admin
+                     mudah mencari akun yang minta reset kuota. --}}
+                <a href="https://wa.me/{{ $waNumErr }}?text={{ urlencode('Halo Admin, saya mau reset kuota lihat produk. Email saya: ' . $user->email) }}" target="_blank" rel="noopener"
                    class="button button--small"
                    style="display:inline-block;background:#25D366;color:#fff;padding:10px 18px;border-radius:8px;text-decoration:none;">Chat Admin via WhatsApp</a>
             </div>
@@ -56,12 +58,15 @@
                         @php($waNum = '62' . substr($waNum, 1))
                     @endif
                     @if ($waNum !== '')
-                        <a href="https://wa.me/{{ $waNum }}?text={{ rawurlencode('Halo admin, kuota lihat produk saya sudah habis. Mohon reset kuota saya ya.') }}"
+                        {{-- PERMINTAAN user: WAJIB cantumkan email di pesan WA
+                             agar admin mudah mencari akun yang minta reset. --}}
+                        <a href="https://wa.me/{{ $waNum }}?text={{ rawurlencode('Halo admin, kuota lihat produk saya sudah habis. Mohon reset kuota saya ya. Email saya: ' . $user->email) }}"
                            target="_blank" rel="noopener"
                            class="btn btn--primary"
                            style="display:inline-block;background:#25D366;color:#fff;padding:10px 18px;border-radius:8px;font-weight:600;text-decoration:none;">
                             💬 Chat Admin via WhatsApp
                         </a>
+                        <p class="small" style="margin:10px 0 0;color:#7a3b34;">Sertakan email Anda saat chat: <strong>{{ $user->email }}</strong></p>
                     @else
                         <span class="muted small">Nomor WhatsApp admin belum diatur — hubungi admin melalui halaman Kontak.</span>
                     @endif

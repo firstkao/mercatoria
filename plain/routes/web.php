@@ -2,7 +2,6 @@
 
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\AccountController;
-use App\Http\Controllers\ContactController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SitemapController;
 use App\Http\Controllers\PreorderPageController;
@@ -78,9 +77,9 @@ Route::get('/robots.txt', function () {
     return response(implode("\n", $lines), 200, ['Content-Type' => 'text/plain']);
 })->name('robots');
 
-// Kontak (guest & member)
-Route::get('/kontak', [ContactController::class, 'show'])->name('contact.show');
-Route::post('/kontak', [ContactController::class, 'store'])->middleware('throttle:3,1')->name('contact.store');
+// Kontak: controller & view /kontak sudah dihapus dari kodebase (PR user),
+// route-nya ikut dicabut — sebelumnya masih terdaftar dan menunjuk class
+// yang tidak ada -> setiap request /kontak = fatal "Class not found" (500).
 
 // Search
 Route::get('/cari', [SearchController::class, 'index'])->name('search.index');
