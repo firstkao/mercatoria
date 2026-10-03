@@ -37,7 +37,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&family=Roboto:wght@500;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{{ asset('css/app.css') }}?v=27">
+    <link rel="stylesheet" href="{{ asset('css/app.css') }}?v=29">
     @stack('head')
 </head>
 <body>
@@ -409,7 +409,12 @@
                 {{-- Jelajahi (di dalam kolom 3) --}}
                 <h4 class="footer-jelajahi__title">Jelajahi</h4>
                 <ul class="footer-col__list footer-jelajahi__links">
-                    @forelse ($footerPages as $fpage)
+                    {{-- BUG FIX (500 "unexpected end of file, expecting elseif/else/endif"):
+                         loop ini dulu ditulis sebagai blok foreach + empty terpisah (dua direktif
+                         yang tidak seimbang), sehingga Blade meng-compile pembuka tanpa penutup
+                         -> syntax error saat layout dirender SEMUA halaman publik.
+                         Diperbaiki jadi satu blok forelse/empty/endforelse utuh. --}}
+                    @forelse (($footerPages ?? collect()) as $fpage)
                         <li><a href="{{ route('slug.show', $fpage->slug) }}">{{ $fpage->title }}</a></li>
                     @empty
                         <li><a href="{{ route('reseller.create') }}">Reseller</a></li>
@@ -426,10 +431,15 @@
                 <div class="footer-produk">
                     @if (isset($footerProducts) && $footerProducts->isNotEmpty())
                         @foreach ($footerProducts->take(4) as $fp)
-                            @php($fpPrices = $fp->variants->map(fn ($v) => $v->sellingPrice($calculator ?? \App\Support\PriceCalculator::fromSettings()))->filter())
+                            {{-- BUG FIX (500): sellingPrice() bisa melempar TypeError saat
+                                 price_yuan null, dan relasi variants/images bisa belum
+                                 ter-load di jalur render tertentu. Dibungkus data_get +
+                                 filter is_numeric supaya footer tidak pernah menjatuhkan
+                                 halaman manapun. --}}
+                            @php($fpPrices = collect(data_get($fp, 'variants', []))->map(fn ($v) => is_numeric($v->price_yuan ?? null) ? $v->sellingPrice($calculator ?? \App\Support\PriceCalculator::fromSettings()) : null)->filter(fn ($p) => is_numeric($p)))
                             <a href="{{ route('slug.show', $fp->slug) }}" class="footer-produk__item">
                                 <div class="footer-produk__thumb">
-                                    @if ($fp->images->isNotEmpty())
+                                    @if (count(data_get($fp, 'images', [])) > 0)
                                         <img src="{{ $fp->images->first()->url() }}" alt="{{ $fp->name }}">
                                     @else
                                         <div class="footer-produk__placeholder">No Image</div>

@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Models\ActivityLog;
 use App\Models\Product;
-use App\Models\ProductVariant;
 use App\Models\Setting;
 use App\Support\PriceCalculator;
 use Illuminate\Http\RedirectResponse;
@@ -63,8 +62,25 @@ class ProductController extends Controller
             }
         }
 
-        $product->load(['images', 'variants', 'shippingTier', 'game', 'developer']);
-        $calculator = PriceCalculator::fromSettings();
+        // Load relasi satu per satu + try/catch: kalau ada relasi yang tidak
+        // bisa di-load (mis. kolom/tabel belum ada di DB dump lama), kita tetap
+        // lanjut render dengan relasi lain yang berhasil — BUKAN mati 500.
+        foreach (['images', 'variants', 'shippingTier', 'game', 'developer'] as $relation) {
+            try {
+                $product->load($relation);
+            } catch (\Throwable $e) {
+                report($e);
+            }
+        }
+
+        // Calculator WAJIB selalu ter-instantiate; dariSettings() gagal (kolom
+        // settings kosong/rusak di DB lama) → fallback default, bukan exception.
+        try {
+            $calculator = PriceCalculator::fromSettings();
+        } catch (\Throwable $e) {
+            report($e);
+            $calculator = new PriceCalculator(null, null, null, 11.0, 5000);
+        }
 
         // SEO data
         $description = $product->description
@@ -77,18 +93,31 @@ class ProductController extends Controller
         // halaman "tidak tersedia" yang rapi + error aslinya tercatat di log,
         // BUKAN layar putih 500. Ini menjawab keluhan berulang "produk masih
         // 500" — sekarang penyebabnya selalu bisa dilacak lewat storage/logs.
-        try {
-            return view('products.show', [
-                'user' => $user,
-                'product' => $product,
-                'variants' => $product->variants->map(fn (ProductVariant $variant): array => [
+        // Build daftar varian satu per satu dengan try/catch: kalau SATU varian
+        // punya data rusak (mis. price_yuan string aneh dari SQL dump lama),
+        // varian itu dilewati — BUKAN seluruh halaman produk mati 500.
+        $variantRows = [];
+        foreach ($product->variants as $variant) {
+            try {
+                $variantRows[] = [
                     'id' => $variant->id,
-                    'name' => $variant->name,
+                    'name' => (string) ($variant->name ?? 'Varian'),
                     'available' => $variant->isAvailable(),
                     'price' => $variant->sellingPrice($calculator),
                     'comparePrice' => $variant->comparePrice($calculator),
                     'imageUrl' => $variant->imageUrl(),
-                ]),
+                ];
+            } catch (\Throwable $e) {
+                report($e);
+            }
+        }
+
+        try {
+            return view('products.show', [
+                'user' => $user,
+                'product' => $product,
+                'calculator' => $calculator,
+                'variants' => collect($variantRows),
                 'viewQuota' => Setting::integer('view_quota', 10),
                 // SEO
                 'title' => $product->name,
