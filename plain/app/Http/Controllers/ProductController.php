@@ -39,18 +39,15 @@ class ProductController extends Controller
         // tamu yang buka /produk/... langsung kena 500 "isSpammer() on null".
         //
         // STRICT MODE (permintaan user): spammer kuota habis TIDAK BOLEH
-        // mengakses detail produk sama sekali (hanya Home & Akun). Cek awal
-        // pakai hasExhaustedQuota() -> redirect + flash 'error' persis spec;
-        // consumeViewQuota() tetap jalan untuk menghitung kuota bila masih ada.
+        // mengakses detail produk sama sekali (hanya Home & Akun). Redirect
+        // POLOS tanpa flash/modal; status + tombol WA ada di dashboard /akun.
         try {
             if ($user !== null && $user->isSpammer() && $user->hasExhaustedQuota()) {
-                return redirect()->route('account.show')
-                    ->with('error', 'Kuota Anda habis. Silakan hubungi admin untuk reset.');
+                return redirect()->route('account.show');
             }
 
             if ($user !== null && $user->isSpammer() && ! $user->consumeViewQuota($product)) {
-                return redirect()->route('account.show')
-                    ->with('error', 'Kuota Anda habis. Silakan hubungi admin untuk reset.');
+                return redirect()->route('account.show');
             }
         } catch (\Throwable $e) {
             report($e);
