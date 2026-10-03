@@ -2007,10 +2007,12 @@ input[type="number"] { -moz-appearance: textfield; appearance: textfield; }
 .product-boxed-thumb img { width: 100%; height: 100%; object-fit: cover; }
 
 /* ---------- Info (kanan) ---------- */
-.product-boxed-info { min-width: 0; }
+/* Satu ritme jarak untuk semua kondisi (0 / 1 / banyak varian): jarak antar blok diatur di sini,
+   elemen yang disembunyikan (display:none) otomatis tidak menyisakan celah. */
+.product-boxed-info { min-width: 0; display: flex; flex-direction: column; gap: 16px; }
 
 .product-boxed-breadcrumb {
-    margin: 0 0 12px;
+    margin: 0;
     font-size: 14px;
     line-height: 1.8;
     color: var(--muted);
@@ -2019,7 +2021,7 @@ input[type="number"] { -moz-appearance: textfield; appearance: textfield; }
 .product-boxed-breadcrumb a:hover { color: #1a1a25; }
 
 .product-boxed-title {
-    margin: 0 0 14px;
+    margin: 0;
     font-family: var(--font-heading);
     font-size: 32px;
     font-weight: 500;
@@ -2028,7 +2030,7 @@ input[type="number"] { -moz-appearance: textfield; appearance: textfield; }
     overflow-wrap: anywhere;
 }
 
-.product-boxed-price-wrap { margin-bottom: 14px; }
+.product-boxed-price-wrap { margin: 0; }
 .product-boxed-price {
     margin: 0 0 4px;
     font-size: 24px;
@@ -2049,10 +2051,10 @@ input[type="number"] { -moz-appearance: textfield; appearance: textfield; }
 }
 .product-boxed-coin strong { font-weight: 700; color: #1a1a25; }
 
-.sold-out-note { margin: 0 0 12px; font-size: 14px; color: var(--danger); }
+.sold-out-note { margin: 0; font-size: 14px; color: var(--danger); }
 
 /* Variant chips (hanya tampil kalau > 1 varian) */
-.product-boxed-variants { border: 0; padding: 0; margin: 0 0 16px; min-width: 0; }
+.product-boxed-variants { border: 0; padding: 0; margin: 0; min-width: 0; }
 .product-boxed-variants legend { font-weight: 600; font-size: 14px; margin-bottom: 8px; padding: 0; }
 .variant-chips { display: flex; flex-wrap: wrap; gap: 8px; }
 .variant-chip { position: relative; }
@@ -2077,7 +2079,7 @@ input[type="number"] { -moz-appearance: textfield; appearance: textfield; }
     display: flex;
     align-items: stretch;
     gap: 23px;
-    margin: 0 0 20px;
+    margin: 0;
 }
 .product-boxed-qty {
     display: inline-flex;
@@ -2149,7 +2151,7 @@ input[type="number"] { -moz-appearance: textfield; appearance: textfield; }
     display: flex;
     flex-wrap: wrap;
     gap: 6px 16px;
-    margin: 0 0 24px;
+    margin: 4px 0 0;
     padding-top: 18px;
     border-top: 1px solid #ddd;
     font-size: 13.5px;
@@ -2163,7 +2165,7 @@ input[type="number"] { -moz-appearance: textfield; appearance: textfield; }
 
 /* Jaminan pembayaran: fieldset + legend di tengah garis atas */
 .product-boxed-payment {
-    margin: 0;
+    margin: 8px 0 0;
     padding: 6px 20px 18px;
     border: 1px solid #ddd;
     border-radius: 4px;
