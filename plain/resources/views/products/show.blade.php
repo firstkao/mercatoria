@@ -267,8 +267,8 @@
                         </div>
                     @endauth
 
-                    {{-- Meta: SKU (1 baris) lalu Kategori / Tag / Brand sebaris --}}
-                    <dl class="product-boxed-meta">
+                    {{-- 4. Info meta: SKU, lalu Game -> Developer -> Tag (link katalog berfilter) --}}
+                    <dl class="product__meta product-boxed-meta">
                         @if ($product->sku)
                             <div class="is-full"><dt>SKU:</dt><dd>{{ $product->sku }}</dd></div>
                         @endif
@@ -280,6 +280,30 @@
                         @endif
                         @if ($product->developer)
                             <div><dt>Brand:</dt><dd>{{ $product->developer->name }}</dd></div>
+                        @endif
+
+                        {{-- 1. Game (dulu Kategori) --}}
+                        @if ($product->game)
+                            <div>
+                                <dt>Game</dt>
+                                <dd><a href="{{ route('catalog.index', ['game' => $product->game->slug]) }}">{{ $product->game->name }}</a></dd>
+                            </div>
+                        @endif
+
+                        {{-- 2. Developer (dulu Brand) --}}
+                        @if ($product->developer)
+                            <div>
+                                <dt>Developer</dt>
+                                <dd><a href="{{ route('catalog.index', ['developer' => $product->developer->slug]) }}">{{ $product->developer->name }}</a></dd>
+                            </div>
+                        @endif
+
+                        {{-- 3. Tag --}}
+                        @if ($product->tag)
+                            <div>
+                                <dt>Tag</dt>
+                                <dd><a href="{{ route('catalog.index', ['tag' => $product->tag]) }}">{{ $product->tagLabel() }}</a></dd>
+                            </div>
                         @endif
                     </dl>
 
