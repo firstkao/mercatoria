@@ -18,63 +18,64 @@
             <div class="notice">{{ session('status') }}</div>
         @endif
 
-        {{-- Tombol WhatsApp untuk chat admin (reset kuota) --}}
-        @php
-            $waNum = preg_replace('/\D/', '', $contactWhatsapp ?? '');
-            if (str_starts_with($waNum, '0')) {
-                $waNum = '62' . substr($waNum, 1);
-            }
-            if ($waNum === '') {
-                $waNum = '6281234567890';
-            }
-        @endphp
-        <div class="wa-reset-banner" style="background: #25D366; color: #fff; padding: 16px 20px; border-radius: 8px; margin-bottom: 24px; text-align: center;">
-            <p style="margin: 0 0 12px; font-size: 14px; font-weight: 600;">
-                💬 Butuh reset kuota lihat produk? Chat admin via WhatsApp.
-            </p>
-            <a href="https://wa.me/{{ $waNum }}?text=Halo%20Admin,%20saya%20ingin%20meminta%20reset%20kuota%20lihat%20produk.%20Email%20akun%20saya:%20{{ urlencode(auth()->user()->email) }}"
-               class="button"
-               style="background: #fff; color: #25D366; padding: 10px 24px; border-radius: 6px; text-decoration: none; font-weight: 700; display: inline-block;"
-               target="_blank">
-               Chat Admin via WhatsApp (Email: {{ auth()->user()->email }})
-            </a>
-        </div>
-
-        {{-- Kuota spammer --}}
+        {{-- ========== SEMUA BAGIAN SPAMMER ========== --}}
         @if ($user->isSpammer())
-            @php($remaining = $user->remainingViewQuota())
+            @php
+                $remaining = $user->remainingViewQuota();
 
-            {{-- PERMINTAAN #3: kalau kuota sudah 10/10, tampilkan banner merah
-                 yang SAMA seperti di katalog — instruksi chat admin via WA
-                 untuk reset kuota — persis di paling atas dashboard akun. --}}
+                // Set nomor WA sekali saja
+                $waNum = preg_replace('/\D/', '', $contactWhatsapp ?? '');
+                if (str_starts_with($waNum, '0')) {
+                    $waNum = '62' . substr($waNum, 1);
+                }
+            @endphp
+
+            {{-- Banner hijau: selalu tampil untuk spammer (info cara reset kuota) --}}
+            @if ($waNum !== '')
+                <div class="wa-reset-banner" style="background:#25D366;color:#fff;padding:16px 20px;border-radius:10px;margin-bottom:20px;text-align:center;">
+                    <p style="margin:0 0 12px;font-size:14px;font-weight:600;">
+                        💬 Butuh reset kuota lihat produk? Chat admin via WhatsApp.
+                    </p>
+                    <a href="https://wa.me/{{ $waNum }}?text={{ rawurlencode('Halo admin, kuota lihat produk saya sudah habis. Mohon reset kuota saya ya. Email saya: ' . $user->email) }}"
+                       target="_blank" rel="noopener"
+                       style="background:#fff;color:#25D366;padding:10px 24px;border-radius:8px;text-decoration:none;font-weight:700;display:inline-block;">
+                        💬 Chat Admin via WhatsApp
+                    </a>
+                    <p style="margin:10px 0 0;font-size:12px;opacity:0.9;">
+                        Sertakan email Anda saat chat: <strong>{{ $user->email }}</strong>
+                    </p>
+                </div>
+            @endif
+
+            {{-- Kuota status --}}
             @if ($remaining <= 0)
-                <div class="quota quota--warning" role="alert" style="background:#fdecea;border:1px solid #e74c3c;border-radius:10px;padding:20px;margin-bottom:20px;">
+                {{-- Kuota HABIS: banner merah --}}
+                <div class="quota quota--warning" role="alert"
+                     style="background:#fdecea;border:1px solid #e74c3c;border-radius:10px;padding:20px;margin-bottom:20px;">
                     <strong style="color:#c0392b;display:block;font-size:16px;margin-bottom:8px;">
                         ⚠️ Kuota lihat produk Anda telah habis ({{ $viewQuota }}/{{ $viewQuota }}).
                     </strong>
                     <p style="margin:0 0 14px;color:#7a3b34;">
                         Silakan chat admin via WhatsApp untuk melakukan reset kuota.
-                        Setelah direset, kamu bisa menjelajah katalog & membuka produk lagi seperti biasa.
+                        Setelah direset, kamu bisa menjelajah katalog &amp; membuka produk lagi seperti biasa.
                     </p>
-                    @php($waNum = preg_replace('/\D/', '', $contactWhatsapp ?? ''))
-                    @if (str_starts_with($waNum, '0'))
-                        @php($waNum = '62' . substr($waNum, 1))
-                    @endif
                     @if ($waNum !== '')
-                        {{-- PERMINTAAN user: WAJIB cantumkan email di pesan WA
-                             agar admin mudah mencari akun yang minta reset. --}}
                         <a href="https://wa.me/{{ $waNum }}?text={{ rawurlencode('Halo admin, kuota lihat produk saya sudah habis. Mohon reset kuota saya ya. Email saya: ' . $user->email) }}"
                            target="_blank" rel="noopener"
-                           class="btn btn--primary"
                            style="display:inline-block;background:#25D366;color:#fff;padding:10px 18px;border-radius:8px;font-weight:600;text-decoration:none;">
                             💬 Chat Admin via WhatsApp
                         </a>
-                        <p class="small" style="margin:10px 0 0;color:#7a3b34;">Sertakan email Anda saat chat: <strong>{{ $user->email }}</strong></p>
+                        <p class="small" style="margin:10px 0 0;color:#7a3b34;">
+                            Sertakan email Anda saat chat: <strong>{{ $user->email }}</strong>
+                        </p>
                     @else
-                        <span class="muted small">Nomor WhatsApp admin belum diatur — hubungi admin melalui halaman Kontak.</span>
+                        <span class="muted small">
+                            Nomor WhatsApp admin belum diatur — hubungi admin melalui halaman Kontak.
+                        </span>
                     @endif
                 </div>
             @else
+                {{-- Kuota masih ada: info biasa --}}
                 <div class="quota {{ $remaining <= 2 ? 'quota--warning' : '' }}" role="status" style="margin-bottom:20px;">
                     <strong>Sisa lihat produk: {{ $remaining }} dari {{ $viewQuota }}</strong>
                     <p>
@@ -85,6 +86,7 @@
                 </div>
             @endif
         @endif
+        {{-- ========== AKHIR BAGIAN SPAMMER ========== --}}
 
         {{-- Stat cards --}}
         <div class="account-stats">
@@ -121,7 +123,7 @@
             </div>
         </div>
 
-        {{-- Tagihan Menunggu (pindahan dari navbar 'Pesanan Saya' -> dashboard akun) --}}
+        {{-- Tagihan Menunggu --}}
         @if ($unpaidOrders->isNotEmpty())
             <div class="panel stack" style="margin-top:20px; border-left:4px solid var(--accent-strong);">
                 <div class="panel__head">
@@ -188,8 +190,6 @@
                 <span class="account-action__icon">⚙️</span>
                 <span class="account-action__label">Edit Profil</span>
             </a>
-            {{-- Permintaan user: menu "Katalog" dihapus dari dashboard akun
-                 (sudah ada di header publik, tidak perlu duplikat di sini). --}}
         </div>
 
         {{-- Pesanan terbaru --}}
