@@ -10,33 +10,38 @@
 @endphp
 
 @push('head')
-@php($firstVariant = $variants->firstWhere('available', true) ?? $variants->first())
-<script type="application/ld+json">
-{
-    "@context": "https://schema.org",
-    "@type": "Product",
-    "name": "{{ $product->name }}",
-    "description": "{{ \Illuminate\Support\Str::limit(strip_tags($product->description ?? ''), 200) }}",
-    @if ($product->images->isNotEmpty())
-    "image": "{{ $product->images->first()->url() }}",
-    @endif
-    @if ($product->sku)
-    "sku": "{{ $product->sku }}",
-    @endif
-    @if ($product->game)
-    "category": "{{ $product->game->name }}",
-    @endif
-    @if ($firstVariant && $firstVariant['price'] !== null)
-    "offers": {
-        "@type": "Offer",
-        "priceCurrency": "IDR",
-        "price": "{{ $firstVariant['price'] }}",
-        "availability": "{{ $firstVariant['available'] ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock' }}",
-        "url": "{{ url()->current() }}"
+@php
+    $firstVariant = $variants->firstWhere('available', true) ?? $variants->first();
+
+    $ld = [
+        '@context'    => 'https://schema.org',
+        '@type'       => 'Product',
+        'name'        => $product->name,
+        'description' => \Illuminate\Support\Str::limit(strip_tags($product->description ?? ''), 200),
+    ];
+
+    if ($product->images->isNotEmpty()) {
+        $ld['image'] = $product->images->first()->url();
     }
-    @endif
-}
-</script>
+    if ($product->sku) {
+        $ld['sku'] = $product->sku;
+    }
+    if ($product->game) {
+        $ld['category'] = $product->game->name;
+    }
+    if ($firstVariant && $firstVariant['price'] !== null) {
+        $ld['offers'] = [
+            '@type'         => 'Offer',
+            'priceCurrency' => 'IDR',
+            'price'         => (string) $firstVariant['price'],
+            'availability'  => $firstVariant['available']
+                ? 'https://schema.org/InStock'
+                : 'https://schema.org/OutOfStock',
+            'url'           => url()->current(),
+        ];
+    }
+@endphp
+<script type="application/ld+json">{!! json_encode($ld, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG) !!}</script>
 @endpush
 
 @section('content')
