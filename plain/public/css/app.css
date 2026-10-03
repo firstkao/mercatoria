@@ -1913,3 +1913,145 @@ input[type="number"] { -moz-appearance: textfield; appearance: textfield; }
 @media (max-width: 480px) {
     .product-grid-new { grid-template-columns: repeat(2, 1fr); }
 }
+
+/* ============================================================
+   PRODUCT BOXED LAYOUT (halaman detail produk)
+   Prefix .product-boxed- agar tidak bentrok dengan style lama.
+   ============================================================ */
+.product-boxed-card {
+    max-width: 1200px;
+    margin: 32px auto;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+    padding: 32px;
+}
+.product-boxed-layout {
+    display: grid;
+    grid-template-columns: 1fr 1fr; /* gambar kiri 50% + info kanan 50% */
+    gap: 32px;
+    align-items: start;
+}
+.product-boxed-main-image { position: relative; }
+/* Badge LIMITED/PRESALE di pojok KIRI ATAS gambar (absolute) */
+.product-boxed-badge {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    z-index: 2;
+}
+.product-boxed-title { font-size: 26px; font-weight: 700; line-height: 1.25; margin: 0 0 12px; }
+.product-boxed-price strong { font-size: 24px; font-weight: 700; color: var(--accent-strong); }
+.product-boxed-price del { color: var(--muted); margin-right: 8px; }
+
+/* Baris quantity + tombol beli dalam satu baris */
+.product-boxed-buyrow {
+    display: flex;
+    gap: 12px;
+    align-items: stretch;
+    margin: 16px 0;
+}
+.product-boxed-buyrow .button { flex: 1; white-space: nowrap; }
+.product-boxed-qty {
+    display: inline-flex;
+    align-items: center;
+    border: 1px solid #e2e2e8;
+    border-radius: 8px;
+    overflow: hidden;
+    flex-shrink: 0;
+}
+.product-boxed-qty button {
+    width: 36px;
+    height: 42px;
+    border: 0;
+    background: #f6f6f8;
+    font-size: 18px;
+    cursor: pointer;
+    color: #333;
+}
+.product-boxed-qty button:hover { background: #ececf1; }
+.product-boxed-qty input {
+    width: 52px;
+    height: 42px;
+    border: 0;
+    text-align: center;
+    font-size: 15px;
+    -moz-appearance: textfield;
+    appearance: textfield;
+}
+.product-boxed-qty input::-webkit-outer-spin-button,
+.product-boxed-qty input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+
+/* Info meta kecil muted */
+.product-boxed-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 24px;
+    margin: 16px 0;
+    font-size: 13px;
+    color: var(--muted);
+}
+.product-boxed-meta div { display: inline-flex; gap: 6px; }
+.product-boxed-meta dt { font-weight: 600; }
+.product-boxed-meta dd { margin: 0; }
+
+/* Box Jaminan Pembayaran Aman */
+.product-boxed-payment {
+    border: 1px solid #e2e2e8;
+    border-radius: 8px;
+    background: #fff;
+    padding: 16px;
+    margin-top: 20px;
+}
+.product-boxed-payment__title { margin: 0 0 10px; font-size: 13px; font-weight: 700; }
+.product-boxed-payment__logos { display: flex; flex-wrap: wrap; gap: 8px; }
+.product-boxed-pay-logo {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 64px;
+    height: 32px;
+    padding: 0 10px;
+    border: 1px solid #e2e2e8;
+    border-radius: 6px;
+    background: #fafafc;
+    font-size: 12px;
+    font-weight: 700;
+    color: #444;
+}
+
+/* Tab Deskripsi / Ulasan di bawah card */
+.product-boxed-tabs {
+    max-width: 1200px;
+    margin: 0 auto 32px;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+    overflow: hidden;
+}
+.product-boxed-tabs__nav {
+    display: flex;
+    border-bottom: 1px solid #e2e2e8;
+}
+.product-boxed-tab {
+    border: 0;
+    background: none;
+    padding: 14px 22px;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--muted);
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+}
+.product-boxed-tab.is-active { color: var(--accent-strong); border-bottom-color: var(--accent-strong); }
+.product-boxed-tabs__panel { display: none; padding: 22px; }
+.product-boxed-tabs__panel.is-active { display: block; }
+
+@media (max-width: 768px) {
+    .product-boxed-card { padding: 16px; margin: 16px auto; }
+    .product-boxed-layout { grid-template-columns: 1fr; gap: 16px; }
+    .product-boxed-title { font-size: 20px; }
+    .product-boxed-price strong { font-size: 20px; }
+    .product-boxed-tabs { margin-left: 0; margin-right: 0; }
+}
