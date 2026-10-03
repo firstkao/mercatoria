@@ -8,7 +8,7 @@
                 <p class="eyebrow">Akun saya</p>
                 <h1 style="margin:4px 0 8px;">Halo, {{ $user->full_name ?? 'User' }} 👋</h1>
                 <p class="muted" style="margin:0;">
-                    <span class="badge badge--{{ $user->role->value ?? 'default' }}">{{ $user->role->label() ?? 'User' }}</span>
+                    <span class="badge badge--{{ $user->role?->value ?? 'default' }}">{{ $user->role?->label() ?? 'User' }}</span>
                     <span class="muted" style="margin-left:8px;">Terdaftar {{ $user->registered_at?->timezone('Asia/Jakarta')->translatedFormat('F Y') ?? '—' }}</span>
                 </p>
             </div>
@@ -18,9 +18,7 @@
             <div class="notice">{{ session('status') }}</div>
         @endif
 
-        {{-- ========================================== --}}
-        {{-- KUOTA SPAMMER (FIXED: Pure Blade Syntax) --}}
-        {{-- ========================================== --}}
+        {{-- Kuota spammer --}}
         @if ($user->isSpammer())
             @php
                 $remaining = $user->remainingViewQuota() ?? 0;
@@ -33,20 +31,25 @@
                     if (str_starts_with($waNum, '0')) {
                         $waNum = '62' . substr($waNum, 1);
                     }
-                    // Fallback aman jika nomor belum diatur di database
+                    // Fallback jika nomor belum diatur di database
                     if ($waNum === '') {
-                        $waNum = '6281234567890'; // GANTI DENGAN NOMOR ADMIN ASLI LU
+                        $waNum = '6281219683709';
                     }
-                    // Pesan otomatis (Email TIDAK ditampilkan di UI, hanya di URL)
-                    $waMessage = rawurlencode('Halo admin, kuota lihat produk saya sudah habis. Mohon reset kuota saya ya. Email saya: ' . ($user->email ?? ''));
+                    // Email hanya ada di URL, tidak ditampilkan di UI
+                    $waMessage = rawurlencode(
+                        "Halo Admin,\n" .
+                        "Saya ingin meminta reset kuota lihat produk karena sudah mencapai batas.\n" .
+                        "Email akun saya: " . ($user->email ?? '') . "\n" .
+                        "Mohon dibantu, terima kasih."
+                    );
                 @endphp
-                
-                {{-- Banner Hijau Tunggal (Profesional & Jelas) --}}
-                <div class="quota-banner" role="alert" style="background: #d1fae5; border: 1px solid #10b981; border-radius: 10px; padding: 24px; margin-bottom: 24px; text-align: center;">
-                    <strong style="color: #065f46; display: block; font-size: 16px; margin-bottom: 8px;">
+
+                {{-- Banner kuota habis (merah = peringatan) --}}
+                <div class="quota-banner" role="alert" style="background: #fee2e2; border: 1px solid #ef4444; border-radius: 10px; padding: 24px; margin-bottom: 24px; text-align: center;">
+                    <strong style="color: #991b1b; display: block; font-size: 16px; margin-bottom: 8px;">
                         ⚠️ Kuota lihat produk Anda telah habis.
                     </strong>
-                    <p style="margin: 0 0 16px; color: #047857; font-size: 14px; line-height: 1.5;">
+                    <p style="margin: 0 0 16px; color: #b91c1c; font-size: 14px; line-height: 1.5;">
                         Silakan hubungi admin melalui WhatsApp untuk melakukan reset kuota agar Anda dapat kembali menjelajah katalog.
                     </p>
                     <a href="https://wa.me/{{ $waNum }}?text={{ $waMessage }}"
@@ -56,14 +59,16 @@
                     </a>
                 </div>
             @else
-                {{-- Banner Sisa Kuota (Normal) --}}
+                {{-- Banner sisa kuota --}}
                 <div class="quota {{ $remaining <= 2 ? 'quota--warning' : '' }}" role="status" style="margin-bottom: 24px; background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 10px; padding: 16px 20px;">
                     <strong style="color: #0369a1; display: block; margin-bottom: 4px;">Sisa lihat produk: {{ $remaining }} dari {{ $viewQuota }}</strong>
-                    <p style="margin: 0; color: #0c4a6e; font-size: 14px;">
-                        Akun ini akan terhapus otomatis pada
-                        {{ $user->expires_at?->timezone('Asia/Jakarta')->translatedFormat('j F Y, H:i') }} WIB
-                        jika belum ada pembayaran yang terverifikasi.
-                    </p>
+                    @if ($user->expires_at)
+                        <p style="margin: 0; color: #0c4a6e; font-size: 14px;">
+                            Akun ini akan terhapus otomatis pada
+                            {{ $user->expires_at->timezone('Asia/Jakarta')->translatedFormat('j F Y, H:i') }} WIB
+                            jika belum ada pembayaran yang terverifikasi.
+                        </p>
+                    @endif
                 </div>
             @endif
         @endif
@@ -98,7 +103,8 @@
                 <span class="account-stat__icon">🎁</span>
                 <div>
                     <span class="account-stat__label">Undang Teman</span>
-                    <strong class="account-stat__value">{{ $user->referralsMade()->count() }}</strong>
+                    {{-- Idealnya $referralCount dikirim dari controller; fallback ke query kalau belum --}}
+                    <strong class="account-stat__value">{{ $referralCount ?? $user->referralsMade()->count() }}</strong>
                 </div>
             </div>
         </div>
@@ -126,7 +132,7 @@
         @endif
 
         {{-- Notifikasi baru --}}
-        @if (isset($recentNotifs) && $recentNotifs->isNotEmpty())
+        @if (Route::has('notifications.index') && isset($recentNotifs) && $recentNotifs->isNotEmpty())
             <div class="panel" style="margin-top:24px;">
                 <div class="panel__head">
                     <h2 style="margin:0;">Notifikasi Baru</h2>
