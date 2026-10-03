@@ -21,6 +21,14 @@ class ProductController extends Controller
      */
     public function show(Request $request, Product $product): View|RedirectResponse
     {
+        // PAKSA LOGIN: guest tidak boleh akses halaman produk sama sekali
+        // (aturan bisnis user). Pilih cara if-check di controller (bukan
+        // middleware 'auth' di route) supaya tidak perlu ubah routes dan
+        // tidak double-redirect dengan GuestBarrierMiddleware.
+        if (!$request->user()) {
+            return redirect()->route('login')->with('error', 'Silakan masuk untuk melihat produk.');
+        }
+
         abort_unless($product->is_published, 404);
 
         $user = $request->user();
