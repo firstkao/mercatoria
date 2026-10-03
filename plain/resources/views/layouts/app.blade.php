@@ -186,29 +186,21 @@
                         @endif
                     </a>
 
-                    {{-- Badge tagihan menunggu (akun) dihitung di View Composer
-                         AppServiceProvider untuk layouts.app dan dikirim sebagai
-                         $headerUnpaidCount. Fallback nol memakai null-coalescing
-                         di setiap pemakaian. JANGAN pernah menaruh blok PHP inline
-                         atau menulis directive-nya persis seperti saat compile di
-                         dalam komentar ini — parser tetap mendeteksinya bahkan di
-                         dalam komentar, dan bisa bocor mentah ke halaman ketika
-                         compiled view basi. --}}
-                    {{-- Ikon lonceng notifikasi + badge angka unread.
-                         Perhitungan dilakukan di View Composer layouts.app
-                         (AppServiceProvider) lalu dikirim sebagai variabel
-                         'unreadNotifHeader' + dishare global. JANGAN pernah
-                         menghitungnya lewat blok PHP inline di sini: compiled
-                         view basi akan melempar Undefined variable dan
-                         merobohkan seluruh halaman (bug 500 sebelumnya).
-                         Safety net ?? 0 di setiap pemakaian. --}}
+                    {{-- Badge tagihan menunggu + badge unread notif dihitung di
+                         View Composer AppServiceProvider (layouts.app) dan dikirim
+                         sebagai headerUnpaidCount / unreadNotifHeader. Fallback nol
+                         memakai null-coalescing di setiap pemakaian. Jangan pernah
+                         menaruh blok PHP inline atau menulis directive persis seperti
+                         hasil compile di dalam komentar — parser tetap mendeteksinya
+                         meski di dalam komentar, dan isinya bisa bocor mentah ke
+                         halaman ketika compiled view basi. --}}
                     <a href="{{ route('notifications.index') }}" class="header-icon" aria-label="Notifikasi" title="Notifikasi">
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                 <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
                                 <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
                             </svg>
                             @if (($unreadNotifHeader ?? 0) > 0)
-                                <span class="cart-badge cart-badge--notif">{{ $unreadNotifHeader > 99 ? '99+' : $unreadNotifHeader }}</span>
+                                <span class="cart-badge cart-badge--notif">{{ ($unreadNotifHeader ?? 0) > 99 ? '99+' : ($unreadNotifHeader ?? 0) }}</span>
                             @endif
                         </a>
                     <div class="nav-dropdown header-account">
@@ -218,7 +210,7 @@
                                 <circle cx="12" cy="7" r="4"></circle>
                             </svg>
                             @if (($headerUnpaidCount ?? 0) > 0)
-                                <span class="cart-badge">{{ $headerUnpaidCount > 99 ? '99+' : $headerUnpaidCount }}</span>
+                                <span class="cart-badge">{{ ($headerUnpaidCount ?? 0) > 99 ? '99+' : ($headerUnpaidCount ?? 0) }}</span>
                             @endif
                         </button>
                         <div class="nav-dropdown__menu nav-dropdown__menu--right">
@@ -226,7 +218,7 @@
                             <a href="{{ route('account.orders.index') }}" class="nav-dropdown__item">
                                 Pesanan Saya
                                 @if (($headerUnpaidCount ?? 0) > 0)
-                                    <span class="badge badge--danger small" style="margin-left:6px;">{{ $headerUnpaidCount }} tagihan</span>
+                                    <span class="badge badge--danger small" style="margin-left:6px;">{{ $headerUnpaidCount ?? 0 }} tagihan</span>
                                 @endif
                             </a>
                             <a href="{{ route('account.coins.index') }}" class="nav-dropdown__item">Koin Saya</a>
