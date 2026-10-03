@@ -18,6 +18,28 @@
             <div class="notice">{{ session('status') }}</div>
         @endif
 
+        {{-- Tombol WhatsApp untuk chat admin (reset kuota) --}}
+        @php
+            $waNum = preg_replace('/\D/', '', $contactWhatsapp ?? '');
+            if (str_starts_with($waNum, '0')) {
+                $waNum = '62' . substr($waNum, 1);
+            }
+            if ($waNum === '') {
+                $waNum = '6281234567890';
+            }
+        @endphp
+        <div class="wa-reset-banner" style="background: #25D366; color: #fff; padding: 16px 20px; border-radius: 8px; margin-bottom: 24px; text-align: center;">
+            <p style="margin: 0 0 12px; font-size: 14px; font-weight: 600;">
+                💬 Butuh reset kuota lihat produk? Chat admin via WhatsApp.
+            </p>
+            <a href="https://wa.me/{{ $waNum }}?text=Halo%20Admin,%20saya%20ingin%20meminta%20reset%20kuota%20lihat%20produk.%20Email%20akun%20saya:%20{{ urlencode(auth()->user()->email) }}"
+               class="button"
+               style="background: #fff; color: #25D366; padding: 10px 24px; border-radius: 6px; text-decoration: none; font-weight: 700; display: inline-block;"
+               target="_blank">
+               Chat Admin via WhatsApp (Email: {{ auth()->user()->email }})
+            </a>
+        </div>
+
         {{-- Kuota spammer --}}
         @if ($user->isSpammer())
             @php($remaining = $user->remainingViewQuota())
