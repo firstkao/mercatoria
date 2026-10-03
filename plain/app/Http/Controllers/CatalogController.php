@@ -20,8 +20,7 @@ class CatalogController extends Controller
         // habis TIDAK BOLEH mengakses katalog sama sekali — hanya Home & Akun.
         if ($u = auth()->user()) {
             if ($u->isSpammer() && $u->hasExhaustedQuota()) {
-                return redirect()->route('account.show')
-                    ->with('error', 'Kuota Anda habis. Silakan hubungi admin untuk reset.');
+                return redirect()->route('account.show');
             }
         }
 

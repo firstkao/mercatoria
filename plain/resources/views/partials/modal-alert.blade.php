@@ -46,15 +46,12 @@
         if (e.key === 'Escape' && overlay.style.display !== 'none') closeModal();
     });
 
-    // Auto-tampilkan modal untuk session flash message (bukan alert browser)
+    // Auto-tampilkan modal untuk session flash 'success' saja.
+    // Flash 'error' TIDAK dimodal lagi (permintaan user: tidak ada popup/modal
+    // saat kuota habis) — error tetap tampil sebagai alert inline di view.
     @if (session('success'))
         window.addEventListener('DOMContentLoaded', function () {
             showModal(@json(session('success')), 'success');
-        });
-    @endif
-    @if (session('error'))
-        window.addEventListener('DOMContentLoaded', function () {
-            showModal(@json(session('error')), 'error');
         });
     @endif
 })();
