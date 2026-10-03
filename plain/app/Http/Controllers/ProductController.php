@@ -8,6 +8,7 @@ use App\Models\Setting;
 use App\Support\PriceCalculator;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\View\View;
 
 class ProductController extends Controller
@@ -19,7 +20,7 @@ class ProductController extends Controller
      * method ini di-type-hint :View sehingga mengembalikan RedirectResponse
      * memicu fatal error (500) di server produksi.
      */
-    public function show(Request $request, Product $product): View|RedirectResponse
+    public function show(Request $request, Product $product): View|RedirectResponse|Response
     {
         // PAKSA LOGIN: guest tidak boleh akses halaman produk sama sekali
         // (aturan bisnis user). Pilih cara if-check di controller (bukan
@@ -121,7 +122,8 @@ class ProductController extends Controller
         }
 
         try {
-            return view('products.show', [
+            // render() DI DALAM try supaya error Blade ikut tertangkap -> halaman "tidak tersedia".
+            return response(view('products.show', [
                 'user' => $user,
                 'product' => $product,
                 'calculator' => $calculator,
@@ -132,7 +134,7 @@ class ProductController extends Controller
                 'metaDescription' => $description,
                 'metaImage' => $product->images->first()?->url(),
                 'ogType' => 'product',
-            );
+            ])->render());
         } catch (\Throwable $e) {
             report($e);
 
