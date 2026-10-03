@@ -18,67 +18,46 @@
             <div class="notice">{{ session('status') }}</div>
         @endif
 
-        {{-- ========== SEMUA BAGIAN SPAMMER ========== --}}
+        {{-- ========================================== --}}
+        {{-- KUOTA SPAMMER (FIXED: Clean UI, No Duplication) --}}
+        {{-- ========================================== --}}
         @if ($user->isSpammer())
-            @php
-                $remaining = $user->remainingViewQuota();
+            @php($remaining = $user->remainingViewQuota())
 
-                // Set nomor WA sekali saja
-                $waNum = preg_replace('/\D/', '', $contactWhatsapp ?? '');
-                if (str_starts_with($waNum, '0')) {
-                    $waNum = '62' . substr($waNum, 1);
-                }
-            @endphp
-
-            {{-- Banner hijau: selalu tampil untuk spammer (info cara reset kuota) --}}
-            @if ($waNum !== '')
-                <div class="wa-reset-banner" style="background:#25D366;color:#fff;padding:16px 20px;border-radius:10px;margin-bottom:20px;text-align:center;">
-                    <p style="margin:0 0 12px;font-size:14px;font-weight:600;">
-                        💬 Butuh reset kuota lihat produk? Chat admin via WhatsApp.
+            @if ($remaining <= 0)
+                @php
+                    // Ambil nomor WA, bersihkan dari karakter non-angka
+                    $waNum = preg_replace('/\D/', '', $contactWhatsapp ?? '');
+                    if (str_starts_with($waNum, '0')) {
+                        $waNum = '62' . substr($waNum, 1);
+                    }
+                    // Fallback aman jika nomor belum diatur di database
+                    if ($waNum === '') {
+                        $waNum = '6281234567890'; // GANTI DENGAN NOMOR ADMIN ASLI LU
+                    }
+                    // Pesan otomatis dengan email user (TIDAK ditampilkan di UI, cuma di URL)
+                    $waMessage = rawurlencode('Halo admin, kuota lihat produk saya sudah habis. Mohon reset kuota saya ya. Email saya: ' . $user->email);
+                @endphp
+                
+                {{-- Banner Hijau Tunggal (Profesional & Jelas) --}}
+                <div class="quota-banner" role="alert" style="background: #d1fae5; border: 1px solid #10b981; border-radius: 10px; padding: 24px; margin-bottom: 24px; text-align: center;">
+                    <strong style="color: #065f46; display: block; font-size: 16px; margin-bottom: 8px;">
+                        ⚠️ Kuota lihat produk Anda telah habis.
+                    </strong>
+                    <p style="margin: 0 0 16px; color: #047857; font-size: 14px; line-height: 1.5;">
+                        Silakan hubungi admin melalui WhatsApp untuk melakukan reset kuota agar Anda dapat kembali menjelajah katalog.
                     </p>
-                    <a href="https://wa.me/{{ $waNum }}?text={{ rawurlencode('Halo admin, kuota lihat produk saya sudah habis. Mohon reset kuota saya ya. Email saya: ' . $user->email) }}"
+                    <a href="https://wa.me/{{ $waNum }}?text={{ $waMessage }}"
                        target="_blank" rel="noopener"
-                       style="background:#fff;color:#25D366;padding:10px 24px;border-radius:8px;text-decoration:none;font-weight:700;display:inline-block;">
+                       style="display: inline-block; background: #25D366; color: #ffffff; padding: 12px 24px; border-radius: 8px; font-weight: 700; text-decoration: none; font-size: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); transition: background 0.2s;">
                         💬 Chat Admin via WhatsApp
                     </a>
-                    <p style="margin:10px 0 0;font-size:12px;opacity:0.9;">
-                        Sertakan email Anda saat chat: <strong>{{ $user->email }}</strong>
-                    </p>
-                </div>
-            @endif
-
-            {{-- Kuota status --}}
-            @if ($remaining <= 0)
-                {{-- Kuota HABIS: banner merah --}}
-                <div class="quota quota--warning" role="alert"
-                     style="background:#fdecea;border:1px solid #e74c3c;border-radius:10px;padding:20px;margin-bottom:20px;">
-                    <strong style="color:#c0392b;display:block;font-size:16px;margin-bottom:8px;">
-                        ⚠️ Kuota lihat produk Anda telah habis ({{ $viewQuota }}/{{ $viewQuota }}).
-                    </strong>
-                    <p style="margin:0 0 14px;color:#7a3b34;">
-                        Silakan chat admin via WhatsApp untuk melakukan reset kuota.
-                        Setelah direset, kamu bisa menjelajah katalog &amp; membuka produk lagi seperti biasa.
-                    </p>
-                    @if ($waNum !== '')
-                        <a href="https://wa.me/{{ $waNum }}?text={{ rawurlencode('Halo admin, kuota lihat produk saya sudah habis. Mohon reset kuota saya ya. Email saya: ' . $user->email) }}"
-                           target="_blank" rel="noopener"
-                           style="display:inline-block;background:#25D366;color:#fff;padding:10px 18px;border-radius:8px;font-weight:600;text-decoration:none;">
-                            💬 Chat Admin via WhatsApp
-                        </a>
-                        <p class="small" style="margin:10px 0 0;color:#7a3b34;">
-                            Sertakan email Anda saat chat: <strong>{{ $user->email }}</strong>
-                        </p>
-                    @else
-                        <span class="muted small">
-                            Nomor WhatsApp admin belum diatur — hubungi admin melalui halaman Kontak.
-                        </span>
-                    @endif
                 </div>
             @else
-                {{-- Kuota masih ada: info biasa --}}
-                <div class="quota {{ $remaining <= 2 ? 'quota--warning' : '' }}" role="status" style="margin-bottom:20px;">
-                    <strong>Sisa lihat produk: {{ $remaining }} dari {{ $viewQuota }}</strong>
-                    <p>
+                {{-- Banner Sisa Kuota (Normal) --}}
+                <div class="quota {{ $remaining <= 2 ? 'quota--warning' : '' }}" role="status" style="margin-bottom: 24px; background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 10px; padding: 16px 20px;">
+                    <strong style="color: #0369a1; display: block; margin-bottom: 4px;">Sisa lihat produk: {{ $remaining }} dari {{ $viewQuota }}</strong>
+                    <p style="margin: 0; color: #0c4a6e; font-size: 14px;">
                         Akun ini akan terhapus otomatis pada
                         {{ $user->expires_at?->timezone('Asia/Jakarta')->translatedFormat('j F Y, H:i') }} WIB
                         jika belum ada pembayaran yang terverifikasi.
@@ -86,7 +65,6 @@
                 </div>
             @endif
         @endif
-        {{-- ========== AKHIR BAGIAN SPAMMER ========== --}}
 
         {{-- Stat cards --}}
         <div class="account-stats">
@@ -94,7 +72,7 @@
                 <span class="account-stat__icon">📦</span>
                 <div>
                     <span class="account-stat__label">Total Pesanan</span>
-                    <strong class="account-stat__value">{{ number_format($orderStats['total'], 0, ',', '.') }}</strong>
+                    <strong class="account-stat__value">{{ number_format($orderStats['total'] ?? 0, 0, ',', '.') }}</strong>
                 </div>
             </div>
 
@@ -102,7 +80,7 @@
                 <span class="account-stat__icon">💰</span>
                 <div>
                     <span class="account-stat__label">Total Belanja</span>
-                    <strong class="account-stat__value">{{ \App\Support\PriceCalculator::formatRupiah($totalSpent) }}</strong>
+                    <strong class="account-stat__value">{{ \App\Support\PriceCalculator::formatRupiah($totalSpent ?? 0) }}</strong>
                 </div>
             </div>
 
@@ -110,7 +88,7 @@
                 <span class="account-stat__icon">🪙</span>
                 <div>
                     <span class="account-stat__label">Koin Aktif</span>
-                    <strong class="account-stat__value">{{ number_format($activeCoins, 0, ',', '.') }}</strong>
+                    <strong class="account-stat__value">{{ number_format($activeCoins ?? 0, 0, ',', '.') }}</strong>
                 </div>
             </div>
 
@@ -124,19 +102,19 @@
         </div>
 
         {{-- Tagihan Menunggu --}}
-        @if ($unpaidOrders->isNotEmpty())
-            <div class="panel stack" style="margin-top:20px; border-left:4px solid var(--accent-strong);">
+        @if (isset($unpaidOrders) && $unpaidOrders->isNotEmpty())
+            <div class="panel stack" style="margin-top:24px; border-left:4px solid var(--accent-strong);">
                 <div class="panel__head">
                     <h2 style="margin:0;">Tagihan Menunggu</h2>
                     <a href="{{ route('account.orders.index') }}" class="link">Lihat semua pesanan</a>
                 </div>
                 @foreach ($unpaidOrders as $u)
-                    <div style="display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap; padding:8px 0; border-top:1px solid #eee;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap; padding:12px 0; border-top:1px solid #eee;">
                         <div>
                             <strong style="font-family:monospace;">{{ $u->order_number }}</strong>
                             <span class="muted"> · {{ \App\Support\PriceCalculator::formatRupiah($u->pay_now_idr) }} ({{ $u->payment_scheme === 'FP' ? 'lunas' : 'DP' }})</span>
                             @if ($u->payment_deadline_at)
-                                <div class="muted" style="font-size:12px;">Batas bayar: {{ $u->payment_deadline_at->timezone('Asia/Jakarta')->translatedFormat('j M Y, H:i') }} WIB</div>
+                                <div class="muted" style="font-size:12px; margin-top:4px;">Batas bayar: {{ $u->payment_deadline_at->timezone('Asia/Jakarta')->translatedFormat('j M Y, H:i') }} WIB</div>
                             @endif
                         </div>
                         <a href="{{ route('account.orders.show', $u->order_number) }}#upload-bukti" class="button button--small">Bayar &amp; Unggah Bukti</a>
@@ -146,8 +124,8 @@
         @endif
 
         {{-- Notifikasi baru --}}
-        @if ($recentNotifs->isNotEmpty())
-            <div class="panel" style="margin-top:20px;">
+        @if (isset($recentNotifs) && $recentNotifs->isNotEmpty())
+            <div class="panel" style="margin-top:24px;">
                 <div class="panel__head">
                     <h2 style="margin:0;">Notifikasi Baru</h2>
                     <a href="{{ route('notifications.index') }}" class="link">Lihat semua</a>
@@ -178,14 +156,16 @@
                 <span class="account-action__icon">🎁</span>
                 <span class="account-action__label">Undang Teman</span>
             </a>
-            <a href="{{ route('notifications.index') }}" class="account-action">
-                <span class="account-action__icon">🔔</span>
-                <span class="account-action__label">Notifikasi
-                    @if ($unreadNotif > 0)
-                        <span class="badge badge--danger" style="margin-left:4px;">{{ $unreadNotif }}</span>
-                    @endif
-                </span>
-            </a>
+            @if (Route::has('notifications.index'))
+                <a href="{{ route('notifications.index') }}" class="account-action">
+                    <span class="account-action__icon">🔔</span>
+                    <span class="account-action__label">Notifikasi
+                        @if (($unreadNotif ?? 0) > 0)
+                            <span class="badge badge--danger" style="margin-left:4px;">{{ $unreadNotif }}</span>
+                        @endif
+                    </span>
+                </a>
+            @endif
             <a href="{{ route('account.profile.edit') }}" class="account-action">
                 <span class="account-action__icon">⚙️</span>
                 <span class="account-action__label">Edit Profil</span>
@@ -193,7 +173,7 @@
         </div>
 
         {{-- Pesanan terbaru --}}
-        @if ($recentOrders->isNotEmpty())
+        @if (isset($recentOrders) && $recentOrders->isNotEmpty())
             <div class="panel" style="margin-top:24px;">
                 <div class="panel__head">
                     <h2 style="margin:0;">Pesanan Terbaru</h2>
@@ -217,8 +197,8 @@
                 </ul>
             </div>
         @else
-            <div class="empty" style="margin-top:24px;">
-                <p>Kamu belum punya pesanan.</p>
+            <div class="empty" style="margin-top:24px; text-align: center; padding: 32px 0;">
+                <p class="muted">Kamu belum punya pesanan.</p>
                 <a href="{{ route('catalog.index') }}" class="button" style="margin-top:12px;">Mulai Belanja</a>
             </div>
         @endif
