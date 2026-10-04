@@ -71,6 +71,16 @@ class OrderController extends Controller
             'Status pesanan tidak memungkinkan upload bukti.'
         );
 
+        // ✅ BUG FIX: dulu tidak ada cek batas waktu. Order yang sudah lewat
+        // payment_deadline_at tetap bisa diunggah buktinya (kecuali keburu
+        // dibatalkan scheduler), padahal harga & kurs sudah disnapshot untuk
+        // jendela waktu tertentu. Sekarang ditolak lebih awal dengan pesan jelas.
+        if ($order->payment_deadline_at !== null && $order->payment_deadline_at->lessThan(now())) {
+            return back()->withErrors([
+                'proof' => 'Batas waktu pembayaran sudah lewat. Pesanan ini menunggu pembatalan otomatis — hubungi admin jika kamu sudah transfer.',
+            ]);
+        }
+
         // ✅ BUG FIX: Cegah double-submit — jika masih ada bukti berstatus pending,
         // user harus menunggu review admin sebelum upload lagi.
         abort_unless(
