@@ -37,7 +37,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&family=Roboto:wght@500;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{{ asset('css/app.css') }}?v=34">
+    <link rel="stylesheet" href="{{ asset('css/app.css') }}?v=35">
     @stack('head')
 </head>
 <body>
@@ -126,48 +126,14 @@
                     </a>
                 @endif
 
-                @if (! empty($socialInstagram))
-                    <a href="{{ $socialInstagram }}" target="_blank" rel="noopener" class="header-icon" aria-label="Instagram" title="Instagram">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
-                            <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
-                            <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
-                        </svg>
-                    </a>
-                @endif
-
-                @if (! empty($socialFacebook))
-                    <a href="{{ $socialFacebook }}" target="_blank" rel="noopener" class="header-icon" aria-label="Facebook" title="Facebook">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M22 12a10 10 0 1 0-11.56 9.88v-6.99H7.9V12h2.54V9.8c0-2.5 1.49-3.89 3.77-3.89 1.09 0 2.24.2 2.24.2v2.46h-1.26c-1.24 0-1.63.77-1.63 1.56V12h2.78l-.45 2.89h-2.33v6.99A10 10 0 0 0 22 12z"/>
-                        </svg>
-                    </a>
-                @endif
-
-                @if (! empty($socialX))
-                    <a href="{{ $socialX }}" target="_blank" rel="noopener" class="header-icon" aria-label="X" title="X">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
-                        </svg>
-                    </a>
-                @endif
-
-                {{-- BUG 1 STRICT MODE: ikon Threads = IMG Flaticon 16x16, PERSIS sesuai instruksi. --}}
-                <a href="https://www.threads.com/@mercatoria_id" target="_blank" rel="noopener" class="header-icon header-icon--threads" aria-label="Threads" title="Threads">
-                    <img src="https://cdn-icons-png.flaticon.com/128/12105/12105337.png" alt="Threads" width="16" height="16" style="width:16px; height:16px;">
-                </a>
-
-                @if (! empty($contactWhatsapp))
-                    @php($waNum = preg_replace('/\D/', '', $contactWhatsapp))
-                    @if (str_starts_with($waNum, '0'))
-                        @php($waNum = '62' . substr($waNum, 1))
+                {{-- SOSIAL MEDIA DINAMIS (tabel social_media, kelola di Admin > Pengaturan > Sosial Media) --}}
+                @foreach (($socialMedias ?? collect()) as $sm)
+                    @if (! empty($sm->url))
+                        <a href="{{ $sm->url }}" target="_blank" rel="noopener" class="header-icon" aria-label="{{ $sm->name }}" title="{{ $sm->name }}">
+                            @include('partials.social-icon', ['social' => $sm])
+                        </a>
                     @endif
-                    <a href="https://wa.me/{{ $waNum }}" target="_blank" rel="noopener" class="header-icon" aria-label="WhatsApp" title="WhatsApp">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/>
-                        </svg>
-                    </a>
-                @endif
+                @endforeach
 
                 @auth
                     {{-- Total harga cart --}}
@@ -295,48 +261,15 @@
                     @endif
                 </a>
 
-                {{-- Social Media Icons --}}
+                {{-- Social Media Icons — DINAMIS dari tabel social_media (Admin > Pengaturan > Sosial Media) --}}
                 <div class="footer-social">
-                    @if (! empty($socialInstagram))
-                        <a href="{{ $socialInstagram }}" target="_blank" rel="noopener" aria-label="Instagram">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
-                                <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
-                            </svg>
-                        </a>
-                    @endif
-                    @if (! empty($socialFacebook))
-                        <a href="{{ $socialFacebook }}" target="_blank" rel="noopener" aria-label="Facebook">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-                                <path d="M22 12a10 10 0 1 0-11.56 9.88v-6.99H7.9V12h2.54V9.8c0-2.5 1.49-3.89 3.77-3.89 1.09 0 2.24.2 2.24.2v2.46h-1.26c-1.24 0-1.63.77-1.63 1.56V12h2.78l-.45 2.89h-2.33v6.99A10 10 0 0 0 22 12z"/>
-                            </svg>
-                        </a>
-                    @endif
-                    @if (! empty($socialX))
-                        <a href="{{ $socialX }}" target="_blank" rel="noopener" aria-label="X">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-                                <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
-                            </svg>
-                        </a>
-                    @endif
-                    {{-- FIX 1: ikon Threads disamakan warnanya dengan ikon sosmed lain
-                         (SVG currentColor, bukan PNG gelap). --}}
-                    <a href="https://www.threads.com/@mercatoria_id" target="_blank" rel="noopener" aria-label="Threads">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M17.913 18.668c-2.015.973-5.36.901-7.33-.148-1.195-.636-1.694-1.622-1.753-2.096-.023-.19.12-.295.283-.246.418.13 1.396.452 2.218.547 1.962.22 3.977-.118 5.63-.888 2.909-1.343 4.593-3.97 4.473-7.336-.117-3.297-2.891-5.936-6.833-5.975-4.48-.045-7.65 3.13-7.65 7.686 0 2.5.985 4.384 2.86 5.41 1.867 1.02 4.215.99 5.463-.307.555-.577.856-1.327.916-2.143.078-1.018-.357-1.774-1.12-2.132-.426-.2-1.036-.232-1.483-.07-.45.163-.784.51-.93.938l-.006.016c-.14-.613-.63-1.085-1.24-1.213-.754-.16-1.52.14-1.977.782-.55.773-.518 2.067.075 2.885.67.92 1.77 1.396 3.17 1.447.99.037 1.95-.12 2.75-.443l-.097.003c-.033.48-.2 1.14-.73 1.69-.97 1.01-2.79 1.33-4.66.85-2.35-.6-4.06-2.55-4.06-5.36 0-3.26 2.53-5.83 5.94-5.83 3.35 0 5.78 2.29 5.88 5.35.08 2.35-1.12 4.2-3.2 5.28Z"/>
-                        </svg>
-                    </a>
-                    @if (! empty($contactWhatsapp))
-                        @php($waNumFooter = preg_replace('/\D/', '', $contactWhatsapp))
-                        @if (str_starts_with($waNumFooter, '0'))
-                            @php($waNumFooter = '62' . substr($waNumFooter, 1))
+                    @foreach (($socialMedias ?? collect()) as $sm)
+                        @if (! empty($sm->url))
+                            <a href="{{ $sm->url }}" target="_blank" rel="noopener" aria-label="{{ $sm->name }}">
+                                @include('partials.social-icon', ['social' => $sm])
+                            </a>
                         @endif
-                        <a href="https://wa.me/{{ $waNumFooter }}" target="_blank" rel="noopener" aria-label="WhatsApp">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-                                <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/>
-                            </svg>
-                        </a>
-                    @endif
+                    @endforeach
                 </div>
 
                 {{-- Marketplace Buttons (TOCO & SHOPEE) --}}
