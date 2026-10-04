@@ -172,6 +172,65 @@ class AppServiceProvider extends ServiceProvider
                 }
             } catch (\Throwable $e) {}
 
+            // ===== FIX 3: Footer "Produk Terpopuler" — REAL DATA, no dummy =====
+            // Kriteria A: produk paling banyak dilihat (activity_logs action
+            // view_product, product_id tersimpan di kolom JSON `metadata`).
+            // Kriteria B: produk terlaris (order_items x orders status selesai).
+            // Kalau keduanya ada -> random pilih salah satu; kalau hanya satu
+            // yang ada -> pakai yang itu; keduanya kosong -> collection kosong
+            // dan view tidak menampilkan apa-apa. Semua dibungkus try/catch
+            // supaya footer tidak pernah menjatuhkan halaman manapun (bug 500).
+            $footerProducts = collect();
+            try {
+                $mostViewed = collect();
+                if (Schema::hasTable('activity_logs')) {
+                    $mostViewed = \App\Models\ActivityLog::query()
+                        ->where('action', 'view_product')
+                        ->selectRaw("JSON_UNQUOTE(JSON_EXTRACT(metadata, '$.product_id')) as product_id, COUNT(*) as aggregate_count")
+                        ->groupBy('product_id')
+                        ->orderByDesc('aggregate_count')
+                        ->limit(6)
+                        ->pluck('product_id')
+                        ->filter()
+                        ->map(fn ($id) => (int) $id)
+                        ->values();
+                }
+
+                $bestSelling = collect();
+                if (Schema::hasTable('order_items') && Schema::hasTable('orders')) {
+                    $bestSelling = \App\Models\OrderItem::query()
+                        ->from('order_items')
+                        ->join('product_variants', 'product_variants.id', '=', 'order_items.product_variant_id')
+                        ->join('orders', 'orders.id', '=', 'order_items.order_id')
+                        ->whereIn('orders.status', ['selesai', 'sampai_wh_indonesia', 'bea_cukai', 'dikirim_ke_indonesia'])
+                        ->selectRaw('product_variants.product_id as product_id, SUM(order_items.quantity) as aggregate_count')
+                        ->groupBy('product_variants.product_id')
+                        ->orderByDesc('aggregate_count')
+                        ->limit(6)
+                        ->pluck('product_id')
+                        ->filter()
+                        ->map(fn ($id) => (int) $id)
+                        ->values();
+                }
+
+                $selectedIds = collect();
+                if ($mostViewed->isNotEmpty() && $bestSelling->isNotEmpty()) {
+                    $selectedIds = random_int(0, 1) ? $mostViewed : $bestSelling;
+                } elseif ($mostViewed->isNotEmpty()) {
+                    $selectedIds = $mostViewed;
+                } elseif ($bestSelling->isNotEmpty()) {
+                    $selectedIds = $bestSelling;
+                }
+
+                if ($selectedIds->isNotEmpty() && Schema::hasTable('products')) {
+                    $footerProducts = Product::query()
+                        ->whereIn('id', $selectedIds)
+                        ->where('is_published', true)
+                        ->with(['images', 'variants'])
+                        ->get();
+                }
+            } catch (\Throwable $e) {}
+
             // ===== Badge tagihan menunggu di header (akun) =====
             // Dihitung di composer + dishare secara global supaya TIDAK ada
             // risiko "Undefined variable" dari compiled view basi maupun saat
@@ -212,7 +271,7 @@ class AppServiceProvider extends ServiceProvider
             // 500 kedua. Hanya diisi kalau belum pernah di-share.
             try {
                 $__shared = \Illuminate\Support\Facades\View::getShared();
-                foreach (['headerUnpaidCount' => $headerUnpaidCount, 'unreadNotifHeader' => $unreadNotifHeader] as $__k => $__v) {
+                foreach (['headerUnpaidCount' => $headerUnpaidCount, 'unreadNotifHeader' => $unreadNotifHeader, 'footerProducts' => $footerProducts] as $__k => $__v) {
                     if (! array_key_exists($__k, $__shared)) {
                         view()->share($__k, $__v);
                     }
@@ -244,6 +303,7 @@ class AppServiceProvider extends ServiceProvider
                 'navGames' => $navGames,
                 'navDevelopers' => $navDevelopers,
                 'footerPages' => $footerPages,
+                'footerProducts' => $footerProducts,
                 'footerShopeeUrl' => Setting::get('footer_shopee_url'),
                 'footerTocoUrl' => Setting::get('footer_toco_url', Setting::get('footer_tokopedia_url')),
                 'footerTokopediaUrl' => Setting::get('footer_tokopedia_url'),

@@ -37,7 +37,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&family=Roboto:wght@500;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{{ asset('css/app.css') }}?v=33">
+    <link rel="stylesheet" href="{{ asset('css/app.css') }}?v=34">
     @stack('head')
 </head>
 <body>
@@ -319,9 +319,12 @@
                             </svg>
                         </a>
                     @endif
-                    {{-- BUG 1 STRICT MODE: ikon Threads footer = IMG Flaticon 16x16, PERSIS sesuai instruksi. --}}
+                    {{-- FIX 1: ikon Threads disamakan warnanya dengan ikon sosmed lain
+                         (SVG currentColor, bukan PNG gelap). --}}
                     <a href="https://www.threads.com/@mercatoria_id" target="_blank" rel="noopener" aria-label="Threads">
-                        <img src="https://cdn-icons-png.flaticon.com/128/12105/12105337.png" alt="Threads" width="16" height="16" style="width:16px; height:16px;">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M17.913 18.668c-2.015.973-5.36.901-7.33-.148-1.195-.636-1.694-1.622-1.753-2.096-.023-.19.12-.295.283-.246.418.13 1.396.452 2.218.547 1.962.22 3.977-.118 5.63-.888 2.909-1.343 4.593-3.97 4.473-7.336-.117-3.297-2.891-5.936-6.833-5.975-4.48-.045-7.65 3.13-7.65 7.686 0 2.5.985 4.384 2.86 5.41 1.867 1.02 4.215.99 5.463-.307.555-.577.856-1.327.916-2.143.078-1.018-.357-1.774-1.12-2.132-.426-.2-1.036-.232-1.483-.07-.45.163-.784.51-.93.938l-.006.016c-.14-.613-.63-1.085-1.24-1.213-.754-.16-1.52.14-1.977.782-.55.773-.518 2.067.075 2.885.67.92 1.77 1.396 3.17 1.447.99.037 1.95-.12 2.75-.443l-.097.003c-.033.48-.2 1.14-.73 1.69-.97 1.01-2.79 1.33-4.66.85-2.35-.6-4.06-2.55-4.06-5.36 0-3.26 2.53-5.83 5.94-5.83 3.35 0 5.78 2.29 5.88 5.35.08 2.35-1.12 4.2-3.2 5.28Z"/>
+                        </svg>
                     </a>
                     @if (! empty($contactWhatsapp))
                         @php($waNumFooter = preg_replace('/\D/', '', $contactWhatsapp))
@@ -357,22 +360,9 @@
             <div class="footer-col">
                 <h4 class="footer-col__title">Game</h4>
                 <ul class="footer-col__list">
-                    @if ($navGames->isNotEmpty())
-                        @foreach ($navGames as $game)
-                            <li><a href="{{ route('catalog.index', ['game' => $game->slug]) }}">{{ $game->name }}</a></li>
-                        @endforeach
-                    @else
-                        <li><a href="#">Aether Gazer</a></li>
-                        <li><a href="#">Arknights</a></li>
-                        <li><a href="#">Arknights: Endfield</a></li>
-                        <li><a href="#">Azur Lane</a></li>
-                        <li><a href="#">Beyond The World</a></li>
-                        <li><a href="#">Duet Night Abyss</a></li>
-                        <li><a href="#">Genshin Impact</a></li>
-                        <li><a href="#">Honkai Impact 3</a></li>
-                        <li><a href="#">Honkai: Star Rail</a></li>
-                        <li><a href="#">Light and Night</a></li>
-                    @endif
+                    @foreach ($navGames as $game)
+                        <li><a href="{{ route('catalog.index', ['game' => $game->slug]) }}">{{ $game->name }}</a></li>
+                    @endforeach
                 </ul>
             </div>
 
@@ -380,22 +370,9 @@
             <div class="footer-col">
                 <h4 class="footer-col__title">Developer</h4>
                 <ul class="footer-col__list">
-                    @if ($navDevelopers->isNotEmpty())
-                        @foreach ($navDevelopers as $developer)
-                            <li><a href="{{ route('catalog.index', ['developer' => $developer->slug]) }}">{{ $developer->name }}</a></li>
-                        @endforeach
-                    @else
-                        <li><a href="#">Aisno Games</a></li>
-                        <li><a href="#">BluePoch</a></li>
-                        <li><a href="#">HyperGryph</a></li>
-                        <li><a href="#">Kuro Games</a></li>
-                        <li><a href="#">Manjuu Game</a></li>
-                        <li><a href="#">miHoYo</a></li>
-                        <li><a href="#">NetEase Games</a></li>
-                        <li><a href="#">Papergames</a></li>
-                        <li><a href="#">Tencent Games</a></li>
-                        <li><a href="#">Yongshi Technology</a></li>
-                    @endif
+                    @foreach ($navDevelopers as $developer)
+                        <li><a href="{{ route('catalog.index', ['developer' => $developer->slug]) }}">{{ $developer->name }}</a></li>
+                    @endforeach
                 </ul>
 
                 {{-- Jelajahi (di dalam kolom 3) --}}
@@ -447,36 +424,6 @@
                                 </div>
                             </a>
                         @endforeach
-                    @else
-                        {{-- Fallback produk dummy selagi belum ada data --}}
-                        <a href="#" class="footer-produk__item">
-                            <div class="footer-produk__thumb"><div class="footer-produk__placeholder">IMG</div></div>
-                            <div class="footer-produk__info">
-                                <span class="footer-produk__name">[WHERE WINDS MEET] Chirp Wooden Assembly Toy</span>
-                                <span class="footer-produk__price">Rp405.000</span>
-                            </div>
-                        </a>
-                        <a href="#" class="footer-produk__item">
-                            <div class="footer-produk__thumb"><div class="footer-produk__placeholder">IMG</div></div>
-                            <div class="footer-produk__info">
-                                <span class="footer-produk__name">[PATH TO NOWHERE] PTN X Happy Zoo Chibi Acrylic Ornament</span>
-                                <span class="footer-produk__price">Rp220.000</span>
-                            </div>
-                        </a>
-                        <a href="#" class="footer-produk__item">
-                            <div class="footer-produk__thumb"><div class="footer-produk__placeholder">IMG</div></div>
-                            <div class="footer-produk__info">
-                                <span class="footer-produk__name">[GENSHIN IMPACT] PVC Figure 1/7 Yae Miko</span>
-                                <span class="footer-produk__price">Rp3.985.000</span>
-                            </div>
-                        </a>
-                        <a href="#" class="footer-produk__item">
-                            <div class="footer-produk__thumb"><div class="footer-produk__placeholder">IMG</div></div>
-                            <div class="footer-produk__info">
-                                <span class="footer-produk__name">[WUTHERING WAVES] Porcelain Orchid Shadow Series Wall Painting</span>
-                                <span class="footer-produk__price">Rp285.000</span>
-                            </div>
-                        </a>
                     @endif
                 </div>
             </div>
