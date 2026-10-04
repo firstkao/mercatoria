@@ -50,6 +50,7 @@
                 ['route' => 'admin.settings.tiers', 'active' => 'admin.settings.tiers', 'label' => 'Tier ongkir', 'icon' => 'truck'],
                 ['route' => 'admin.settings.marketplaces', 'active' => 'admin.settings.marketplaces', 'label' => 'Marketplace', 'icon' => 'store'],
                 ['route' => 'admin.settings.display', 'active' => 'admin.settings.display', 'label' => 'Tampilan toko', 'icon' => 'eye'],
+                ['route' => 'admin.settings.social-media', 'active' => 'admin.settings.social-media', 'label' => 'Sosial Media', 'icon' => 'share'],
                 ['route' => 'admin.maintenance.index', 'active' => 'admin.maintenance.*', 'label' => 'Maintenance', 'icon' => 'shield'],
             ]],
         ];

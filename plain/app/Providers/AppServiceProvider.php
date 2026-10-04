@@ -285,10 +285,12 @@ class AppServiceProvider extends ServiceProvider
                 'contactWhatsapp' => Setting::get('contact_whatsapp'),
                 'contactHours' => Setting::get('contact_hours'),
                 'storeAddress' => Setting::get('store_address'),
-                'socialInstagram' => Setting::get('social_instagram'),
-                'socialTiktok' => Setting::get('social_tiktok'),
-                'socialFacebook' => Setting::get('social_facebook'),
-                'socialX' => Setting::get('social_x'),
+                // SOSIAL MEDIA DINAMIS: sumber tunggal = tabel social_media (kelola di Admin > Pengaturan > Sosial Media).
+                // Variabel lama socialInstagram/socialTiktok/socialFacebook/socialX DIHAPUS — diganti $socialMedias.
+                'socialMedias' => \App\Models\SocialMedia::query()
+                    ->where('is_active', true)
+                    ->orderBy('sort_order')
+                    ->get(),
                 'metaTitle' => Setting::get('meta_title', 'MERCATORIA — Merchandise Game Original dari Tmall'),
                 'metaDescription' => Setting::get('meta_description', 'Group Order Manager untuk merchandise game original dari Tmall & Taobao. Kirim ke seluruh Indonesia.'),
                 'metaKeywords' => Setting::get('meta_keywords'),

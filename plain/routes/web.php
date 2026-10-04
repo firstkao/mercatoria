@@ -265,6 +265,12 @@ Route::prefix('office')->name('admin.')->middleware('auth:admin')->group(functio
     Route::get('/settings/seo', [SettingsController::class, 'seo'])->name('settings.seo');
     Route::put('/settings/seo', [SettingsController::class, 'updateSeo'])->name('settings.seo.update');
 
+    // Pengaturan sosial media dinamis (header & footer)
+    Route::get('/settings/social-media', [Admin\SocialMediaController::class, 'index'])->name('settings.social-media');
+    Route::post('/settings/social-media', [Admin\SocialMediaController::class, 'store'])->name('settings.social-media.store');
+    Route::put('/settings/social-media/{socialMedium}', [Admin\SocialMediaController::class, 'update'])->name('settings.social-media.update');
+    Route::delete('/settings/social-media/{socialMedium}', [Admin\SocialMediaController::class, 'destroy'])->name('settings.social-media.destroy');
+
     // Logout Admin
     Route::post('/keluar', [AdminAuthController::class, 'destroy'])->name('logout');
 });
