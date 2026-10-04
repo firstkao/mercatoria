@@ -12,6 +12,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 
@@ -38,6 +39,16 @@ class PaymentProofController extends Controller
             ->select('payment_proofs.id', 'payment_proofs.status', 'payment_proofs.amount_idr', 'payment_proofs.uploaded_at', 'orders.order_number', 'orders.pay_now_idr', 'orders.status as order_status', 'users.full_name', 'users.email', DB::raw("COALESCE(payment_methods.label, '(metode dihapus)') as payment_method_label"))
             ->latest('payment_proofs.uploaded_at')
             ->paginate(25)
+            // BUG FIX: hasil DB::table() adalah stdClass, jadi kolom tanggal
+            // berupa STRING mentah. View memanggil ->timezone() → 500
+            // "Call to a member function timezone() on string".
+            ->through(function (object $proof): object {
+                $proof->uploaded_at = $proof->uploaded_at
+                    ? Carbon::parse($proof->uploaded_at)
+                    : null;
+
+                return $proof;
+            })
             ->withQueryString();
 
         return view('admin.payments.index', compact('proofs', 'status'));
@@ -55,6 +66,16 @@ class PaymentProofController extends Controller
             // ✅ BUG FIX: sama seperti index(), kolom orders adalah `status`.
             ->select('payment_proofs.*', 'orders.order_number', 'orders.pay_now_idr', 'orders.status as order_status', 'users.full_name', 'users.email', DB::raw("COALESCE(payment_methods.label, '(metode dihapus)') as payment_method_label"))
             ->firstOrFail();
+
+        // BUG FIX: sama seperti index(), baris DB::table() adalah stdClass dengan
+        // tanggal berupa string, sedangkan view memanggil ->timezone() pada
+        // uploaded_at & reviewed_at → 500.
+        $proofRecord->uploaded_at = $proofRecord->uploaded_at
+            ? Carbon::parse($proofRecord->uploaded_at)
+            : null;
+        $proofRecord->reviewed_at = $proofRecord->reviewed_at
+            ? Carbon::parse($proofRecord->reviewed_at)
+            : null;
 
         return view('admin.payments.show', [
             'proof' => $proofRecord,
@@ -222,21 +243,42 @@ class PaymentProofController extends Controller
             // (resubmit_deadline_at) dan di order kini disamakan: now + 24 jam.
             $newDeadline = now()->addHours(24);
 
-            DB::table('orders')->where('id', $record->order_id)->update([
-                'status' => 'pembayaran_gagal',
-                'payment_deadline_at' => $newDeadline,
-                'updated_at' => now(),
-            ]);
+            // ✅ BUG FIX (guard transisi): menolak bukti TIDAK BOLEH memundurkan
+            // order yang sudah jalan/selesai. Dulu status dipaksa jadi
+            // 'pembayaran_gagal' apa pun status order saat ini — order
+            // 'selesai'/'dikirim_ke_indonesia' tiba-tiba keluar dari omzet
+            // (OrderStatus::revenueValues()) lalu dibatalkan otomatis oleh
+            // CancelUnpaidOrders 24 jam kemudian, beserta voucher-nya.
+            $canDowngrade = in_array($currentOrder->status, [
+                OrderStatus::MenungguPembayaran->value,
+                OrderStatus::Ditahan->value,
+                OrderStatus::PembayaranGagal->value,
+            ], true);
 
-            DB::table('order_status_history')->insert([
-                'order_id' => $record->order_id,
-                'from_status' => $currentOrder->status,
-                'to_status' => 'pembayaran_gagal',
-                'changed_by' => 'admin',
-                'admin_id' => auth('admin')->id(),
-                'note' => $data['reject_reason'],
-                'created_at' => now(),
-            ]);
+            if ($canDowngrade) {
+                DB::table('orders')->where('id', $record->order_id)->update([
+                    'status' => OrderStatus::PembayaranGagal->value,
+                    'payment_deadline_at' => $newDeadline,
+                    'updated_at' => now(),
+                ]);
+
+                DB::table('order_status_history')->insert([
+                    'order_id' => $record->order_id,
+                    'from_status' => $currentOrder->status,
+                    'to_status' => OrderStatus::PembayaranGagal->value,
+                    'changed_by' => 'admin',
+                    'admin_id' => auth('admin')->id(),
+                    'note' => $data['reject_reason'],
+                    'created_at' => now(),
+                ]);
+            } else {
+                // Bukti tetap ditandai rejected, tapi status order dibiarkan.
+                Log::warning('Bukti pembayaran ditolak, status order tidak diturunkan', [
+                    'proof_id' => $record->id,
+                    'order_id' => $record->order_id,
+                    'order_status' => $currentOrder->status,
+                ]);
+            }
 
             AdminLog::record('reject_payment', null, [
                 'order_id' => $record->order_id,
