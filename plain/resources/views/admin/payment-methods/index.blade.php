@@ -5,6 +5,13 @@
 @endsection
 
 @section('content')
+    @if (! empty($schemaOutdated))
+        <div class="alert alert--warning" role="alert">
+            Skema tabel <code>payment_methods</code> belum lengkap. Jalankan
+            <code>php artisan migrate</code> dari terminal/deploy (tidak lagi dijalankan otomatis dari halaman ini).
+        </div>
+    @endif
+
     @if ($methods->isEmpty())
         <div class="empty">
             <p>Belum ada metode pembayaran.</p>
