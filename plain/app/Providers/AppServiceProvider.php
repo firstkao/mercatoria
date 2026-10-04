@@ -285,7 +285,7 @@ class AppServiceProvider extends ServiceProvider
                 'contactWhatsapp' => Setting::get('contact_whatsapp'),
                 'contactHours' => Setting::get('contact_hours'),
                 'storeAddress' => Setting::get('store_address'),
-                // SOSIAL MEDIA DINAMIS: sumber tunggal = tabel social_media (kelola di Admin > Pengaturan > Sosial Media).
+                // SOSIAL MEDIA DINAMIS: sumber tunggal = tabel social_media (kelola di Admin > Pengaturan > Umum).
                 // Variabel lama socialInstagram/socialTiktok/socialFacebook/socialX DIHAPUS — diganti $socialMedias.
                 'socialMedias' => \App\Models\SocialMedia::query()
                     ->where('is_active', true)
