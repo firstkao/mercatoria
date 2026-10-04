@@ -152,7 +152,9 @@ Route::prefix('office')->name('admin.')->middleware('auth:admin')->group(functio
     // Katalog Produk + Bulk + Featured
     Route::post('/products/bulk', [AdminProductController::class, 'bulk'])->name('products.bulk');
     Route::post('/products/{product}/toggle-featured', [AdminProductController::class, 'toggleFeatured'])->name('products.toggle-featured');
-    Route::resource('/products', AdminProductController::class);
+    // BUG FIX: AdminProductController tidak punya method show(), jadi
+    // /office/products/{slug} melempar BadMethodCallException (500).
+    Route::resource('/products', AdminProductController::class)->except('show');
 
     // Game & Developer
     Route::resource('games', GameController::class)->except('show');
@@ -201,7 +203,8 @@ Route::prefix('office')->name('admin.')->middleware('auth:admin')->group(functio
     Route::put('/profile/password', [AdminProfileController::class, 'password'])->name('profile.password');
 
     // Konten: Pages
-    Route::resource('pages', PageController::class);
+    // BUG FIX: PageController (admin) tidak punya method show() → 500.
+    Route::resource('pages', PageController::class)->except('show');
 
     // Konten: Hero Slide
     Route::resource('hero-slides', HeroSlideController::class)->except('show');
@@ -265,7 +268,6 @@ Route::prefix('office')->name('admin.')->middleware('auth:admin')->group(functio
     Route::get('/settings/seo', [SettingsController::class, 'seo'])->name('settings.seo');
     Route::put('/settings/seo', [SettingsController::class, 'updateSeo'])->name('settings.seo.update');
 
-
     // Logout Admin
     Route::post('/keluar', [AdminAuthController::class, 'destroy'])->name('logout');
 });
@@ -288,8 +290,13 @@ Route::middleware('auth')->group(function (): void {
     Route::middleware('data.integrity')->group(function (): void {
         Route::get('/keranjang', [CartController::class, 'index'])->name('cart.index');
         Route::post('/keranjang', [CartController::class, 'store'])->name('cart.store');
-        Route::patch('/keranjang/{item}', [CartController::class, 'update'])->name('cart.update');
-        Route::delete('/keranjang/{item}', [CartController::class, 'destroy'])->name('cart.destroy');
+        // BUG FIX: nama segmen HARUS sama dengan nama parameter method
+        // ({cartItem} ↔ CartItem $cartItem). Sebelumnya route-nya /keranjang/{item}
+        // sehingga implicit binding tidak pernah jalan — Laravel membuat model
+        // kosong, lalu abort_if($cartItem->user_id !== auth()->id()) selalu true
+        // → hapus/ubah item keranjang selalu 403.
+        Route::patch('/keranjang/{cartItem}', [CartController::class, 'update'])->name('cart.update');
+        Route::delete('/keranjang/{cartItem}', [CartController::class, 'destroy'])->name('cart.destroy');
     });
 
     // Notifikasi (canonical: /akun/notifikasi — lihat blok "Akun" di bawah.
