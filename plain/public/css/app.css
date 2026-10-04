@@ -2255,3 +2255,18 @@ input[type="number"] { -moz-appearance: textfield; appearance: textfield; }
 .payment-method-icon:hover {
     opacity: 1; /* Sedikit terang saat di-hover */
 }
+
+/* Logo pembayaran lokal (bca/qris/shopeepay .svg) */
+.product-boxed-payment__logos {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+.payment-logo {
+    height: 24px;
+    width: auto;
+    object-fit: contain;
+    max-width: 80px;
+}
