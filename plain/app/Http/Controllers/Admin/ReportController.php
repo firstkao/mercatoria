@@ -74,13 +74,6 @@ class ReportController extends Controller
     {
         [$from, $until] = $this->range($request);
 
-        $orders = Order::query()
-            ->whereBetween('created_at', [$from->copy()->utc(), $until->copy()->utc()])
-            ->whereNotIn('status', ['dibatalkan', 'pembayaran_gagal'])
-            ->with(['user', 'marketplace'])
-            ->orderBy('created_at')
-            ->get();
-
         $filename = 'laporan-penjualan-' . $from->format('Ymd') . '-' . $until->format('Ymd') . '.csv';
 
         $headers = [
@@ -88,7 +81,17 @@ class ReportController extends Controller
             'Content-Disposition' => 'attachment; filename="' . $filename . '"',
         ];
 
-        $callback = function () use ($orders) {
+        // ✅ BUG FIX: dulu seluruh order di-`get()` ke memori sebelum ditulis.
+        // Export setahun penuh bisa puluhan ribu baris → memory exhausted.
+        // Sekarang dialirkan per 500 baris dengan chunkById (urut per id, yang
+        // secara praktis sama dengan urut waktu karena id auto-increment).
+        $query = Order::query()
+            ->whereBetween('created_at', [$from->copy()->utc(), $until->copy()->utc()])
+            ->whereNotIn('status', ['dibatalkan', 'pembayaran_gagal'])
+            ->with(['user', 'marketplace'])
+            ->orderBy('id');
+
+        $callback = function () use ($query) {
             $out = fopen('php://output', 'w');
             fwrite($out, "\xEF\xBB\xBF");
             fputcsv($out, [
@@ -96,26 +99,47 @@ class ReportController extends Controller
                 'Skema', 'Subtotal', 'Diskon', 'Total', 'Dibayar', 'Status',
             ]);
 
-            foreach ($orders as $order) {
-                fputcsv($out, [
-                    $order->order_number,
-                    $order->created_at->timezone('Asia/Jakarta')->format('Y-m-d H:i'),
-                    $order->user?->full_name ?? '-',
-                    $order->user?->email ?? '-',
-                    $order->marketplace?->name ?? '-',
-                    $order->payment_scheme,
-                    $order->subtotal_idr,
-                    $order->discount_idr,
-                    $order->total_idr,
-                    $order->pay_now_idr,
-                    $order->status,
-                ]);
-            }
+            $query->chunkById(500, function ($orders) use ($out) {
+                foreach ($orders as $order) {
+                    fputcsv($out, [
+                        $this->csvCell($order->order_number),
+                        $this->csvCell($order->created_at?->timezone('Asia/Jakarta')->format('Y-m-d H:i')),
+                        $this->csvCell($order->user?->full_name ?? '-'),
+                        $this->csvCell($order->user?->email ?? '-'),
+                        $this->csvCell($order->marketplace?->name ?? '-'),
+                        $this->csvCell($order->payment_scheme),
+                        $order->subtotal_idr,
+                        $order->discount_idr,
+                        $order->total_idr,
+                        $order->pay_now_idr,
+                        $this->csvCell($order->status),
+                    ]);
+                }
+            });
 
             fclose($out);
         };
 
         return response()->stream($callback, 200, $headers);
+    }
+
+    /**
+     * Lindungi dari CSV injection (formula injection).
+     *
+     * Nama pembeli & nama marketplace berasal dari input user. Kalau nilainya
+     * diawali = + - @ (atau tab / carriage return), Excel & Google Sheets
+     * mengeksekusinya sebagai formula saat file dibuka admin — bukan sekadar
+     * tampil sebagai teks.
+     */
+    private function csvCell(?string $value): string
+    {
+        $value = (string) $value;
+
+        if (preg_match('/^[=+\-@\t\r]/', $value) === 1) {
+            return "'" . $value;
+        }
+
+        return $value;
     }
 
     /**

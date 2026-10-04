@@ -66,9 +66,27 @@ class CheckoutController extends Controller
             }
 
             $priceIdr = $variant->sellingPrice($calculator);
-            $subtotal += $priceIdr * $item->quantity;
+
+            // ✅ BUG FIX: sellingPrice() mengembalikan null kalau price_yuan kosong
+            // (mis. baris varian hasil SQL dump lama). Dulu `null * quantity`
+            // di-PHP jadi 0 → subtotal order bisa berakhir 0 rupiah.
+            if ($priceIdr === null) {
+                return back()->withErrors(["Varian {$variant->name} belum punya harga. Hubungi admin sebelum checkout."]);
+            }
+
+            // ✅ BUG FIX: shippingTier bisa null kalau tier-nya sudah dihapus admin.
+            // Dulu `(float) $tier->fee_yuan` langsung dipanggil → 500
+            // "Attempting to read property on null" di tengah checkout.
             $tier = $variant->product->shippingTier;
-            $cnShipping = $calculator->chinaShippingYuan((float) $variant->price_yuan, (float) $tier->fee_yuan, (float) $tier->min_purchase_yuan);
+            $tierFeeYuan = $tier !== null ? (float) $tier->fee_yuan : 0.0;
+            $tierMinPurchaseYuan = $tier !== null ? (float) $tier->min_purchase_yuan : 0.0;
+
+            $subtotal += $priceIdr * $item->quantity;
+            $cnShipping = $calculator->chinaShippingYuan(
+                (float) ($variant->price_yuan ?? 0),
+                $tierFeeYuan,
+                $tierMinPurchaseYuan,
+            );
 
             $orderItemsData[] = [
                 'product_variant_id' => $variant->id,

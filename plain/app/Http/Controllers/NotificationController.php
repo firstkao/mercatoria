@@ -36,11 +36,36 @@ class NotificationController extends Controller
 
         $notification->markAsRead();
 
-        if ($notification->url) {
+        // ✅ BUG FIX: redirect($notification->url) tanpa validasi = open redirect.
+        // URL notifikasi tersimpan di DB; kalau suatu saat ada baris dengan URL
+        // external (data impor / bug di NotificationService), user dikirim ke
+        // situs lain setelah mengklik notifikasi dari domain mercatoria.
+        if ($notification->url && $this->isSafeInternalUrl($notification->url)) {
             return redirect($notification->url);
         }
 
         return redirect()->route('notifications.index');
+    }
+
+    /**
+     * Hanya izinkan tujuan di dalam aplikasi sendiri: path relatif, atau URL
+     * absolut yang masih berada di bawah APP_URL.
+     */
+    private function isSafeInternalUrl(string $url): bool
+    {
+        // Tolak "//evil.com" (protocol-relative) dan "/\evil.com" (trik browser).
+        if (preg_match('#^/{2}|^/\\\\#', $url) === 1) {
+            return false;
+        }
+
+        if (str_starts_with($url, '/')) {
+            return true;
+        }
+
+        $appUrl = config('app.url');
+
+        return is_string($appUrl) && $appUrl !== ''
+            && str_starts_with($url, rtrim($appUrl, '/'));
     }
 
     public function readAll(Request $request): RedirectResponse

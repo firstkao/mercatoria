@@ -48,6 +48,138 @@ enum OrderStatus: string
         return "COALESCE(SUM(CASE WHEN {$statusColumn} IN ({$in}) THEN {$column} ELSE 0 END), 0)";
     }
 
+    /**
+     * Matriks transisi status yang DIIZINKAN.
+     *
+     * Aturan utamanya: order yang uangnya sudah masuk (revenueValues()) TIDAK BOLEH
+     * dimundurkan lagi ke status "belum bayar" (menunggu_pembayaran / pembayaran_gagal /
+     * ditahan). Dulu admin bisa menggeser order `selesai` balik ke `menunggu_pembayaran`
+     * hanya dengan memilih di dropdown — order tiba-tiba keluar dari omzet, lalu 24 jam
+     * kemudian dibatalkan otomatis oleh CancelUnpaidOrders.
+     *
+     * Selain itu, status akhir (selesai / dibatalkan / dana_dikembalikan) bersifat final
+     * supaya koin cashback & refund tidak bisa dipicu dua kali.
+     *
+     * @return array<string, list<string>>
+     */
+    public static function transitions(): array
+    {
+        return [
+            self::MenungguPembayaran->value => [
+                self::Ditahan->value,
+                self::PembayaranDiterima->value,
+                self::Dibatalkan->value,
+            ],
+            self::Ditahan->value => [
+                self::MenungguPembayaran->value,
+                self::PembayaranDiterima->value,
+                self::PembayaranGagal->value,
+                self::Dibatalkan->value,
+            ],
+            self::PembayaranGagal->value => [
+                self::MenungguPembayaran->value,
+                self::Ditahan->value,
+                self::PembayaranDiterima->value,
+                self::Dibatalkan->value,
+            ],
+            self::PembayaranDiterima->value => [
+                self::SedangDiproses->value,
+                self::Dibatalkan->value,
+                self::DanaDikembalikan->value,
+            ],
+            self::SedangDiproses->value => [
+                self::PembayaranDiterima->value,
+                self::SampaiWhCn->value,
+                self::Dibatalkan->value,
+                self::DanaDikembalikan->value,
+            ],
+            self::SampaiWhCn->value => [
+                self::SedangDiproses->value,
+                self::DikirimKeIndonesia->value,
+                self::DanaDikembalikan->value,
+            ],
+            self::DikirimKeIndonesia->value => [
+                self::SampaiWhCn->value,
+                self::BeaCukai->value,
+                self::DanaDikembalikan->value,
+            ],
+            self::BeaCukai->value => [
+                self::DikirimKeIndonesia->value,
+                self::SampaiWhIndonesia->value,
+                self::DanaDikembalikan->value,
+            ],
+            self::SampaiWhIndonesia->value => [
+                self::BeaCukai->value,
+                self::Selesai->value,
+                self::DanaDikembalikan->value,
+            ],
+            // Status akhir: tidak ada transisi keluar.
+            self::Selesai->value => [],
+            self::Dibatalkan->value => [],
+            self::DanaDikembalikan->value => [],
+        ];
+    }
+
+    public function canTransitionTo(self $to): bool
+    {
+        return in_array($to->value, self::transitions()[$this->value] ?? [], true);
+    }
+
+    /**
+     * Aman dipanggil dengan string mentah (mis. dari DB / request yang belum divalidasi).
+     */
+    public static function canTransition(?string $from, ?string $to): bool
+    {
+        if ($from === null || $to === null) {
+            return false;
+        }
+
+        $fromCase = self::tryFrom($from);
+        $toCase = self::tryFrom($to);
+
+        return $fromCase !== null && $toCase !== null && $fromCase->canTransitionTo($toCase);
+    }
+
+    public function isFinal(): bool
+    {
+        return self::transitions()[$this->value] === [];
+    }
+
+    /**
+     * Pilihan dropdown untuk admin: status sekarang + status yang boleh dituju.
+     * Dipakai supaya UI tidak pernah menawarkan transisi yang bakal ditolak controller.
+     *
+     * @return array<string, string>
+     */
+    public static function nextOptionsFor(?string $current): array
+    {
+        $currentCase = $current !== null ? self::tryFrom($current) : null;
+
+        if ($currentCase === null) {
+            return self::options();
+        }
+
+        $allowed = self::transitions()[$currentCase->value] ?? [];
+
+        $out = [$currentCase->value => $currentCase->label()];
+        foreach ($allowed as $value) {
+            $out[$value] = self::from($value)->label();
+        }
+
+        return $out;
+    }
+
+    /**
+     * Pesan error yang ramah untuk admin.
+     */
+    public static function transitionErrorMessage(?string $from, ?string $to): string
+    {
+        $fromLabel = ($from !== null ? self::tryFrom($from) : null)?->label() ?? ($from ?? '-');
+        $toLabel = ($to !== null ? self::tryFrom($to) : null)?->label() ?? ($to ?? '-');
+
+        return "Status pesanan tidak bisa diubah dari \"{$fromLabel}\" ke \"{$toLabel}\".";
+    }
+
     public function label(): string
     {
         return match ($this) {

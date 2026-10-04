@@ -60,37 +60,131 @@ class BackupDatabase extends Command
     private function backupMysql(string $path): void
     {
         $config = config('database.connections.mysql');
-        $command = sprintf(
-            'mysqldump --user=%s --password=%s --host=%s --port=%s --single-transaction --quick --lock-tables=false %s > %s 2>&1',
-            escapeshellarg($config['username']),
-            escapeshellarg($config['password'] ?? ''),
-            escapeshellarg($config['host']),
-            escapeshellarg($config['port'] ?? '3306'),
-            escapeshellarg($config['database']),
-            escapeshellarg($path),
+        $errorPath = $path . '.err';
+
+        // ✅ BUG FIX 1: password tadinya dikirim sebagai argumen `--password=...`,
+        // sehingga siapa pun yang menjalankan `ps aux` (atau melihat history proses)
+        // di server bisa membacanya. Sekarang kredensial ditulis ke file opsi
+        // sementara ber-mode 0600, lalu dihapus di blok finally.
+        // ✅ BUG FIX 2: `2>&1` membuat pesan error mysqldump ikut tertulis ke dalam
+        // file .sql, jadi file backup jadi rusak tapi tetap terlihat "berhasil".
+        // stderr sekarang dialihkan ke file .err terpisah.
+        $defaultsFile = $this->writeMysqlDefaultsFile($config);
+
+        try {
+            // --defaults-extra-file WAJIB jadi argumen pertama mysqldump.
+            $command = sprintf(
+                'mysqldump --defaults-extra-file=%s --host=%s --port=%s --single-transaction --quick --lock-tables=false %s > %s 2> %s',
+                escapeshellarg($defaultsFile),
+                escapeshellarg((string) $config['host']),
+                escapeshellarg((string) ($config['port'] ?? '3306')),
+                escapeshellarg((string) $config['database']),
+                escapeshellarg($path),
+                escapeshellarg($errorPath),
+            );
+
+            exec($command, $output, $exitCode);
+
+            $stderr = File::exists($errorPath) ? trim(File::get($errorPath)) : '';
+
+            if ($exitCode !== 0 || ! File::exists($path) || File::size($path) === 0) {
+                throw new \RuntimeException(
+                    'mysqldump gagal. Cek apakah mysqldump tersedia. '
+                    . 'Output: ' . implode("\n", $output)
+                    . ($stderr !== '' ? ' | Stderr: ' . $stderr : '')
+                );
+            }
+        } finally {
+            if (File::exists($errorPath)) {
+                File::delete($errorPath);
+            }
+
+            if (is_file($defaultsFile)) {
+                @unlink($defaultsFile);
+            }
+        }
+    }
+
+    /**
+     * Tulis kredensial MySQL ke file opsi sementara (format .cnf) yang hanya
+     * bisa dibaca user sendiri.
+     *
+     * @param  array<string, mixed>  $config
+     */
+    private function writeMysqlDefaultsFile(array $config): string
+    {
+        $tmpPath = tempnam(sys_get_temp_dir(), 'mercatoria_dump_');
+
+        if ($tmpPath === false) {
+            throw new \RuntimeException('Gagal membuat file kredensial sementara untuk mysqldump.');
+        }
+
+        $content = "[client]\n"
+            . "user=" . $this->mysqlOptionValue((string) ($config['username'] ?? '')) . "\n";
+
+        if (($config['password'] ?? null) !== null && $config['password'] !== '') {
+            $content .= "password=" . $this->mysqlOptionValue((string) $config['password']) . "\n";
+        }
+
+        file_put_contents($tmpPath, $content);
+        chmod($tmpPath, 0600);
+
+        return $tmpPath;
+    }
+
+    /**
+     * Escape nilai untuk file opsi MySQL: baris baru harus di-escape,
+     * backslash & double-quote juga.
+     */
+    private function mysqlOptionValue(string $value): string
+    {
+        $escaped = str_replace(
+            ['\\', '"', "\n", "\r"],
+            ['\\\\', '\\"', '\\n', '\\r'],
+            $value,
         );
 
-        exec($command, $output, $exitCode);
-
-        if ($exitCode !== 0 || ! File::exists($path) || File::size($path) === 0) {
-            throw new \RuntimeException('mysqldump gagal. Cek apakah mysqldump tersedia. Output: ' . implode("\n", $output));
-        }
+        return '"' . $escaped . '"';
     }
 
     private function backupPostgres(string $path): void
     {
         $config = config('database.connections.pgsql');
-        $env = 'PGPASSWORD=' . escapeshellarg($config['password'] ?? '');
-        $command = "{$env} pg_dump -h " . escapeshellarg($config['host']) .
-            " -p " . escapeshellarg($config['port'] ?? '5432') .
-            " -U " . escapeshellarg($config['username']) .
-            " " . escapeshellarg($config['database']) .
-            " > " . escapeshellarg($path) . " 2>&1";
+        $errorPath = $path . '.err';
 
-        exec($command, $output, $exitCode);
+        // ✅ BUG FIX: PGPASSWORD tadinya ditulis di depan perintah
+        // (`PGPASSWORD=... pg_dump ...`) yang juga terlihat di `ps aux`.
+        // Sekarang dilewatkan lewat environment proses dan dibersihkan setelahnya.
+        $previous = getenv('PGPASSWORD');
+        putenv('PGPASSWORD=' . (string) ($config['password'] ?? ''));
 
-        if ($exitCode !== 0) {
-            throw new \RuntimeException('pg_dump gagal: ' . implode("\n", $output));
+        try {
+            $command = 'pg_dump -h ' . escapeshellarg((string) $config['host']) .
+                ' -p ' . escapeshellarg((string) ($config['port'] ?? '5432')) .
+                ' -U ' . escapeshellarg((string) $config['username']) .
+                ' ' . escapeshellarg((string) $config['database']) .
+                ' > ' . escapeshellarg($path) . ' 2> ' . escapeshellarg($errorPath);
+
+            exec($command, $output, $exitCode);
+
+            $stderr = File::exists($errorPath) ? trim(File::get($errorPath)) : '';
+
+            if ($exitCode !== 0) {
+                throw new \RuntimeException(
+                    'pg_dump gagal: ' . implode("\n", $output)
+                    . ($stderr !== '' ? ' | Stderr: ' . $stderr : '')
+                );
+            }
+        } finally {
+            if ($previous === false) {
+                putenv('PGPASSWORD');
+            } else {
+                putenv('PGPASSWORD=' . $previous);
+            }
+
+            if (File::exists($errorPath)) {
+                File::delete($errorPath);
+            }
         }
     }
 

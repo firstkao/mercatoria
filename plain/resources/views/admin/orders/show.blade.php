@@ -115,7 +115,7 @@
                 @csrf
                 <div class="field" style="margin-bottom: 15px;">
                     <select name="status">
-                        @foreach (\App\Enums\OrderStatus::options() as $value => $label)
+                        @foreach (\App\Enums\OrderStatus::nextOptionsFor($order->status) as $value => $label)
                             <option value="{{ $value }}" @selected($order->status === $value)>{{ $label }}</option>
                         @endforeach
                     </select>

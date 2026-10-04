@@ -56,6 +56,16 @@ class OrderManagementController extends Controller
             return back()->with('status', 'Status tidak berubah.');
         }
 
+        // ✅ BUG FIX: dulu tidak ada matriks transisi — admin bebas menggeser
+        // `selesai` balik ke `menunggu_pembayaran`, sehingga order keluar dari
+        // omzet (revenueValues()) lalu dibatalkan otomatis oleh CancelUnpaidOrders
+        // 24 jam kemudian, lengkap dengan voucher yang ikut "dikembalikan".
+        if (! OrderStatus::canTransition($oldStatus, $newStatus)) {
+            return back()->withErrors([
+                'status' => OrderStatus::transitionErrorMessage($oldStatus, $newStatus),
+            ]);
+        }
+
         $coinsGiven = 0;
 
         DB::transaction(function () use ($order, $oldStatus, $newStatus, &$coinsGiven) {
@@ -132,23 +142,40 @@ class OrderManagementController extends Controller
                         }
                     }
 
-                    // ✅ Reward referral (kalau ada)
-                    try {
-                        $this->rewardReferral($order->user, $expiry);
-                    } catch (\Throwable $e) {
-                        // Jangan sampai gagal update status, tapi catat di log.
-                        Log::error('Gagal memberi reward referral saat order selesai', [
-                            'order_id' => $order->id,
-                            'user_id' => $order->user_id,
-                            'error' => $e->getMessage(),
-                        ]);
-                    }
+                }
+
+                // ✅ BUG FIX: reward referral tadinya dipanggil DI DALAM blok
+                // bonus pertama (`$completedOrdersCount === 1 && ! $bonusAlreadyGiven`).
+                // Kalau user sudah pernah dapat bonus_pertama (mis. dari order
+                // sebelumnya yang dibatalkan), referral-nya tidak pernah cair
+                // walau ini order pertamanya yang benar-benar selesai. Sekarang
+                // dieksekusi setiap kali order mencapai 'selesai'.
+                try {
+                    $this->rewardReferral($order->user, $expiry);
+                } catch (\Throwable $e) {
+                    // Jangan sampai gagal update status, tapi catat di log.
+                    Log::error('Gagal memberi reward referral saat order selesai', [
+                        'order_id' => $order->id,
+                        'user_id' => $order->user_id,
+                        'error' => $e->getMessage(),
+                    ]);
                 }
             }
 
             // Pembatalan manual harus mengembalikan koin, sama seperti pembatalan otomatis.
             if ($newStatus === 'dibatalkan') {
                 $this->refundCoins($order);
+
+                // ✅ BUG FIX: pembatalan manual tadinya TIDAK mengembalikan voucher.
+                // Baris voucher_redemptions dibiarkan, jadi kuota voucher
+                // (usage_limit / per_user_limit) customer terkunci selamanya untuk
+                // order yang dibatalkan admin. CancelUnpaidOrders sudah
+                // mengembalikannya — sekarang dua-duanya konsisten.
+                $this->refundVoucher($order);
+
+                // ✅ BUG FIX: cancelled_at tidak pernah diisi saat batal manual,
+                // padahal pembatalan otomatis mengisinya (laporan jadi timpang).
+                $order->update(['cancelled_at' => $order->cancelled_at ?? now()]);
             }
 
             $this->recordHistory($order, $oldStatus, $newStatus, 'admin');
@@ -230,6 +257,19 @@ class OrderManagementController extends Controller
         if ($spends->isNotEmpty()) {
             DB::table('coin_spends')->where('order_id', $order->id)->delete();
         }
+    }
+
+    /**
+     * Buka kembali kuota voucher yang dipakai order ini.
+     * Idempotent: baris voucher_redemptions dihapus, jadi aman dipanggil ulang.
+     */
+    private function refundVoucher(Order $order): void
+    {
+        if (! \Illuminate\Support\Facades\Schema::hasTable('voucher_redemptions')) {
+            return;
+        }
+
+        DB::table('voucher_redemptions')->where('order_id', $order->id)->delete();
     }
 
     private function recordHistory(Order $order, ?string $from, string $to, string $by, ?string $note = null): void
