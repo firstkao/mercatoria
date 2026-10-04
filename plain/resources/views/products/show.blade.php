@@ -365,6 +365,45 @@
                 </div>
             </div>
         @endauth
+
+        {{-- Produk Terkait --}}
+        @if (isset($relatedProducts) && $relatedProducts->isNotEmpty())
+            <div class="container" style="margin-top: 48px;">
+                <h2 style="font-size: 32px; font-weight: 700; margin-bottom: 32px; color: #1a1a25;">Produk Terkait</h2>
+
+                <div class="related-products-grid">
+                    @foreach ($relatedProducts as $related)
+                        @php
+                            $relatedPrice = null;
+                            try {
+                                $relatedPrice = $related->variants->map(fn ($v) => $v->sellingPrice($calculator ?? \App\Support\PriceCalculator::fromSettings()))->filter()->min();
+                            } catch (\Throwable $e) {
+                                // varian rusak -> tanpa harga, kartu tetap tampil
+                            }
+                        @endphp
+                        <a href="{{ route('slug.show', $related->slug) }}" class="related-product-card">
+                            <div class="related-product-card__image">
+                                @if ($related->images->isNotEmpty())
+                                    <img src="{{ $related->images->first()->url() }}" alt="{{ $related->name }}" loading="lazy">
+                                @else
+                                    <div class="related-product-card__placeholder">No Image</div>
+                                @endif
+
+                                @if ($related->tagLabel())
+                                    <span class="related-product-card__badge tag tag--{{ $related->tag }}">{{ $related->tagLabel() }}</span>
+                                @endif
+                            </div>
+                            <div class="related-product-card__info">
+                                <h3 class="related-product-card__title">{{ $related->name }}</h3>
+                                @if ($relatedPrice)
+                                    <p class="related-product-card__price">{{ \App\Support\PriceCalculator::formatRupiah($relatedPrice) }}</p>
+                                @endif
+                            </div>
+                        </a>
+                    @endforeach
+                </div>
+            </div>
+        @endif
     </article>
 @endsection
 

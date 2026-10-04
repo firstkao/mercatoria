@@ -117,11 +117,30 @@ class ProductController extends Controller
             }
         }
 
+        // Ambil produk terkait (random dari game/developer yang sama, max 6)
+        $relatedProducts = Product::where('id', '!=', $product->id)
+            ->where(function ($query) use ($product) {
+                if ($product->game_id) {
+                    $query->orWhere('game_id', $product->game_id);
+                }
+                if ($product->developer_id) {
+                    $query->orWhere('developer_id', $product->developer_id);
+                }
+            })
+            ->where('is_published', true)
+            ->inRandomOrder()
+            ->limit(6)
+            ->get();
+
+        // Load relasi yang dibutuhkan untuk tampilan
+        $relatedProducts->load(['images', 'variants', 'game', 'developer']);
+
         try {
             return view('products.show', [
                 'user' => $user,
                 'product' => $product,
                 'calculator' => $calculator,
+                'relatedProducts' => $relatedProducts,
                 'variants' => collect($variantRows),
                 'viewQuota' => Setting::integer('view_quota', 10),
                 // SEO
