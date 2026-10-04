@@ -348,9 +348,10 @@
         {{-- Produk Terkait --}}
         @if (isset($relatedProducts) && $relatedProducts->isNotEmpty())
             <div class="container" style="margin-top: 48px;">
-                <h2 style="font-size: 32px; font-weight: 700; margin-bottom: 32px; color: #1a1a25;">Produk Terkait</h2>
+                <div class="product-boxed-card" style="padding: 32px;">
+                    <h2 style="font-size: 28px; font-weight: 700; margin-bottom: 24px; color: #1a1a25;">Produk Terkait</h2>
 
-                <div class="related-products-grid">
+                    <div class="related-products-grid">
                     @foreach ($relatedProducts as $related)
                         @php
                             $relatedPrice = null;
@@ -380,6 +381,7 @@
                             </div>
                         </a>
                     @endforeach
+                </div>
                 </div>
             </div>
         @endif
