@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Developer;
 use App\Models\Game;
 use App\Models\Product;
+use App\Models\Setting;
 use App\Support\PriceCalculator;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -33,6 +34,10 @@ class SaleController extends Controller
 
         return view('sale.index', [
             'user' => $request->user(),
+            // BUG FIX: partials/quota-banner butuh $viewQuota. Karena role default
+            // user baru adalah 'spammer', banner ini dirender untuk hampir semua
+            // user login → /promo selalu 500 "Undefined variable $viewQuota".
+            'viewQuota' => Setting::integer('view_quota', 10),
             'products' => $products,
             'games' => $games,
             'developers' => $developers,

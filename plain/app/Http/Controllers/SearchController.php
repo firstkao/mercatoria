@@ -19,6 +19,11 @@ class SearchController extends Controller
         $q = trim((string) $request->query('q'));
         $calculator = PriceCalculator::fromSettings();
 
+        // BUG FIX: $sort sebelumnya hanya di-assign di dalam blok `if ($q !== '')`
+        // tetapi dipakai di view() di luar blok → akses /cari tanpa ?q
+        // memicu "Undefined variable $sort" (ErrorException → 500).
+        $sort = (string) $request->query('sort', '');
+
         $products = collect();
         $pages = collect();
         $games = collect();

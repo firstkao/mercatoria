@@ -210,7 +210,11 @@ class OrderController extends Controller
                                 'admin_id' => null,
                                 'note' => 'Verifikasi otomatis QRIS (merchant ID cocok)',
                                 'created_at' => now(),
-                                'updated_at' => now(),
+                                // BUG FIX: tabel order_status_history tidak punya
+                                // kolom updated_at (lihat migration
+                                // 2024_01_01_000013) → insert ini melempar
+                                // "Unknown column 'updated_at'" dan seluruh
+                                // transaksi di-rollback (order nyangkut).
                             ]);
                         });
 
