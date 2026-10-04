@@ -1,5 +1,5 @@
 {{-- Partial ikon sosial media.
-     Dipakai: layouts/app.blade.php (header & footer) dan admin/settings/social-media.blade.php.
+     Dipakai: layouts/app.blade.php (header & footer), dikelola via Pengaturan Umum.
      Konsumsi variabel lokal via @include(['social' => $item]). --}}
 @if ($social->icon_url)
     <img src="{{ $social->icon_url }}" alt="{{ $social->name }}" width="20" height="20" style="width:20px;height:20px;vertical-align:middle;">

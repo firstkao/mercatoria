@@ -19,11 +19,14 @@ class GeneralSettingsRequest extends FormRequest
             'contact_hours' => ['nullable', 'string', 'max:150'],
             'store_address' => ['nullable', 'string', 'max:500'],
 
-            // Sosial media
-            'social_instagram' => ['nullable', 'url', 'max:255'],
-            'social_tiktok' => ['nullable', 'url', 'max:255'],
-            'social_facebook' => ['nullable', 'url', 'max:255'],
-            'social_x' => ['nullable', 'url', 'max:255'],
+            // Sosial media dinamis (tabel social_media; disimpan via halaman Umum ini).
+            'socials' => ['nullable', 'array'],
+            'socials.*.id' => ['nullable', 'integer'],
+            'socials.*.name' => ['required_with:socials', 'string', 'max:100'],
+            'socials.*.url' => ['nullable', 'url', 'max:255'],
+            'socials.*.icon_url' => ['nullable', 'url', 'max:500'],
+            'socials.*.icon_key' => ['nullable', 'string', 'max:50'],
+            'socials.*.sort_order' => ['nullable', 'integer', 'min:0', 'max:999'],
 
             // WA widget (Batch 23)
             'wa_widget_enabled' => ['nullable', 'boolean'],

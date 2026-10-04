@@ -14,6 +14,7 @@ use App\Models\Marketplace;
 use App\Models\Product;
 use App\Models\Setting;
 use App\Models\ShippingTier;
+use App\Models\SocialMedia;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
@@ -27,10 +28,6 @@ class SettingsController extends Controller
         'contact_email',
         'contact_whatsapp',
         'contact_hours',
-        'social_instagram',
-        'social_tiktok',
-        'social_facebook',
-        'social_x',
         'store_address',
     ];
     
@@ -137,12 +134,45 @@ class SettingsController extends Controller
     {
         return view('admin.settings.general', [
             'settings' => $this->values(self::GENERAL_KEYS),
+            // CRUD sosial media dinamis: disatukan di halaman Pengaturan Umum.
+            'socialMedias' => SocialMedia::orderBy('sort_order')->get(),
         ]);
     }
 
     public function updateGeneral(GeneralSettingsRequest $request): RedirectResponse
     {
         $this->store($request->validated(), self::GENERAL_KEYS);
+
+        // Simpan baris sosial media (array dari form). Baris dengan flag `delete`
+        // dihapus; baris tanpa `id` dibuat baru; sisanya di-update.
+        foreach ($request->validated('socials', []) as $row) {
+            if (! empty($row['delete'])) {
+                if (! empty($row['id'])) {
+                    SocialMedia::destroy($row['id']);
+                }
+
+                continue;
+            }
+
+            $data = [
+                'name' => $row['name'],
+                'url' => $row['url'] ?? null,
+                'icon_url' => $row['icon_url'] ?? null,
+                'icon_key' => $row['icon_key'] ?? null,
+                'sort_order' => $row['sort_order'] ?? 0,
+                'is_active' => ! empty($row['is_active']),
+            ];
+
+            if (! empty($row['id'])) {
+                $sm = SocialMedia::find($row['id']);
+                if ($sm !== null) {
+                    $sm->fill($data)->save();
+                }
+            } else {
+                SocialMedia::create($data);
+            }
+        }
+
         AdminLog::record('update_general', null, $request->validated());
 
         return redirect()->route('admin.settings.general')->with('status', 'Pengaturan umum disimpan.');
