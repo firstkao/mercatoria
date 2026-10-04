@@ -292,9 +292,9 @@
                     <fieldset class="product-boxed-payment">
                         <legend class="product-boxed-payment__title">Jaminan Pembayaran Aman</legend>
                         <div class="product-boxed-payment__logos">
-                            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/5c/Bank_Central_Asia.svg/1200px-Bank_Central_Asia.svg.png" alt="BCA" class="payment-method-icon">
-                            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/a2/Logo_QRIS.svg/1200px-Logo_QRIS.svg.png" alt="QRIS" class="payment-method-icon">
-                            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/fe/Shopee_logo.svg/1200px-Shopee_logo.svg.png" alt="ShopeePay" class="payment-method-icon">
+                            <img src="{{ asset('images/bca.svg') }}" alt="BCA" class="payment-logo">
+                            <img src="{{ asset('images/qris.svg') }}" alt="QRIS" class="payment-logo">
+                            <img src="{{ asset('images/shopeepay.svg') }}" alt="ShopeePay" class="payment-logo">
                         </div>
                     </fieldset>
                 </div>
