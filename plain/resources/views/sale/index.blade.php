@@ -37,7 +37,14 @@
         @else
             <ul class="product-grid">
                 @foreach ($products as $product)
-                    @php($discountPct = $product->maxDiscountPercent())
+                    {{-- BUG FIX: jangan pakai @php(...) satu baris di file yang juga
+                         punya blok @php...@endphp — di Laravel 13.33 kombinasi itu
+                         salah dikompilasi jadi `<?php(` tanpa penutup, sehingga
+                         semua directive sesudahnya tidak dikompilasi → ParseError
+                         500 di halaman /promo. --}}
+                    @php
+                        $discountPct = $product->maxDiscountPercent();
+                    @endphp
                     <li class="product-card">
                         <a href="{{ route('slug.show', $product->slug) }}">
                             <div class="product-card__image">
