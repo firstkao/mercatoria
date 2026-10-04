@@ -291,15 +291,29 @@
                     {{-- Jaminan Pembayaran Aman: fieldset, judul "menembus" garis atas --}}
                     <fieldset class="product-boxed-payment">
                         <legend class="product-boxed-payment__title">Jaminan Pembayaran Aman</legend>
-                        <div class="product-boxed-payment__logos">
-                            @foreach ($payLogos as $key => $label)
-                                @php $logo = $payLogoUrl($key); @endphp
-                                @if ($logo)
-                                    <span class="product-boxed-pay-logo"><img src="{{ $logo }}" alt="{{ $label }}" loading="lazy"></span>
-                                @else
-                                    <span class="product-boxed-pay-logo product-boxed-pay-logo--text">{{ $label }}</span>
-                                @endif
-                            @endforeach
+                        <div class="product-boxed-payment__logos" style="display: flex; justify-content: center; gap: 16px; align-items: center; flex-wrap: wrap;">
+                            {{-- Icon BCA --}}
+                            <div style="display: flex; align-items: center; justify-content: center; height: 24px;">
+                                <svg viewBox="0 0 100 40" width="60" height="24" xmlns="http://www.w3.org/2000/svg">
+                                    <text x="50" y="28" font-family="Arial, sans-serif" font-weight="900" font-size="28" fill="#005eb8" text-anchor="middle" letter-spacing="-1">BCA</text>
+                                </svg>
+                            </div>
+
+                            {{-- Icon QRIS --}}
+                            <div style="display: flex; align-items: center; justify-content: center; height: 24px;">
+                                <svg viewBox="0 0 120 40" width="70" height="24" xmlns="http://www.w3.org/2000/svg">
+                                    <rect x="0" y="0" width="120" height="40" rx="4" fill="#ffffff" stroke="#e2e8f0" stroke-width="1"/>
+                                    <text x="60" y="26" font-family="Arial, sans-serif" font-weight="900" font-size="20" fill="#ed1c24" text-anchor="middle">Q</text>
+                                    <text x="75" y="26" font-family="Arial, sans-serif" font-weight="900" font-size="20" fill="#005eb8" text-anchor="middle">RIS</text>
+                                </svg>
+                            </div>
+
+                            {{-- Icon ShopeePay --}}
+                            <div style="display: flex; align-items: center; justify-content: center; height: 24px;">
+                                <svg viewBox="0 0 140 40" width="80" height="24" xmlns="http://www.w3.org/2000/svg">
+                                    <text x="70" y="27" font-family="Arial, sans-serif" font-weight="900" font-size="22" fill="#ee4d2d" text-anchor="middle">ShopeePay</text>
+                                </svg>
+                            </div>
                         </div>
                     </fieldset>
                 </div>
