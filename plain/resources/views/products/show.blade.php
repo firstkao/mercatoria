@@ -313,6 +313,48 @@
                     @endif
                 </div>
             </div>
+
+            {{-- Pemisah visual antara tabs Deskripsi dan Produk Terkait --}}
+            @if (isset($relatedProducts) && $relatedProducts->isNotEmpty())
+                <hr style="margin: 32px 0; border: 0; border-top: 1px solid var(--border);">
+            @endif
+
+            {{-- ===== PRODUK TERKAIT (di dalam card yang sama dengan tabs Deskripsi, tanpa gap) ===== --}}
+            @if (isset($relatedProducts) && $relatedProducts->isNotEmpty())
+                <h2 style="font-size: 28px; font-weight: 700; margin-bottom: 24px; color: #1a1a25;">Produk Terkait</h2>
+
+                <div class="related-products-grid">
+                    @foreach ($relatedProducts as $related)
+                        @php
+                            $relatedPrice = null;
+                            try {
+                                $relatedPrice = $related->variants->map(fn ($v) => $v->sellingPrice($calculator ?? \App\Support\PriceCalculator::fromSettings()))->filter()->min();
+                            } catch (\Throwable $e) {
+                                // varian rusak -> tanpa harga, kartu tetap tampil
+                            }
+                        @endphp
+                        <a href="{{ route('slug.show', $related->slug) }}" class="related-product-card">
+                            <div class="related-product-card__image">
+                                @if ($related->images->isNotEmpty())
+                                    <img src="{{ $related->images->first()->url() }}" alt="{{ $related->name }}" loading="lazy">
+                                @else
+                                    <div class="related-product-card__placeholder">No Image</div>
+                                @endif
+
+                                @if ($related->tagLabel())
+                                    <span class="related-product-card__badge tag tag--{{ $related->tag }}">{{ $related->tagLabel() }}</span>
+                                @endif
+                            </div>
+                            <div class="related-product-card__info">
+                                <h3 class="related-product-card__title">{{ $related->name }}</h3>
+                                @if ($relatedPrice)
+                                    <p class="related-product-card__price">{{ \App\Support\PriceCalculator::formatRupiah($relatedPrice) }}</p>
+                                @endif
+                            </div>
+                        </a>
+                    @endforeach
+                </div>
+            @endif
         </div>
         @auth
             {{-- Modal konfirmasi masuk keranjang --}}
@@ -344,47 +386,6 @@
                 </div>
             </div>
         @endauth
-
-        {{-- Produk Terkait --}}
-        @if (isset($relatedProducts) && $relatedProducts->isNotEmpty())
-            <div class="container" style="margin-top: 48px;">
-                <div class="product-boxed-card" style="padding: 32px;">
-                    <h2 style="font-size: 28px; font-weight: 700; margin-bottom: 24px; color: #1a1a25;">Produk Terkait</h2>
-
-                    <div class="related-products-grid">
-                    @foreach ($relatedProducts as $related)
-                        @php
-                            $relatedPrice = null;
-                            try {
-                                $relatedPrice = $related->variants->map(fn ($v) => $v->sellingPrice($calculator ?? \App\Support\PriceCalculator::fromSettings()))->filter()->min();
-                            } catch (\Throwable $e) {
-                                // varian rusak -> tanpa harga, kartu tetap tampil
-                            }
-                        @endphp
-                        <a href="{{ route('slug.show', $related->slug) }}" class="related-product-card">
-                            <div class="related-product-card__image">
-                                @if ($related->images->isNotEmpty())
-                                    <img src="{{ $related->images->first()->url() }}" alt="{{ $related->name }}" loading="lazy">
-                                @else
-                                    <div class="related-product-card__placeholder">No Image</div>
-                                @endif
-
-                                @if ($related->tagLabel())
-                                    <span class="related-product-card__badge tag tag--{{ $related->tag }}">{{ $related->tagLabel() }}</span>
-                                @endif
-                            </div>
-                            <div class="related-product-card__info">
-                                <h3 class="related-product-card__title">{{ $related->name }}</h3>
-                                @if ($relatedPrice)
-                                    <p class="related-product-card__price">{{ \App\Support\PriceCalculator::formatRupiah($relatedPrice) }}</p>
-                                @endif
-                            </div>
-                        </a>
-                    @endforeach
-                </div>
-                </div>
-            </div>
-        @endif
     </article>
 @endsection
 
