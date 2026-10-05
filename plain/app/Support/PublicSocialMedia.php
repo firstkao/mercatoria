@@ -36,13 +36,22 @@ class PublicSocialMedia
         return SocialMedia::query()
             // In(0,1,'0','1') lebih toleran daripada perbandingan boolean ketat.
             ->whereIntegerInRaw('is_active', [1])
-            // Buang NULL dan string kosong/spasi — inilah penyebab utama ikon
-            // hilang padahal "secara data ada semua".
             ->whereNotNull('url')
             ->orderBy('sort_order')
             ->orderBy('id')
             ->get()
-            ->filter(fn ($sm) => trim((string) $sm->url) !== '')
+            ->filter(function ($sm) {
+                // Penyebab utama ikon hilang padahal "data ada": baris dengan
+                // url string kosong/spasi, ATAU tanpa url sama sekali tetapi
+                // juga tidak punya icon_url/icon_key (tidak ada yang bisa
+                // dirender). Semuanya dibuang di sini supaya konsisten.
+                if (trim((string) $sm->url) !== '') {
+                    return true;
+                }
+
+                return trim((string) $sm->icon_url) !== ''
+                    || self::normalizedIconKey($sm) !== null;
+            })
             ->values();
     }
 
