@@ -63,9 +63,26 @@ class NotificationController extends Controller
         }
 
         $appUrl = config('app.url');
+        if (! is_string($appUrl) || $appUrl === '') {
+            return false;
+        }
 
-        return is_string($appUrl) && $appUrl !== ''
-            && str_starts_with($url, rtrim($appUrl, '/'));
+        // Bandingkan scheme+host+port, BUKAN prefix string: "https://toko.id.evil.com" dan
+        // "https://toko.id@evil.com" lolos str_starts_with tapi mengarah ke domain lain.
+        $target = parse_url($url);
+        $app = parse_url($appUrl);
+
+        if ($target === false || $app === false || empty($target['host']) || empty($app['host'])) {
+            return false;
+        }
+
+        if (isset($target['user']) || isset($target['pass'])) {
+            return false;
+        }
+
+        return in_array(strtolower($target['scheme'] ?? ''), ['http', 'https'], true)
+            && strtolower($target['host']) === strtolower($app['host'])
+            && ($target['port'] ?? null) === ($app['port'] ?? null);
     }
 
     public function readAll(Request $request): RedirectResponse
