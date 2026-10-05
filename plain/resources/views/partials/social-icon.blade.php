@@ -8,16 +8,32 @@
      lebih dulu, dan icon_url yang hanya berisi spasi ikut dianggap kosong. --}}
 @php
     $iconKey = \App\Support\PublicSocialMedia::normalizedIconKey($social);
+
+    // Bila icon_key belum diisi admin, coba simpulkan dari nama (mis. baris
+    // bernama "Threads" tanpa icon_key) supaya tetap memakai SVG bawaan dan
+    // tidak jatuh ke gambar custom yang gelap.
+    if ($iconKey === null) {
+        $nameLower = strtolower(trim((string) ($social->name ?? '')));
+        foreach (['threads', 'instagram', 'facebook', 'whatsapp', 'tiktok'] as $candidate) {
+            if ($nameLower !== '' && str_contains($nameLower, $candidate)) {
+                $iconKey = $candidate;
+                break;
+            }
+        }
+    }
+
     $iconUrl = trim((string) ($social->icon_url ?? ''));
-    // BUG FIX (ikon Threads tampak gelap): icon_url lama tersimpan sebagai
-    // PNG icons8 dengan color=000000 (hitam pekat). Di footer berlatar gelap,
-    // gambar hitam itu nyaris tak terlihat sementara sosmed lain memakai SVG
-    // putih (currentColor). Solusi: bila URL custom berwarna gelap DAN ada SVG
-    // bawaan untuk icon_key-nya, pakai SVG bawaan agar seragam.
+
+    // BUG FIX (ikon Threads tampak gelap): icon_url lama tersimpan sebagai PNG
+    // icons8 berwarna hitam. Deteksi lama hanya menangkap bentuk query
+    // (`?color=000000`), padahal icons8 menaruh kode warna di PATH
+    // (`.../ios-filled/50/000000/threads.png`), sehingga PNG hitam itu lolos
+    // dan ikon tampak gelap di footer. Sekarang kedua bentuk dikenali.
+    $decodedIconUrl = urldecode($iconUrl);
     $isDarkCustomIcon = $iconUrl !== '' && preg_match(
-        '/color=0{3,8}|color=black|&?color=%5B%22000/i',
-        urldecode($iconUrl)
-    );
+        '/(?:[?&]color=|[/#])(?:0{3}|0{6}|black)\b/i',
+        $decodedIconUrl
+    ) === 1;
     $hasBuiltInSvg = in_array($iconKey, ['instagram','facebook','x','threads','whatsapp','tiktok'], true);
 @endphp
 @if ($iconUrl !== '' && ! ($isDarkCustomIcon && $hasBuiltInSvg))
@@ -37,12 +53,10 @@
         <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
     </svg>
 @elseif ($iconKey === 'threads')
-    {{-- FIX: path lama adalah glyph "t" Threads yang TIDAK simetris dan bolong-bolong,
-         sehingga di footer (latar gelap) tampak lebih tipis/gelap dibanding ikon lain.
-         Kini memakai logo resmi @threads (knot dua loop) dengan fill currentColor
-         agar warnanya identik dengan Facebook/X/TikTok/WhatsApp. --}}
+    {{-- Logo Threads resmi (Simple Icons, path solid) dengan fill currentColor
+         agar warnanya identik dengan Facebook/X/TikTok/WhatsApp di footer. --}}
     <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-        <path d="M19.094 7.412c.412-3.417-1.382-5.415-4.179-5.859-2.2-0.352-4.564-0.013-6.334 1.019C6.678 3.795 5.593 5.732 5.99 8.37c.383 2.553 2.348 4.257 4.87 4.622.144.02.288.037.433.051-.138.822-.018 1.567.357 1.943.495.495 1.29.41 1.916-.193.525-.506.896-1.196 1.12-1.894 1.046.224 1.988.16 2.589.104.856-.078 1.558-.432 1.984-1.008.285-.386.456-.879.517-1.477.292-.086.53-.2.727-.342.444-.322.72-.81.81-1.41.106-.712-.243-1.317-.786-1.557a.85.85 0 0 0-.233-.07zM13.69 12.76c-.13.52-.35 1.045-.66 1.446-.24.3-.53.477-.79.477-.12 0-.2-.04-.25-.09-.14-.14-.18-.56-.05-1.2.55.07 1.1.1 1.63.07l.12-.7z m1.73-3.37c-.17.06-.36.1-.56.12-.55.08-1.16.07-1.79-.01-.16-.02-.32-.04-.48-.07-1.76-.31-3.01-1.56-2.81-3.1.16-1.22 1.27-2.06 2.97-2.06.31 0 .63.03.94.08 1.72.28 2.89 1.45 2.71 2.83-.05.44-.23.83-.52 1.15.19-.06.37-.1.52-.1.29-.02.55.05.74.19.24.18.36.45.32.77-.05.38-.32.66-.74.83z m-2.42-1.6c-.22-.04-.45-.06-.68-.06-.9 0-1.6.4-1.73 1.03-.08.42.22.83.79.95.23.05.47.07.71.07.5 0 .96-.13 1.31-.36.43-.3.66-.73.6-1.14-.06-.4-.42-.7-.99-.84z"/>
+        <path d="M18.263 11.097c-.03-3.486-1.92-5.586-5.111-5.586-2.13 0-3.922.963-4.863 2.499l2.062 1.438c.535-.843 1.272-1.543 2.628-1.543 1.528 0 2.318.85 2.544 2.431a15 15 0 0 0-2.236-.173c-4.125 0-6.068 1.867-6.068 4.336s1.943 3.99 4.804 3.99c3.139 0 5.013-2.115 5.781-4.735.798.361 1.348 1.204 1.348 2.47 0 3.387-3.907 5.232-7.22 5.232-4.885 0-8.077-3.207-8.077-8.424 0-6.392 4.223-10.487 9.9-10.487 3.808 0 5.69 1.671 6.97 3.914l2.108-1.475C21.44 2.078 18.331 0 13.663 0 6.227 0 1.168 5.277 1.168 12.934c0 7 4.953 11.066 10.856 11.066 4.878 0 9.809-2.846 9.809-7.716 0-2.545-1.46-4.231-3.569-5.187m-6.33 4.855c-1.077 0-2.026-.512-2.026-1.453 0-1.483 1.822-1.934 3.606-1.934.678 0 1.34.045 1.927.173-.422 1.927-1.671 3.215-3.508 3.214Z"/>
     </svg>
 @elseif ($iconKey === 'whatsapp')
     <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">

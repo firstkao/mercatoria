@@ -28,6 +28,15 @@ class IpBlacklistMiddleware
             return $next($request);
         }
 
+        // BUG FIX: admin yang sudah login TIDAK boleh terkunci dari panelnya
+        // sendiri oleh daftar hitam IP. Tanpa pengecualian ini, satu baris di
+        // blacklisted_ips membuat /office/* selalu di-redirect ke "/" sehingga
+        // admin tidak pernah bisa membuka dashboard (dan tidak ada UI untuk
+        // memperbaikinya dari dalam panel).
+        if (auth('admin')->check()) {
+            return $next($request);
+        }
+
         try {
             if (!\Illuminate\Support\Facades\Schema::hasTable('blacklisted_ips')) {
                 return $next($request); // skema lama → skip diam-diam
