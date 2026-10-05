@@ -112,25 +112,25 @@ Route::get('/promo', [SaleController::class, 'index'])->name('sale.index');
 
 // Reseller (guest & member)
 Route::get('/reseller', [ResellerApplicationController::class, 'create'])->name('reseller.create');
-Route::post('/reseller', [ResellerApplicationController::class, 'store'])->middleware('throttle:5,1');
+Route::post('/reseller', [ResellerApplicationController::class, 'store'])->middleware('throttle:5,1,reseller');
 
 // ============================================================
 // 2. GUEST (Login & Register)
 // ============================================================
 Route::middleware('guest')->group(function (): void {
     Route::get('/daftar', [RegisteredUserController::class, 'create'])->name('register');
-    Route::post('/daftar', [RegisteredUserController::class, 'store'])->middleware('throttle:10,1');
+    Route::post('/daftar', [RegisteredUserController::class, 'store'])->middleware('throttle:10,1,register');
     Route::get('/masuk', [AuthenticatedSessionController::class, 'create'])->name('login');
     Route::post('/masuk', [AuthenticatedSessionController::class, 'store']);
 
     // Lupa Password (Batch 27)
     Route::get('/lupa-password', [PasswordResetLinkController::class, 'create'])->name('password.request');
     Route::post('/lupa-password', [PasswordResetLinkController::class, 'store'])
-        ->middleware('throttle:5,1')
+        ->middleware('throttle:5,1,pw-email')
         ->name('password.email');
     Route::get('/reset-password/{token}', [NewPasswordController::class, 'create'])->name('password.reset');
     Route::post('/reset-password', [NewPasswordController::class, 'store'])
-        ->middleware('throttle:5,1')
+        ->middleware('throttle:5,1,pw-reset')
         ->name('password.store');
 });
 
@@ -279,10 +279,10 @@ Route::middleware('auth')->group(function (): void {
     // Verifikasi email (harus di dalam auth, tapi sebelum 'verified')
     Route::get('/verifikasi-email', [EmailVerificationController::class, 'notice'])->name('verification.notice');
     Route::post('/verifikasi-email', [EmailVerificationController::class, 'verify'])
-        ->middleware('throttle:10,1')
+        ->middleware('throttle:10,1,otp-verify')
         ->name('verification.verify');
     Route::post('/verifikasi-email/kirim-ulang', [EmailVerificationController::class, 'resend'])
-        ->middleware('throttle:3,1')
+        ->middleware('throttle:3,1,otp-resend')
         ->name('verification.resend');
 
     // Cart — GATEKEEPER #5: sebelum boleh menyentuh keranjang/checkout,
