@@ -84,10 +84,41 @@ class AppServiceProvider extends ServiceProvider
             // Query dibungkus try/catch: bila tabel belum ada (mis. sebelum
             // migrasi dijalankan di server), halaman tetap tampil tanpa data.
             try {
-                // BUG FIX (ikon sosmed tidak muncul walau data ada): filter
-                // terpusat di PublicSocialMedia — is_active longgar (0/1/'0'/'1'),
-                // URL null DAN string kosong dibuang, icon_key dinormalisasi.
-                $socials = PublicSocialMedia::all();
+                // BUG FIX FINAL (ikon sosmed tetap tidak muncul walau data ada):
+                // filter is_active dibuat TOLERAN terhadap semua variasi penyimpanan:
+                //   - kolom boolean tinyint berisi 1  -> ikut
+                //   - string '1' / 'true' / 'on'       -> ikut
+                //   - NULL (default lama)              -> ikut (dianggap aktif,
+                //     sama seperti default kolom di migration)
+                // Hanya baris yang EKSPLISIT dimatikan ('0', 0, '', 'false') yang
+                // dibuang. Perbandingan boolean ketat (`where('is_active', true)`)
+                // sebelumnya gagal pada sebagian konfigurasi MySQL/PDO karena
+                // casting nilai berbeda-beda -> collection kosong -> ikon hilang
+                // padahal data lengkap di halaman admin.
+                $socials = SocialMedia::query()
+                    ->orderBy('sort_order')
+                    ->orderBy('id')
+                    ->get()
+                    ->filter(function (SocialMedia $sm): bool {
+                        // CAUTION: kolom di-cast 'boolean' di model, jadi false
+                        // bisa berarti 0/'0'/''/null dari DB. Bedakan NULL murni
+                        // (baris lama tanpa nilai -> anggap aktif) dari false
+                        // hasil cast ('0'/''/0 -> memang nonaktif).
+                        if (($sm->getRawOriginal('is_active') ?? null) === null) {
+                            return true; // default aktif
+                        }
+
+                        return (bool) $sm->is_active;
+                    });
+
+                // Normalisasi ringan: trim url/icon_url/icon_key (lower) agar
+                // pencocokan SVG bawaan tidak gagal karena kapitalisasi/spasi.
+                $socials = $socials->map(function (SocialMedia $sm): SocialMedia {
+                    $sm->url = ($u = trim((string) ($sm->url ?? ''))) === '' ? null : $u;
+                    $sm->icon_url = ($iu = trim((string) ($sm->icon_url ?? ''))) === '' ? null : $iu;
+                    $sm->icon_key = ($ik = strtolower(trim((string) ($sm->icon_key ?? '')))) === '' ? null : $ik;
+                    return $sm;
+                });
 
                 // Tombol marketplace footer (TOCO/TOKOPEDIA/SHOPEE/TIKTOK SHOP):
                 // diambil dari baris social_media dengan icon_key khusus, supaya

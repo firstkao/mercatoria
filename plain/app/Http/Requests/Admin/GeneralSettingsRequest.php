@@ -27,11 +27,17 @@ class GeneralSettingsRequest extends FormRequest
             'socials.*.icon_url' => ['nullable', 'url', 'max:500'],
             'socials.*.icon_key' => ['nullable', 'string', 'max:50'],
             'socials.*.sort_order' => ['nullable', 'integer', 'min:0', 'max:999'],
-            // Catatan: jangan pakai rule 'boolean' di sini. Checkbox yang tidak
-            // dicentang tidak terkirim, dan rule boolean membuat key-nya lenyap
-            // dari validated() — sehingga controller membaca !empty(null) = false
-            // dan mematikan semua sosmed setiap kali form disimpan.
-            'socials.*.is_active' => ['nullable', 'in:0,1,on,yes,true,false'],
+            // BUG FIX (penyebab ikon sosmed hilang walau data ada): rule ketat
+            // ('boolean' / 'in:...') membuat key is_active LENYAP dari
+            // validated() saat checkbox terkirim dengan nilai tak terduga
+            // ("on", "On", spasi, dsb.). Controller lalu membaca null ->
+            // filter_var(null) = false -> semua baris tersimpan is_active = 0
+            // sekali admin menekan Simpan. Data tetap terlihat lengkap di
+            // halaman admin, tapi query publik where(is_active = true) tidak
+            // memilih apa pun -> ikon hilang. Rule longgar + normalisasi
+            // filter_var di controller adalah kombinasi paling aman: nilai
+            // apa pun yang terkirim selalu dipetakan ke true/false.
+            'socials.*.is_active' => ['nullable'],
             'socials.*.delete' => ['nullable', 'boolean'],
 
             // WA widget (Batch 23)
