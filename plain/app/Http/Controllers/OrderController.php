@@ -68,7 +68,7 @@ class OrderController extends Controller
                 'account_number' => $pm->account_number,
                 'account_name' => $pm->account_name,
                 'instructions' => $pm->instructions,
-                'qr_image' => ! empty($pm->qr_image) ? asset('storage/'.$pm->qr_image) : null,
+                'qr_image' => ! empty($pm->qr_image) ? \Illuminate\Support\Facades\Storage::disk('public')->url($pm->qr_image) : null,
             ])
             ->values();
 
