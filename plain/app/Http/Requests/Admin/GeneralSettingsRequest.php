@@ -27,6 +27,8 @@ class GeneralSettingsRequest extends FormRequest
             'socials.*.icon_url' => ['nullable', 'url', 'max:500'],
             'socials.*.icon_key' => ['nullable', 'string', 'max:50'],
             'socials.*.sort_order' => ['nullable', 'integer', 'min:0', 'max:999'],
+            'socials.*.is_active' => ['nullable', 'boolean'],
+            'socials.*.delete' => ['nullable', 'boolean'],
 
             // WA widget (Batch 23)
             'wa_widget_enabled' => ['nullable', 'boolean'],
