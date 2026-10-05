@@ -292,14 +292,8 @@
                     @if (! empty($footerTocoUrl))
                         <a href="{{ $footerTocoUrl }}" target="_blank" rel="noopener" class="footer-btn">TOCO <span>→</span></a>
                     @endif
-                    @if (! empty($footerTokopediaUrl))
-                        <a href="{{ $footerTokopediaUrl }}" target="_blank" rel="noopener" class="footer-btn">TOKOPEDIA <span>→</span></a>
-                    @endif
                     @if (! empty($footerShopeeUrl))
                         <a href="{{ $footerShopeeUrl }}" target="_blank" rel="noopener" class="footer-btn">SHOPEE <span>→</span></a>
-                    @endif
-                    @if (! empty($footerTiktokShopUrl))
-                        <a href="{{ $footerTiktokShopUrl }}" target="_blank" rel="noopener" class="footer-btn">TIKTOK SHOP <span>→</span></a>
                     @endif
                 </div>
             </div>
