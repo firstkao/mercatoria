@@ -1,358 +1,315 @@
 <?php
 
-namespace App\Providers;
+namespace App\Http\Controllers;
 
-use App\Models\Developer;
-use App\Models\Game;
+use App\Models\ActivityLog;
+use App\Enums\OrderStatus;
 use App\Models\Order;
-use App\Models\PaymentProof;
-use App\Models\Product;
+use App\Models\PaymentMethod;
 use App\Models\Setting;
-use Illuminate\Contracts\View\View as ViewContract;
+use App\Services\NotificationService;
+use App\Support\QrisPayloadReader;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Schema;
-use Illuminate\Support\Facades\View;
-use Illuminate\Support\ServiceProvider;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
+use Illuminate\View\View;
+use Intervention\Image\Drivers\Gd\Driver;
+use Intervention\Image\ImageManager;
 
-class AppServiceProvider extends ServiceProvider
+class OrderController extends Controller
 {
-    public function register(): void
+    public function index(Request $request): View
     {
-        //
+        $orders = $request->user()->orders()->latest()->paginate(20);
+
+        // FASE 1: "Tagihan Menunggu" — order yang butuh aksi bayar/unggah bukti.
+        $unpaid = $orders->getCollection()
+            ->whereIn('status', [
+                OrderStatus::MenungguPembayaran->value,
+                OrderStatus::PembayaranGagal->value,
+            ])
+            ->sortByDesc('payment_deadline_at')
+            ->take(5)
+            ->values();
+
+        return view('orders.index', compact('orders', 'unpaid'));
     }
 
-    public function boot(): void
+    public function show(Request $request, string $orderNumber): View
     {
-        // ============================================================
-        // DEFAULT SETTINGS
-        // ============================================================
-        if (Schema::hasTable('settings')) {
-            $defaults = [
-                'view_quota' => '10',
-                'registration_limit' => '3',
-                'spammer_ttl_days' => '30',
-                'payment_deadline_hours' => '24',
-                'customer_activity_retention_months' => '12',
-                'coin_max_use_percent' => '5',
-                'coin_earn_percent' => '1',
-                'coin_expiry_months' => '12',
-                'coin_expiry_reminder_days' => '7',
-                'birthday_coin' => '1000',
-                'customer_bonus_coin' => '1000',
-                'birthday_voucher_nominal' => '20000',
-                'birthday_voucher_min' => '100000',
-                'birthday_voucher_valid_days' => '3',
-                'referral_reward_referrer' => '5000',
-                'referral_reward_click' => '10', // +koin per klik link; anti-spam: 1x per IP unik SELAMANYA (bukan per hari)
-                'referral_reward_referee' => '0', // referee tidak dapat bonus tambahan (hanya welcome + cashback order)
-                'wa_widget_enabled' => '1',
-                'wa_widget_label' => 'Chat CS',
-                'wa_widget_greeting' => 'Halo, saya mau tanya tentang produk di MERCATORIA.',
-                'cart_reminder_1_hours' => '4',
-                'cart_reminder_2_hours' => '24',
-                'best_seller_period_days' => '365',
-                'best_seller_limit' => '8',
-                'best_seller_min_sales' => '1',
-                'maintenance_enabled' => '0',
-                'maintenance_message' => 'Kami sedang melakukan pemeliharaan. Coba lagi sebentar lagi.',
-                'maintenance_bypass_ips' => '',
-                'email_verification_enabled' => '1',
-                'wa_template_payment_reminder' => 'Halo {nama}, pesanan #{order_number} masih menunggu pembayaran. Batas waktu {deadline}. Yuk selesaikan ya 🙏',
-                'wa_template_payment_received' => 'Halo {nama}, pembayaran pesanan #{order_number} sudah kami terima. Terima kasih! Pesanan segera diproses.',
-                'wa_template_processing' => 'Halo {nama}, pesanan #{order_number} sedang kami proses. Update selanjutnya akan kami infokan ya.',
-                'wa_template_shipped' => 'Halo {nama}, pesanan #{order_number} sudah dalam perjalanan ke Indonesia. Estimasi tiba ~45 hari setelah keluar dari gudang China.',
-                'wa_template_completed' => 'Halo {nama}, pesanan #{order_number} sudah selesai. Terima kasih sudah berbelanja di MERCATORIA! 🎉',
-                'footer_shopee_url' => '',
-                'footer_tokopedia_url' => '',
-                'footer_tiktok_shop_url' => '',
-                'footer_copyright' => '',
-                'footer_powered_by' => 'Powered by MERCATORIA',
-            ];
+        $order = Order::where('user_id', $request->user()->id)
+            ->where('order_number', $orderNumber)
+            ->firstOrFail();
 
-            foreach ($defaults as $key => $value) {
-                if (! Setting::where('key', $key)->exists()) {
-                    Setting::create(['key' => $key, 'value' => $value]);
-                }
+        $order->load([
+            'items.variant.product',
+            'paymentProofs.method',
+            'marketplace',
+            'statusHistory.admin',
+        ]);
+
+        $paymentMethods = PaymentMethod::where('is_active', true)
+            ->orderBy('sort_order')
+            ->get();
+
+        // Data metode bayar untuk JS di halaman upload bukti. Disiapkan di
+        // controller (bukan di dalam @json(...) di Blade) karena direktif
+        // @json() memecah argumennya dengan explode(',') — array literal
+        // seperti ini bila ditulis langsung di dalam @json() akan terpotong
+        // dan menghasilkan PHP tidak valid → halaman detail pesanan 500.
+        $paymentMethodsJs = $paymentMethods
+            ->map(fn (PaymentMethod $pm): array => [
+                'id' => $pm->id,
+                'type' => $pm->type ?? 'bank',
+                'account_number' => $pm->account_number,
+                'account_name' => $pm->account_name,
+                'instructions' => $pm->instructions,
+                'qr_image' => ! empty($pm->qr_image) ? \Illuminate\Support\Facades\Storage::disk('public')->url($pm->qr_image) : null,
+            ])
+            ->values();
+
+        return view('orders.show', compact('order', 'paymentMethods', 'paymentMethodsJs'));
+    }
+
+    public function proof(Request $request, string $orderNumber): RedirectResponse
+    {
+        $order = Order::where('user_id', $request->user()->id)
+            ->where('order_number', $orderNumber)
+            ->firstOrFail();
+
+        abort_unless(
+            in_array($order->status, ['menunggu_pembayaran', 'pembayaran_gagal'], true),
+            422,
+            'Status pesanan tidak memungkinkan upload bukti.'
+        );
+
+        // ✅ BUG FIX: dulu tidak ada cek batas waktu. Order yang sudah lewat
+        // payment_deadline_at tetap bisa diunggah buktinya (kecuali keburu
+        // dibatalkan scheduler), padahal harga & kurs sudah disnapshot untuk
+        // jendela waktu tertentu. Sekarang ditolak lebih awal dengan pesan jelas.
+        if ($order->payment_deadline_at !== null && $order->payment_deadline_at->lessThan(now())) {
+            return back()->withErrors([
+                'proof' => 'Batas waktu pembayaran sudah lewat. Pesanan ini menunggu pembatalan otomatis — hubungi admin jika kamu sudah transfer.',
+            ]);
+        }
+
+        // ✅ BUG FIX: Cegah double-submit — jika masih ada bukti berstatus pending,
+        // user harus menunggu review admin sebelum upload lagi.
+        abort_unless(
+            ! $order->paymentProofs()->where('status', 'pending')->exists(),
+            422,
+            'Bukti pembayaran kamu masih dalam verifikasi admin.'
+        );
+
+        $request->validate([
+            // ✅ PERBAIKAN: Cek juga is_active agar user tidak bisa pilih
+            // metode pembayaran yang sudah dinonaktifkan admin
+            'payment_method_id' => [
+                'required',
+                Rule::exists('payment_methods', 'id')->where('is_active', true),
+            ],
+            'proof' => ['required', 'image', 'mimes:jpeg,png,jpg,webp', 'max:5120'],
+        ], [
+            'payment_method_id.exists' => 'Metode pembayaran tidak valid atau sudah dinonaktifkan.',
+        ]);
+
+        $file = $request->file('proof');
+
+        // ✅ BUG FIX: jangan paksakan ekstensi '.webp' untuk semua file.
+        // Validasi menerima jpeg/png/jpg/webp; sebelumnya file JPEG disimpan
+        // dengan nama xxx.webp sehingga admin melihat "bukti" berlabel webp
+        // yang isinya data JPEG (membingungkan browser saat preview/download).
+        // Format asli dipertahankan; konversi ke webp hanya bila aman dilakukan.
+        $extension = strtolower($file->getClientOriginalExtension() ?: ($file->guessExtension() ?? 'jpg'));
+        if (! in_array($extension, ['jpg', 'jpeg', 'png', 'webp'], true)) {
+            $extension = 'jpg';
+        }
+
+        // ✅ PERBAIKAN: Bungkus proses gambar dalam try-catch.
+        // Jika GD/Imagick tidak tersedia di server, user dapat pesan error
+        // yang jelas, bukan 500 error.
+        $storedContent = null;
+        try {
+            $manager = new ImageManager(new Driver());
+            $img = $manager->read($file)->scaleDown(width: 800);
+            // Simpan sebagai webp HANYA jika hasilnya benar-benar WebP;
+            // jika tidak, gunakan format asli agar ekstensi & isi file cocok.
+            $encoded = (string) $img->toWebp(75);
+            if (str_starts_with($encoded, 'RIFF') && str_contains($encoded, 'WEBP')) {
+                $storedContent = $encoded;
+                $extension = 'webp';
+            } else {
+                $storedContent = (string) (in_array($extension, ['jpg', 'jpeg', 'webp'], true)
+                    ? $img->toJpeg(80)
+                    : $img->toPng());
             }
-
-            // Sekali saja: kebijakan baru -> referee tidak dapat bonus tambahan referral.
-            // (Yang diundang cukup welcome/first-order bonus + cashback transaksi biasa.)
-            if ((string) Setting::where('key', 'referral_reward_referee')->value('value') === '2000') {
-                Setting::where('key', 'referral_reward_referee')->update(['value' => '0']);
+        } catch (\Throwable $e) {
+            // Pipeline gambar gagal (GD tidak mendukung format, dsb.) —
+            // simpan file apa adanya daripada menolak upload.
+            try {
+                $storedContent = file_get_contents($file->getRealPath());
+            } catch (\Throwable $e2) {
+                return back()->withErrors([
+                    'proof' => 'Gagal memproses gambar. Silakan coba lagi atau hubungi admin.',
+                ]);
             }
         }
 
-        // ============================================================
-        // OBSERVER
-        // ============================================================
-        if (class_exists(\App\Observers\ProductVariantObserver::class)) {
-            \App\Models\ProductVariant::observe(\App\Observers\ProductVariantObserver::class);
-        }
+        $filename = 'payment-proofs/' . Str::random(40) . '.' . $extension;
 
-        // ============================================================
-        // VIEW COMPOSER: layouts.app
-        // ============================================================
-        View::composer('layouts.app', function (ViewContract $view): void {
-            // ===== Cart =====
-            $cartCount = 0;
-            $cartTotal = 0;
+        // Simpan file ke storage (setelah nama & konten final ditentukan)
+        Storage::disk('public')->put($filename, $storedContent);
 
-            if (auth()->check()) {
+        // ✅ PERBAIKAN: Buat record DB. Jika gagal, hapus file yang sudah
+        // diupload agar tidak ada file sampah (orphaned file) di server.
+        try {
+            $order->paymentProofs()->create([
+                'payment_method_id' => $request->input('payment_method_id'),
+                // ✅ BUG FIX: isi payment_stage sesuai skema order — dulu
+                // di-hardcode 'lunas' walau kolomnya varchar(10) dan order DP
+                // akan salah label. FP -> lunas, selain itu dp.
+                'payment_stage' => $order->payment_scheme === 'FP' ? 'lunas' : 'dp',
+                'amount_idr' => $order->pay_now_idr,
+                'proof_path' => $filename,
+                'status' => 'pending',
+                'uploaded_at' => now(),
+            ]);
+
+            $order->update(['status' => 'ditahan']);
+
+            // =========================================================
+            // FASE 2 — Verifikasi otomatis QRIS.
+            // Bila metode = qris & auto_verify aktif, coba baca payload QR
+            // dari gambar bukti dan cocokkan ID merchant dengan rekening/
+            // merchant id metode. Cocok -> langsung approved + status order
+            // 'pembayaran_diterima' (admin tidak perlu review manual).
+            // Gagal/tidak cocok -> biarkan 'ditahan' (review manual seperti
+            // biasa). Keputusan auto-verification dicatat ke payment_proofs
+            // lewat kolom status/reviewed_at agar audit trail tetap ada.
+            // =========================================================
+            $method = PaymentMethod::find($request->input('payment_method_id'));
+            if ($method !== null && $method->isAutoVerifiable()) {
                 try {
-                    $cartRows = DB::table('cart_items')
-                        ->join('product_variants', 'product_variants.id', '=', 'cart_items.product_variant_id')
-                        ->join('products', 'products.id', '=', 'product_variants.product_id')
-                        ->join('shipping_tiers', 'shipping_tiers.id', '=', 'products.shipping_tier_id')
-                        ->where('cart_items.user_id', auth()->id())
-                        ->select(
-                            'cart_items.quantity',
-                            'product_variants.price_yuan',
-                            'product_variants.weight_grams',
-                            'shipping_tiers.fee_yuan',
-                            'shipping_tiers.min_purchase_yuan'
-                        )
-                        ->get();
+                    $payload = QrisPayloadReader::read(
+                        Storage::disk('public')->path($filename)
+                    );
+                    $matched = QrisPayloadReader::matchesMerchant(
+                        $payload,
+                        $method->account_number ?: $method->account_name
+                    );
 
-                    $calculator = \App\Support\PriceCalculator::fromSettings();
-                    if ($calculator->isConfigured()) {
-                        foreach ($cartRows as $row) {
-                            $price = $calculator->sellingPrice(
-                                (float) $row->price_yuan,
-                                (int) $row->weight_grams,
-                                (float) $row->fee_yuan,
-                                (float) $row->min_purchase_yuan
-                            );
-                            if ($price !== null) {
-                                $cartCount += (int) $row->quantity;
-                                $cartTotal += $price * (int) $row->quantity;
+                    if ($matched) {
+                        DB::transaction(function () use ($order, $filename): void {
+                            $proofRow = DB::table('payment_proofs')
+                                ->where('order_id', $order->id)
+                                ->where('proof_path', $filename)
+                                ->lockForUpdate()
+                                ->first();
+
+                            if ($proofRow === null) {
+                                return;
                             }
+
+                            DB::table('payment_proofs')->where('id', $proofRow->id)->update([
+                                'status' => 'approved',
+                                'reviewed_at' => now(),
+                                'updated_at' => now(),
+                            ]);
+
+                            $fromStatus = $order->status;
+
+                            DB::table('orders')->where('id', $order->id)->update([
+                                'status' => 'pembayaran_diterima',
+                                'paid_at' => now(),
+                                'updated_at' => now(),
+                            ]);
+
+                            DB::table('order_status_history')->insert([
+                                'order_id' => $order->id,
+                                'from_status' => $fromStatus,
+                                'to_status' => 'pembayaran_diterima',
+                                'changed_by' => 'system',
+                                'admin_id' => null,
+                                'note' => 'Verifikasi otomatis QRIS (merchant ID cocok)',
+                                'created_at' => now(),
+                                // BUG FIX: tabel order_status_history tidak punya
+                                // kolom updated_at (lihat migration
+                                // 2024_01_01_000013) → insert ini melempar
+                                // "Unknown column 'updated_at'" dan seluruh
+                                // transaksi di-rollback (order nyangkut).
+                            ]);
+                        });
+
+                        try {
+                            NotificationService::payment(
+                                $order->user,
+                                $order->fresh(),
+                                'approved'
+                            );
+                        } catch (\Throwable $e) {
+                            Log::warning('Gagal kirim notifikasi auto-approve QRIS', [
+                                'order' => $order->order_number,
+                                'error' => $e->getMessage(),
+                            ]);
                         }
+
+                        ActivityLog::record($request->user(), 'auto_verify_payment', $request, [
+                            'order_number' => $order->order_number,
+                            'payment_method' => $method->label,
+                        ]);
+
+                        return redirect()
+                            ->route('account.orders.show', $orderNumber)
+                            ->with('status', 'Pembayaran kamu terverifikasi otomatis. Pesanan sedang diproses.');
                     }
                 } catch (\Throwable $e) {
-                    // ignore
+                    // Decoder gagal total — aman, jatuh ke review manual.
+                    Log::info('Auto-verify QRIS dilewati (decoder gagal/tidak cocok)', [
+                        'order' => $order->order_number,
+                        'error' => $e->getMessage(),
+                    ]);
                 }
             }
+        } catch (\Throwable $e) {
+            Storage::disk('public')->delete($filename);
 
-            // ===== Sale =====
-            $hasActiveSale = false;
-            try {
-                $hasActiveSale = Product::query()->published()->onSale()->exists();
-            } catch (\Throwable $e) {}
-
-            // ===== Nav: Games (query langsung, tanpa cache) =====
-            $navGames = collect();
-            try {
-                if (Schema::hasTable('games')) {
-                    $navGames = Game::query()
-                        ->orderBy('sort_order')
-                        ->orderBy('name')
-                        ->get(['id', 'name', 'slug', 'image_path']);
-                }
-            } catch (\Throwable $e) {}
-
-            // ===== Nav: Developers (query langsung, tanpa cache) =====
-            $navDevelopers = collect();
-            try {
-                if (Schema::hasTable('developers')) {
-                    $navDevelopers = Developer::query()
-                        ->orderBy('name')
-                        ->get(['id', 'name', 'slug']);
-                }
-            } catch (\Throwable $e) {}
-
-            // ===== Footer pages (query langsung, tanpa cache) =====
-            $footerPages = collect();
-            try {
-                if (Schema::hasTable('pages')) {
-                    $footerPages = \App\Models\Page::query()
-                        ->where('show_in_footer', true)
-                        ->where('is_published', true)
-                        ->orderBy('sort_order')
-                        ->get(['id', 'title', 'slug']);
-                }
-            } catch (\Throwable $e) {}
-
-            // ===== FIX 3: Footer "Produk Terpopuler" — REAL DATA, no dummy =====
-            // Kriteria A: produk paling banyak dilihat (activity_logs action
-            // view_product, product_id tersimpan di kolom JSON `metadata`).
-            // Kriteria B: produk terlaris (order_items x orders status selesai).
-            // Kalau keduanya ada -> random pilih salah satu; kalau hanya satu
-            // yang ada -> pakai yang itu; keduanya kosong -> collection kosong
-            // dan view tidak menampilkan apa-apa. Semua dibungkus try/catch
-            // supaya footer tidak pernah menjatuhkan halaman manapun (bug 500).
-            $footerProducts = collect();
-            try {
-                $mostViewed = collect();
-                if (Schema::hasTable('activity_logs')) {
-                    $mostViewed = \App\Models\ActivityLog::query()
-                        ->where('action', 'view_product')
-                        ->selectRaw("JSON_UNQUOTE(JSON_EXTRACT(metadata, '$.product_id')) as product_id, COUNT(*) as aggregate_count")
-                        ->groupBy('product_id')
-                        ->orderByDesc('aggregate_count')
-                        ->limit(6)
-                        ->pluck('product_id')
-                        ->filter()
-                        ->map(fn ($id) => (int) $id)
-                        ->values();
-                }
-
-                $bestSelling = collect();
-                if (Schema::hasTable('order_items') && Schema::hasTable('orders')) {
-                    $bestSelling = \App\Models\OrderItem::query()
-                        ->from('order_items')
-                        ->join('product_variants', 'product_variants.id', '=', 'order_items.product_variant_id')
-                        ->join('orders', 'orders.id', '=', 'order_items.order_id')
-                        ->whereIn('orders.status', ['selesai', 'sampai_wh_indonesia', 'bea_cukai', 'dikirim_ke_indonesia'])
-                        ->selectRaw('product_variants.product_id as product_id, SUM(order_items.quantity) as aggregate_count')
-                        ->groupBy('product_variants.product_id')
-                        ->orderByDesc('aggregate_count')
-                        ->limit(6)
-                        ->pluck('product_id')
-                        ->filter()
-                        ->map(fn ($id) => (int) $id)
-                        ->values();
-                }
-
-                $selectedIds = collect();
-                if ($mostViewed->isNotEmpty() && $bestSelling->isNotEmpty()) {
-                    $selectedIds = random_int(0, 1) ? $mostViewed : $bestSelling;
-                } elseif ($mostViewed->isNotEmpty()) {
-                    $selectedIds = $mostViewed;
-                } elseif ($bestSelling->isNotEmpty()) {
-                    $selectedIds = $bestSelling;
-                }
-
-                if ($selectedIds->isNotEmpty() && Schema::hasTable('products')) {
-                    $footerProducts = Product::query()
-                        ->whereIn('id', $selectedIds)
-                        ->where('is_published', true)
-                        ->with(['images', 'variants'])
-                        ->get();
-                }
-            } catch (\Throwable $e) {}
-
-            // ===== Badge tagihan menunggu di header (akun) =====
-            // Dihitung di composer + dishare secara global supaya TIDAK ada
-            // risiko "Undefined variable" dari compiled view basi maupun saat
-            // render halaman error publik. Pakai auth()->user()?->id + cast
-            // (int): di beberapa setup (session/cache guard) auth()->id() bisa
-            // mengembalikan string yang ditolak MySQL 8. Try/catch: halaman
-            // publik tidak boleh ikut mati bila tabel orders bermasalah —
-            // badge cukup diam (0), bukan crash.
-            $headerUnpaidCount = 0;
-            try {
-                $__headerUserId = (int) (auth()->user()?->id ?? 0);
-                if ($__headerUserId > 0) {
-                    $headerUnpaidCount = Order::where('user_id', $__headerUserId)
-                        ->whereIn('status', ['menunggu_pembayaran', 'pembayaran_gagal'])
-                        ->count();
-                }
-            } catch (\Throwable $e) {}
-
-            // ===== Badge notifikasi unread di header (lonceng) =====
-            // SAMA SEKALI jangan dihitung via blok PHP inline di blade: bila
-            // compiled view basi / ter-pull parsial, Blade tetap menghasilkan
-            // "Undefined variable" saat render (persis bug 500 sebelumnya).
-            // Dihitung di sini, dishare global + dikirim eksplisit lewat with().
-            $unreadNotifHeader = 0;
-            try {
-                if ($__headerUserId > 0) {
-                    $unreadNotifHeader = \App\Models\UserNotification::query()
-                        ->where('user_id', $__headerUserId)
-                        ->whereNull('read_at')
-                        ->count();
-                }
-            } catch (\Throwable $e) {}
-
-            // Safety net untuk render DI LUAR composer (mis. errors/500.blade.php
-            // extends layouts.app tapi dirender lewat Handler tanpa memicu
-            // composer). Tanpa blok ini, pemakaian variabel di blade bisa
-            // melempar "Undefined variable" dan mengubah error page menjadi
-            // 500 kedua. Hanya diisi kalau belum pernah di-share.
-            try {
-                $__shared = \Illuminate\Support\Facades\View::getShared();
-                foreach (['headerUnpaidCount' => $headerUnpaidCount, 'unreadNotifHeader' => $unreadNotifHeader, 'footerProducts' => $footerProducts] as $__k => $__v) {
-                    if (! array_key_exists($__k, $__shared)) {
-                        view()->share($__k, $__v);
-                    }
-                }
-            } catch (\Throwable $e) {}
-
-            $view->with([
-                'promoBarText' => Setting::get('promo_bar_text'),
-                'hasLogo' => file_exists(public_path('images/logo.png')),
-                'contactEmail' => Setting::get('contact_email'),
-                'contactWhatsapp' => Setting::get('contact_whatsapp'),
-                'contactHours' => Setting::get('contact_hours'),
-                'storeAddress' => Setting::get('store_address'),
-                // SOSIAL MEDIA DINAMIS: sumber tunggal = tabel social_media (kelola di Admin > Pengaturan > Umum).
-                // Variabel lama socialInstagram/socialTiktok/socialFacebook/socialX DIHAPUS — diganti $socialMedias.
-                'socialMedias' => \App\Models\SocialMedia::query()
-                    ->where('is_active', true)
-                    ->orderBy('sort_order')
-                    ->get(),
-                'metaTitle' => Setting::get('meta_title', 'MERCATORIA — Merchandise Game Original dari Tmall'),
-                'metaDescription' => Setting::get('meta_description', 'Group Order Manager untuk merchandise game original dari Tmall & Taobao. Kirim ke seluruh Indonesia.'),
-                'metaKeywords' => Setting::get('meta_keywords'),
-                'metaImage' => Setting::get('meta_image'),
-                'waWidgetEnabled' => Setting::get('wa_widget_enabled', '1') !== '0',
-                'waWidgetGreeting' => Setting::get('wa_widget_greeting', 'Halo, saya mau tanya tentang produk di MERCATORIA.'),
-                'hasActiveSale' => $hasActiveSale,
-                'cartCount' => $cartCount,
-                'cartTotal' => $cartTotal,
-                'headerUnpaidCount' => $headerUnpaidCount,
-                'unreadNotifHeader' => $unreadNotifHeader,
-                'navGames' => $navGames,
-                'navDevelopers' => $navDevelopers,
-                'footerPages' => $footerPages,
-                'footerProducts' => $footerProducts,
-                'footerShopeeUrl' => Setting::get('footer_shopee_url'),
-                'footerTocoUrl' => Setting::get('footer_toco_url', Setting::get('footer_tokopedia_url')),
-                'footerTokopediaUrl' => Setting::get('footer_tokopedia_url'),
-                'footerTiktokShopUrl' => Setting::get('footer_tiktok_shop_url'),
-                'footerCopyright' => Setting::get('footer_copyright'),
-                'footerPoweredBy' => Setting::get('footer_powered_by', 'Powered by MERCATORIA'),
+            return back()->withErrors([
+                'proof' => 'Gagal menyimpan bukti pembayaran. Silakan coba lagi.',
             ]);
-        });
+        }
 
-        // ============================================================
-        // VIEW COMPOSER: admin.layouts.app
-        // ============================================================
-        View::composer('admin.layouts.app', function (ViewContract $view): void {
-            if (! auth('admin')->check()) {
-                $view->with('adminBadges', []);
-                return;
-            }
+        ActivityLog::record($request->user(), 'upload_payment_proof', $request, [
+            'order_number' => $order->order_number,
+        ]);
 
-            $badges = [
-                'pendingProofs' => 0,
-                'pendingOrders' => 0,
-                'pendingResellers' => 0,
-                'unreadContact' => 0,
-            ];
+        return redirect()
+            ->route('account.orders.show', $orderNumber)
+            ->with('status', 'Bukti pembayaran berhasil diunggah. Menunggu verifikasi admin.');
+    }
 
-            try {
-                $badges['pendingProofs'] = PaymentProof::query()->where('status', 'pending')->count();
-            } catch (\Throwable $e) {}
+    public function invoice(Request $request, string $orderNumber): View
+    {
+        $order = Order::where('user_id', $request->user()->id)
+            ->where('order_number', $orderNumber)
+            ->firstOrFail();
 
-            try {
-                $badges['pendingOrders'] = Order::query()
-                    ->whereIn('status', ['menunggu_pembayaran', 'ditahan'])
-                    ->count();
-            } catch (\Throwable $e) {}
+        $order->load(['items.variant', 'user', 'marketplace', 'paymentProofs.method']);
 
-            try {
-                if (Schema::hasTable('reseller_applications')) {
-                    $badges['pendingResellers'] = DB::table('reseller_applications')
-                        ->where('status', 'pending')
-                        ->count();
-                }
-            } catch (\Throwable $e) {}
-
-            // BUG 5 STRICT MODE: badge "Pesan kontak" dihapus dari sidebar
-            // karena panel admin-nya sudah tidak ada (pesan tetap masuk DB+email).
-
-            $view->with('adminBadges', $badges);
-        });
+        return view('orders.print.invoice', [
+            'order' => $order,
+            'branding' => [
+                'store_name' => 'MERCATORIA',
+                'store_address' => Setting::get('store_address'),
+                'contact_email' => Setting::get('contact_email'),
+                'contact_whatsapp' => Setting::get('contact_whatsapp'),
+                'has_logo' => file_exists(public_path('images/logo.png')),
+                'logo_url' => asset('images/logo.png'),
+            ],
+            'generatedAt' => now(),
+        ]);
     }
 }
