@@ -1,315 +1,84 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Providers;
 
-use App\Models\ActivityLog;
-use App\Enums\OrderStatus;
-use App\Models\Order;
-use App\Models\PaymentMethod;
+use App\Models\CartItem;
+use App\Models\Game;
 use App\Models\Setting;
-use App\Services\NotificationService;
-use App\Support\QrisPayloadReader;
-use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Str;
-use Illuminate\Validation\Rule;
-use Illuminate\View\View;
-use Intervention\Image\Drivers\Gd\Driver;
-use Intervention\Image\ImageManager;
+use App\Models\SocialMedia;
+use App\Support\PriceCalculator;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\View;
+use Illuminate\Support\ServiceProvider;
 
-class OrderController extends Controller
+class AppServiceProvider extends ServiceProvider
 {
-    public function index(Request $request): View
+    /**
+     * Register any application services.
+     */
+    public function register(): void
     {
-        $orders = $request->user()->orders()->latest()->paginate(20);
-
-        // FASE 1: "Tagihan Menunggu" — order yang butuh aksi bayar/unggah bukti.
-        $unpaid = $orders->getCollection()
-            ->whereIn('status', [
-                OrderStatus::MenungguPembayaran->value,
-                OrderStatus::PembayaranGagal->value,
-            ])
-            ->sortByDesc('payment_deadline_at')
-            ->take(5)
-            ->values();
-
-        return view('orders.index', compact('orders', 'unpaid'));
+        //
     }
 
-    public function show(Request $request, string $orderNumber): View
+    /**
+     * Bootstrap any application services.
+     */
+    public function boot(): void
     {
-        $order = Order::where('user_id', $request->user()->id)
-            ->where('order_number', $orderNumber)
-            ->firstOrFail();
-
-        $order->load([
-            'items.variant.product',
-            'paymentProofs.method',
-            'marketplace',
-            'statusHistory.admin',
-        ]);
-
-        $paymentMethods = PaymentMethod::where('is_active', true)
-            ->orderBy('sort_order')
-            ->get();
-
-        // Data metode bayar untuk JS di halaman upload bukti. Disiapkan di
-        // controller (bukan di dalam @json(...) di Blade) karena direktif
-        // @json() memecah argumennya dengan explode(',') — array literal
-        // seperti ini bila ditulis langsung di dalam @json() akan terpotong
-        // dan menghasilkan PHP tidak valid → halaman detail pesanan 500.
-        $paymentMethodsJs = $paymentMethods
-            ->map(fn (PaymentMethod $pm): array => [
-                'id' => $pm->id,
-                'type' => $pm->type ?? 'bank',
-                'account_number' => $pm->account_number,
-                'account_name' => $pm->account_name,
-                'instructions' => $pm->instructions,
-                'qr_image' => ! empty($pm->qr_image) ? \Illuminate\Support\Facades\Storage::disk('public')->url($pm->qr_image) : null,
-            ])
-            ->values();
-
-        return view('orders.show', compact('order', 'paymentMethods', 'paymentMethodsJs'));
-    }
-
-    public function proof(Request $request, string $orderNumber): RedirectResponse
-    {
-        $order = Order::where('user_id', $request->user()->id)
-            ->where('order_number', $orderNumber)
-            ->firstOrFail();
-
-        abort_unless(
-            in_array($order->status, ['menunggu_pembayaran', 'pembayaran_gagal'], true),
-            422,
-            'Status pesanan tidak memungkinkan upload bukti.'
-        );
-
-        // ✅ BUG FIX: dulu tidak ada cek batas waktu. Order yang sudah lewat
-        // payment_deadline_at tetap bisa diunggah buktinya (kecuali keburu
-        // dibatalkan scheduler), padahal harga & kurs sudah disnapshot untuk
-        // jendela waktu tertentu. Sekarang ditolak lebih awal dengan pesan jelas.
-        if ($order->payment_deadline_at !== null && $order->payment_deadline_at->lessThan(now())) {
-            return back()->withErrors([
-                'proof' => 'Batas waktu pembayaran sudah lewat. Pesanan ini menunggu pembatalan otomatis — hubungi admin jika kamu sudah transfer.',
-            ]);
-        }
-
-        // ✅ BUG FIX: Cegah double-submit — jika masih ada bukti berstatus pending,
-        // user harus menunggu review admin sebelum upload lagi.
-        abort_unless(
-            ! $order->paymentProofs()->where('status', 'pending')->exists(),
-            422,
-            'Bukti pembayaran kamu masih dalam verifikasi admin.'
-        );
-
-        $request->validate([
-            // ✅ PERBAIKAN: Cek juga is_active agar user tidak bisa pilih
-            // metode pembayaran yang sudah dinonaktifkan admin
-            'payment_method_id' => [
-                'required',
-                Rule::exists('payment_methods', 'id')->where('is_active', true),
-            ],
-            'proof' => ['required', 'image', 'mimes:jpeg,png,jpg,webp', 'max:5120'],
-        ], [
-            'payment_method_id.exists' => 'Metode pembayaran tidak valid atau sudah dinonaktifkan.',
-        ]);
-
-        $file = $request->file('proof');
-
-        // ✅ BUG FIX: jangan paksakan ekstensi '.webp' untuk semua file.
-        // Validasi menerima jpeg/png/jpg/webp; sebelumnya file JPEG disimpan
-        // dengan nama xxx.webp sehingga admin melihat "bukti" berlabel webp
-        // yang isinya data JPEG (membingungkan browser saat preview/download).
-        // Format asli dipertahankan; konversi ke webp hanya bila aman dilakukan.
-        $extension = strtolower($file->getClientOriginalExtension() ?: ($file->guessExtension() ?? 'jpg'));
-        if (! in_array($extension, ['jpg', 'jpeg', 'png', 'webp'], true)) {
-            $extension = 'jpg';
-        }
-
-        // ✅ PERBAIKAN: Bungkus proses gambar dalam try-catch.
-        // Jika GD/Imagick tidak tersedia di server, user dapat pesan error
-        // yang jelas, bukan 500 error.
-        $storedContent = null;
-        try {
-            $manager = new ImageManager(new Driver());
-            $img = $manager->read($file)->scaleDown(width: 800);
-            // Simpan sebagai webp HANYA jika hasilnya benar-benar WebP;
-            // jika tidak, gunakan format asli agar ekstensi & isi file cocok.
-            $encoded = (string) $img->toWebp(75);
-            if (str_starts_with($encoded, 'RIFF') && str_contains($encoded, 'WEBP')) {
-                $storedContent = $encoded;
-                $extension = 'webp';
-            } else {
-                $storedContent = (string) (in_array($extension, ['jpg', 'jpeg', 'webp'], true)
-                    ? $img->toJpeg(80)
-                    : $img->toPng());
-            }
-        } catch (\Throwable $e) {
-            // Pipeline gambar gagal (GD tidak mendukung format, dsb.) —
-            // simpan file apa adanya daripada menolak upload.
+        // Data untuk layout publik (resources/views/layouts/app.blade.php).
+        // View composer ini pernah hilang karena file provider tertimpa kode
+        // OrderController, sehingga $socialMedias tidak pernah dikirim ke
+        // header/footer dan ikon sosial media tidak muncul sama sekali.
+        View::composer('layouts.app', function ($view): void {
+            // Query dibungkus try/catch: bila tabel belum ada (mis. sebelum
+            // migrasi dijalankan di server), halaman tetap tampil tanpa ikon.
             try {
-                $storedContent = file_get_contents($file->getRealPath());
-            } catch (\Throwable $e2) {
-                return back()->withErrors([
-                    'proof' => 'Gagal memproses gambar. Silakan coba lagi atau hubungi admin.',
+                $view->with([
+                    // Hanya sosmed aktif & punya URL yang dirender di layout.
+                    'socialMedias' => SocialMedia::query()
+                        ->where('is_active', true)
+                        ->whereNotNull('url')
+                        ->orderBy('sort_order')
+                        ->get(),
+
+                    'navGames' => Game::orderBy('sort_order')
+                        ->orderBy('name')
+                        ->limit(12)
+                        ->get(),
+
+                    'promoBarText' => Setting::get('promo_bar_text'),
+                ]);
+            } catch (\Throwable $e) {
+                $view->with([
+                    'socialMedias' => collect(),
+                    'navGames' => collect(),
+                    'promoBarText' => null,
                 ]);
             }
-        }
 
-        $filename = 'payment-proofs/' . Str::random(40) . '.' . $extension;
+            // Total harga keranjang untuk badge di header (hanya user login).
+            $cartTotal = 0;
 
-        // Simpan file ke storage (setelah nama & konten final ditentukan)
-        Storage::disk('public')->put($filename, $storedContent);
-
-        // ✅ PERBAIKAN: Buat record DB. Jika gagal, hapus file yang sudah
-        // diupload agar tidak ada file sampah (orphaned file) di server.
-        try {
-            $order->paymentProofs()->create([
-                'payment_method_id' => $request->input('payment_method_id'),
-                // ✅ BUG FIX: isi payment_stage sesuai skema order — dulu
-                // di-hardcode 'lunas' walau kolomnya varchar(10) dan order DP
-                // akan salah label. FP -> lunas, selain itu dp.
-                'payment_stage' => $order->payment_scheme === 'FP' ? 'lunas' : 'dp',
-                'amount_idr' => $order->pay_now_idr,
-                'proof_path' => $filename,
-                'status' => 'pending',
-                'uploaded_at' => now(),
-            ]);
-
-            $order->update(['status' => 'ditahan']);
-
-            // =========================================================
-            // FASE 2 — Verifikasi otomatis QRIS.
-            // Bila metode = qris & auto_verify aktif, coba baca payload QR
-            // dari gambar bukti dan cocokkan ID merchant dengan rekening/
-            // merchant id metode. Cocok -> langsung approved + status order
-            // 'pembayaran_diterima' (admin tidak perlu review manual).
-            // Gagal/tidak cocok -> biarkan 'ditahan' (review manual seperti
-            // biasa). Keputusan auto-verification dicatat ke payment_proofs
-            // lewat kolom status/reviewed_at agar audit trail tetap ada.
-            // =========================================================
-            $method = PaymentMethod::find($request->input('payment_method_id'));
-            if ($method !== null && $method->isAutoVerifiable()) {
+            if (Auth::check()) {
                 try {
-                    $payload = QrisPayloadReader::read(
-                        Storage::disk('public')->path($filename)
-                    );
-                    $matched = QrisPayloadReader::matchesMerchant(
-                        $payload,
-                        $method->account_number ?: $method->account_name
-                    );
+                    $items = CartItem::with('variant.product.shippingTier')
+                        ->where('user_id', Auth::id())
+                        ->get();
 
-                    if ($matched) {
-                        DB::transaction(function () use ($order, $filename): void {
-                            $proofRow = DB::table('payment_proofs')
-                                ->where('order_id', $order->id)
-                                ->where('proof_path', $filename)
-                                ->lockForUpdate()
-                                ->first();
+                    $calculator = PriceCalculator::fromSettings();
 
-                            if ($proofRow === null) {
-                                return;
-                            }
-
-                            DB::table('payment_proofs')->where('id', $proofRow->id)->update([
-                                'status' => 'approved',
-                                'reviewed_at' => now(),
-                                'updated_at' => now(),
-                            ]);
-
-                            $fromStatus = $order->status;
-
-                            DB::table('orders')->where('id', $order->id)->update([
-                                'status' => 'pembayaran_diterima',
-                                'paid_at' => now(),
-                                'updated_at' => now(),
-                            ]);
-
-                            DB::table('order_status_history')->insert([
-                                'order_id' => $order->id,
-                                'from_status' => $fromStatus,
-                                'to_status' => 'pembayaran_diterima',
-                                'changed_by' => 'system',
-                                'admin_id' => null,
-                                'note' => 'Verifikasi otomatis QRIS (merchant ID cocok)',
-                                'created_at' => now(),
-                                // BUG FIX: tabel order_status_history tidak punya
-                                // kolom updated_at (lihat migration
-                                // 2024_01_01_000013) → insert ini melempar
-                                // "Unknown column 'updated_at'" dan seluruh
-                                // transaksi di-rollback (order nyangkut).
-                            ]);
-                        });
-
-                        try {
-                            NotificationService::payment(
-                                $order->user,
-                                $order->fresh(),
-                                'approved'
-                            );
-                        } catch (\Throwable $e) {
-                            Log::warning('Gagal kirim notifikasi auto-approve QRIS', [
-                                'order' => $order->order_number,
-                                'error' => $e->getMessage(),
-                            ]);
+                    foreach ($items as $item) {
+                        if ($item->variant !== null && $item->variant->isAvailable()) {
+                            $cartTotal += ($item->variant->sellingPrice($calculator) ?? 0) * $item->quantity;
                         }
-
-                        ActivityLog::record($request->user(), 'auto_verify_payment', $request, [
-                            'order_number' => $order->order_number,
-                            'payment_method' => $method->label,
-                        ]);
-
-                        return redirect()
-                            ->route('account.orders.show', $orderNumber)
-                            ->with('status', 'Pembayaran kamu terverifikasi otomatis. Pesanan sedang diproses.');
                     }
                 } catch (\Throwable $e) {
-                    // Decoder gagal total — aman, jatuh ke review manual.
-                    Log::info('Auto-verify QRIS dilewati (decoder gagal/tidak cocok)', [
-                        'order' => $order->order_number,
-                        'error' => $e->getMessage(),
-                    ]);
+                    $cartTotal = 0;
                 }
             }
-        } catch (\Throwable $e) {
-            Storage::disk('public')->delete($filename);
 
-            return back()->withErrors([
-                'proof' => 'Gagal menyimpan bukti pembayaran. Silakan coba lagi.',
-            ]);
-        }
-
-        ActivityLog::record($request->user(), 'upload_payment_proof', $request, [
-            'order_number' => $order->order_number,
-        ]);
-
-        return redirect()
-            ->route('account.orders.show', $orderNumber)
-            ->with('status', 'Bukti pembayaran berhasil diunggah. Menunggu verifikasi admin.');
-    }
-
-    public function invoice(Request $request, string $orderNumber): View
-    {
-        $order = Order::where('user_id', $request->user()->id)
-            ->where('order_number', $orderNumber)
-            ->firstOrFail();
-
-        $order->load(['items.variant', 'user', 'marketplace', 'paymentProofs.method']);
-
-        return view('orders.print.invoice', [
-            'order' => $order,
-            'branding' => [
-                'store_name' => 'MERCATORIA',
-                'store_address' => Setting::get('store_address'),
-                'contact_email' => Setting::get('contact_email'),
-                'contact_whatsapp' => Setting::get('contact_whatsapp'),
-                'has_logo' => file_exists(public_path('images/logo.png')),
-                'logo_url' => asset('images/logo.png'),
-            ],
-            'generatedAt' => now(),
-        ]);
+            $view->with('cartTotal', $cartTotal);
+        });
     }
 }
