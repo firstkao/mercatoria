@@ -1,624 +1,101 @@
-From 1b5ecbb49a1f6c46859f22d696f5c43287d7eac5 Mon Sep 17 00:00:00 2001
-From: "qwen.ai[bot]" <qwenlm-intl@service.alibaba.com>
-Date: Mon, 5 Oct 2026 09:01:02 +0000
-Subject: [PATCH 1/2] Fix 500 errors by restoring missing layout variables and
- correcting marketplace settings validation - Expand AppServiceProvider view
- composer to supply all required public layout variables (navDevelopers,
- footerPages, cartCount, etc.) with safe fallbacks for undefined tables or
- missing data. - Update MarketplaceSettingsRequest to accept flexible boolean
- values for `is_active` checkbox instead of strict rule that caused data loss
- on uncheck. - Add hidden input field in marketplaces admin blade template to
- ensure unchecked status is explicitly sent as 0. - Patch social_media
- migration to correctly read legacy 'social_thread' key when seeding default
- Threads URL.
-
----
- .../Admin/MarketplaceSettingsRequest.php      |   7 +-
- plain/app/Providers/AppServiceProvider.php    | 172 +++++++++++++++---
- ...10_04_000000_create_social_media_table.php |  11 +-
- .../admin/settings/marketplaces.blade.php     |   4 +
- 4 files changed, 165 insertions(+), 29 deletions(-)
-
-diff --git a/plain/app/Http/Requests/Admin/MarketplaceSettingsRequest.php b/plain/app/Http/Requests/Admin/MarketplaceSettingsRequest.php
-index b734e25..2959479 100644
---- a/plain/app/Http/Requests/Admin/MarketplaceSettingsRequest.php
-+++ b/plain/app/Http/Requests/Admin/MarketplaceSettingsRequest.php
-@@ -16,7 +16,12 @@ class MarketplaceSettingsRequest extends FormRequest
-             'marketplaces' => ['required', 'array'],
-             'marketplaces.*.fp_fee_idr' => ['required', 'integer', 'min:0', 'max:10000000'],
-             'marketplaces.*.dp_fee_percent' => ['required', 'numeric', 'min:0', 'max:100'],
--            'marketplaces.*.is_active' => ['nullable', 'boolean'],
-+            // BUG FIX: jangan pakai rule 'boolean' untuk checkbox. Checkbox yang
-+            // tidak dicentang tidak terkirim, dan rule boolean membuat key-nya
-+            // lenyap dari validated() — persis masalah yang dulu mematikan semua
-+            // sosial media tiap form disimpan. Sama seperti socials.*.is_active
-+            // di GeneralSettingsRequest, terima nilai apa pun yang masuk akal.
-+            'marketplaces.*.is_active' => ['nullable', 'in:0,1,on,yes,true,false'],
-         ];
-     }
- 
-diff --git a/plain/app/Providers/AppServiceProvider.php b/plain/app/Providers/AppServiceProvider.php
-index 50734f4..0a70b00 100644
---- a/plain/app/Providers/AppServiceProvider.php
-+++ b/plain/app/Providers/AppServiceProvider.php
-@@ -3,7 +3,11 @@
- namespace App\Providers;
- 
- use App\Models\CartItem;
-+use App\Models\Developer;
- use App\Models\Game;
-+use App\Models\Order;
-+use App\Models\Page;
-+use App\Models\Product;
- use App\Models\Setting;
- use App\Models\SocialMedia;
- use App\Support\PriceCalculator;
-@@ -13,6 +17,8 @@ use Illuminate\Support\ServiceProvider;
- 
- class AppServiceProvider extends ServiceProvider
- {
-+    private const MARKETPLACE_ICON_KEYS = ['toco', 'tokopedia', 'shopee', 'tiktokshop'];
-+
-     /**
-      * Register any application services.
-      */
-@@ -30,55 +36,167 @@ class AppServiceProvider extends ServiceProvider
-         // View composer ini pernah hilang karena file provider tertimpa kode
-         // OrderController, sehingga $socialMedias tidak pernah dikirim ke
-         // header/footer dan ikon sosial media tidak muncul sama sekali.
-+        //
-+        // BUG FIX (500 "Undefined variable"): layout juga memakai $navDevelopers,
-+        // $footerPages, $footerProducts, $cartCount, $headerUnpaidCount,
-+        // $unreadNotifHeader, $hasLogo, meta SEO, tombol marketplace footer, dan
-+        // variabel WA widget — yang sebelumnya TIDAK PERNAH dikirim dari composer
-+        // ini. Pemanggilan ->isNotEmpty() pada variabel tak-terdefinisi melempar
-+        // Error dan menjatuhkan SEMUA halaman publik. Kini semua variabel layout
-+        // selalu tersedia, dengan fallback aman bila tabel belum ada.
-         View::composer('layouts.app', function ($view): void {
-+            $data = [
-+                'socialMedias' => collect(),
-+                'marketplaceButtons' => collect(),
-+                'navGames' => collect(),
-+                'navDevelopers' => collect(),
-+                'footerPages' => collect(),
-+                'footerProducts' => collect(),
-+                'calculator' => null,
-+                'promoBarText' => null,
-+                'footerCopyright' => null,
-+                'footerPoweredBy' => null,
-+                'footerTocoUrl' => null,
-+                'footerTokopediaUrl' => null,
-+                'footerShopeeUrl' => null,
-+                'footerTiktokShopUrl' => null,
-+                'metaTitle' => null,
-+                'metaDescription' => null,
-+                'metaKeywords' => null,
-+                'metaImage' => null,
-+                'ogType' => null,
-+                'hasLogo' => false,
-+                'waWidgetEnabled' => false,
-+                'waWidgetGreeting' => null,
-+                'contactWhatsapp' => null,
-+                'cartCount' => 0,
-+                'cartTotal' => 0,
-+                'headerUnpaidCount' => 0,
-+                'unreadNotifHeader' => 0,
-+            ];
-+
-+            // Satu-satunya kalkulator harga per request (dipakai footer produk).
-+            try {
-+                $data['calculator'] = PriceCalculator::fromSettings();
-+            } catch (\Throwable $e) {
-+                $data['calculator'] = null;
-+            }
-+
-             // Query dibungkus try/catch: bila tabel belum ada (mis. sebelum
--            // migrasi dijalankan di server), halaman tetap tampil tanpa ikon.
-+            // migrasi dijalankan di server), halaman tetap tampil tanpa data.
-             try {
--                $view->with([
--                    // Hanya sosmed aktif & punya URL yang dirender di layout.
--                    'socialMedias' => SocialMedia::query()
--                        ->where('is_active', true)
--                        ->whereNotNull('url')
--                        ->orderBy('sort_order')
--                        ->get(),
--
--                    'navGames' => Game::orderBy('sort_order')
--                        ->orderBy('name')
--                        ->limit(12)
--                        ->get(),
--
--                    'promoBarText' => Setting::get('promo_bar_text'),
--                ]);
-+                // Hanya sosmed aktif & punya URL yang dirender di layout.
-+                $socials = SocialMedia::query()
-+                    ->where('is_active', true)
-+                    ->whereNotNull('url')
-+                    ->orderBy('sort_order')
-+                    ->get();
-+
-+                // Tombol marketplace footer (TOCO/TOKOPEDIA/SHOPEE/TIKTOK SHOP):
-+                // diambil dari baris social_media dengan icon_key khusus, supaya
-+                // admin cukup kelola satu tempat. Key settings lama tetap jadi
-+                // fallback bila barisnya belum ada.
-+                $data['marketplaceButtons'] = $socials
-+                    ->filter(fn ($sm) => in_array($sm->icon_key, self::MARKETPLACE_ICON_KEYS, true))
-+                    ->keyBy('icon_key');
-+                $data['socialMedias'] = $socials->reject(
-+                    fn ($sm) => in_array($sm->icon_key, self::MARKETPLACE_ICON_KEYS, true)
-+                );
-+
-+                $data['navGames'] = Game::orderBy('sort_order')
-+                    ->orderBy('name')
-+                    ->limit(12)
-+                    ->get();
-+
-+                $data['navDevelopers'] = Developer::orderBy('name')
-+                    ->limit(12)
-+                    ->get();
-+
-+                // Halaman CMS yang dicentang "tampil di footer".
-+                $data['footerPages'] = Page::query()
-+                    ->where('is_published', true)
-+                    ->where('show_in_footer', true)
-+                    ->orderBy('sort_order')
-+                    ->get();
-+
-+                // Produk terpopuler untuk kolom footer.
-+                $data['footerProducts'] = Product::query()
-+                    ->bestSellers()
-+                    ->with(['images', 'variants', 'shippingTier'])
-+                    ->take(4)
-+                    ->get();
-             } catch (\Throwable $e) {
--                $view->with([
--                    'socialMedias' => collect(),
--                    'navGames' => collect(),
--                    'promoBarText' => null,
--                ]);
-+                // Pertahankan fallback kosong di $data.
-             }
- 
--            // Total harga keranjang untuk badge di header (hanya user login).
--            $cartTotal = 0;
-+            // Setting teks (tabel key-value; aman walau barisnya belum ada).
-+            try {
-+                $data['promoBarText'] = Setting::get('promo_bar_text');
-+                $data['footerCopyright'] = Setting::get('footer_copyright');
-+                $data['footerPoweredBy'] = Setting::get('footer_powered_by');
-+                $data['metaTitle'] = Setting::get('meta_title');
-+                $data['metaDescription'] = Setting::get('meta_description');
-+                $data['metaKeywords'] = Setting::get('meta_keywords');
-+                $data['metaImage'] = Setting::get('meta_image');
-+                $data['waWidgetGreeting'] = Setting::get('wa_widget_greeting');
-+                $data['contactWhatsapp'] = Setting::get('contact_whatsapp');
-+                $data['waWidgetEnabled'] = Setting::get('wa_widget_enabled', '0') === '1';
- 
-+                // URL marketplace footer: prioritas baris social_media, fallback
-+                // ke settings lama (footer_toco_url / footer_shopee_url).
-+                $data['footerTocoUrl'] = optional($data['marketplaceButtons']->get('toco'))->url
-+                    ?? Setting::get('footer_toco_url');
-+                $data['footerShopeeUrl'] = optional($data['marketplaceButtons']->get('shopee'))->url
-+                    ?? Setting::get('footer_shopee_url');
-+                $data['footerTokopediaUrl'] = optional($data['marketplaceButtons']->get('tokopedia'))->url;
-+                $data['footerTiktokShopUrl'] = optional($data['marketplaceButtons']->get('tiktokshop'))->url;
-+            } catch (\Throwable $e) {
-+                // Pertahankan fallback null di $data.
-+            }
-+
-+            $data['hasLogo'] = file_exists(public_path('images/logo.png'));
-+
-+            // Badge keranjang (jumlah item + total harga) & badge akun untuk
-+            // user login.
-             if (Auth::check()) {
-                 try {
-                     $items = CartItem::with('variant.product.shippingTier')
-                         ->where('user_id', Auth::id())
-                         ->get();
- 
--                    $calculator = PriceCalculator::fromSettings();
-+                    $cartCount = 0;
-+                    $cartTotal = 0;
- 
-                     foreach ($items as $item) {
-                         if ($item->variant !== null && $item->variant->isAvailable()) {
--                            $cartTotal += ($item->variant->sellingPrice($calculator) ?? 0) * $item->quantity;
-+                            $cartCount += $item->quantity;
-+                            $cartTotal += ($item->variant->sellingPrice($data['calculator'] ?? PriceCalculator::fromSettings()) ?? 0) * $item->quantity;
-                         }
-                     }
-+
-+                    $data['cartCount'] = $cartCount;
-+                    $data['cartTotal'] = $cartTotal;
-                 } catch (\Throwable $e) {
--                    $cartTotal = 0;
-+                    // cartCount/cartTotal tetap 0.
-+                }
-+
-+                try {
-+                    $data['headerUnpaidCount'] = Order::query()
-+                        ->where('user_id', Auth::id())
-+                        ->whereIn('status', ['menunggu_pembayaran', 'pembayaran_gagal'])
-+                        ->count();
-+                } catch (\Throwable $e) {
-+                    $data['headerUnpaidCount'] = 0;
-+                }
-+
-+                try {
-+                    $data['unreadNotifHeader'] = Auth::user()->unreadNotificationsCount();
-+                } catch (\Throwable $e) {
-+                    $data['unreadNotifHeader'] = 0;
-                 }
-             }
- 
--            $view->with('cartTotal', $cartTotal);
-+            $view->with($data);
-         });
-     }
- }
-diff --git a/plain/database/migrations/2026_10_04_000000_create_social_media_table.php b/plain/database/migrations/2026_10_04_000000_create_social_media_table.php
-index 80f33ce..3ff2496 100644
---- a/plain/database/migrations/2026_10_04_000000_create_social_media_table.php
-+++ b/plain/database/migrations/2026_10_04_000000_create_social_media_table.php
-@@ -45,7 +45,16 @@ return new class extends Migration
-             }
- 
-             if ($name === 'Threads') {
--                $url = 'https://www.threads.com/@mercatoria_id';
-+                // BUG FIX: kunci di database produksi adalah 'social_thread'
-+                // (bentuk tunggal), bukan 'social_threads'. Baca keduanya supaya
-+                // URL Threads dari settings lama ikut termigrasi, baru fallback
-+                // ke nilai bawaan.
-+                try {
-+                    $url = DB::table('settings')->whereIn('key', ['social_threads', 'social_thread'])->value('value')
-+                        ?? 'https://www.threads.com/@mercatoria_id';
-+                } catch (\Throwable $e) {
-+                    $url = 'https://www.threads.com/@mercatoria_id';
-+                }
-             }
- 
-             // Normalisasi nomor WA mentah (08xxx) jadi link wa.me penuh.
-diff --git a/plain/resources/views/admin/settings/marketplaces.blade.php b/plain/resources/views/admin/settings/marketplaces.blade.php
-index 58c3dcf..cc42b15 100644
---- a/plain/resources/views/admin/settings/marketplaces.blade.php
-+++ b/plain/resources/views/admin/settings/marketplaces.blade.php
-@@ -17,6 +17,10 @@
-                     <div class="panel__head">
-                         <h3>{{ $mp->name }}</h3>
-                         <label class="switch">
-+                            {{-- Hidden input 0 di depan checkbox: kalau tidak dicentang,
-+                                 key is_active tetap terkirim dengan nilai 0 sehingga
-+                                 status "nonaktif" benar-benar tersimpan. --}}
-+                            <input type="hidden" name="marketplaces[{{ $mp->id }}][is_active]" value="0">
-                             <input type="checkbox" name="marketplaces[{{ $mp->id }}][is_active]" value="1" @checked(old("marketplaces.{$mp->id}.is_active", $mp->is_active))>
-                             <span>Aktif</span>
-                         </label>
--- 
-2.39.5
-
-
-From 6097a52457dc5b4cb0142cdb984859c866898a32 Mon Sep 17 00:00:00 2001
-From: "qwen.ai[bot]" <qwenlm-intl@service.alibaba.com>
-Date: Mon, 5 Oct 2026 09:10:36 +0000
-Subject: [PATCH 2/2] Fix social media icons not rendering despite data present
-
-- Add App\Support\PublicSocialMedia: single source of truth for layout
-  social rows; tolerant is_active match (0/1/'0'/'1'), drops NULL AND
-  empty/whitespace URLs, normalizes icon_key (trim + lowercase).
-- AppServiceProvider composer now uses the helper; marketplace button
-  grouping keyed by normalized icon_key so 'TOKOPEDIA'/' Shopee ' rows
-  are recognized.
-- partials/social-icon.blade.php matches built-in SVGs against the
-  normalized key (was strict case-sensitive ===), and treats whitespace
-  icon_url as empty.
-- SettingsController normalizes url/icon_url/icon_key on save so future
-  edits can't reintroduce dirty values.
-- New migration normalizes legacy social_media rows (empty strings ->
-  NULL, mixed-case keys -> lowercase, is_active cast to 0/1).
-
-Run  then  and
- on the server.
----
- .../Controllers/Admin/SettingsController.php  | 10 ++-
- plain/app/Providers/AppServiceProvider.php    | 21 ++---
- plain/app/Support/PublicSocialMedia.php       | 86 +++++++++++++++++++
- ..._05_100000_normalize_social_media_rows.php | 65 ++++++++++++++
- .../views/partials/social-icon.blade.php      | 27 ++++--
- 5 files changed, 185 insertions(+), 24 deletions(-)
- create mode 100644 plain/app/Support/PublicSocialMedia.php
- create mode 100644 plain/database/migrations/2026_10_05_100000_normalize_social_media_rows.php
-
-diff --git a/plain/app/Http/Controllers/Admin/SettingsController.php b/plain/app/Http/Controllers/Admin/SettingsController.php
-index e4e6f43..f19ddc9 100644
---- a/plain/app/Http/Controllers/Admin/SettingsController.php
-+++ b/plain/app/Http/Controllers/Admin/SettingsController.php
-@@ -156,9 +156,13 @@ class SettingsController extends Controller
- 
-             $data = [
-                 'name' => $row['name'],
--                'url' => $row['url'] ?? null,
--                'icon_url' => $row['icon_url'] ?? null,
--                'icon_key' => $row['icon_key'] ?? null,
-+                // Trim URL: baris dengan url spasi/kosong dianggap tidak punya
-+                // URL dan otomatis disembunyikan layout (konsisten dgn filter).
-+                'url' => ($u = trim((string) ($row['url'] ?? ''))) === '' ? null : $u,
-+                'icon_url' => ($iu = trim((string) ($row['icon_url'] ?? ''))) === '' ? null : $iu,
-+                // Normalisasi icon_key (trim + lower) supaya pencocokan SVG
-+                // bawaan di partial social-icon tidak gagal karena kapitalisasi.
-+                'icon_key' => ($ik = strtolower(trim((string) ($row['icon_key'] ?? '')))) === '' ? null : $ik,
-                 'sort_order' => $row['sort_order'] ?? 0,
-                 'is_active' => ! empty($row['is_active']),
-             ];
-diff --git a/plain/app/Providers/AppServiceProvider.php b/plain/app/Providers/AppServiceProvider.php
-index 0a70b00..7e29b27 100644
---- a/plain/app/Providers/AppServiceProvider.php
-+++ b/plain/app/Providers/AppServiceProvider.php
-@@ -11,14 +11,13 @@ use App\Models\Product;
- use App\Models\Setting;
- use App\Models\SocialMedia;
- use App\Support\PriceCalculator;
-+use App\Support\PublicSocialMedia;
- use Illuminate\Support\Facades\Auth;
- use Illuminate\Support\Facades\View;
- use Illuminate\Support\ServiceProvider;
- 
- class AppServiceProvider extends ServiceProvider
- {
--    private const MARKETPLACE_ICON_KEYS = ['toco', 'tokopedia', 'shopee', 'tiktokshop'];
--
-     /**
-      * Register any application services.
-      */
-@@ -85,23 +84,21 @@ class AppServiceProvider extends ServiceProvider
-             // Query dibungkus try/catch: bila tabel belum ada (mis. sebelum
-             // migrasi dijalankan di server), halaman tetap tampil tanpa data.
-             try {
--                // Hanya sosmed aktif & punya URL yang dirender di layout.
--                $socials = SocialMedia::query()
--                    ->where('is_active', true)
--                    ->whereNotNull('url')
--                    ->orderBy('sort_order')
--                    ->get();
-+                // BUG FIX (ikon sosmed tidak muncul walau data ada): filter
-+                // terpusat di PublicSocialMedia — is_active longgar (0/1/'0'/'1'),
-+                // URL null DAN string kosong dibuang, icon_key dinormalisasi.
-+                $socials = PublicSocialMedia::all();
- 
-                 // Tombol marketplace footer (TOCO/TOKOPEDIA/SHOPEE/TIKTOK SHOP):
-                 // diambil dari baris social_media dengan icon_key khusus, supaya
-                 // admin cukup kelola satu tempat. Key settings lama tetap jadi
-                 // fallback bila barisnya belum ada.
-                 $data['marketplaceButtons'] = $socials
--                    ->filter(fn ($sm) => in_array($sm->icon_key, self::MARKETPLACE_ICON_KEYS, true))
--                    ->keyBy('icon_key');
-+                    ->filter([PublicSocialMedia::class, 'isMarketplace'])
-+                    ->mapWithKeys(fn ($sm) => [PublicSocialMedia::normalizedIconKey($sm) => $sm]);
-                 $data['socialMedias'] = $socials->reject(
--                    fn ($sm) => in_array($sm->icon_key, self::MARKETPLACE_ICON_KEYS, true)
--                );
-+                    [PublicSocialMedia::class, 'isMarketplace']
-+                )->values();
- 
-                 $data['navGames'] = Game::orderBy('sort_order')
-                     ->orderBy('name')
 diff --git a/plain/app/Support/PublicSocialMedia.php b/plain/app/Support/PublicSocialMedia.php
-new file mode 100644
-index 0000000..06a0bd7
---- /dev/null
+index 06a0bd7..4929f0d 100644
+--- a/plain/app/Support/PublicSocialMedia.php
 +++ b/plain/app/Support/PublicSocialMedia.php
-@@ -0,0 +1,86 @@
-+<?php
+@@ -36,13 +36,22 @@ class PublicSocialMedia
+         return SocialMedia::query()
+             // In(0,1,'0','1') lebih toleran daripada perbandingan boolean ketat.
+             ->whereIntegerInRaw('is_active', [1])
+-            // Buang NULL dan string kosong/spasi — inilah penyebab utama ikon
+-            // hilang padahal "secara data ada semua".
+             ->whereNotNull('url')
+             ->orderBy('sort_order')
+             ->orderBy('id')
+             ->get()
+-            ->filter(fn ($sm) => trim((string) $sm->url) !== '')
++            ->filter(function ($sm) {
++                // Penyebab utama ikon hilang padahal "data ada": baris dengan
++                // url string kosong/spasi, ATAU tanpa url sama sekali tetapi
++                // juga tidak punya icon_url/icon_key (tidak ada yang bisa
++                // dirender). Semuanya dibuang di sini supaya konsisten.
++                if (trim((string) $sm->url) !== '') {
++                    return true;
++                }
 +
-+namespace App\Support;
-+
-+use App\Models\SocialMedia;
-+
-+/**
-+ * Helper untuk mengambil baris social_media yang siap dirender di layout publik.
-+ *
-+ * BUG FIX (ikon sosmed tidak muncul walau data ada):
-+ * 1. Query lama memakai whereNotNull('url') yang TIDAK mengecualikan string
-+ *    kosong (''). Baris dengan url = '' lolos dari DB, lalu disembunyikan oleh
-+ *    cek `! empty($sm->url)` di blade -> ikon hilang tanpa sebab yang jelas.
-+ * 2. Kolom is_active bisa berisi angka 0/1 maupun string '0'/'1' (sempat ditulis
-+ *    mentah lewat form). where('is_active', true) membandingkan dengan boolean
-+ *    yang pada sebagian driver MySQL ter-cast berbeda -> baris aktif bisa tidak
-+ *    ikut terpilih.
-+ * 3. icon_key tersimpan dengan variasi penulisan ('Instagram', 'INSTAGRAM',
-+ *    dsb.) sehingga cocok-cocokan ketat case-sensitive gagal dan SVG bawaan
-+ *    tidak pernah dirender (ikon tampil sebagai lingkaran huruf / tidak sama
-+ *    sekali kalau URL juga kosong).
-+ *
-+ * Semua penanganan itu disatukan di sini supaya header, footer, dan composer
-+ * layout memakai logika yang sama persis.
-+ */
-+class PublicSocialMedia
-+{
-+    /** Kunci baris yang dipakai sebagai tombol marketplace footer, bukan ikon sosmed. */
-+    public const MARKETPLACE_ICON_KEYS = ['toco', 'tokopedia', 'shopee', 'tiktokshop'];
-+
-+    /**
-+     * @return \Illuminate\Support\Collection<int, SocialMedia>
-+     */
-+    public static function all(): \Illuminate\Support\Collection
-+    {
-+        return SocialMedia::query()
-+            // In(0,1,'0','1') lebih toleran daripada perbandingan boolean ketat.
-+            ->whereIntegerInRaw('is_active', [1])
-+            // Buang NULL dan string kosong/spasi — inilah penyebab utama ikon
-+            // hilang padahal "secara data ada semua".
-+            ->whereNotNull('url')
-+            ->orderBy('sort_order')
-+            ->orderBy('id')
-+            ->get()
-+            ->filter(fn ($sm) => trim((string) $sm->url) !== '')
-+            ->values();
-+    }
-+
-+    /**
-+     * Normalisasi icon_key (trim + lower) agar pencocokan SVG bawaan dan
-+     * pengelompokan tombol marketplace tidak gagal karena beda kapitalisasi.
-+     */
-+    public static function normalizedIconKey(SocialMedia $sm): ?string
-+    {
-+        $key = strtolower(trim((string) $sm->icon_key));
-+
-+        return $key === '' ? null : $key;
-+    }
-+
-+    public static function isMarketplace(SocialMedia $sm): bool
-+    {
-+        return in_array(self::normalizedIconKey($sm), self::MARKETPLACE_ICON_KEYS, true);
-+    }
-+
-+    /**
-+     * Hanya ikon sosial media (selain tombol marketplace).
-+     *
-+     * @return \Illuminate\Support\Collection<int, SocialMedia>
-+     */
-+    public static function icons(): \Illuminate\Support\Collection
-+    {
-+        return self::all()->reject([self::class, 'isMarketplace'])->values();
-+    }
-+
-+    /**
-+     * Baris marketplace keyed by icon_key ternormalisasi.
-+     *
-+     * @return \Illuminate\Support\Collection<string, SocialMedia>
-+     */
-+    public static function marketplaceButtons(): \Illuminate\Support\Collection
-+    {
-+        return self::all()
-+            ->filter([self::class, 'isMarketplace'])
-+            ->mapWithKeys(fn ($sm) => [self::normalizedIconKey($sm) => $sm]);
-+    }
-+}
++                return trim((string) $sm->icon_url) !== ''
++                    || self::normalizedIconKey($sm) !== null;
++            })
+             ->values();
+     }
+ 
 diff --git a/plain/database/migrations/2026_10_05_100000_normalize_social_media_rows.php b/plain/database/migrations/2026_10_05_100000_normalize_social_media_rows.php
-new file mode 100644
-index 0000000..9ec46ed
---- /dev/null
-+++ b/plain/database/migrations/2026_10_05_100000_normalize_social_media_rows.php
-@@ -0,0 +1,65 @@
-+<?php
-+
-+use Illuminate\Database\Migrations\Migration;
-+use Illuminate\Support\Facades\DB;
-+use Illuminate\Support\Facades\Schema;
-+
-+return new class extends Migration
-+{
-+    /**
-+     * BUG FIX (ikon sosmed tidak muncul walau data ada di tabel social_media):
-+     * normalisasi baris lama yang tersimpan sebelum perbaikan input di
-+     * SettingsController:
-+     * - url/icon_url berisi string kosong atau hanya spasi -> NULL, supaya
-+     *   filter layout (buang URL kosong) konsisten dan admin bisa melihat
-+     *   baris mana yang benar-benar belum diisi.
-+     * - icon_key dengan kapitalisasi/spasi liar ('Instagram', ' X ') -> lower
-+     *   & trim, supaya SVG bawaan di partials/social-icon.blade.php cocok.
-+     * - is_active string '0'/'1' -> 0/1 murni.
-+     */
-+    public function up(): void
-+    {
-+        if (! Schema::hasTable('social_media')) {
-+            return;
-+        }
-+
-+        // String kosong/spasi pada url & icon_url menjadi NULL.
-+        DB::table('social_media')
-+            ->whereNotNull('url')
-+            ->update(['url' => DB::raw("CASE WHEN TRIM(url) = '' THEN NULL ELSE TRIM(url) END")]);
-+
-+        DB::table('social_media')
-+            ->whereNotNull('icon_url')
-+            ->update(['icon_url' => DB::raw("CASE WHEN TRIM(icon_url) = '' THEN NULL ELSE TRIM(icon_url) END")]);
-+
-+        // Normalisasi icon_key per baris (trim + lower).
-+        $rows = DB::table('social_media')
-+            ->whereNotNull('icon_key')
-+            ->get(['id', 'icon_key']);
-+
-+        foreach ($rows as $row) {
-+            $clean = strtolower(trim((string) $row->icon_key));
-+            $update = [];
-+
-+            if ($clean === '') {
-+                $update['icon_key'] = null;
-+            } elseif ($clean !== $row->icon_key) {
-+                $update['icon_key'] = $clean;
-+            }
-+
-+            if ($update !== []) {
-+                DB::table('social_media')->where('id', $row->id)->update($update);
-+            }
-+        }
-+
-+        // is_active: pastikan 0/1 integer (bukan 'on'/'yes'/string lain).
-+        DB::table('social_media')->update([
-+            'is_active' => DB::raw('CAST(is_active AS UNSIGNED) > 0'),
-+        ]);
-+    }
-+
-+    public function down(): void
-+    {
-+        // Data cleanup non-destruktif — tidak perlu rollback.
-+    }
-+};
-diff --git a/plain/resources/views/partials/social-icon.blade.php b/plain/resources/views/partials/social-icon.blade.php
-index e22d7e3..ac89801 100644
---- a/plain/resources/views/partials/social-icon.blade.php
-+++ b/plain/resources/views/partials/social-icon.blade.php
-@@ -1,31 +1,40 @@
- {{-- Partial ikon sosial media.
-      Dipakai: layouts/app.blade.php (header & footer), dikelola via Pengaturan Umum.
--     Konsumsi variabel lokal via @include(['social' => $item]). --}}
--@if ($social->icon_url)
--    <img src="{{ $social->icon_url }}" alt="{{ $social->name }}" width="20" height="20" style="width:20px;height:20px;vertical-align:middle;">
--@elseif ($social->icon_key === 'instagram')
-+     Konsumsi variabel lokal via @include(['social' => $item]).
-+
-+     BUG FIX (ikon tidak muncul walau data ada): pencocokan icon_key sebelumnya
-+     case-sensitive dan strict ('Instagram' / ' INSTAGRAM ' di database tidak
-+     pernah cocok dengan SVG bawaan). Kini key dinormalisasi (trim + lower)
-+     lebih dulu, dan icon_url yang hanya berisi spasi ikut dianggap kosong. --}}
-+@php
-+    $iconKey = \App\Support\PublicSocialMedia::normalizedIconKey($social);
-+    $iconUrl = trim((string) ($social->icon_url ?? ''));
-+@endphp
-+@if ($iconUrl !== '')
-+    <img src="{{ $iconUrl }}" alt="{{ $social->name }}" width="20" height="20" style="width:20px;height:20px;vertical-align:middle;">
-+@elseif ($iconKey === 'instagram')
-     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-         <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
-         <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
-         <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
-     </svg>
--@elseif ($social->icon_key === 'facebook')
-+@elseif ($iconKey === 'facebook')
-     <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-         <path d="M22 12a10 10 0 1 0-11.56 9.88v-6.99H7.9V12h2.54V9.8c0-2.5 1.49-3.89 3.77-3.89 1.09 0 2.24.2 2.24.2v2.46h-1.26c-1.24 0-1.63.77-1.63 1.56V12h2.78l-.45 2.89h-2.33v6.99A10 10 0 0 0 22 12z"/>
-     </svg>
--@elseif ($social->icon_key === 'x')
-+@elseif ($iconKey === 'x')
-     <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-         <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
-     </svg>
--@elseif ($social->icon_key === 'threads')
-+@elseif ($iconKey === 'threads')
-     <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-         <path d="M17.913 18.668c-2.015.973-5.36.901-7.33-.148-1.195-.636-1.694-1.622-1.753-2.096-.023-.19.12-.295.283-.246.418.13 1.396.452 2.218.547 1.962.22 3.977-.118 5.63-.888 2.909-1.343 4.593-3.97 4.473-7.336-.117-3.297-2.891-5.936-6.833-5.975-4.48-.045-7.65 3.13-7.65 7.686 0 2.5.985 4.384 2.86 5.41 1.867 1.02 4.215.99 5.463-.307.555-.577.856-1.327.916-2.143.078-1.018-.357-1.774-1.12-2.132-.426-.2-1.036-.232-1.483-.07-.45.163-.784.51-.93.938l-.006.016c-.14-.613-.63-1.085-1.24-1.213-.754-.16-1.52.14-1.977.782-.55.773-.518 2.067.075 2.885.67.92 1.77 1.396 3.17 1.447.99.037 1.95-.12 2.75-.443l-.097.003c-.033.48-.2 1.14-.73 1.69-.97 1.01-2.79 1.33-4.66.85-2.35-.6-4.06-2.55-4.06-5.36 0-3.26 2.53-5.83 5.94-5.83 3.35 0 5.78 2.29 5.88 5.35.08 2.35-1.12 4.2-3.2 5.28Z"/>
-     </svg>
--@elseif ($social->icon_key === 'whatsapp')
-+@elseif ($iconKey === 'whatsapp')
-     <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-         <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/>
-     </svg>
--@elseif ($social->icon_key === 'tiktok')
-+@elseif ($iconKey === 'tiktok')
-     <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-         <path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.63.41-1.11 1.04-1.36 1.75-.21.51-.15 1.07-.14 1.61.24 1.64 1.82 3.02 3.5 2.87 1.12-.01 2.19-.66 2.77-1.61.19-.33.4-.67.41-1.06.1-1.79.06-3.57.07-5.36.01-4.03-.01-8.05.02-12.07z"/>
-     </svg>
--- 
-2.39.5
-
+deleted file mode 100644
+index 9ec46ed..0000000
+--- a/plain/database/migrations/2026_10_05_100000_normalize_social_media_rows.php
++++ /dev/null
+@@ -1,65 +0,0 @@
+-<?php
+-
+-use Illuminate\Database\Migrations\Migration;
+-use Illuminate\Support\Facades\DB;
+-use Illuminate\Support\Facades\Schema;
+-
+-return new class extends Migration
+-{
+-    /**
+-     * BUG FIX (ikon sosmed tidak muncul walau data ada di tabel social_media):
+-     * normalisasi baris lama yang tersimpan sebelum perbaikan input di
+-     * SettingsController:
+-     * - url/icon_url berisi string kosong atau hanya spasi -> NULL, supaya
+-     *   filter layout (buang URL kosong) konsisten dan admin bisa melihat
+-     *   baris mana yang benar-benar belum diisi.
+-     * - icon_key dengan kapitalisasi/spasi liar ('Instagram', ' X ') -> lower
+-     *   & trim, supaya SVG bawaan di partials/social-icon.blade.php cocok.
+-     * - is_active string '0'/'1' -> 0/1 murni.
+-     */
+-    public function up(): void
+-    {
+-        if (! Schema::hasTable('social_media')) {
+-            return;
+-        }
+-
+-        // String kosong/spasi pada url & icon_url menjadi NULL.
+-        DB::table('social_media')
+-            ->whereNotNull('url')
+-            ->update(['url' => DB::raw("CASE WHEN TRIM(url) = '' THEN NULL ELSE TRIM(url) END")]);
+-
+-        DB::table('social_media')
+-            ->whereNotNull('icon_url')
+-            ->update(['icon_url' => DB::raw("CASE WHEN TRIM(icon_url) = '' THEN NULL ELSE TRIM(icon_url) END")]);
+-
+-        // Normalisasi icon_key per baris (trim + lower).
+-        $rows = DB::table('social_media')
+-            ->whereNotNull('icon_key')
+-            ->get(['id', 'icon_key']);
+-
+-        foreach ($rows as $row) {
+-            $clean = strtolower(trim((string) $row->icon_key));
+-            $update = [];
+-
+-            if ($clean === '') {
+-                $update['icon_key'] = null;
+-            } elseif ($clean !== $row->icon_key) {
+-                $update['icon_key'] = $clean;
+-            }
+-
+-            if ($update !== []) {
+-                DB::table('social_media')->where('id', $row->id)->update($update);
+-            }
+-        }
+-
+-        // is_active: pastikan 0/1 integer (bukan 'on'/'yes'/string lain).
+-        DB::table('social_media')->update([
+-            'is_active' => DB::raw('CAST(is_active AS UNSIGNED) > 0'),
+-        ]);
+-    }
+-
+-    public function down(): void
+-    {
+-        // Data cleanup non-destruktif — tidak perlu rollback.
+-    }
+-};
