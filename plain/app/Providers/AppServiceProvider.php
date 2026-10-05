@@ -84,10 +84,30 @@ class AppServiceProvider extends ServiceProvider
             // Query dibungkus try/catch: bila tabel belum ada (mis. sebelum
             // migrasi dijalankan di server), halaman tetap tampil tanpa data.
             try {
-                // BUG FIX (ikon sosmed tidak muncul walau data ada): filter
-                // terpusat di PublicSocialMedia — is_active longgar (0/1/'0'/'1'),
-                // URL null DAN string kosong dibuang, icon_key dinormalisasi.
-                $socials = PublicSocialMedia::all();
+                // BUG FIX #3 (ikon sosmed TETAP tidak muncul walau data ada):
+                // PublicSocialMedia::all() memfilter `is_active` secara LONGGAR
+                // (menerima 0/1/'0'/'1'). Masalahnya, form admin menyimpan
+                // checkbox "Aktif" yang TIDAK dicentang sebagai key yang HILANG,
+                // dan SettingsController menulisnya via `! empty(...)` -> baris
+                // nonaktif tersimpan is_active = 0. Filter longgar itu membuat
+                // baris is_active = 0 ikut "lulus", lalu di blade header/footer
+                // ada guard lama `@if (! empty($sm->url))` yang membuang baris
+                // tanpa URL -> ikon hilang tanpa sebab yang terlihat.
+                //
+                // Perbaikan: pakai scopeActive() (where is_active = true, sama
+                // seperti yang dipakai halaman admin), dan buang guard !empty(url)
+                // di blade sehingga baris aktif dengan icon_key/icon_url selalu
+                // dirender (fallback lingkaran huruf untuk custom).
+                $socials = SocialMedia::active()->get();
+
+                // Normalisasi ringan: trim url/icon_url/icon_key (lower) agar
+                // pencocokan SVG bawaan tidak gagal karena kapitalisasi/spasi.
+                $socials = $socials->map(function (SocialMedia $sm): SocialMedia {
+                    $sm->url = ($u = trim((string) ($sm->url ?? ''))) === '' ? null : $u;
+                    $sm->icon_url = ($iu = trim((string) ($sm->icon_url ?? ''))) === '' ? null : $iu;
+                    $sm->icon_key = ($ik = strtolower(trim((string) ($sm->icon_key ?? '')))) === '' ? null : $ik;
+                    return $sm;
+                });
 
                 // Tombol marketplace footer (TOCO/TOKOPEDIA/SHOPEE/TIKTOK SHOP):
                 // diambil dari baris social_media dengan icon_key khusus, supaya

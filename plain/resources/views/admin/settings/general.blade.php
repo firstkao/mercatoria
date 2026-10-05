@@ -72,6 +72,12 @@
                     </label>
                     <label class="field" style="max-width:110px;">
                         <span>Aktif</span>
+                        {{-- BUG FIX: checkbox yang TIDAK dicentang tidak terkirim ke server,
+                             sehingga status lama tidak bisa dinonaktifkan. Hidden input "0"
+                             menjamin key selalu ada; browser memakai nilai checked saat
+                             checkbox dicentang (input radio-name trick tidak diperlukan karena
+                             PHP mengambil nilai terakhir untuk nama duplikat). --}}
+                        <input type="hidden" name="socials[{{ $i }}][is_active]" value="0">
                         <input type="checkbox" name="socials[{{ $i }}][is_active]" value="1" @checked(old("socials.$i.is_active", $sm->is_active))>
                     </label>
                     <label class="field" style="max-width:110px;">
@@ -95,7 +101,7 @@
                 </label>
                 <label class="field"><span>Icon URL (opsional)</span><input type="url" name="socials[__INDEX__][icon_url]" maxlength="500"></label>
                 <label class="field" style="max-width:90px;"><span>Urutan</span><input type="number" name="socials[__INDEX__][sort_order]" value="99" min="0" max="999"></label>
-                <label class="field" style="max-width:110px;"><span>Aktif</span><input type="checkbox" name="socials[__INDEX__][is_active]" value="1" checked></label>
+                <label class="field" style="max-width:110px;"><span>Aktif</span><input type="hidden" name="socials[__INDEX__][is_active]" value="0"><input type="checkbox" name="socials[__INDEX__][is_active]" value="1" checked></label>
                 <label class="field" style="max-width:110px;"><span>Hapus</span><input type="checkbox" name="socials[__INDEX__][delete]" value="1"></label>
             </div>
         </template>

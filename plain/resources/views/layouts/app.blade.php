@@ -126,12 +126,21 @@
                     </a>
                 @endif
 
-                {{-- SOSIAL MEDIA DINAMIS (tabel social_media, kelola di Admin > Pengaturan > Sosial Media) --}}
+                {{-- SOSIAL MEDIA DINAMIS (tabel social_media, kelola di Admin > Pengaturan Umum).
+                     BUG FIX: guard lama `@if (! empty($sm->url))` membuat baris aktif yang
+                     URL-nya kosong / belum terisi ikut tersembunyi. Sekarang ikon selalu
+                     dirender selama punya url ATAU icon_url ATAU icon_key bawaan; kalau
+                     tidak ada URL-nya, dirend sebagai span non-link agar tetap terlihat. --}}
                 @foreach (($socialMedias ?? collect()) as $sm)
-                    @if (! empty($sm->url))
-                        <a href="{{ $sm->url }}" target="_blank" rel="noopener" class="header-icon" aria-label="{{ $sm->name }}" title="{{ $sm->name }}">
+                    @php($smHref = trim((string) ($sm->url ?? '')))
+                    @if ($smHref !== '')
+                        <a href="{{ $smHref }}" target="_blank" rel="noopener" class="header-icon" aria-label="{{ $sm->name }}" title="{{ $sm->name }}">
                             @include('partials.social-icon', ['social' => $sm])
                         </a>
+                    @elseif (trim((string) ($sm->icon_url ?? '')) !== '' || ! empty($sm->icon_key))
+                        <span class="header-icon" aria-label="{{ $sm->name }}" title="{{ $sm->name }}">
+                            @include('partials.social-icon', ['social' => $sm])
+                        </span>
                     @endif
                 @endforeach
 
@@ -261,13 +270,19 @@
                     @endif
                 </a>
 
-                {{-- Social Media Icons — DINAMIS dari tabel social_media (Admin > Pengaturan > Sosial Media) --}}
+                {{-- Social Media Icons — DINAMIS dari tabel social_media (Admin > Pengaturan Umum).
+                     Guard !empty(url) lama dibuang: ikon aktif selalu dirender walau URL kosong. --}}
                 <div class="footer-social">
                     @foreach (($socialMedias ?? collect()) as $sm)
-                        @if (! empty($sm->url))
-                            <a href="{{ $sm->url }}" target="_blank" rel="noopener" aria-label="{{ $sm->name }}">
+                        @php($smHref = trim((string) ($sm->url ?? '')))
+                        @if ($smHref !== '')
+                            <a href="{{ $smHref }}" target="_blank" rel="noopener" aria-label="{{ $sm->name }}">
                                 @include('partials.social-icon', ['social' => $sm])
                             </a>
+                        @elseif (trim((string) ($sm->icon_url ?? '')) !== '' || ! empty($sm->icon_key))
+                            <span aria-label="{{ $sm->name }}">
+                                @include('partials.social-icon', ['social' => $sm])
+                            </span>
                         @endif
                     @endforeach
                 </div>

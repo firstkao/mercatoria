@@ -164,7 +164,10 @@ class SettingsController extends Controller
                 // bawaan di partial social-icon tidak gagal karena kapitalisasi.
                 'icon_key' => ($ik = strtolower(trim((string) ($row['icon_key'] ?? '')))) === '' ? null : $ik,
                 'sort_order' => $row['sort_order'] ?? 0,
-                'is_active' => ! empty($row['is_active']),
+                // BUG FIX: hidden input "0" kini selalu terkirim utk baris sosmed;
+                // !empty('0') === false akan salah menonaktifkan semua baris.
+                // filter_var memetakan '1'/'true'/'on' -> true, '0'/'' -> false.
+                'is_active' => filter_var($row['is_active'] ?? false, FILTER_VALIDATE_BOOLEAN),
             ];
 
             if (! empty($row['id'])) {
