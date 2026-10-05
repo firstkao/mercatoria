@@ -48,7 +48,7 @@
         @if(! $isNew && $method->qr_image)
             <div style="margin-top: 10px; padding: 10px; border: 1px solid #ddd; display: inline-block; border-radius: 8px;">
                 <p style="margin: 0 0 5px 0; font-size: 12px; color: #666;">Gambar saat ini:</p>
-                <img src="{{ asset('storage/' . $method->qr_image) }}" alt="QR/Barcode" style="max-width: 150px; border-radius: 4px;">
+                <img src="{{ \Illuminate\Support\Facades\Storage::disk('public')->url($method->qr_image) }}" alt="QR/Barcode" style="max-width: 150px; border-radius: 4px;">
             </div>
         @endif
     </label>
