@@ -29,6 +29,14 @@ class VoucherController extends Controller
     public function store(Request $request)
     {
         $data = $this->validateVoucher($request);
+
+        // ✅ BUG FIX: checkbox yang TIDAK dicentang tidak dikirim browser, jadi
+        // kunci 'is_active' tidak pernah ada di $data dan Voucher::create()
+        // memakai default DB (= aktif). Akibatnya admin TIDAK BISA
+        // menonaktifkan voucher: uncheck → simpan → voucher tetap aktif.
+        // Sekarang nilainya dipaksa eksplisit dari request.
+        $data['is_active'] = $request->boolean('is_active');
+
         $voucher = Voucher::create($data);
         AdminLog::record('create_voucher', $voucher, ['code' => $voucher->code]);
 
@@ -43,6 +51,12 @@ class VoucherController extends Controller
     public function update(Request $request, Voucher $voucher)
     {
         $data = $this->validateVoucher($request, $voucher->id);
+
+        // ✅ BUG FIX: sama seperti store() — tanpa ini, mengosongkan centang
+        // "aktif" tidak pernah tersimpan (field absent → tidak ikut di-update),
+        // jadi satu-satunya cara mematikan voucher adalah menghapusnya.
+        $data['is_active'] = $request->boolean('is_active');
+
         $voucher->update($data);
         AdminLog::record('update_voucher', $voucher, ['code' => $voucher->code]);
 

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Helpers\SecurityHelper;
 use App\Http\Requests\Auth\RegisterRequest;
 use App\Models\ActivityLog;
 use App\Models\CoinLot;
@@ -30,7 +31,13 @@ class RegisteredUserController extends Controller
         $refCode = strtoupper(trim((string) $request->query('ref')));
 
         if ($refCode !== '') {
-            $this->rewardReferralClick($refCode, $request->ip());
+            // ✅ BUG FIX: dulu pakai `$request->ip()`. Kalau situs berada di balik
+            // Cloudflare/proxy, nilai itu = IP CDN → SEMUA pengunjung dianggap
+            // satu IP yang sama, jadi hanya klik pertama yang pernah memberi koin
+            // (pengajak rugi). Sebaliknya kalau proxy di-trust semua, header
+            // X-Forwarded-For bisa dipalsukan untuk mencetak koin tanpa batas.
+            // Sekarang pakai helper yang sama dengan Gatekeeper (IP blacklist).
+            $this->rewardReferralClick($refCode, SecurityHelper::getRealIp($request));
         }
 
         return view('auth.register', [
@@ -70,17 +77,28 @@ class RegisteredUserController extends Controller
                 return;
             }
 
-            // Insert dulu sebagai "kunci" anti-race (unique index menolak duplikat).
-            ReferralClick::create([
-                'referrer_id' => $referrer->id,
-                'ip_address' => $ip,
-                'clicked_on' => now()->toDateString(),
-            ]);
-
             $amount = Setting::integer('referral_reward_click', 10);
 
-            if ($amount > 0) {
-                CoinLot::create([
+            // ✅ BUG FIX: insert klik + pembuatan koin jadi SATU transaksi.
+            // Dulu klik dicatat lebih dulu dan koin dibuat sesudahnya: kalau
+            // CoinLot::create() gagal (kursus/DB error, disk penuh, dsb.), baris
+            // klik tetap tersimpan → pengajak kehilangan koinnya SELAMANYA
+            // karena unique index menganggap IP itu sudah pernah dihitung.
+            // Dengan transaksi, kegagalan koin ikut membatalkan klik (bisa dicoba
+            // ulang), dan unique index tetap mencegah dobel saat request paralel.
+            $lot = DB::transaction(function () use ($referrer, $ip, $amount): ?CoinLot {
+                // Insert dulu sebagai "kunci" anti-race (unique index menolak duplikat).
+                ReferralClick::create([
+                    'referrer_id' => $referrer->id,
+                    'ip_address' => $ip,
+                    'clicked_on' => now()->toDateString(),
+                ]);
+
+                if ($amount <= 0) {
+                    return null;
+                }
+
+                return CoinLot::create([
                     'user_id' => $referrer->id,
                     'source' => 'referral_click',
                     'order_id' => null,
@@ -89,7 +107,9 @@ class RegisteredUserController extends Controller
                     'earned_at' => now(),
                     'expires_at' => now()->addMonths(Setting::integer('coin_expiry_months', 12)),
                 ]);
+            });
 
+            if ($lot !== null) {
                 try {
                     NotificationService::coinsEarned($referrer, $amount, 'referral_click');
                 } catch (\Throwable $e) {

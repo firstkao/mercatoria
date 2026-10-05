@@ -28,7 +28,17 @@ class CheckMaintenanceMode
 
         // Bypass IP dari setting (admin bisa test tanpa login)
         $bypassIps = array_filter(array_map('trim', explode(',', (string) Setting::get('maintenance_bypass_ips', ''))));
-        if (! empty($bypassIps) && in_array($request->ip(), $bypassIps, true)) {
+
+        // ✅ BUG FIX: dulu pakai `$request->ip()`. Di situs yang berada di balik
+        // Cloudflare / reverse proxy, nilai itu adalah IP Proxy-nya, bukan IP
+        // admin — hasilnya daftar bypass TIDAK PERNAH cocok: admin mengaktifkan
+        // maintenance lalu terkunci dari situsnya sendiri (dan sebaliknya, kalau
+        // proxy-nya trusted semua, header X-Forwarded-For bisa dipalsukan siapa
+        // saja untuk lolos dari halaman maintenance). Sekarang pakai helper yang
+        // sama dengan Gatekeeper: SecurityHelper::getRealIp().
+        $clientIp = \App\Helpers\SecurityHelper::getRealIp($request);
+
+        if (! empty($bypassIps) && in_array($clientIp, $bypassIps, true)) {
             return $next($request);
         }
 
