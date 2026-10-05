@@ -26,9 +26,10 @@ class BackupDatabase extends Command
         try {
             $driver = DB::connection()->getDriverName();
 
-            if ($driver === 'mysql') {
+            // Shared hosting (mis. Hostinger) sering menonaktifkan exec(): pakai dump via PHP.
+            if ($driver === 'mysql' && $this->canExec()) {
                 $this->backupMysql($path);
-            } elseif ($driver === 'pgsql') {
+            } elseif ($driver === 'pgsql' && $this->canExec()) {
                 $this->backupPostgres($path);
             } else {
                 $this->backupGeneric($path);
@@ -55,6 +56,16 @@ class BackupDatabase extends Command
             $this->error("✗ Backup gagal: " . $e->getMessage());
             return self::FAILURE;
         }
+    }
+
+    private function canExec(): bool
+    {
+        if (! function_exists('exec')) {
+            return false;
+        }
+        $disabled = array_map('trim', explode(',', (string) ini_get('disable_functions')));
+
+        return ! in_array('exec', $disabled, true);
     }
 
     private function backupMysql(string $path): void
@@ -193,29 +204,34 @@ class BackupDatabase extends Command
      */
     private function backupGeneric(string $path): void
     {
+        $pdo = DB::getPdo();
         $handle = fopen($path, 'w');
         fwrite($handle, "-- Backup generated at " . now()->toDateTimeString() . "\n\n");
+        // Tanpa ini hasil dump tidak bisa di-restore: urutan tabel vs foreign key.
+        fwrite($handle, "SET FOREIGN_KEY_CHECKS=0;\nSET NAMES utf8mb4;\n\n");
 
-        $tables = DB::select('SHOW TABLES');
-        $key = 'Tables_in_' . config('database.connections.mysql.database');
+        $key = 'Tables_in_' . DB::connection()->getDatabaseName();
 
-        foreach ($tables as $table) {
+        foreach (DB::select('SHOW FULL TABLES WHERE Table_type = "BASE TABLE"') as $table) {
             $tableName = $table->$key ?? null;
-            if (! $tableName) continue;
+            if (! $tableName) {
+                continue;
+            }
 
             fwrite($handle, "-- Table: {$tableName}\n");
             fwrite($handle, "DROP TABLE IF EXISTS `{$tableName}`;\n");
             $create = DB::select("SHOW CREATE TABLE `{$tableName}`");
             fwrite($handle, ($create[0]->{'Create Table'} ?? '') . ";\n\n");
 
-            $rows = DB::table($tableName)->get();
-            foreach ($rows as $row) {
-                $values = array_map(fn ($v) => $v === null ? 'NULL' : DB::getPdo()->quote((string) $v), (array) $row);
+            // cursor() agar tabel besar tidak dimuat sekaligus ke memori
+            foreach (DB::table($tableName)->cursor() as $row) {
+                $values = array_map(fn ($v) => $v === null ? 'NULL' : $pdo->quote((string) $v), (array) $row);
                 fwrite($handle, "INSERT INTO `{$tableName}` VALUES (" . implode(',', $values) . ");\n");
             }
             fwrite($handle, "\n");
         }
 
+        fwrite($handle, "SET FOREIGN_KEY_CHECKS=1;\n");
         fclose($handle);
     }
 
