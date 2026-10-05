@@ -5,7 +5,12 @@
      BUG FIX (ikon tidak muncul walau data ada): pencocokan icon_key sebelumnya
      case-sensitive dan strict ('Instagram' / ' INSTAGRAM ' di database tidak
      pernah cocok dengan SVG bawaan). Kini key dinormalisasi (trim + lower)
-     lebih dulu, dan icon_url yang hanya berisi spasi ikut dianggap kosong. --}}
+     lebih dulu, dan icon_url yang hanya berisi spasi ikut dianggap kosong.
+
+     BUG FIX (ikon Threads tampak gelap): Daripada mendeteksi gambar gelap via regex
+     yang rawan lolos, sekarang kita prioritaskan SVG bawaan (currentColor) untuk
+     platform yang sudah didukung. Gambar custom hanya dipakai untuk platform
+     yang tidak punya SVG bawaan. --}}
 @php
     $iconKey = \App\Support\PublicSocialMedia::normalizedIconKey($social);
 
@@ -24,19 +29,14 @@
 
     $iconUrl = trim((string) ($social->icon_url ?? ''));
 
-    // BUG FIX (ikon Threads tampak gelap): icon_url lama tersimpan sebagai PNG
-    // icons8 berwarna hitam. Deteksi lama hanya menangkap bentuk query
-    // (`?color=000000`), padahal icons8 menaruh kode warna di PATH
-    // (`.../ios-filled/50/000000/threads.png`), sehingga PNG hitam itu lolos
-    // dan ikon tampak gelap di footer. Sekarang kedua bentuk dikenali.
-    $decodedIconUrl = urldecode($iconUrl);
-    $isDarkCustomIcon = $iconUrl !== '' && preg_match(
-        '~(?:[?&]color=|[/#])(?:0{3}|0{6}|black)\b~i',
-        $decodedIconUrl
-    ) === 1;
-    $hasBuiltInSvg = in_array($iconKey, ['instagram','facebook','x','threads','whatsapp','tiktok'], true);
+    // Daftar platform yang punya SVG bawaan di file ini.
+    // Jika platform ada di sini, kita SELALU pakai SVG bawaan agar warnanya
+    // otomatis menyesuaikan tema (terang/gelap) via currentColor.
+    $hasBuiltInSvg = in_array($iconKey, ['instagram','facebook','x','threads','whatsapp'], true);
 @endphp
-@if ($iconUrl !== '' && ! ($isDarkCustomIcon && $hasBuiltInSvg))
+
+@if ($iconUrl !== '' && ! $hasBuiltInSvg)
+    {{-- Pakai gambar custom HANYA jika platform tidak punya SVG bawaan --}}
     <img src="{{ $iconUrl }}" alt="{{ $social->name }}" width="20" height="20" style="width:20px;height:20px;vertical-align:middle;">
 @elseif ($iconKey === 'instagram')
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
