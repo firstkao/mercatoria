@@ -41,7 +41,7 @@
                             <td class="muted">{{ $method->account_name ?: '—' }}</td>
                             <td>
                                 @if(! empty($method->qr_image))
-                                    <a href="{{ asset('storage/' . $method->qr_image) }}" target="_blank" class="link">Lihat</a>
+                                    <a href="{{ \Illuminate\Support\Facades\Storage::disk('public')->url($method->qr_image) }}" target="_blank" class="link">Lihat</a>
                                 @else
                                     <span class="muted">—</span>
                                 @endif
