@@ -45,7 +45,16 @@ return new class extends Migration
             }
 
             if ($name === 'Threads') {
-                $url = 'https://www.threads.com/@mercatoria_id';
+                // BUG FIX: kunci di database produksi adalah 'social_thread'
+                // (bentuk tunggal), bukan 'social_threads'. Baca keduanya supaya
+                // URL Threads dari settings lama ikut termigrasi, baru fallback
+                // ke nilai bawaan.
+                try {
+                    $url = DB::table('settings')->whereIn('key', ['social_threads', 'social_thread'])->value('value')
+                        ?? 'https://www.threads.com/@mercatoria_id';
+                } catch (\Throwable $e) {
+                    $url = 'https://www.threads.com/@mercatoria_id';
+                }
             }
 
             // Normalisasi nomor WA mentah (08xxx) jadi link wa.me penuh.

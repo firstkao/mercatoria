@@ -17,6 +17,10 @@
                     <div class="panel__head">
                         <h3>{{ $mp->name }}</h3>
                         <label class="switch">
+                            {{-- Hidden input 0 di depan checkbox: kalau tidak dicentang,
+                                 key is_active tetap terkirim dengan nilai 0 sehingga
+                                 status "nonaktif" benar-benar tersimpan. --}}
+                            <input type="hidden" name="marketplaces[{{ $mp->id }}][is_active]" value="0">
                             <input type="checkbox" name="marketplaces[{{ $mp->id }}][is_active]" value="1" @checked(old("marketplaces.{$mp->id}.is_active", $mp->is_active))>
                             <span>Aktif</span>
                         </label>
