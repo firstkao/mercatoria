@@ -14,7 +14,7 @@ class SocialMedia extends Model
     ];
 
     /** Kunci ikon bawaan yang punya SVG inline di layouts/icon-social.blade.php. */
-    public const BUILT_IN_ICONS = ['instagram', 'facebook', 'x', 'threads', 'whatsapp', 'tiktok'];
+    public const BUILT_IN_ICONS = ['instagram', 'facebook', 'x', 'threads', 'whatsapp'];
 
     public function scopeActive($query)
     {
