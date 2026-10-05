@@ -31,7 +31,7 @@
     // dan ikon tampak gelap di footer. Sekarang kedua bentuk dikenali.
     $decodedIconUrl = urldecode($iconUrl);
     $isDarkCustomIcon = $iconUrl !== '' && preg_match(
-        '/(?:[?&]color=|[/#])(?:0{3}|0{6}|black)\b/i',
+        '~(?:[?&]color=|[/#])(?:0{3}|0{6}|black)\b~i',
         $decodedIconUrl
     ) === 1;
     $hasBuiltInSvg = in_array($iconKey, ['instagram','facebook','x','threads','whatsapp','tiktok'], true);
