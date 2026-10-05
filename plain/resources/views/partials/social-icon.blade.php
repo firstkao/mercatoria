@@ -9,8 +9,18 @@
 @php
     $iconKey = \App\Support\PublicSocialMedia::normalizedIconKey($social);
     $iconUrl = trim((string) ($social->icon_url ?? ''));
+    // BUG FIX (ikon Threads tampak gelap): icon_url lama tersimpan sebagai
+    // PNG icons8 dengan color=000000 (hitam pekat). Di footer berlatar gelap,
+    // gambar hitam itu nyaris tak terlihat sementara sosmed lain memakai SVG
+    // putih (currentColor). Solusi: bila URL custom berwarna gelap DAN ada SVG
+    // bawaan untuk icon_key-nya, pakai SVG bawaan agar seragam.
+    $isDarkCustomIcon = $iconUrl !== '' && preg_match(
+        '/color=0{3,8}|color=black|&?color=%5B%22000/i',
+        urldecode($iconUrl)
+    );
+    $hasBuiltInSvg = in_array($iconKey, ['instagram','facebook','x','threads','whatsapp','tiktok'], true);
 @endphp
-@if ($iconUrl !== '')
+@if ($iconUrl !== '' && ! ($isDarkCustomIcon && $hasBuiltInSvg))
     <img src="{{ $iconUrl }}" alt="{{ $social->name }}" width="20" height="20" style="width:20px;height:20px;vertical-align:middle;">
 @elseif ($iconKey === 'instagram')
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
