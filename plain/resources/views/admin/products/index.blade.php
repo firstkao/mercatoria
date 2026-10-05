@@ -61,11 +61,28 @@
             });
         @endphp
 
+        {{-- Bulk actions: bungkus tabel desktop dalam form yang dikenali admin-bulk.js --}}
+        <form method="POST" action="{{ route('admin.products.bulk') }}" data-bulk-form>
+            @csrf
+            <input type="hidden" name="action" value="" data-bulk-action-input>
+
+            <div data-bulk-toolbar style="display:flex; flex-wrap:wrap; gap:8px; align-items:center; justify-content:space-between; padding:10px 0;">
+                <span class="muted"><strong data-bulk-count>0</strong> produk dipilih</span>
+                <span style="display:flex; flex-wrap:wrap; gap:8px;">
+                    <button type="button" class="btn" data-bulk-action="publish">Tayangkan</button>
+                    <button type="button" class="btn" data-bulk-action="unpublish">Jadikan Draf</button>
+                    <button type="button" class="btn" data-bulk-action="feature">Jadikan Unggulan</button>
+                    <button type="button" class="btn" data-bulk-action="unfeature">Hapus Unggulan</button>
+                    <button type="button" class="btn" data-bulk-action="delete" data-bulk-confirm="Hapus {count} produk terpilih?" style="color:#d9534f;">Hapus</button>
+                </span>
+            </div>
+
         {{-- Desktop: table --}}
         <div class="panel panel--flush only-desktop">
             <table class="table">
                 <thead>
                     <tr>
+                        <th style="width:36px;"><input type="checkbox" data-bulk-toggle-all aria-label="Pilih semua"></th>
                         <th colspan="2">Produk</th>
                         <th>SKU</th>
                         <th>Game</th>
@@ -80,6 +97,7 @@
                 <tbody>
                     @foreach ($rows as $row)
                         <tr>
+                            <td><input type="checkbox" name="ids[]" value="{{ $row['product']->id }}" data-bulk-item></td>
                             <td class="table__thumb">
                                 @if ($row['product']->images->isNotEmpty())
                                     <img src="{{ $row['product']->images->first()->url() }}" alt="">
@@ -98,7 +116,7 @@
                                     <span class="muted">—</span>
                                 @endif
                             </td>
-                            <td class="muted">{{ $row['product']->shippingTier->code }}</td>
+                            <td class="muted">{{ $row['product']->shippingTier?->code ?? '—' }}</td>
                             <td class="nowrap">{{ $row['price'] }}</td>
                             <td class="muted nowrap">{{ $row['available'] }}/{{ $row['product']->variants->count() }}</td>
                             <td>
@@ -109,6 +127,7 @@
                 </tbody>
             </table>
         </div>
+        </form>
 
         {{-- Mobile: cards --}}
         <ul class="cards only-mobile">

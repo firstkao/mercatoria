@@ -11,7 +11,7 @@
 <body class="login-page">
     <main class="login">
         <p class="login__brand">MERCATORIA <span>Admin</span></p>
-        <form method="POST" action="{{ route('admin.login') }}" class="panel stack" novalidate>
+        <form method="POST" action="{{ route('admin.login.store') }}" class="panel stack" novalidate>
             @csrf
             <h1>Masuk</h1>
 

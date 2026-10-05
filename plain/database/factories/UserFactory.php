@@ -25,7 +25,10 @@ class UserFactory extends Factory
     public function definition(): array
     {
         return [
-            'name' => fake()->name(),
+            // Kolom yang dipakai aplikasi adalah `full_name` (bukan `name`
+            // warisan migrasi Laravel). Memakai `name` membuat baris seed gagal
+            // karena kolom itu tidak ada di $fillable User dan `full_name` NULL.
+            'full_name' => fake()->name(),
             'email' => fake()->unique()->safeEmail(),
             'email_verified_at' => now(),
             'password' => static::$password ??= Hash::make('password'),

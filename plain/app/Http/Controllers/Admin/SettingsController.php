@@ -29,6 +29,17 @@ class SettingsController extends Controller
         'contact_whatsapp',
         'contact_hours',
         'store_address',
+        'wa_widget_enabled',
+        'wa_widget_greeting',
+        'cart_reminder_1_hours',
+        'cart_reminder_2_hours',
+        'best_seller_period_days',
+        'best_seller_limit',
+        'best_seller_min_sales',
+        'email_verification_enabled',
+        'maintenance_enabled',
+        'maintenance_message',
+        'maintenance_bypass_ips',
     ];
     
     private const SEO_KEYS = [
@@ -99,10 +110,15 @@ class SettingsController extends Controller
     public function updateMarketplaces(MarketplaceSettingsRequest $request): RedirectResponse
     {
         foreach ($request->validated('marketplaces') as $id => $row) {
+            // Normalisasi is_active dengan FILTER_VALIDATE_BOOLEAN: string
+            // "false" sebelumnya dianggap truthy oleh !empty() sehingga
+            // marketplace yang seharusnya nonaktif malah jadi aktif.
+            $isActive = filter_var($row['is_active'] ?? false, FILTER_VALIDATE_BOOLEAN);
+
             Marketplace::whereKey($id)->update([
                 'fp_fee_idr' => $row['fp_fee_idr'],
                 'dp_fee_percent' => $row['dp_fee_percent'],
-                'is_active' => ! empty($row['is_active']),
+                'is_active' => $isActive,
             ]);
         }
 

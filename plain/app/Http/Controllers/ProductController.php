@@ -34,9 +34,9 @@ class ProductController extends Controller
 
         $user = $request->user();
 
-        // Guard guest: halaman produk kini GLOBAL (guest boleh lihat), jadi
-        // cek spammer/kuota hanya kalau ada user login. Dulu tanpa guard ini,
-        // tamu yang buka /produk/... langsung kena 500 "isSpammer() on null".
+        // Setelah blok PAKSA LOGIN di atas, $user selalu terisi. Guard null di
+        // bawah dipertahankan secara defensif (mis. bila method dipanggil dari
+        // konteks tanpa session).
         //
         // STRICT MODE (permintaan user): spammer kuota habis TIDAK BOLEH
         // mengakses detail produk sama sekali (hanya Home & Akun). Redirect

@@ -8,4 +8,10 @@ use Illuminate\Database\Eloquent\Model;
 #[Fillable(['coin_lot_id', 'order_id', 'amount', 'status'])]
 class CoinSpend extends Model
 {
+    protected function casts(): array
+    {
+        return [
+            'amount' => 'integer',
+        ];
+    }
 }

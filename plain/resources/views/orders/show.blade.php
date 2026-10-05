@@ -160,8 +160,7 @@
 
                 @if($order->payment_scheme === 'DP')
                     <div><dt>DP Dibayar Sekarang</dt><dd style="font-size: 1.25rem; font-weight: bold; color: var(--accent-strong);">{{ \App\Support\PriceCalculator::formatRupiah($order->pay_now_idr) }}</dd></div>
-                    <div style="margin-top: 15px;"><dt>Sisa Pelunasan (Di {{ $order->marketplace->name ?? 'marketplace' }})</dt><dd>{{ \App\Support\PriceCalculator::formatRupiah($order->remaining_idr) }}</dd></div>
-                    <div><dt>Biaya Admin {{ $order->marketplace->name ?? '' }}</dt><dd>{{ \App\Support\PriceCalculator::formatRupiah($order->marketplace_fee_idr) }}</dd></div>
+                    <div style="margin-top: 15px;"><dt>Sisa Pelunasan (Termasuk Biaya Admin) (Di {{ $order->marketplace->name ?? 'marketplace' }})</dt><dd>{{ \App\Support\PriceCalculator::formatRupiah($order->remaining_idr) }}</dd></div>
                 @else
                     <div><dt>Dibayar Sekarang (Termasuk Admin {{ $order->marketplace->name ?? '' }})</dt><dd style="font-size: 1.25rem; font-weight: bold; color: var(--accent-strong);">{{ \App\Support\PriceCalculator::formatRupiah($order->pay_now_idr) }}</dd></div>
                 @endif

@@ -53,7 +53,7 @@ class ProductRequest extends FormRequest
             'variants.*.name' => ['required', 'string', 'max:255'],
             'variants.*.sku' => ['nullable', 'string', 'max:255'],
             'variants.*.price_yuan' => ['required', 'numeric', 'min:0.01', 'max:9999999'],
-            'variants.*.compare_price_yuan' => ['nullable', 'numeric', 'gt:variants.*.price_yuan', 'max:9999999'],
+            'variants.*.compare_price_yuan' => ['nullable', 'numeric', 'max:9999999'],
             'variants.*.weight_grams' => ['required', 'integer', 'min:1', 'max:1000000'],
             'variants.*.status' => ['required', Rule::in([ProductVariant::STATUS_AVAILABLE, ProductVariant::STATUS_OUT_OF_STOCK])],
             'variants.*.image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:4096'],
@@ -77,6 +77,30 @@ class ProductRequest extends FormRequest
                     $validator->errors()->add('slug', $conflict);
                 }
             },
+            // Validasi per-item: harga coret wajib > harga yuan. Rule wildcard
+            // `gt:variants.*.price_yuan` tidak di-resolve per-item oleh Laravel,
+            // jadi perbandingannya dilakukan manual di sini.
+            function (Validator $validator): void {
+                foreach ((array) $this->input('variants', []) as $index => $variant) {
+                    $price = $variant['price_yuan'] ?? null;
+                    $compare = $variant['compare_price_yuan'] ?? null;
+
+                    if ($price === null || $compare === null || $compare === '') {
+                        continue;
+                    }
+
+                    if (! is_numeric($price) || ! is_numeric($compare)) {
+                        continue;
+                    }
+
+                    if ((float) $compare <= (float) $price) {
+                        $validator->errors()->add(
+                            "variants.{$index}.compare_price_yuan",
+                            'Harga coret harus lebih besar dari harga yuan.'
+                        );
+                    }
+                }
+            },
         ];
     }
 
@@ -87,7 +111,6 @@ class ProductRequest extends FormRequest
     {
         return [
             'variants.required' => 'Tambahkan minimal satu varian.',
-            'variants.*.compare_price_yuan.gt' => 'Harga coret harus lebih besar dari harga yuan.',
             'sale_ends_at.after' => 'Tanggal akhir sale harus setelah tanggal mulai.',
             'images.*.max' => 'Ukuran foto maksimal 4 MB.',
             'variants.*.image.max' => 'Ukuran foto maksimal 4 MB.',

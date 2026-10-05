@@ -19,7 +19,23 @@ class LegalContent
 
     public static function html(string $page): string
     {
-        $markdown = file_get_contents(resource_path("content/{$page}.md"));
+        // Hanya halaman terdaftar; cegah path traversal / file tak dikenal.
+        if (! array_key_exists($page, self::PAGES)) {
+            return '';
+        }
+
+        $path = resource_path("content/{$page}.md");
+
+        // File konten bisa hilang (mis. belum dibuat) — jangan biarkan
+        // file_get_contents(false) lalu Str::markdown(false) melempar TypeError.
+        if (! is_file($path)) {
+            return '';
+        }
+
+        $markdown = file_get_contents($path);
+        if ($markdown === false) {
+            return '';
+        }
 
         return Str::markdown($markdown, [
             'html_input' => 'strip',

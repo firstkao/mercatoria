@@ -43,14 +43,20 @@ final class PriceCalculator
 
     /**
      * Get the in-China shipping share for one item, in yuan.
+     *
+     * Monotonically non-decreasing in price: a proportional share of the fee,
+     * capped at the full fee. Sebelumnya ada "tebing" free-shipping di
+     * price >= minimum sehingga total (harga + ongkir) bisa turun saat harga
+     * naik (item tepat di bawah ambang totalnya lebih mahal dari item tepat di
+     * atas ambang).
      */
     public function chinaShippingYuan(float $priceYuan, float $tierFeeYuan, float $tierMinimumYuan): float
     {
-        if ($tierFeeYuan <= 0 || $tierMinimumYuan <= 0 || $priceYuan >= $tierMinimumYuan) {
+        if ($tierFeeYuan <= 0 || $tierMinimumYuan <= 0) {
             return 0.0;
         }
 
-        return $priceYuan * $tierFeeYuan / $tierMinimumYuan;
+        return min($priceYuan * $tierFeeYuan / $tierMinimumYuan, $tierFeeYuan);
     }
 
     /**

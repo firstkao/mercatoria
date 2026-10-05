@@ -136,8 +136,8 @@
 
             let payNow = 0, remaining = 0, mpFee = 0;
             if (scheme === 'FP') {
-                payNow = netTotal;
                 mpFee = parseInt(mp.fp_fee_idr || 0);
+                payNow = netTotal + mpFee;
             } else {
                 payNow = Math.floor(netTotal / 2);
                 remaining = netTotal - payNow;

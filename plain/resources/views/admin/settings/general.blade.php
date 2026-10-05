@@ -116,6 +116,73 @@
             });
         </script>
 
+        <h3 style="margin-top:20px;">Widget WhatsApp</h3>
+        <div class="field-row">
+            <label class="field">
+                <span>Aktifkan tombol WhatsApp</span>
+                <input type="hidden" name="wa_widget_enabled" value="0">
+                <input type="checkbox" name="wa_widget_enabled" value="1" @checked(($settings['wa_widget_enabled'] ?? '0') === '1')>
+            </label>
+            <label class="field">
+                <span>Sapaan WhatsApp</span>
+                <input type="text" name="wa_widget_greeting" value="{{ $settings['wa_widget_greeting'] ?? '' }}" maxlength="500" placeholder="Halo! Ada yang bisa kami bantu?">
+            </label>
+        </div>
+
+        <h3 style="margin-top:20px;">Pengingat Keranjang (Batch 31)</h3>
+        <div class="field-row">
+            <label class="field">
+                <span>Reminder #1 (jam setelah ditinggal)</span>
+                <input type="number" name="cart_reminder_1_hours" value="{{ $settings['cart_reminder_1_hours'] ?? '' }}" min="1" max="72" placeholder="4">
+            </label>
+            <label class="field">
+                <span>Reminder #2 (jam setelah ditinggal)</span>
+                <input type="number" name="cart_reminder_2_hours" value="{{ $settings['cart_reminder_2_hours'] ?? '' }}" min="2" max="168" placeholder="24">
+            </label>
+        </div>
+
+        <h3 style="margin-top:20px;">Best Seller (Batch 30)</h3>
+        <div class="field-row">
+            <label class="field">
+                <span>Periode (hari)</span>
+                <select name="best_seller_period_days">
+                    @foreach ([30, 90, 180, 365, 730] as $d)
+                        <option value="{{ $d }}" @selected(($settings['best_seller_period_days'] ?? '') == $d)>{{ $d }}</option>
+                    @endforeach
+                </select>
+            </label>
+            <label class="field">
+                <span>Jumlah produk</span>
+                <input type="number" name="best_seller_limit" value="{{ $settings['best_seller_limit'] ?? '' }}" min="4" max="20" placeholder="8">
+            </label>
+            <label class="field">
+                <span>Minimal penjualan</span>
+                <input type="number" name="best_seller_min_sales" value="{{ $settings['best_seller_min_sales'] ?? '' }}" min="1" max="100" placeholder="3">
+            </label>
+        </div>
+
+        <h3 style="margin-top:20px;">Verifikasi Email &amp; Pemeliharaan</h3>
+        <div class="field-row">
+            <label class="field">
+                <span>Wajib verifikasi email saat daftar</span>
+                <input type="hidden" name="email_verification_enabled" value="0">
+                <input type="checkbox" name="email_verification_enabled" value="1" @checked(($settings['email_verification_enabled'] ?? '1') === '1')>
+            </label>
+            <label class="field">
+                <span>Mode pemeliharaan aktif</span>
+                <input type="hidden" name="maintenance_enabled" value="0">
+                <input type="checkbox" name="maintenance_enabled" value="1" @checked(($settings['maintenance_enabled'] ?? '0') === '1')>
+            </label>
+        </div>
+        <label class="field">
+            <span>Pesan pemeliharaan</span>
+            <input type="text" name="maintenance_message" value="{{ $settings['maintenance_message'] ?? '' }}" maxlength="500" placeholder="Kami sedang melakukan pemeliharaan. Coba lagi sebentar lagi.">
+        </label>
+        <label class="field">
+            <span>IP bypass pemeliharaan (pisahkan dengan koma)</span>
+            <input type="text" name="maintenance_bypass_ips" value="{{ $settings['maintenance_bypass_ips'] ?? '' }}" maxlength="500" placeholder="103.10.10.1, 103.20.20.2">
+        </label>
+
         <div class="savebar">
             <button type="submit" class="btn btn--primary">Simpan pengaturan</button>
         </div>

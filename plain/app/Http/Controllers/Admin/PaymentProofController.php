@@ -155,17 +155,21 @@ class PaymentProofController extends Controller
                 }
             }
 
-            DB::table('order_status_history')->insert([
-                'order_id' => $orderRow->id,
-                'from_status' => $fromStatus,
-                'to_status' => $forceOrderStatus ? 'pembayaran_diterima' : $fromStatus,
-                'changed_by' => 'admin',
-                'admin_id' => auth('admin')->id(),
-                'note' => $forceOrderStatus
-                    ? null
-                    : 'Bukti pembayaran disetujui (status order sudah diubah manual, tidak diotomatisasi).',
-                'created_at' => now(),
-            ]);
+            // ✅ BUG FIX: hanya catat history saat status benar-benar berubah.
+            // Sebelumnya baris ini di-insert juga saat status TIDAK di-advance
+            // (from_status === to_status) sehingga timeline customer tercemar
+            // entri "no-op".
+            if ($forceOrderStatus) {
+                DB::table('order_status_history')->insert([
+                    'order_id' => $orderRow->id,
+                    'from_status' => $fromStatus,
+                    'to_status' => 'pembayaran_diterima',
+                    'changed_by' => 'admin',
+                    'admin_id' => auth('admin')->id(),
+                    'note' => null,
+                    'created_at' => now(),
+                ]);
+            }
 
             // ✅ Update user role kalau masih spammer
             $user = DB::table('users')->where('id', $orderRow->user_id)->lockForUpdate()->first();

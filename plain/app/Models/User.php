@@ -180,11 +180,18 @@ class User extends Authenticatable implements MustVerifyEmail
 
     public static function generateReferralCode(): string
     {
-        do {
-            $code = strtoupper(\Illuminate\Support\Str::random(8));
-        } while (static::query()->where('referral_code', $code)->exists());
+        $maxAttempts = 10;
 
-        return $code;
+        for ($attempt = 0; $attempt < $maxAttempts; $attempt++) {
+            $code = strtoupper(\Illuminate\Support\Str::random(8));
+            if (! static::query()->where('referral_code', $code)->exists()) {
+                return $code;
+            }
+        }
+
+        // Sangat tidak mungkin tercapai (ruang 62^8); fallback kode lebih panjang
+        // supaya tidak pernah terjebak loop tanpa batas.
+        return strtoupper(\Illuminate\Support\Str::random(16));
     }
 
     public function ensureReferralCode(): string

@@ -2,7 +2,6 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
@@ -36,19 +35,12 @@ return new class extends Migration
         //    Solusi: jalankan DULU migration rebuild yang men-drop & membuat
         //    ulang tabel dengan skema bersih (data lama disalin), baru lanjut
         //    menambahkan kolom yang masih kurang.
-        $col = collect(DB::select("SHOW COLUMNS FROM payment_methods LIKE 'type'"))->first();
-        if ($col !== null && strtoupper((string) $col->Null) === 'NO' && $col->Default === null) {
-            Artisan::call('migrate', [
-                '--path' => 'database/migrations/2026_10_02_000000_rebuild_payment_methods_table.php',
-                '--force' => true,
-            ]);
-
-            // Setelah rebuild, refresh daftar kolom — kalau sudah lengkap, selesai.
-            $colsNow = array_column(DB::select('SHOW COLUMNS FROM payment_methods'), 'Field');
-            if (in_array('instructions', $colsNow, true) && in_array('qr_image', $colsNow, true)) {
-                return;
-            }
-        }
+        // Rebuild penuh (drop & create ulang) dilakukan oleh migration
+        // 2026_10_02_000000_rebuild_payment_methods_table.php yang berjalan
+        // SETELAH ini sesuai urutan natural. Dulu rebuild dipanggil dari sini
+        // via Artisan::call('migrate') -> migration 10_02 tercatat dua kali di
+        // tabel `migrations` (batch korup). Sekarang cukup mengandalkan urutan,
+        // dan langkah 2 di bawah tetap membuat `type` nullable sebagai pengaman.
 
         // 1) Kolom baru yang dibutuhkan aplikasi, nullable/tanpa default ketat.
         Schema::table('payment_methods', function (Blueprint $table) {

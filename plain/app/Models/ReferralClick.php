@@ -9,6 +9,13 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 #[Fillable(['referrer_id', 'ip_address', 'clicked_on'])]
 class ReferralClick extends Model
 {
+    protected function casts(): array
+    {
+        return [
+            'clicked_on' => 'date',
+        ];
+    }
+
     public function referrer(): BelongsTo
     {
         return $this->belongsTo(User::class, 'referrer_id');

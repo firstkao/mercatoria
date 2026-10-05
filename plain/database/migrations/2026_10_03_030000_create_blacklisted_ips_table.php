@@ -51,6 +51,27 @@ return new class extends Migration
 
     public function down(): void
     {
-        Schema::dropIfExists('blacklisted_ips');
+        // Toleran terhadap tabel yang sudah ada sebelum migrasi ini: kalau tabel
+        // punya kolom `reason` (hanya dibuat oleh jalur CREATE di atas), berarti
+        // tabel itu milik migrasi ini -> aman di-drop. Kalau tidak (tabel legacy),
+        // cukup buang kolom yang kita tambahkan, JANGAN drop tabelnya.
+        if (! Schema::hasTable('blacklisted_ips')) {
+            return;
+        }
+
+        if (Schema::hasColumn('blacklisted_ips', 'reason')) {
+            Schema::dropIfExists('blacklisted_ips');
+
+            return;
+        }
+
+        Schema::table('blacklisted_ips', function (Blueprint $table) {
+            if (Schema::hasColumn('blacklisted_ips', 'ip_address') && Schema::hasColumn('blacklisted_ips', 'ip')) {
+                $table->dropColumn('ip_address');
+            }
+            if (Schema::hasColumn('blacklisted_ips', 'expires_at')) {
+                $table->dropColumn('expires_at');
+            }
+        });
     }
 };

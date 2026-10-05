@@ -12,6 +12,9 @@ class CoinLot extends Model
     protected function casts(): array
     {
         return [
+            'amount' => 'integer',
+            'remaining' => 'integer',
+            'birthday_year' => 'integer',
             'earned_at' => 'datetime',
             'expires_at' => 'datetime',
         ];

@@ -32,7 +32,7 @@ class CartController extends Controller
 
         // Koin
         $availableCoins = CoinLot::where('user_id', $user->id)
-            ->where('expires_at', '>', now())
+            ->where(fn ($q) => $q->whereNull('expires_at')->orWhere('expires_at', '>', now()))
             ->sum('remaining');
         $maxCoinDiscount = floor($subtotal * (Setting::integer('coin_max_use_percent', 5) / 100));
 

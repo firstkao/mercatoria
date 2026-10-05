@@ -139,6 +139,13 @@ class PaymentMethodController extends Controller
         if (($data['type'] ?? $paymentMethod->type) !== 'bank') {
             $data['account_number'] = null;
             $data['account_name'] = null;
+        } else {
+            // Bank tidak memakai gambar: buang qr_image lama (file + kolom) bila
+            // metode diubah dari qris/barcode ke bank.
+            if ($paymentMethod->qr_image) {
+                Storage::disk('public')->delete($paymentMethod->qr_image);
+            }
+            $data['qr_image'] = null;
         }
 
         try {

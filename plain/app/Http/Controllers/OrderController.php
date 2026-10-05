@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 use Intervention\Image\Drivers\Gd\Driver;
 use Intervention\Image\ImageManager;
@@ -27,14 +28,16 @@ class OrderController extends Controller
         $orders = $request->user()->orders()->latest()->paginate(20);
 
         // FASE 1: "Tagihan Menunggu" — order yang butuh aksi bayar/unggah bukti.
-        $unpaid = $orders->getCollection()
+        // Query TERPISAH dari seluruh order user (bukan hanya halaman pagination
+        // saat ini), supaya order lama yang belum dibayar tetap muncul di sini.
+        $unpaid = $request->user()->orders()
             ->whereIn('status', [
                 OrderStatus::MenungguPembayaran->value,
                 OrderStatus::PembayaranGagal->value,
             ])
-            ->sortByDesc('payment_deadline_at')
+            ->orderByRaw('COALESCE(payment_deadline_at, created_at) asc')
             ->take(5)
-            ->values();
+            ->get();
 
         return view('orders.index', compact('orders', 'unpaid'));
     }
@@ -166,20 +169,32 @@ class OrderController extends Controller
 
         // ✅ PERBAIKAN: Buat record DB. Jika gagal, hapus file yang sudah
         // diupload agar tidak ada file sampah (orphaned file) di server.
+        // Cek double-submit di sini dibuat ATOMIK (lock baris order + cek ulang
+        // di dalam transaksi) supaya dua upload paralel tidak sama-sama lolos.
         try {
-            $order->paymentProofs()->create([
-                'payment_method_id' => $request->input('payment_method_id'),
-                // ✅ BUG FIX: isi payment_stage sesuai skema order — dulu
-                // di-hardcode 'lunas' walau kolomnya varchar(10) dan order DP
-                // akan salah label. FP -> lunas, selain itu dp.
-                'payment_stage' => $order->payment_scheme === 'FP' ? 'lunas' : 'dp',
-                'amount_idr' => $order->pay_now_idr,
-                'proof_path' => $filename,
-                'status' => 'pending',
-                'uploaded_at' => now(),
-            ]);
+            DB::transaction(function () use ($order, $request, $filename): void {
+                $lockedOrder = Order::query()->whereKey($order->id)->lockForUpdate()->firstOrFail();
 
-            $order->update(['status' => 'ditahan']);
+                if ($lockedOrder->paymentProofs()->where('status', 'pending')->exists()) {
+                    throw ValidationException::withMessages([
+                        'proof' => 'Bukti pembayaran kamu masih dalam verifikasi admin.',
+                    ]);
+                }
+
+                $order->paymentProofs()->create([
+                    'payment_method_id' => $request->input('payment_method_id'),
+                    // ✅ BUG FIX: isi payment_stage sesuai skema order — dulu
+                    // di-hardcode 'lunas' walau kolomnya varchar(10) dan order DP
+                    // akan salah label. FP -> lunas, selain itu dp.
+                    'payment_stage' => $order->payment_scheme === 'FP' ? 'lunas' : 'dp',
+                    'amount_idr' => $order->pay_now_idr,
+                    'proof_path' => $filename,
+                    'status' => 'pending',
+                    'uploaded_at' => now(),
+                ]);
+
+                $order->update(['status' => 'ditahan']);
+            });
 
             // =========================================================
             // FASE 2 — Verifikasi otomatis QRIS.
@@ -274,6 +289,9 @@ class OrderController extends Controller
                     ]);
                 }
             }
+        } catch (ValidationException $e) {
+            Storage::disk('public')->delete($filename);
+            throw $e;
         } catch (\Throwable $e) {
             Storage::disk('public')->delete($filename);
 

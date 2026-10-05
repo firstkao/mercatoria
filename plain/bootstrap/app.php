@@ -33,10 +33,13 @@ return Application::configure(basePath: dirname(__DIR__))
             'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
         ]);
 
-        // Alias Gatekeeper (adaptasi MERCATORIA GATEKEEPER v17.4 dari WP)
+        // Alias Gatekeeper (adaptasi MERCATORIA GATEKEEPER v17.4 dari WP).
+        // Hanya 'data.integrity' yang dipakai lewat route middleware. Alias
+        // 'ip.blacklist' & 'guest.barrier' tidak direferensikan di route manapun
+        // (IpBlacklistMiddleware sudah berjalan global via ->web(append) di bawah;
+        // GuestBarrierMiddleware tidak aktif karena group auth/verified sudah
+        // menutup /keranjang dan /checkout), jadi tidak perlu didaftarkan.
         $middleware->alias([
-            'ip.blacklist' => \App\Http\Middleware\IpBlacklistMiddleware::class,
-            'guest.barrier' => \App\Http\Middleware\GuestBarrierMiddleware::class,
             'data.integrity' => \App\Http\Middleware\DataIntegrityMiddleware::class,
         ]);
 

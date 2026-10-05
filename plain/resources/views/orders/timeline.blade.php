@@ -1,5 +1,3 @@
-@props(['order'])
-
 @if ($order->statusHistory->isNotEmpty())
     <div class="panel">
         <div class="panel__head">

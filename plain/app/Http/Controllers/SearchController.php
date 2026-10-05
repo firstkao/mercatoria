@@ -51,10 +51,12 @@ class SearchController extends Controller
             $variantDescriptionColumn = Schema::hasColumn('product_variants', 'description');
 
             // Guard anti-500: pastikan kolom pendukung sorting tersedia di DB
-            // saat ini (SQL dump lama bisa tidak punya best_seller_score /
-            // sku varian). Kalau tidak ada, opsi terkait difallback ke nama A-Z.
+            // saat ini (SQL dump lama bisa tidak punya sku varian). Kalau tidak
+            // ada, opsi terkait difallback ke nama A-Z.
             $hasSkuVariant = Schema::hasColumn('product_variants', 'sku');
-            $hasBestSellerScore = Schema::hasColumn('products', 'best_seller_score');
+            // Sort 'popular' memakai subquery atas tabel order_items + orders,
+            // BUKAN kolom best_seller_score. Guard harus mengecek tabel itu.
+            $hasPopularityTables = Schema::hasTable('order_items') && Schema::hasTable('orders');
 
             $base = Product::query()
                 ->published()
@@ -151,9 +153,9 @@ class SearchController extends Controller
                 ->take(6)
                 ->get();
 
-            // Guard anti-500 untuk DB lama: kalau kolom pendukung sorting tidak
+            // Guard anti-500 untuk DB lama: kalau tabel pendukung sorting tidak
             // ada, sort key yang dipilih user difallback ke default (nama A-Z).
-            if ($sort === 'popular' && ! $hasBestSellerScore) {
+            if ($sort === 'popular' && ! $hasPopularityTables) {
                 $sort = 'name';
             }
         }

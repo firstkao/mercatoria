@@ -3,6 +3,7 @@
 namespace App\Rules;
 
 use Closure;
+use Illuminate\Contracts\Validation\ImplicitRule;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Support\Facades\Http;
@@ -10,7 +11,7 @@ use Illuminate\Support\Facades\Http;
 /**
  * Verifies a Cloudflare Turnstile token with Cloudflare's siteverify endpoint.
  */
-class Turnstile implements ValidationRule
+class Turnstile implements ValidationRule, ImplicitRule
 {
     public function __construct(private ?string $ipAddress = null) {}
 

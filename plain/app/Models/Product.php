@@ -174,7 +174,10 @@ class Product extends Model
     {
         $base = static::query()->published()->where('id', '!=', $this->id);
 
-        $byGame = collect();
+        // Inisialisasi dengan Eloquent Collection (bukan collect() yang berupa
+        // Support\Collection) supaya concat() di bawah tetap bertipe Eloquent
+        // dan tidak melanggar return type saat game_id null.
+        $byGame = new \Illuminate\Database\Eloquent\Collection();
         if ($this->game_id) {
             $byGame = (clone $base)
                 ->where('game_id', $this->game_id)

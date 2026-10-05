@@ -35,16 +35,10 @@ return new class extends Migration
             });
         }
 
-        if (Schema::hasIndex('order_items', 'order_items_order_id_index')) {
-            Schema::table('order_items', function (Blueprint $table): void {
-                $table->dropIndex('order_items_order_id_index');
-            });
-        }
-
-        if (Schema::hasIndex('product_variants', 'product_variants_product_id_index')) {
-            Schema::table('product_variants', function (Blueprint $table): void {
-                $table->dropIndex('product_variants_product_id_index');
-            });
-        }
+        // NOTE: order_items_order_id_index dan product_variants_product_id_index
+        // adalah index pendukung FOREIGN KEY yang dibuat oleh migrasi tabel dasar
+        // (create_order_items_table / create_product_variants_table), BUKAN oleh
+        // migrasi ini. Men-drop-nya di sini akan gagal dengan MySQL error 1553
+        // ("needed in a foreign key constraint"), jadi sengaja dibiarkan.
     }
 };

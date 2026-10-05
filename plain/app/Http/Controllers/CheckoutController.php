@@ -109,7 +109,7 @@ class CheckoutController extends Controller
         if ($discountType === 'coin') {
             $maxCoin = floor($subtotal * (Setting::integer('coin_max_use_percent', 5) / 100));
             $availableCoin = CoinLot::where('user_id', $user->id)
-                ->where('expires_at', '>', now())
+                ->where(fn ($q) => $q->whereNull('expires_at')->orWhere('expires_at', '>', now()))
                 ->sum('remaining');
             $discountIdr = (int) min($maxCoin, $availableCoin);
             $usedCoinAmount = $discountIdr;
@@ -137,13 +137,19 @@ class CheckoutController extends Controller
         $netTotal = $subtotal - $discountIdr;
 
         if ($scheme === 'FP') {
-            $payNow = $netTotal;
+            $mpFee = (int) $mp->fp_fee_idr;
+            // BUG FIX: fee marketplace (flat) sekarang ikut ditagih ke pembeli,
+            // bukan sekadar disimpan ke marketplace_fee_idr.
+            $payNow = $netTotal + $mpFee;
             $remaining = 0;
-            $mpFee = $mp->fp_fee_idr;
         } else {
             $payNow = (int) floor($netTotal / 2);
-            $remaining = $netTotal - $payNow;
-            $mpFee = (int) floor($remaining * $mp->dp_fee_percent / 100);
+            $remainingBase = $netTotal - $payNow;
+            // Fee persentase DP dihitung dari sisa pelunasan, lalu DITAMBAHKAN ke
+            // sisa pelunasan (konsisten dengan label frontend "Sisa Pelunasan
+            // (Termasuk Biaya Admin)").
+            $mpFee = (int) floor($remainingBase * $mp->dp_fee_percent / 100);
+            $remaining = $remainingBase + $mpFee;
         }
 
         $coinEstimate = (int) floor($netTotal * (Setting::integer('coin_earn_percent', 1) / 100));
@@ -180,8 +186,16 @@ class CheckoutController extends Controller
                 }
             }
 
+            // ✅ BUG FIX: order_number dibuat dengan retry supaya tidak tabrakan
+            // dengan baris yang sudah ada (kolom order_number UNIQUE). Probabilitas
+            // tabrakan sangat kecil (36^10), tapi retry + unique index menjamin aman.
+            $orderNumber = null;
+            do {
+                $orderNumber = 'ORD-' . strtoupper(Str::random(10));
+            } while (Order::where('order_number', $orderNumber)->exists());
+
             $order = Order::create([
-                'order_number' => 'ORD-' . strtoupper(Str::random(10)),
+                'order_number' => $orderNumber,
                 'user_id' => $user->id,
                 'marketplace_id' => $mp->id,
                 'status' => 'menunggu_pembayaran',
@@ -207,8 +221,8 @@ class CheckoutController extends Controller
             if ($usedCoinAmount > 0) {
                 $lots = CoinLot::where('user_id', $user->id)
                     ->where('remaining', '>', 0)
-                    ->where('expires_at', '>', now())
-                    ->orderBy('expires_at')
+                    ->where(fn ($q) => $q->whereNull('expires_at')->orWhere('expires_at', '>', now()))
+                    ->orderByRaw('expires_at IS NULL ASC, expires_at ASC')
                     ->lockForUpdate()
                     ->get();
 

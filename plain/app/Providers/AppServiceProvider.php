@@ -13,6 +13,8 @@ use App\Models\SocialMedia;
 use App\Support\PriceCalculator;
 use App\Support\PublicSocialMedia;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 
@@ -226,5 +228,51 @@ class AppServiceProvider extends ServiceProvider
 
             $view->with($data);
         });
+
+        // Badge sidebar & dashboard admin (pendingOrders/pendingProofs/pendingResellers).
+        // Dulu $adminBadges tidak pernah dikirim, jadi badge nav & blok "Perlu
+        // Perhatian" di dashboard selalu kosong. Composer dipasang untuk layout
+        // admin (nav) dan dashboard (blok aksi cepat) sekaligus.
+        View::composer(['admin.layouts.app', 'admin.dashboard'], function ($view): void {
+            $view->with(['adminBadges' => $this->adminBadges()]);
+        });
+    }
+
+    /**
+     * Hitung jumlah item yang butuh perhatian admin untuk badge sidebar/dashboard.
+     *
+     * @return array{pendingProofs: int, pendingOrders: int, pendingResellers: int}
+     */
+    private function adminBadges(): array
+    {
+        $badges = ['pendingProofs' => 0, 'pendingOrders' => 0, 'pendingResellers' => 0];
+
+        try {
+            if (Schema::hasTable('payment_proofs')) {
+                $badges['pendingProofs'] = (int) DB::table('payment_proofs')->where('status', 'pending')->count();
+            }
+        } catch (\Throwable) {
+            // tetap 0
+        }
+
+        try {
+            if (Schema::hasTable('orders')) {
+                $badges['pendingOrders'] = (int) DB::table('orders')
+                    ->whereNotIn('status', ['selesai', 'dibatalkan', 'dana_dikembalikan'])
+                    ->count();
+            }
+        } catch (\Throwable) {
+            // tetap 0
+        }
+
+        try {
+            if (Schema::hasTable('reseller_applications')) {
+                $badges['pendingResellers'] = (int) DB::table('reseller_applications')->where('status', 'pending')->count();
+            }
+        } catch (\Throwable) {
+            // tetap 0
+        }
+
+        return $badges;
     }
 }

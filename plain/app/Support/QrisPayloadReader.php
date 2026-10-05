@@ -3,21 +3,17 @@
 namespace App\Support;
 
 use Illuminate\Support\Str;
-use SimpleSoftwareIO\QrCode\Facades\QrCode;
 
 /**
  * FASE 2 — pembaca (decoder) QRIS untuk verifikasi pembayaran otomatis.
  *
- * Strategi dua tingkat, tanpa dependency composer baru:
- *  1) Jika paket `simplesoftwareio/simple-qrcode` tersedia (membawa decoder
- *     libzbar via `QrCode::decode()`), pakai itu — paling akurat.
- *  2) Fallback heuristik berbasis citra: QR versi rendah (versi 1-2, yang
- *     dipakai banyak aplikasi bank untuk nominal kecil) memuat payload TLV
- *     di dalam region "format info" kiri-atas (8x8 modul + separator).
- *     Kami normalisasi citra ke grid biner lalu baca bit per modul dan
- *     dekode string TLV-nya. Cocok untuk screenshot QR dari app mobile
- *     (background putih solid, kontras tinggi); kalau gagal -> return null
- *     dan order masuk review manual (aman / fail-open ke manusia).
+ * Strategi heuristik berbasis citra (tanpa dependency decoder eksternal):
+ *  QR versi rendah (versi 1-2, yang dipakai banyak aplikasi bank untuk
+ *  nominal kecil) memuat payload TLV di dalam region "format info" kiri-atas
+ *  (8x8 modul + separator). Kami normalisasi citra ke grid biner lalu baca
+ *  bit per modul dan dekode string TLV-nya. Cocok untuk screenshot QR dari
+ *  app mobile (background putih solid, kontras tinggi); kalau gagal ->
+ *  return null dan order masuk review manual (aman / fail-open ke manusia).
  *
  * Payload QRIS (EMVCo TLV): tag 54 = Merchant ID/Reference Amount,
  * tag 8704 subtag 00 = NMI Merchant Account Information (ID merchant QRIS,
@@ -29,22 +25,7 @@ class QrisPayloadReader
     /** @return string|null payload teks QR, atau null bila tidak terbaca */
     public static function read(string $imagePathOrBinary): ?string
     {
-        // Tingkat 1: decoder resmi bila tersedia.
-        if (class_exists(QrCode::class)) {
-            try {
-                $decoded = QrCode::decode($imagePathOrBinary);
-                $text = is_object($decoded) && method_exists($decoded, 'toString')
-                    ? $decoded->toString()
-                    : (is_string($decoded) ? $decoded : null);
-                if (is_string($text) && self::looksLikeQris($text)) {
-                    return $text;
-                }
-            } catch (\Throwable) {
-                // lanjut ke fallback heuristik
-            }
-        }
-
-        // Tingkat 2: heuristik format-info (QR versi <= 2).
+        // Heuristik format-info (QR versi <= 2).
         try {
             $text = self::readLowVersionFormatInfo($imagePathOrBinary);
             if ($text !== null && self::looksLikeQris($text)) {
@@ -175,8 +156,10 @@ class QrisPayloadReader
         $bits = '';
         for ($row = 0; $row < 9; $row++) {
             for ($col = 0; $col < 9; $col++) {
-                if (($row < 8 && $col < 8) && ! ($row === 7 || $col === 7)) {
-                    // skip separator (harus putih)
+                // Skip separator (modul putih pengaman di baris/kolom ke-7 dari
+                // blok finder 8x8) — bukan data, jadi jangan di-sampling.
+                if ($row < 8 && $col < 8 && ($row === 7 || $col === 7)) {
+                    continue;
                 }
                 $px = $fx + (int) round(($col - 3.5) * $module);
                 $py = $fy + (int) round(($row - 3.5) * $module);
@@ -240,6 +223,6 @@ class QrisPayloadReader
         $fw = ($endX - $startX + 1) * 7.0 / 3.0; // run pertama ~3 modul (B-W-B strip atas finder)
         $fw = max(7.0, min($fw, min($w, $h) * 0.4));
 
-        return [(int) ($startX + $fw / 2), (int) ($y + $fw / 2 - 0.5 * $fw + $fw * 0.5), $fw];
+        return [(int) ($startX + $fw / 2), (int) ($y + $fw / 2), $fw];
     }
 }
