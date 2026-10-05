@@ -27,7 +27,11 @@ class GeneralSettingsRequest extends FormRequest
             'socials.*.icon_url' => ['nullable', 'url', 'max:500'],
             'socials.*.icon_key' => ['nullable', 'string', 'max:50'],
             'socials.*.sort_order' => ['nullable', 'integer', 'min:0', 'max:999'],
-            'socials.*.is_active' => ['nullable', 'boolean'],
+            // Catatan: jangan pakai rule 'boolean' di sini. Checkbox yang tidak
+            // dicentang tidak terkirim, dan rule boolean membuat key-nya lenyap
+            // dari validated() — sehingga controller membaca !empty(null) = false
+            // dan mematikan semua sosmed setiap kali form disimpan.
+            'socials.*.is_active' => ['nullable', 'in:0,1,on,yes,true,false'],
             'socials.*.delete' => ['nullable', 'boolean'],
 
             // WA widget (Batch 23)

@@ -1388,11 +1388,11 @@ CREATE TABLE `social_media` (
 --
 
 INSERT INTO `social_media` (`id`, `name`, `url`, `icon_url`, `icon_key`, `sort_order`, `is_active`, `created_at`, `updated_at`) VALUES
-(1, 'Instagram', 'https://instagram.com/mercatoria_id', NULL, 'instagram', 1, 0, '2026-10-04 15:28:45', '2026-10-04 15:51:47'),
-(2, 'Facebook', 'https://facebook.com/mercatoria.id', NULL, 'facebook', 2, 0, '2026-10-04 15:28:45', '2026-10-04 15:51:47'),
-(3, 'X', 'https://x.com/mercatoria_id2', NULL, 'x', 3, 0, '2026-10-04 15:28:45', '2026-10-04 15:51:47'),
-(4, 'Threads', 'https://www.threads.com/@mercatoria_id', 'https://img.icons8.com/?size=100&id=ikThuZ5WmSYz&format=png&color=000000', 'threads', 4, 0, '2026-10-04 15:28:45', '2026-10-04 15:51:47'),
-(5, 'WhatsApp', 'https://wa.me/6281219683709', NULL, 'whatsapp', 5, 0, '2026-10-04 15:28:45', '2026-10-04 15:51:47');
+(1, 'Instagram', 'https://instagram.com/mercatoria_id', NULL, 'instagram', 1, 1, '2026-10-04 15:28:45', '2026-10-04 15:51:47'),
+(2, 'Facebook', 'https://facebook.com/mercatoria.id', NULL, 'facebook', 2, 1, '2026-10-04 15:28:45', '2026-10-04 15:51:47'),
+(3, 'X', 'https://x.com/mercatoria_id2', NULL, 'x', 3, 1, '2026-10-04 15:28:45', '2026-10-04 15:51:47'),
+(4, 'Threads', 'https://www.threads.com/@mercatoria_id', 'https://img.icons8.com/?size=100&id=ikThuZ5WmSYz&format=png&color=000000', 'threads', 4, 1, '2026-10-04 15:28:45', '2026-10-04 15:51:47'),
+(5, 'WhatsApp', 'https://wa.me/6281219683709', NULL, 'whatsapp', 5, 1, '2026-10-04 15:28:45', '2026-10-04 15:51:47');
 
 -- --------------------------------------------------------
 
