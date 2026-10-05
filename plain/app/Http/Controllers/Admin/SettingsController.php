@@ -156,9 +156,13 @@ class SettingsController extends Controller
 
             $data = [
                 'name' => $row['name'],
-                'url' => $row['url'] ?? null,
-                'icon_url' => $row['icon_url'] ?? null,
-                'icon_key' => $row['icon_key'] ?? null,
+                // Trim URL: baris dengan url spasi/kosong dianggap tidak punya
+                // URL dan otomatis disembunyikan layout (konsisten dgn filter).
+                'url' => ($u = trim((string) ($row['url'] ?? ''))) === '' ? null : $u,
+                'icon_url' => ($iu = trim((string) ($row['icon_url'] ?? ''))) === '' ? null : $iu,
+                // Normalisasi icon_key (trim + lower) supaya pencocokan SVG
+                // bawaan di partial social-icon tidak gagal karena kapitalisasi.
+                'icon_key' => ($ik = strtolower(trim((string) ($row['icon_key'] ?? '')))) === '' ? null : $ik,
                 'sort_order' => $row['sort_order'] ?? 0,
                 'is_active' => ! empty($row['is_active']),
             ];
