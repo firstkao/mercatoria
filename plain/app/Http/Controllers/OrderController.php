@@ -56,7 +56,23 @@ class OrderController extends Controller
             ->orderBy('sort_order')
             ->get();
 
-        return view('orders.show', compact('order', 'paymentMethods'));
+        // Data metode bayar untuk JS di halaman upload bukti. Disiapkan di
+        // controller (bukan di dalam @json(...) di Blade) karena direktif
+        // @json() memecah argumennya dengan explode(',') — array literal
+        // seperti ini bila ditulis langsung di dalam @json() akan terpotong
+        // dan menghasilkan PHP tidak valid → halaman detail pesanan 500.
+        $paymentMethodsJs = $paymentMethods
+            ->map(fn (PaymentMethod $pm): array => [
+                'id' => $pm->id,
+                'type' => $pm->type ?? 'bank',
+                'account_number' => $pm->account_number,
+                'account_name' => $pm->account_name,
+                'instructions' => $pm->instructions,
+                'qr_image' => ! empty($pm->qr_image) ? asset('storage/'.$pm->qr_image) : null,
+            ])
+            ->values();
+
+        return view('orders.show', compact('order', 'paymentMethods', 'paymentMethodsJs'));
     }
 
     public function proof(Request $request, string $orderNumber): RedirectResponse

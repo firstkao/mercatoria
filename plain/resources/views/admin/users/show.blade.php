@@ -12,9 +12,23 @@
                     <div><dt>Nama</dt><dd>{{ $user->full_name ?? '—' }}</dd></div>
                     <div><dt>Email</dt><dd>{{ $user->email ?? '—' }}</dd></div>
                     <div><dt>WhatsApp</dt><dd>{{ $user->whatsapp ? '+'.$user->whatsapp : '—' }}</dd></div>
-                    <div><dt>Tanggal lahir</dt><dd>{{ $user->birth_date->translatedFormat('j F Y') }} ({{ $user->birth_date->age }} tahun)</dd></div>
+                    {{-- birth_date & registered_at nullable: tanpa guard, detail user
+                         yang belum lengkap datanya langsung 500. --}}
+                    <div><dt>Tanggal lahir</dt><dd>
+                        @if ($user->birth_date)
+                            {{ $user->birth_date->translatedFormat('j F Y') }} ({{ $user->birth_date->age }} tahun)
+                        @else
+                            —
+                        @endif
+                    </dd></div>
                     <div><dt>Alamat</dt><dd>{{ $user->street_address ? "{$user->street_address}, {$user->district}, {$user->city}, {$user->province} {$user->postal_code}" : '—' }}</dd></div>
-                    <div><dt>Terdaftar</dt><dd>{{ $user->registered_at->timezone('Asia/Jakarta')->translatedFormat('j F Y, H:i') }} WIB</dd></div>
+                    <div><dt>Terdaftar</dt><dd>
+                        @if ($registeredAt = $user->registered_at ?? $user->created_at)
+                            {{ $registeredAt->timezone('Asia/Jakarta')->translatedFormat('j F Y, H:i') }} WIB
+                        @else
+                            —
+                        @endif
+                    </dd></div>
                     @if ($user->became_customer_at)
                         <div><dt>Jadi customer</dt><dd>{{ $user->became_customer_at->timezone('Asia/Jakarta')->translatedFormat('j F Y, H:i') }} WIB</dd></div>
                     @endif

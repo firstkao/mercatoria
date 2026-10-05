@@ -96,15 +96,13 @@
                 </a>
             </div>
             <script>
+            {{-- CATATAN: jangan menulis array literal langsung di dalam @json().
+                 Direktif itu memecah argumen pakai explode(','), jadi koma di
+                 dalam array akan memotong ekspresi dan menghasilkan PHP tidak
+                 valid ("Unclosed '[' does not match ')'") → halaman 500.
+                 Datanya sudah disiapkan controller sebagai $paymentMethodsJs. --}}
             (function () {
-                var methods = @json($paymentMethods->map(fn ($pm) => [
-                    'id' => $pm->id,
-                    'type' => $pm->type ?? 'bank',
-                    'account_number' => $pm->account_number,
-                    'account_name' => $pm->account_name,
-                    'instructions' => $pm->instructions,
-                    'qr_image' => ! empty($pm->qr_image) ? asset('storage/' . $pm->qr_image) : null,
-                ]));
+                var methods = @json($paymentMethodsJs);
                 var sel = document.querySelector('select[name="payment_method_id"]');
                 var box = document.getElementById('pm-detail');
                 if (! sel || ! box) return;

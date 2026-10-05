@@ -20,7 +20,13 @@
                     @endif
                 </span>
             </dd></div>
-            <div><dt>Diunggah</dt><dd>{{ $proof->uploaded_at->timezone('Asia/Jakarta')->translatedFormat('j F Y, H:i') }} WIB</dd></div>
+            {{-- uploaded_at bisa NULL (bukti lama yang diunggah sebelum kolom ini
+                 diisi). Jangan fallback ke created_at: baris ini stdClass dari
+                 DB::table() jadi created_at masih string mentah →
+                 "timezone() on string" (500). --}}
+            <div><dt>Diunggah</dt><dd>
+                {{ $proof->uploaded_at ? $proof->uploaded_at->timezone('Asia/Jakarta')->translatedFormat('j F Y, H:i').' WIB' : '—' }}
+            </dd></div>
             @if ($proof->reviewed_at)
                 <div><dt>Direview</dt><dd>{{ $proof->reviewed_at->timezone('Asia/Jakarta')->translatedFormat('j F Y, H:i') }} WIB</dd></div>
             @endif

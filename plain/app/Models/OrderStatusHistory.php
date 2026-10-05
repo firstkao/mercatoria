@@ -16,6 +16,15 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 ])]
 class OrderStatusHistory extends Model
 {
+    /**
+     * Nama tabel harus ditulis eksplisit. Migrasi membuat tabel
+     * `order_status_history` (tunggal), sedangkan tanpa properti ini Laravel
+     * menebak `order_status_histories` (jamak) — semua relasi
+     * `Order::statusHistory()` lalu gagal dengan "table doesn't exist" dan
+     * halaman detail pesanan (admin & pembeli) jadi 500.
+     */
+    protected $table = 'order_status_history';
+
     public const UPDATED_AT = null;
 
     protected function casts(): array
