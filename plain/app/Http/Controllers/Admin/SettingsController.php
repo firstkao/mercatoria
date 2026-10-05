@@ -154,6 +154,24 @@ class SettingsController extends Controller
                 continue;
             }
 
+            // BUG FIX (ikon sosmed hilang walau data ada): normalisasi is_active
+            // SEBELUM rule validasi sempat membuang key-nya. Hidden input "0" +
+            // checkbox "1" selalu terkirim berpasangan; kalau karena alasan apa
+            // pun key lenyap/gagal validasi, JANGAN diam-diam mematikan baris:
+            // pakai status lama baris tsb. sebagai fallback.
+            if (array_key_exists('is_active', $row)) {
+                $isActive = filter_var(
+                    is_string($row['is_active']) ? trim($row['is_active']) : $row['is_active'],
+                    FILTER_VALIDATE_BOOLEAN
+                );
+            } elseif (! empty($row['id'])) {
+                $isActive = (bool) optional(SocialMedia::find($row['id']))->is_active;
+            } else {
+                // Baris baru tanpa info aktif -> default aktif (sama seperti
+                // default kolom di migration), bukan mati.
+                $isActive = true;
+            }
+
             $data = [
                 'name' => $row['name'],
                 // Trim URL: baris dengan url spasi/kosong dianggap tidak punya
@@ -164,10 +182,7 @@ class SettingsController extends Controller
                 // bawaan di partial social-icon tidak gagal karena kapitalisasi.
                 'icon_key' => ($ik = strtolower(trim((string) ($row['icon_key'] ?? '')))) === '' ? null : $ik,
                 'sort_order' => $row['sort_order'] ?? 0,
-                // BUG FIX: hidden input "0" kini selalu terkirim utk baris sosmed;
-                // !empty('0') === false akan salah menonaktifkan semua baris.
-                // filter_var memetakan '1'/'true'/'on' -> true, '0'/'' -> false.
-                'is_active' => filter_var($row['is_active'] ?? false, FILTER_VALIDATE_BOOLEAN),
+                'is_active' => $isActive,
             ];
 
             if (! empty($row['id'])) {

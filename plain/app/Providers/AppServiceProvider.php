@@ -84,21 +84,32 @@ class AppServiceProvider extends ServiceProvider
             // Query dibungkus try/catch: bila tabel belum ada (mis. sebelum
             // migrasi dijalankan di server), halaman tetap tampil tanpa data.
             try {
-                // BUG FIX #3 (ikon sosmed TETAP tidak muncul walau data ada):
-                // PublicSocialMedia::all() memfilter `is_active` secara LONGGAR
-                // (menerima 0/1/'0'/'1'). Masalahnya, form admin menyimpan
-                // checkbox "Aktif" yang TIDAK dicentang sebagai key yang HILANG,
-                // dan SettingsController menulisnya via `! empty(...)` -> baris
-                // nonaktif tersimpan is_active = 0. Filter longgar itu membuat
-                // baris is_active = 0 ikut "lulus", lalu di blade header/footer
-                // ada guard lama `@if (! empty($sm->url))` yang membuang baris
-                // tanpa URL -> ikon hilang tanpa sebab yang terlihat.
-                //
-                // Perbaikan: pakai scopeActive() (where is_active = true, sama
-                // seperti yang dipakai halaman admin), dan buang guard !empty(url)
-                // di blade sehingga baris aktif dengan icon_key/icon_url selalu
-                // dirender (fallback lingkaran huruf untuk custom).
-                $socials = SocialMedia::active()->get();
+                // BUG FIX FINAL (ikon sosmed tetap tidak muncul walau data ada):
+                // filter is_active dibuat TOLERAN terhadap semua variasi penyimpanan:
+                //   - kolom boolean tinyint berisi 1  -> ikut
+                //   - string '1' / 'true' / 'on'       -> ikut
+                //   - NULL (default lama)              -> ikut (dianggap aktif,
+                //     sama seperti default kolom di migration)
+                // Hanya baris yang EKSPLISIT dimatikan ('0', 0, '', 'false') yang
+                // dibuang. Perbandingan boolean ketat (`where('is_active', true)`)
+                // sebelumnya gagal pada sebagian konfigurasi MySQL/PDO karena
+                // casting nilai berbeda-beda -> collection kosong -> ikon hilang
+                // padahal data lengkap di halaman admin.
+                $socials = SocialMedia::query()
+                    ->orderBy('sort_order')
+                    ->orderBy('id')
+                    ->get()
+                    ->filter(function (SocialMedia $sm): bool {
+                        // CAUTION: kolom di-cast 'boolean' di model, jadi false
+                        // bisa berarti 0/'0'/''/null dari DB. Bedakan NULL murni
+                        // (baris lama tanpa nilai -> anggap aktif) dari false
+                        // hasil cast ('0'/''/0 -> memang nonaktif).
+                        if (($sm->getRawOriginal('is_active') ?? null) === null) {
+                            return true; // default aktif
+                        }
+
+                        return (bool) $sm->is_active;
+                    });
 
                 // Normalisasi ringan: trim url/icon_url/icon_key (lower) agar
                 // pencocokan SVG bawaan tidak gagal karena kapitalisasi/spasi.
