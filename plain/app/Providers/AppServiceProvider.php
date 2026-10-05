@@ -11,14 +11,13 @@ use App\Models\Product;
 use App\Models\Setting;
 use App\Models\SocialMedia;
 use App\Support\PriceCalculator;
+use App\Support\PublicSocialMedia;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
 {
-    private const MARKETPLACE_ICON_KEYS = ['toco', 'tokopedia', 'shopee', 'tiktokshop'];
-
     /**
      * Register any application services.
      */
@@ -85,23 +84,21 @@ class AppServiceProvider extends ServiceProvider
             // Query dibungkus try/catch: bila tabel belum ada (mis. sebelum
             // migrasi dijalankan di server), halaman tetap tampil tanpa data.
             try {
-                // Hanya sosmed aktif & punya URL yang dirender di layout.
-                $socials = SocialMedia::query()
-                    ->where('is_active', true)
-                    ->whereNotNull('url')
-                    ->orderBy('sort_order')
-                    ->get();
+                // BUG FIX (ikon sosmed tidak muncul walau data ada): filter
+                // terpusat di PublicSocialMedia — is_active longgar (0/1/'0'/'1'),
+                // URL null DAN string kosong dibuang, icon_key dinormalisasi.
+                $socials = PublicSocialMedia::all();
 
                 // Tombol marketplace footer (TOCO/TOKOPEDIA/SHOPEE/TIKTOK SHOP):
                 // diambil dari baris social_media dengan icon_key khusus, supaya
                 // admin cukup kelola satu tempat. Key settings lama tetap jadi
                 // fallback bila barisnya belum ada.
                 $data['marketplaceButtons'] = $socials
-                    ->filter(fn ($sm) => in_array($sm->icon_key, self::MARKETPLACE_ICON_KEYS, true))
-                    ->keyBy('icon_key');
+                    ->filter([PublicSocialMedia::class, 'isMarketplace'])
+                    ->mapWithKeys(fn ($sm) => [PublicSocialMedia::normalizedIconKey($sm) => $sm]);
                 $data['socialMedias'] = $socials->reject(
-                    fn ($sm) => in_array($sm->icon_key, self::MARKETPLACE_ICON_KEYS, true)
-                );
+                    [PublicSocialMedia::class, 'isMarketplace']
+                )->values();
 
                 $data['navGames'] = Game::orderBy('sort_order')
                     ->orderBy('name')
