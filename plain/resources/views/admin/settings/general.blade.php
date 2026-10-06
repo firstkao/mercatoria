@@ -37,7 +37,7 @@
         </label>
 
         <h3 style="margin-top:20px;">Sosial Media (dinamis)</h3>
-        <p class="hint">Kelola dari sini: tambah/hapus/ubah urutan. Yang aktif tampil di header &amp; footer toko. Kosongkan URL untuk menyembunyikan ikon. Baris dengan ikon <strong>Marketplace</strong> (Toco/Shopee/Tokopedia/TikTok Shop) otomatis dirender sebagai tombol teks di footer, bukan ikon SVG.</p>
+        <p class="hint">Kelola dari sini: tambah/hapus/ubah urutan. Yang aktif tampil di header &amp; footer toko. Kosongkan URL untuk menyembunyikan ikon. Baris dengan ikon <strong>Marketplace</strong> (Toco/Shopee) otomatis dirender sebagai tombol teks di footer, bukan ikon SVG.</p>
 
         @php
             $builtInIcons = \App\Models\SocialMedia::BUILT_IN_ICONS;
