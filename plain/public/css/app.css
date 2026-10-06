@@ -318,10 +318,28 @@ img { max-width: 100%; height: auto; display: block; }
     padding-right: 40px;
 }
 
-.footer-col--brand { display: flex; flex-direction: column; gap: 22px; }
+/* ---- Kolom 1: Brand + Sosmed + Marketplace ---- */
+/* Semua anak di-center rapi: logo, ikon sosmed, tombol marketplace. */
+.footer-col--brand {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 22px;
+}
 
-.footer-brand { display: inline-flex; align-items: center; gap: 10px; }
-.footer-brand img { height: 72px; width: auto; }
+.footer-brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none;
+    color: inherit;
+}
+.footer-brand img {
+    height: 72px;
+    width: auto;
+    display: block;
+}
 .footer-brand__mark {
     display: inline-flex;
     align-items: center;
@@ -336,24 +354,23 @@ img { max-width: 100%; height: auto; display: block; }
     font-size: 32px;
     font-style: italic;
 }
-.footer-brand__block { display: flex; flex-direction: column; gap: 2px; line-height: 1; }
-.footer-brand__text {
-    font-family: var(--font-heading);
-    font-weight: 700;
-    font-size: 26px;
-    letter-spacing: .06em;
-    color: var(--accent-strong);
-}
-.footer-brand__tagline {
-    font-size: 9px;
-    letter-spacing: .22em;
-    color: #8b8b95;
-    font-weight: 700;
-    text-transform: uppercase;
+.footer-brand__block {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    line-height: 1;
 }
 
-.footer-social { display: flex; gap: 10px; }
-.footer-social a {
+/* ---- Baris ikon sosial media ---- */
+.footer-social {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+.footer-social a,
+.footer-social span {
     width: 36px;
     height: 36px;
     display: inline-flex;
@@ -364,23 +381,63 @@ img { max-width: 100%; height: auto; display: block; }
     color: #fff;
     transition: background .15s, transform .15s;
 }
-.footer-social a:hover { background: var(--accent-strong); transform: translateY(-2px); }
+.footer-social a:hover {
+    background: var(--accent-strong);
+    transform: translateY(-2px);
+}
+.footer-social svg {
+    width: 20px;
+    height: 20px;
+    display: block;
+}
 
-.footer-links { display: flex; gap: 10px; flex-wrap: wrap; }
+/* ---- Baris tombol marketplace (TOCO / SHOPEE) ---- */
+.footer-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+.footer-marketplace {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    margin: 0;
+    padding: 0;
+}
 .footer-btn {
     display: inline-flex;
     align-items: center;
-    padding: 9px 18px;
+    justify-content: center;
+    gap: 12px;
+    min-width: 130px;
+    padding: 10px 20px;
     background: rgba(255,255,255,.08);
     color: #fff;
-    border-radius: 6px;
-    font-size: 11.5px;
+    border-radius: 8px;
+    font-size: 12px;
     font-weight: 800;
     letter-spacing: .08em;
-    transition: background .15s;
+    text-decoration: none;
+    transition: background .15s, transform .15s;
 }
-.footer-btn:hover { background: var(--accent-strong); color: #fff; }
+.footer-btn:hover {
+    background: var(--accent-strong);
+    color: #fff;
+    transform: translateY(-1px);
+}
+.footer-btn span {
+    display: inline-block;
+    font-size: 14px;
+    line-height: 1;
+    transition: transform .2s ease;
+}
+.footer-btn:hover span {
+    transform: translateX(3px);
+}
 
+/* ---- Kolom 2-4: link list & produk terpopuler ---- */
 .footer-col__title {
     font-family: var(--font-heading);
     color: #fff;
@@ -441,7 +498,22 @@ img { max-width: 100%; height: auto; display: block; }
     -webkit-box-orient: vertical;
     overflow: hidden;
 }
-.footer-produk__price { font-size: 13px; color: #b8b6c2; font-weight: 500; }
+.footer-produk__price {
+    font-size: 13px;
+    color: #b8b6c2;
+    font-weight: 500;
+}
+
+.footer-produk__placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    color: #7a7785;
+    background: rgba(255, 255, 255, .04);
+}
 
 .site-footer__bottom {
     display: flex;
@@ -472,26 +544,6 @@ img { max-width: 100%; height: auto; display: block; }
     transition: color .15s ease;
 }
 .footer-jelajahi__links a:hover { color: #fff; }
-
-/* Placeholder gambar produk footer */
-.footer-produk__placeholder {
-    width: 100%;
-    height: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 10px;
-    color: #7a7785;
-    background: rgba(255, 255, 255, .04);
-}
-
-/* Tagline brand di footer */
-.footer-brand__tagline {
-    font-size: 10px;
-    letter-spacing: .14em;
-    color: #7a7785;
-    text-transform: uppercase;
-}
 
 /* ============================================================ */
 /* 7. HOME                                                       */
