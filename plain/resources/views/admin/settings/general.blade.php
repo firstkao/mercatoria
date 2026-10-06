@@ -58,7 +58,7 @@
                     </label>
                     <label class="field">
                         <span>Ikon</span>
-                        <select name="socials[{{ $i }}][icon_key]" data-built-in="{{ implode(',', $builtInIcons) }}">
+                        <select name="socials[{{ $i }}][icon_key]">
                             <option value="">— custom/teks —</option>
                             <optgroup label="Sosial Media">
                                 @foreach ($builtInIcons as $key)
@@ -75,7 +75,7 @@
                     <label class="field icon-url-field">
                         <span>Icon URL (opsional)</span>
                         <input type="url" name="socials[{{ $i }}][icon_url]" value="{{ old("socials.$i.icon_url", $sm->icon_url) }}" maxlength="500" placeholder="https://.../icon.png">
-                        <small style="font-size:11px;opacity:.7;line-height:1.3;display:block;margin-top:2px;">Untuk platform custom. Akan diabaikan jika ikon sosial media bawaan dipilih.</small>
+                        <small style="font-size:11px;opacity:.7;line-height:1.3;display:block;margin-top:2px;">Hanya untuk platform custom (dropdown ikon = "custom/teks").</small>
                     </label>
                     <label class="field" style="max-width:90px;">
                         <span>Urutan</span>
@@ -100,7 +100,7 @@
                 <label class="field"><span>Nama</span><input type="text" name="socials[__INDEX__][name]" maxlength="100" placeholder="Threads"></label>
                 <label class="field"><span>URL</span><input type="url" name="socials[__INDEX__][url]" maxlength="255" placeholder="https://..."></label>
                 <label class="field"><span>Ikon</span>
-                    <select name="socials[__INDEX__][icon_key]" data-built-in="{{ implode(',', $builtInIcons) }}">
+                    <select name="socials[__INDEX__][icon_key]">
                         <option value="">— custom/teks —</option>
                         <optgroup label="Sosial Media">
                             @foreach ($builtInIcons as $key)<option value="{{ $key }}">{{ ucfirst($key) }}</option>@endforeach
@@ -113,7 +113,7 @@
                 <label class="field icon-url-field">
                     <span>Icon URL (opsional)</span>
                     <input type="url" name="socials[__INDEX__][icon_url]" maxlength="500" placeholder="https://.../icon.png">
-                    <small style="font-size:11px;opacity:.7;line-height:1.3;display:block;margin-top:2px;">Untuk platform custom. Akan diabaikan jika ikon sosial media bawaan dipilih.</small>
+                    <small style="font-size:11px;opacity:.7;line-height:1.3;display:block;margin-top:2px;">Hanya untuk platform custom (dropdown ikon = "custom/teks").</small>
                 </label>
                 <label class="field" style="max-width:90px;"><span>Urutan</span><input type="number" name="socials[__INDEX__][sort_order]" value="99" min="0" max="999"></label>
                 <label class="field" style="max-width:110px;"><span>Aktif</span><input type="hidden" name="socials[__INDEX__][is_active]" value="0"><input type="checkbox" name="socials[__INDEX__][is_active]" value="1" checked></label>
@@ -125,22 +125,24 @@
 
         <script>
             (function () {
-                // BUG FIX UX: Sembunyikan field Icon URL ketika ikon SVG bawaan
-                // (Instagram/Facebook/X/Threads/WhatsApp) dipilih. Untuk ikon
-                // Marketplace (Toco/Shopee/Tokopedia/TikTokShop), field TETAP
-                // DITAMPILKAN karena baris marketplace tidak punya SVG inline.
+                // UX: Sembunyikan field Icon URL kalau dropdown ikon TIDAK
+                // "custom/teks". Artinya:
+                //   - icon_key = 'instagram' / 'threads' / dst  -> pakai SVG inline
+                //   - icon_key = 'toco' / 'shopee' / dst        -> tombol teks footer
+                //   - icon_key = ''                              -> baru butuh icon_url
+                // Field tetap ada di DOM (nggak dihapus) supaya layout grid stabil,
+                // tapi value-nya di-clear agar tidak ikut tersubmit sia-sia.
                 function toggleIconUrl(row) {
                     if (!row) return;
                     var sel = row.querySelector('select[name*="[icon_key]"]');
                     var urlField = row.querySelector('.icon-url-field');
                     if (!sel || !urlField) return;
 
-                    var builtIn = (sel.dataset.builtIn || '').split(',').filter(Boolean);
                     var urlInput = urlField.querySelector('input');
-                    var isBuiltInSvg = builtIn.indexOf(sel.value) !== -1;
+                    var hasIconKey = sel.value !== '';
 
-                    urlField.style.display = isBuiltInSvg ? 'none' : '';
-                    if (isBuiltInSvg && urlInput) {
+                    urlField.style.display = hasIconKey ? 'none' : '';
+                    if (hasIconKey && urlInput) {
                         urlInput.value = '';
                     }
                 }
@@ -162,7 +164,7 @@
                     addBtn.addEventListener('click', function () {
                         var list = document.getElementById('socials-list');
                         var tpl = document.getElementById('social-row-template').innerHTML;
-                        var index = Date.now(); // indeks unik utk array POST
+                        var index = Date.now();
                         list.insertAdjacentHTML('beforeend', tpl.replaceAll('__INDEX__', index));
                         initRow(list.lastElementChild);
                     });
