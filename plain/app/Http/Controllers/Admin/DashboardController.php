@@ -17,11 +17,19 @@ class DashboardController extends Controller
     {
         // Stats utama
         $stats = [
+            // Grup Katalog
             'Produk tayang' => Product::query()->published()->count(),
             'Draf produk' => Product::query()->where('is_published', false)->count(),
+
+            // Grup Pengguna
             'Spammer' => User::query()->where('role', UserRole::Spammer)->count(),
             'Customer' => User::query()->where('role', UserRole::Customer)->count(),
             'Pendaftar reseller baru' => DB::table('reseller_applications')->where('status', 'pending')->count(),
+
+            // Grup Penjualan
+            'Pesanan baru' => DB::table('orders')
+                ->whereNotIn('status', ['selesai', 'dibatalkan', 'dana_dikembalikan'])
+                ->count(),
             'Bukti pembayaran pending' => DB::table('payment_proofs')->where('status', 'pending')->count(),
         ];
 
