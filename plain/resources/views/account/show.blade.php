@@ -151,6 +151,9 @@
         @endif
 
         {{-- Quick actions --}}
+        {{-- CATATAN: quick action "Notifikasi" DIHAPUS karena sudah tersedia
+             di header (ikon lonceng + badge unread). Menghindari duplikasi
+             akses ke halaman yang sama dari dashboard. --}}
         <div class="account-actions">
             <a href="{{ route('account.orders.index') }}" class="account-action">
                 <span class="account-action__icon">📋</span>
@@ -164,16 +167,6 @@
                 <span class="account-action__icon">🎁</span>
                 <span class="account-action__label">Undang Teman</span>
             </a>
-            @if (Route::has('notifications.index'))
-                <a href="{{ route('notifications.index') }}" class="account-action">
-                    <span class="account-action__icon">🔔</span>
-                    <span class="account-action__label">Notifikasi
-                        @if (($unreadNotif ?? 0) > 0)
-                            <span class="badge badge--danger" style="margin-left:4px;">{{ $unreadNotif }}</span>
-                        @endif
-                    </span>
-                </a>
-            @endif
             <a href="{{ route('account.profile.edit') }}" class="account-action">
                 <span class="account-action__icon">⚙️</span>
                 <span class="account-action__label">Edit Profil</span>
