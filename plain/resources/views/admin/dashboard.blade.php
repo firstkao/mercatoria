@@ -1,7 +1,6 @@
 @extends('admin.layouts.app', ['title' => 'Ringkasan'])
 
 @section('content')
-<div class="dsh">
 
     {{-- ============ HEAD ============ --}}
     <header class="dsh-head">
@@ -19,13 +18,49 @@
         </div>
     @endunless
 
-    {{-- ============ METRICS ============ --}}
-    <div class="dsh-metrics">
-        @foreach ($stats as $label => $value)
-            <div class="dsh-metric">
-                <span class="dsh-metric__value">{{ number_format($value, 0, ',', '.') }}</span>
-                <span class="dsh-metric__label">{{ $label }}</span>
-            </div>
+    {{-- ============ GROUPED METRICS ============ --}}
+    @php
+        $s = $stats ?? [];
+
+        $groups = [
+            [
+                'label' => 'Pengguna',
+                'items' => [
+                    ['label' => 'Spammer',  'value' => $s['Spammer'] ?? 0],
+                    ['label' => 'Customer', 'value' => $s['Customer'] ?? 0],
+                    ['label' => 'Reseller', 'value' => $s['Pendaftar reseller baru'] ?? 0],
+                ],
+            ],
+            [
+                'label' => 'Penjualan',
+                'items' => [
+                    ['label' => 'Pesanan Baru',     'value' => $s['Pesanan baru'] ?? 0],
+                    ['label' => 'Pembayaran Masuk', 'value' => $s['Bukti pembayaran pending'] ?? 0],
+                ],
+            ],
+            [
+                'label' => 'Katalog',
+                'items' => [
+                    ['label' => 'Total Produk', 'value' => $s['Produk tayang'] ?? 0],
+                    ['label' => 'Draf Produk',  'value' => $s['Draf produk'] ?? 0],
+                ],
+            ],
+        ];
+    @endphp
+
+    <div class="dsh-groups">
+        @foreach ($groups as $group)
+            <section class="dsh-group">
+                <h2 class="dsh-group__label">{{ $group['label'] }}</h2>
+                <div class="dsh-group__items">
+                    @foreach ($group['items'] as $item)
+                        <div class="dsh-item">
+                            <span class="dsh-item__value">{{ number_format($item['value'], 0, ',', '.') }}</span>
+                            <span class="dsh-item__label">{{ $item['label'] }}</span>
+                        </div>
+                    @endforeach
+                </div>
+            </section>
         @endforeach
     </div>
 
@@ -95,29 +130,3 @@
 
         </div>
     </section>
-
-    {{-- ============ PANDUAN AWAL ============ --}}
-    <section class="dsh-section">
-        <h2 class="dsh-section__title">Panduan awal</h2>
-        <ol class="dsh-steps">
-            <li class="dsh-step">
-                <span class="dsh-step__num">01</span>
-                <span class="dsh-step__text">Isi kurs, tarif ongkir, dan margin produk</span>
-                <a href="{{ route('admin.settings.pricing') }}" class="dsh-step__link">
-                    Buka
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-                </a>
-            </li>
-            <li class="dsh-step">
-                <span class="dsh-step__num">02</span>
-                <span class="dsh-step__text">Tambah produk pertama ke katalog</span>
-                <a href="{{ route('admin.products.create') }}" class="dsh-step__link">
-                    Tambah
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-                </a>
-            </li>
-        </ol>
-    </section>
-
-</div>
-@endsection
