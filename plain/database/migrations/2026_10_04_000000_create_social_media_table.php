@@ -18,7 +18,7 @@ return new class extends Migration
             $table->string('name'); // Instagram, Facebook, X, Threads, WhatsApp
             $table->string('url')->nullable();
             $table->string('icon_url')->nullable();   // URL icon custom (SVG/PNG)
-            $table->string('icon_key')->nullable();   // Kunci ikon bawaan: instagram|facebook|x|whatsapp|tiktok|threads
+            $table->string('icon_key')->nullable();   // Kunci ikon bawaan: instagram|facebook|x|whatsapp|threads
             $table->integer('sort_order')->default(0);
             $table->boolean('is_active')->default(true);
             $table->timestamps();
