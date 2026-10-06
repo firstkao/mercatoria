@@ -1,80 +1,115 @@
 @extends('layouts.app', ['title' => 'Pesanan Saya'])
 
 @section('content')
-<section class="card" style="max-width: 1000px;">
-    <h1>Pesanan Saya</h1>
+<div class="account-page">
+    <div class="account-card">
+        <header class="account-head">
+            <p class="account-head__eyebrow">Akun Saya</p>
+            <h1 class="account-head__title">Pesanan Saya</h1>
+            <div class="account-head__meta">
+                <span>{{ $orders->total() }} pesanan</span>
+            </div>
+        </header>
 
-    @if (session('status'))
-        <div class="notice">{{ session('status') }}</div>
-    @endif
+        @if (session('status'))
+            <div class="account-notice">{{ session('status') }}</div>
+        @endif
 
-    {{-- FASE 1: "Tagihan Menunggu" — pintasan aksi bayar/unggah bukti.
-         Menggantikan menu global 'Konfirmasi Pembayaran': konfirmasi hanya
-         relevan per-order, jadi CTA-nya muncul di sini untuk order yang
-         benar-benar butuh pembayaran. --}}
-    @if ($unpaid->isNotEmpty())
-        <div class="panel stack" style="border-left: 4px solid var(--accent-strong); margin-bottom: 20px;">
-            <h2 style="margin:0;">Tagihan Menunggu</h2>
-            @foreach($unpaid as $u)
-                <div style="display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap; padding:8px 0; border-top:1px solid #eee;">
-                    <div>
-                        <strong style="font-family:monospace;">{{ $u->order_number }}</strong>
-                        <span class="muted"> · {{ \App\Support\PriceCalculator::formatRupiah($u->pay_now_idr) }} ({{ $u->payment_scheme === 'FP' ? 'lunas' : 'DP' }})</span>
-                        @if($u->payment_deadline_at)
-                            <div class="muted" style="font-size:12px;">Batas bayar: {{ $u->payment_deadline_at->timezone('Asia/Jakarta')->translatedFormat('j M Y, H:i') }} WIB</div>
-                        @endif
-                    </div>
-                    <a href="{{ route('account.orders.show', $u->order_number) }}#upload-bukti" class="button button--small">Bayar &amp; Unggah Bukti</a>
+        @if ($unpaid->isNotEmpty())
+            <section class="account-section">
+                <div class="account-section__head">
+                    <h2 class="account-section__title">Tagihan Menunggu</h2>
+                    <span class="account-section__hint">{{ $unpaid->count() }} pesanan</span>
                 </div>
-            @endforeach
-        </div>
-    @endif
-
-    @if($orders->isEmpty())
-        <div class="empty">
-            <p>Kamu belum memiliki pesanan.</p>
-            <a href="{{ route('catalog.index') }}" class="button">Mulai Belanja</a>
-        </div>
-    @else
-        <div class="panel panel--flush">
-            <table class="table">
-                <thead>
-                    <tr>
-                        <th>No. Pesanan</th>
-                        <th>Tanggal</th>
-                        <th>Tagihan</th>
-                        <th>Skema</th>
-                        <th>Status</th>
-                        <th>Aksi</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach($orders as $order)
-                        <tr>
-                            <td style="font-family: monospace; font-weight: bold;">{{ $order->order_number }}</td>
-                            <td class="muted">{{ $order->created_at->timezone('Asia/Jakarta')->translatedFormat('j M Y, H:i') }}</td>
-                            <td style="color: var(--accent-strong); font-weight: bold;">{{ \App\Support\PriceCalculator::formatRupiah($order->pay_now_idr) }}</td>
-                            <td>{{ $order->payment_scheme }}</td>
-                            <td>
-                                {{-- ✅ Rapikan: pakai helper model (label + badge warna
-                                     dari OrderStatus enum) agar konsisten dengan halaman
-                                     detail; sebelumnya manual str_replace/Str::title. --}}
-                                <span class="badge {{ $order->statusBadgeClass() }}">
-                                    {{ $order->statusLabel() }}
+                <ul class="account-unpaid-list">
+                    @foreach($unpaid as $u)
+                        <li class="account-unpaid-list__item">
+                            <div class="account-unpaid-list__info">
+                                <span class="account-unpaid-list__id">{{ $u->order_number }}</span>
+                                <span class="account-unpaid-list__amount">
+                                    · {{ \App\Support\PriceCalculator::formatRupiah($u->pay_now_idr) }}
+                                    ({{ $u->payment_scheme === 'FP' ? 'lunas' : 'DP' }})
                                 </span>
-                            </td>
-                            <td>
-                                <a href="{{ route('account.orders.show', $order->order_number) }}" class="button button--small">Detail & Bayar</a>
-                            </td>
-                        </tr>
+                                @if($u->payment_deadline_at)
+                                    <div class="account-unpaid-list__deadline">
+                                        Batas bayar:
+                                        {{ $u->payment_deadline_at->timezone('Asia/Jakarta')->translatedFormat('j M Y, H:i') }}
+                                        WIB
+                                    </div>
+                                @endif
+                            </div>
+                            <a href="{{ route('account.orders.show', $u->order_number) }}#upload-bukti"
+                               class="account-unpaid-list__cta">
+                                Bayar &amp; unggah bukti
+                            </a>
+                        </li>
                     @endforeach
-                </tbody>
-            </table>
-        </div>
+                </ul>
+            </section>
+        @endif
 
-        <div style="margin-top: 20px;">
-            {{ $orders->links('partials.pagination') }}
-        </div>
-    @endif
-</section>
+        <section class="account-section">
+            <div class="account-section__head">
+                <h2 class="account-section__title">Semua Pesanan</h2>
+            </div>
+
+            @if($orders->isEmpty())
+                <div class="account-empty">
+                    <h3 class="account-empty__title">Belum ada pesanan.</h3>
+                    <p class="account-empty__sub">Begitu kamu checkout, semua riwayat pesanan muncul di sini.</p>
+                    <a href="{{ route('catalog.index') }}" class="account-empty__cta">Mulai belanja</a>
+                </div>
+            @else
+                <div class="account-table-wrap">
+                    <table class="account-table">
+                        <thead>
+                            <tr>
+                                <th>No. Pesanan</th>
+                                <th>Tanggal</th>
+                                <th class="is-right">Tagihan</th>
+                                <th>Skema</th>
+                                <th>Status</th>
+                                <th class="is-right"></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach($orders as $order)
+                                @php
+                                    $badge = $order->statusBadgeClass();
+                                    $mod = str_contains($badge, 'danger')
+                                        ? 'account-status--danger'
+                                        : (str_contains($badge, 'success') ? 'account-status--ok' : '');
+                                @endphp
+                                <tr>
+                                    <td class="account-table__id">{{ $order->order_number }}</td>
+                                    <td class="account-table__muted">
+                                        {{ $order->created_at->timezone('Asia/Jakarta')->translatedFormat('j M Y, H:i') }}
+                                    </td>
+                                    <td class="is-right account-table__amount">
+                                        {{ \App\Support\PriceCalculator::formatRupiah($order->pay_now_idr) }}
+                                    </td>
+                                    <td>{{ $order->payment_scheme }}</td>
+                                    <td>
+                                        <span class="account-status {{ $mod }}">{{ $order->statusLabel() }}</span>
+                                    </td>
+                                    <td class="is-right">
+                                        <a href="{{ route('account.orders.show', $order->order_number) }}"
+                                           class="account-btn account-btn--ghost account-btn--sm">
+                                            Detail
+                                        </a>
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="account-pagination">
+                    {{ $orders->links('partials.pagination') }}
+                </div>
+            @endif
+        </section>
+
+    </div>
+</div>
 @endsection
