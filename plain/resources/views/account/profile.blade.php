@@ -25,9 +25,37 @@
             @csrf
             @method('PUT')
 
+            {{-- ============================================ --}}
+            {{-- IDENTITAS — email & tanggal lahir read-only --}}
+            {{-- ============================================ --}}
             <div class="account-section">
                 <div class="account-section__head">
                     <h2 class="account-section__title">Identitas</h2>
+                    <span class="account-section__hint">Terkunci sejak pendaftaran</span>
+                </div>
+                <div class="account-form__grid">
+                    <label class="field">
+                        <span>Email</span>
+                        <input type="email" value="{{ $user->email }}" readonly tabindex="-1" class="is-locked">
+                        <small class="hint">Email akun tidak dapat diubah. Hubungi admin bila perlu koreksi.</small>
+                    </label>
+
+                    <label class="field">
+                        <span>Tanggal Lahir</span>
+                        <input type="text"
+                               value="{{ $user->birth_date?->timezone('Asia/Jakarta')->translatedFormat('j F Y') ?? '—' }}"
+                               readonly tabindex="-1" class="is-locked">
+                        <small class="hint">Tanggal lahir tidak dapat diubah sendiri.</small>
+                    </label>
+                </div>
+            </div>
+
+            {{-- ============================================ --}}
+            {{-- DATA DIRI — bisa diubah                     --}}
+            {{-- ============================================ --}}
+            <div class="account-section">
+                <div class="account-section__head">
+                    <h2 class="account-section__title">Data Diri</h2>
                 </div>
                 <div class="account-form__grid">
                     <label class="field">
@@ -45,6 +73,9 @@
                 </div>
             </div>
 
+            {{-- ============================================ --}}
+            {{-- ALAMAT PENGIRIMAN                            --}}
+            {{-- ============================================ --}}
             <div class="account-section">
                 <div class="account-section__head">
                     <h2 class="account-section__title">Alamat Pengiriman</h2>
