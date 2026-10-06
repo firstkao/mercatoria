@@ -16,8 +16,6 @@ class GeneralSettingsRequest extends FormRequest
             // Kontak
             'contact_email' => ['nullable', 'email', 'max:150'],
             'contact_whatsapp' => ['nullable', 'string', 'max:30'],
-            'contact_hours' => ['nullable', 'string', 'max:150'],
-            'store_address' => ['nullable', 'string', 'max:500'],
 
             // Sosial media dinamis (tabel social_media; disimpan via halaman Umum ini).
             'socials' => ['nullable', 'array'],
@@ -27,16 +25,9 @@ class GeneralSettingsRequest extends FormRequest
             'socials.*.icon_url' => ['nullable', 'url', 'max:500'],
             'socials.*.icon_key' => ['nullable', 'string', 'max:50'],
             'socials.*.sort_order' => ['nullable', 'integer', 'min:0', 'max:999'],
-            // BUG FIX (penyebab ikon sosmed hilang walau data ada): rule ketat
-            // ('boolean' / 'in:...') membuat key is_active LENYAP dari
-            // validated() saat checkbox terkirim dengan nilai tak terduga
-            // ("on", "On", spasi, dsb.). Controller lalu membaca null ->
-            // filter_var(null) = false -> semua baris tersimpan is_active = 0
-            // sekali admin menekan Simpan. Data tetap terlihat lengkap di
-            // halaman admin, tapi query publik where(is_active = true) tidak
-            // memilih apa pun -> ikon hilang. Rule longgar + normalisasi
-            // filter_var di controller adalah kombinasi paling aman: nilai
-            // apa pun yang terkirim selalu dipetakan ke true/false.
+            // Rule longgar + normalisasi filter_var di controller adalah
+            // kombinasi paling aman: nilai apa pun yang terkirim selalu
+            // dipetakan ke true/false (lihat catatan di SettingsController).
             'socials.*.is_active' => ['nullable'],
             'socials.*.delete' => ['nullable', 'boolean'],
 
@@ -71,9 +62,10 @@ class GeneralSettingsRequest extends FormRequest
         return [
             'contact_email' => 'email kontak',
             'contact_whatsapp' => 'WhatsApp CS',
-            'social_instagram' => 'Instagram',
-            'social_facebook' => 'Facebook',
-            'social_x' => 'X',
+            // CATATAN: 'social_instagram', 'social_facebook', 'social_x'
+            // sudah DIHAPUS dari attributes karena rules()-nya juga sudah
+            // tidak ada (URL sosmed sekarang dikelola via tabel social_media,
+            // bukan lagi key-value di settings).
             'wa_widget_enabled' => 'tombol WhatsApp',
             'wa_widget_greeting' => 'pesan sapaan WA',
             'cart_reminder_1_hours' => 'reminder cart #1',
