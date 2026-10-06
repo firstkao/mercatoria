@@ -45,7 +45,6 @@ return new class extends Migration
             ['Facebook',  'facebook',  2, ['social_facebook']],
             ['X',         'x',         3, ['social_x']],
             ['Threads',   'threads',   4, ['social_threads', 'social_thread']],
-            ['WhatsApp',  'whatsapp',  5, ['contact_whatsapp']],
         ];
 
         foreach ($defaults as [$name, $iconKey, $order, $settingKeys]) {
