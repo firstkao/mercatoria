@@ -652,13 +652,9 @@ img { max-width: 100%; height: auto; display: block; }
 }
 
 /* ============================================================ */
-/* BATCH 31 — Dashboard Operator Console                         */
-/* Sengaja tipografi-driven. Sharp corners. Border tegas.         */
-/* Hover invert pada kartu. Bukan template stat-card.             */
+/* BATCH 31 — Dashboard Operator Console (Grouped Metrics)       */
+/* Full width. Grup terpisah. Tipografi-driven.                  */
 /* ============================================================ */
-.dsh {
-    max-width: 1100px;
-}
 
 /* ---------- Page head ---------- */
 .dsh-head {
@@ -666,7 +662,7 @@ img { max-width: 100%; height: auto; display: block; }
     align-items: flex-start;
     justify-content: space-between;
     gap: 24px;
-    margin-bottom: 56px;
+    margin-bottom: 48px;
     padding-bottom: 28px;
     border-bottom: 1px solid var(--border);
 }
@@ -720,41 +716,75 @@ img { max-width: 100%; height: auto; display: block; }
 }
 .dsh-alert a:hover { color: #000; }
 
-/* ---------- Metrics (typographic, no card) ---------- */
-.dsh-metrics {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+/* ---------- Grouped metrics ---------- */
+.dsh-groups {
+    display: flex;
+    flex-direction: column;
     gap: 0;
-    border-top: 1px solid var(--border);
-    border-bottom: 1px solid var(--border);
-    margin-bottom: 64px;
+    margin-bottom: 56px;
 }
-.dsh-metric {
-    padding: 36px 28px 36px 0;
+
+.dsh-group {
+    padding: 32px 0;
+    border-bottom: 1px solid var(--border);
+}
+.dsh-group:first-child {
+    padding-top: 0;
+}
+.dsh-group:last-child {
+    border-bottom: 0;
+}
+
+.dsh-group__label {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .18em;
+    color: var(--muted);
+    margin: 0 0 24px;
+}
+
+.dsh-group__items {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+}
+
+.dsh-item {
+    flex: 1 1 0;
+    min-width: 200px;
+    padding: 4px 40px 4px 0;
     border-right: 1px solid var(--border);
 }
-.dsh-metric:last-child { border-right: 0; padding-right: 0; }
-.dsh-metric:not(:first-child) { padding-left: 28px; }
-.dsh-metric__value {
+.dsh-item:not(:first-child) {
+    padding-left: 40px;
+}
+.dsh-item:last-child {
+    border-right: 0;
+    padding-right: 0;
+}
+
+.dsh-item__value {
     display: block;
-    font-size: 42px;
+    font-size: 46px;
     font-weight: 500;
-    letter-spacing: -.035em;
+    letter-spacing: -.04em;
     color: #0f172a;
     line-height: 1;
-    margin-bottom: 14px;
+    margin-bottom: 12px;
     font-feature-settings: "tnum" 1;
 }
-.dsh-metric__label {
+
+.dsh-item__label {
     display: block;
-    font-size: 12px;
+    font-size: 13px;
     font-weight: 500;
     color: var(--muted);
     letter-spacing: .01em;
 }
 
 /* ---------- Section ---------- */
-.dsh-section { margin-bottom: 64px; }
+.dsh-section { margin-bottom: 56px; }
 .dsh-section:last-child { margin-bottom: 0; }
 .dsh-section__title {
     font-size: 11px;
@@ -785,6 +815,7 @@ img { max-width: 100%; height: auto; display: block; }
     min-height: 200px;
 }
 .dsh-card--empty {
+    border-width: 1px;
     border-color: var(--border);
     color: var(--muted);
     cursor: default;
@@ -893,15 +924,12 @@ img { max-width: 100%; height: auto; display: block; }
     .dsh-head { flex-direction: column; gap: 12px; }
     .dsh-head__time { padding-top: 0; }
     .dsh-head__title { font-size: 26px; }
-    .dsh-metrics { grid-template-columns: repeat(2, 1fr); }
-    .dsh-metric {
-        padding: 24px 16px 24px 0;
+    .dsh-item {
+        min-width: 140px;
+        padding: 4px 20px 4px 0;
     }
-    .dsh-metric:nth-child(2n) { border-right: 0; padding-right: 0; }
-    .dsh-metric:nth-child(-n+2) { border-bottom: 1px solid var(--border); }
-    .dsh-metric:nth-child(2n+1) { padding-left: 0; }
-    .dsh-metric:nth-child(2n) { padding-left: 16px; }
-    .dsh-metric__value { font-size: 32px; }
+    .dsh-item:not(:first-child) { padding-left: 20px; }
+    .dsh-item__value { font-size: 34px; }
     .dsh-card__count { font-size: 34px; }
     .dsh-step {
         grid-template-columns: 36px 1fr;
