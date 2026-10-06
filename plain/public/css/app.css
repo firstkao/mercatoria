@@ -2659,6 +2659,19 @@ input[type="number"] { -moz-appearance: textfield; appearance: textfield; }
 }
 
 /* ============================================================ */
+/* 26k. FIX — padding untuk empty state di section flush        */
+/* ============================================================ */
+.account-section--flush .account-empty {
+    padding: 40px 40px 40px;
+}
+
+@media (max-width: 720px) {
+    .account-section--flush .account-empty {
+        padding: 32px 22px;
+    }
+}
+
+/* ============================================================ */
 /* Halaman Cari — form + chip hasil                              */
 /* ============================================================ */
 .search-page-form {
