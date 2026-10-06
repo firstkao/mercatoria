@@ -71,10 +71,7 @@ class GeneralSettingsRequest extends FormRequest
         return [
             'contact_email' => 'email kontak',
             'contact_whatsapp' => 'WhatsApp CS',
-            'contact_hours' => 'jam operasional',
-            'store_address' => 'alamat toko',
             'social_instagram' => 'Instagram',
-            'social_tiktok' => 'TikTok',
             'social_facebook' => 'Facebook',
             'social_x' => 'X',
             'wa_widget_enabled' => 'tombol WhatsApp',
