@@ -32,7 +32,6 @@ return new class extends Migration
                 ['Facebook',  'facebook',  2],
                 ['X',         'x',         3],
                 ['Threads',   'threads',   4],
-                ['WhatsApp',  'whatsapp',  5],
             ];
         ];
 
