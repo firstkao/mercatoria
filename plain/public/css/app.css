@@ -2310,6 +2310,355 @@ input[type="number"] { -moz-appearance: textfield; appearance: textfield; }
 }
 
 /* ============================================================ */
+/* 26f. ACCOUNT TABS                                             */
+/* ============================================================ */
+.account-tabs {
+    display: flex;
+    padding: 0 40px;
+    border-bottom: 1px solid var(--_hair);
+    background: transparent;
+}
+.account-tab {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 14px 0;
+    margin-right: 24px;
+    margin-bottom: -1px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--_mute);
+    text-decoration: none;
+    border-bottom: 2px solid transparent;
+    transition: color .15s, border-color .15s;
+}
+.account-tab:hover { color: var(--_ink); }
+.account-tab.is-active {
+    color: var(--_ink);
+    border-bottom-color: var(--_ink);
+}
+.account-tab__count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 18px;
+    height: 18px;
+    padding: 0 5px;
+    border-radius: 999px;
+    background: var(--_ink);
+    color: #fff;
+    font-size: 10.5px;
+    font-weight: 700;
+    line-height: 1;
+}
+
+.account-link-btn {
+    background: none;
+    border: 0;
+    padding: 0;
+    font: inherit;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--_ink);
+    text-decoration: underline;
+    text-decoration-color: var(--_hair);
+    text-underline-offset: 3px;
+    cursor: pointer;
+    transition: text-decoration-color .15s;
+}
+.account-link-btn:hover { text-decoration-color: var(--_ink); }
+
+.account-section--flush { padding: 0; }
+
+/* ============================================================ */
+/* 26g. NOTIFICATIONS LEDGER                                     */
+/* ============================================================ */
+.notif-ledger { list-style: none; padding: 0; margin: 0; }
+.notif-ledger__item {
+    display: flex;
+    align-items: flex-start;
+    border-bottom: 1px solid var(--_hair-soft);
+    position: relative;
+}
+.notif-ledger__item:last-child { border-bottom: 0; }
+.notif-ledger__item.is-unread { background: #fafafa; }
+.notif-ledger__link {
+    display: flex;
+    gap: 16px;
+    padding: 18px 40px;
+    flex: 1;
+    color: inherit;
+    text-decoration: none;
+    transition: background .12s;
+}
+.notif-ledger__link:hover { background: #fafafa; }
+.notif-ledger__dot {
+    flex-shrink: 0;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--_hair);
+    margin-top: 8px;
+}
+.notif-ledger__item.is-unread .notif-ledger__dot { background: var(--_ink); }
+.notif-ledger__body {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;
+    flex: 1;
+}
+.notif-ledger__title {
+    font-size: 13.5px;
+    font-weight: 600;
+    color: var(--_ink);
+    line-height: 1.35;
+}
+.notif-ledger__text {
+    font-size: 13px;
+    color: #52525b;
+    line-height: 1.5;
+    overflow-wrap: anywhere;
+}
+.notif-ledger__time {
+    font-size: 11.5px;
+    color: var(--_faint);
+    margin-top: 2px;
+}
+.notif-ledger__delete {
+    display: flex;
+    align-items: center;
+    padding-right: 40px;
+}
+.notif-ledger__delete button {
+    width: 24px;
+    height: 24px;
+    border: 0;
+    background: transparent;
+    color: var(--_faint);
+    font-size: 18px;
+    line-height: 1;
+    cursor: pointer;
+    border-radius: 3px;
+    transition: background .15s, color .15s;
+}
+.notif-ledger__delete button:hover {
+    background: #fee2e2;
+    color: #b91c1c;
+}
+
+.account-pagination { padding: 24px 40px; }
+
+/* ============================================================ */
+/* 26h. ACCOUNT ALERTS (order detail banner)                     */
+/* ============================================================ */
+.account-alert {
+    padding: 18px 40px;
+    border-bottom: 1px solid var(--_hair);
+    font-size: 13.5px;
+    line-height: 1.6;
+    color: #52525b;
+}
+.account-alert--info    { background: #f0f7ff; color: #1e40af; }
+.account-alert--warning { background: #fffbeb; color: #854d0e; }
+.account-alert--danger  { background: #fef2f2; color: #991b1b; }
+.account-alert__title {
+    display: block;
+    font-size: 13.5px;
+    font-weight: 700;
+    color: var(--_ink);
+    margin-bottom: 6px;
+    letter-spacing: -.005em;
+}
+.account-alert--info    .account-alert__title { color: #1e3a8a; }
+.account-alert--warning .account-alert__title { color: #78350f; }
+.account-alert--danger  .account-alert__title { color: #7f1d1d; }
+.account-alert p { margin: 0; }
+.account-alert p + p,
+.account-alert p + .account-alert__meta { margin-top: 6px; }
+.account-alert__meta { font-size: 12.5px; }
+.account-alert ul { margin: 8px 0 0; padding-left: 20px; }
+.account-alert ul li + li { margin-top: 4px; }
+
+/* ============================================================ */
+/* 26i. ORDER DETAIL — items & summary                          */
+/* ============================================================ */
+.mono { font-family: var(--font-mono); letter-spacing: -.01em; }
+
+.order-items { list-style: none; padding: 0; margin: 0; }
+.order-items__row {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--_hair-soft);
+}
+.order-items__row:last-child { border-bottom: 0; }
+.order-items__info { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.order-items__name {
+    font-size: 13.5px;
+    font-weight: 600;
+    color: var(--_ink);
+    line-height: 1.4;
+}
+.order-items__meta { font-size: 12px; color: var(--_faint); }
+.order-items__price {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--_ink);
+    font-feature-settings: "tnum" 1;
+    white-space: nowrap;
+}
+
+.order-summary { display: grid; gap: 0; margin: 0; }
+.order-summary__row {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 10px 0;
+    font-size: 13px;
+}
+.order-summary__row + .order-summary__row { border-top: 1px solid var(--_hair-soft); }
+.order-summary__row dt {
+    color: #52525b;
+    font-weight: 400;
+    max-width: 70%;
+}
+.order-summary__row dd {
+    margin: 0;
+    font-family: var(--font-mono);
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--_ink);
+    font-feature-settings: "tnum" 1;
+    text-align: right;
+}
+.order-summary__row dd.is-discount { color: #dc2626; }
+.order-summary__row--total {
+    border-top: 1px solid var(--_hair) !important;
+    padding-top: 14px;
+    padding-bottom: 14px;
+}
+.order-summary__row--total dt { color: var(--_ink); font-weight: 600; }
+.order-summary__row--total dd { font-weight: 700; font-size: 14px; }
+.order-summary__row--emphasis {
+    border-top: 0 !important;
+    padding-top: 6px;
+    padding-bottom: 6px;
+}
+.order-summary__row--emphasis dt { color: var(--_ink); font-weight: 600; }
+.order-summary__row--emphasis dd {
+    font-family: var(--font-heading);
+    font-size: 20px;
+    font-weight: 600;
+    letter-spacing: -.02em;
+    color: var(--_ink);
+}
+
+.account-info-box {
+    padding: 14px 16px;
+    background: #fafafa;
+    border: 1px solid var(--_hair);
+    border-radius: 3px;
+}
+.account-info-box__text {
+    margin: 0;
+    white-space: pre-wrap;
+    font-size: 12.5px;
+    color: #52525b;
+    line-height: 1.6;
+}
+.account-info-box__img {
+    max-width: 200px;
+    border-radius: 4px;
+    margin-top: 12px;
+    display: block;
+}
+
+.account-form__actions {
+    display: flex;
+    justify-content: flex-end;
+    padding-top: 8px;
+}
+
+/* ============================================================ */
+/* 26j. TIMELINE LEDGER                                          */
+/* ============================================================ */
+.timeline-ledger {
+    list-style: none;
+    margin: 0;
+    padding: 0 0 0 4px;
+    position: relative;
+}
+.timeline-ledger__item {
+    position: relative;
+    padding-left: 28px;
+    padding-bottom: 20px;
+}
+.timeline-ledger__item:last-child { padding-bottom: 0; }
+.timeline-ledger__item::before {
+    content: "";
+    position: absolute;
+    left: 4px;
+    top: 12px;
+    bottom: -6px;
+    width: 1px;
+    background: var(--_hair);
+}
+.timeline-ledger__item:last-child::before { display: none; }
+.timeline-ledger__dot {
+    position: absolute;
+    left: 0;
+    top: 4px;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #fff;
+    border: 1.5px solid var(--_hair);
+}
+.timeline-ledger__item.is-current .timeline-ledger__dot {
+    background: var(--_ink);
+    border-color: var(--_ink);
+}
+.timeline-ledger__body {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    min-width: 0;
+}
+.timeline-ledger__title {
+    font-size: 13.5px;
+    font-weight: 600;
+    color: var(--_ink);
+    line-height: 1.35;
+}
+.timeline-ledger__item.is-current .timeline-ledger__title { font-weight: 700; }
+.timeline-ledger__meta { font-size: 11.5px; color: var(--_faint); }
+.timeline-ledger__note {
+    font-size: 12.5px;
+    color: #52525b;
+    margin: 6px 0 0;
+    padding: 8px 12px;
+    background: #fafafa;
+    border-radius: 3px;
+    line-height: 1.5;
+}
+
+/* Responsive tambahan */
+@media (max-width: 720px) {
+    .account-tabs { padding: 0 22px; }
+    .notif-ledger__link { padding: 14px 22px; gap: 12px; }
+    .notif-ledger__delete { padding-right: 22px; }
+    .account-alert { padding: 14px 22px; }
+    .account-pagination { padding: 20px 22px; }
+    .order-summary__row dt { max-width: 60%; }
+    .account-form__actions .account-btn { width: 100%; justify-content: center; }
+}
+
+/* ============================================================ */
 /* Halaman Cari — form + chip hasil                              */
 /* ============================================================ */
 .search-page-form {
