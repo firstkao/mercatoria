@@ -2216,6 +2216,100 @@ input[type="number"] { -moz-appearance: textfield; appearance: textfield; }
 }
 
 /* ============================================================ */
+/* 26e. ACCOUNT — readonly fields & header facts                 */
+/* ============================================================ */
+
+/* Section hint di kanan judul ("Terkunci sejak pendaftaran") */
+.account-section__hint {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    color: var(--_faint);
+}
+
+/* Input readonly/disabled: kotak abu, teks tetap gelap */
+.account-form .field input.is-locked,
+.account-form .field input[readonly],
+.account-form .field input:disabled {
+    background: #fafafa;
+    color: var(--_ink);
+    border-color: var(--_hair);
+    cursor: not-allowed;
+    font-weight: 500;
+}
+.account-form .field input.is-locked:focus,
+.account-form .field input[readonly]:focus,
+.account-form .field input:disabled:focus {
+    outline: none;
+    border-color: var(--_hair);
+    box-shadow: none;
+}
+/* Ikon gembok kecil di kanan input readonly */
+.account-form .field input.is-locked {
+    background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23a1a1aa' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3' y='11' width='18' height='11' rx='2'/%3E%3Cpath d='M7 11V7a5 5 0 0 1 10 0v4'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    padding-right: 34px;
+}
+
+/* Header facts (email, tgl lahir, WA di dashboard) */
+.account-head__facts {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0;
+    margin: 24px 0 0;
+    padding-top: 20px;
+    border-top: 1px solid var(--_hair);
+}
+.account-head__facts > div {
+    padding-right: 24px;
+    border-right: 1px solid var(--_hair);
+    min-width: 0;
+}
+.account-head__facts > div:last-child {
+    border-right: 0;
+    padding-right: 0;
+}
+.account-head__facts > div + div {
+    padding-left: 24px;
+}
+.account-head__facts dt {
+    font-size: 10.5px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .12em;
+    color: var(--_faint);
+    margin: 0 0 6px;
+}
+.account-head__facts dd {
+    font-size: 13.5px;
+    font-weight: 500;
+    color: var(--_ink);
+    margin: 0;
+    overflow-wrap: anywhere;
+    line-height: 1.4;
+}
+
+/* Responsive */
+@media (max-width: 720px) {
+    .account-head__facts {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+    .account-head__facts > div {
+        padding: 0;
+        border-right: 0;
+    }
+    .account-head__facts > div + div {
+        padding-left: 0;
+        padding-top: 16px;
+        border-top: 1px solid var(--_hair-soft);
+    }
+    .account-form__grid { grid-template-columns: 1fr; }
+}
+
+/* ============================================================ */
 /* Halaman Cari — form + chip hasil                              */
 /* ============================================================ */
 .search-page-form {
