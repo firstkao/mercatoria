@@ -9,7 +9,7 @@ use App\Models\SocialMedia;
  * di header & footer publik.
  *
  * PENTING: class ini HANYA menangani sosmed. Baris marketplace (Toco,
- * Shopee, Tokopedia, TikTok Shop) dikecualikan di sini dan ditangani
+ * Shopee) dikecualikan di sini dan ditangani
  * terpisah oleh App\Support\PublicMarketplace.
  *
  * BUG FIX:
