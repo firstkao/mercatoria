@@ -655,3 +655,231 @@ img { max-width: 100%; height: auto; display: block; }
 .row-muted {
     opacity: 0.55;
 }
+
+/* ============================================================ */
+/* BATCH 31 — Dashboard Editorial (Ringkasan admin)              */
+/* Prinsip: tipografi sebagai hierarki, minim border & shadow.   */
+/* No emoji. Semua icon SVG line monokrom.                       */
+/* ============================================================ */
+
+/* ---------- Alert editorial (kurs belum diatur) ---------- */
+.ad-alert {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    gap: 16px;
+    padding: 16px 20px;
+    background: #fefce8;
+    border-left: 3px solid #ca8a04;
+    border-radius: 6px;
+    margin-bottom: 32px;
+}
+.ad-alert__body { min-width: 0; }
+.ad-alert__title {
+    display: block;
+    font-size: 13.5px;
+    font-weight: 600;
+    color: #422006;
+    margin-bottom: 3px;
+}
+.ad-alert__text {
+    font-size: 13px;
+    color: #713f12;
+    margin: 0;
+    line-height: 1.5;
+}
+.ad-alert__cta {
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 9px 16px;
+    background: #422006;
+    color: #fff;
+    border-radius: 6px;
+    font-size: 12.5px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: background .15s;
+}
+.ad-alert__cta:hover { background: #713f12; color: #fff; }
+.ad-alert__cta svg { transition: transform .15s; }
+.ad-alert__cta:hover svg { transform: translateX(2px); }
+
+/* ---------- Metrics strip horizontal ---------- */
+.ad-metrics {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 0;
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 40px;
+}
+.ad-metrics__item {
+    padding: 22px 20px 22px 0;
+    border-right: 1px solid var(--border);
+}
+.ad-metrics__item:last-child { border-right: 0; padding-right: 0; }
+.ad-metrics__item:not(:first-child) { padding-left: 20px; }
+.ad-metrics__label {
+    display: block;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .1em;
+    color: var(--muted);
+    margin-bottom: 10px;
+}
+.ad-metrics__value {
+    display: block;
+    font-size: 26px;
+    font-weight: 600;
+    letter-spacing: -.015em;
+    color: #0f172a;
+    line-height: 1;
+    font-feature-settings: "tnum" 1;
+}
+
+/* ---------- Section ---------- */
+.ad-section { margin-bottom: 40px; }
+.ad-section:last-child { margin-bottom: 0; }
+.ad-section__head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+.ad-section__title {
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: -.005em;
+    color: #0f172a;
+    margin: 0;
+}
+.ad-section__link {
+    font-size: 13px;
+    color: var(--muted);
+    text-decoration: none;
+    transition: color .12s;
+}
+.ad-section__link:hover { color: var(--primary); }
+
+/* ---------- TODO list (Perlu Perhatian) ---------- */
+.ad-todo { list-style: none; padding: 0; margin: 0; }
+.ad-todo__item { border-bottom: 1px solid var(--border); }
+.ad-todo__item:last-child { border-bottom: 0; }
+.ad-todo__link {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: 20px;
+    padding: 20px 4px;
+    text-decoration: none;
+    color: inherit;
+    transition: padding .15s, background .15s;
+}
+.ad-todo__link:hover {
+    padding-left: 12px;
+    padding-right: 12px;
+    background: #f8fafc;
+}
+.ad-todo__count {
+    font-size: 32px;
+    font-weight: 600;
+    letter-spacing: -.02em;
+    line-height: 1;
+    color: var(--primary);
+    min-width: 44px;
+    font-feature-settings: "tnum" 1;
+}
+.ad-todo__text { min-width: 0; }
+.ad-todo__title {
+    display: block;
+    font-size: 14px;
+    font-weight: 600;
+    color: #0f172a;
+    margin-bottom: 2px;
+}
+.ad-todo__sub {
+    display: block;
+    font-size: 12.5px;
+    color: var(--muted);
+    line-height: 1.5;
+}
+.ad-todo__arrow {
+    flex-shrink: 0;
+    width: 16px;
+    height: 16px;
+    color: #94a3b8;
+    transition: transform .15s, color .15s;
+}
+.ad-todo__link:hover .ad-todo__arrow {
+    transform: translateX(3px);
+    color: var(--primary);
+}
+
+/* ---------- Steps (Mulai dari sini) ---------- */
+.ad-steps {
+    list-style: none;
+    counter-reset: ad-step;
+    padding: 0;
+    margin: 0;
+}
+.ad-steps__item {
+    counter-increment: ad-step;
+    display: grid;
+    grid-template-columns: 40px 1fr;
+    align-items: center;
+    gap: 16px;
+    padding: 16px 0;
+    border-bottom: 1px solid var(--border);
+}
+.ad-steps__item:last-child { border-bottom: 0; }
+.ad-steps__item::before {
+    content: counter(ad-step, decimal-leading-zero);
+    font-family: ui-monospace, "SF Mono", monospace;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: .04em;
+    color: #94a3b8;
+    font-feature-settings: "tnum" 1;
+}
+.ad-steps__link {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #0f172a;
+    text-decoration: none;
+    transition: color .12s;
+}
+.ad-steps__link:hover { color: var(--primary); }
+.ad-steps__link svg {
+    width: 13px;
+    height: 13px;
+    transition: transform .15s;
+    color: var(--primary);
+}
+.ad-steps__link:hover svg { transform: translateX(3px); }
+
+/* ---------- Responsive ---------- */
+@media (max-width: 720px) {
+    .ad-metrics {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    .ad-metrics__item {
+        padding: 18px 14px 18px 0;
+    }
+    .ad-metrics__item:nth-child(2n) { border-right: 0; padding-right: 0; }
+    .ad-metrics__item:nth-child(-n+2) { border-bottom: 1px solid var(--border); }
+    .ad-metrics__item:nth-child(2n+1) { padding-left: 0; }
+    .ad-metrics__item:nth-child(2n) { padding-left: 14px; }
+    .ad-metrics__value { font-size: 22px; }
+    .ad-alert { grid-template-columns: 1fr; }
+    .ad-alert__cta { width: 100%; justify-content: center; }
+    .ad-todo__link { gap: 14px; padding: 16px 0; }
+    .ad-todo__count { font-size: 26px; min-width: 36px; }
+    .ad-steps__item { grid-template-columns: 32px 1fr; gap: 12px; }
+}
