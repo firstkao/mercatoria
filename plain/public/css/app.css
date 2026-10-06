@@ -2672,6 +2672,14 @@ input[type="number"] { -moz-appearance: textfield; appearance: textfield; }
 }
 
 /* ============================================================ */
+/* 40. LOGO HEADER — perbesar                                    */
+/* ============================================================ */
+.site-logo img { height: 72px; width: auto; }
+
+/* Header ikut naik biar proporsional */
+.site-header__inner { min-height: 104px; }
+
+/* ============================================================ */
 /* Halaman Cari — form + chip hasil                              */
 /* ============================================================ */
 .search-page-form {
