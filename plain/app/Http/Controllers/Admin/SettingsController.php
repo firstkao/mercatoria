@@ -187,7 +187,7 @@ class SettingsController extends Controller
             // Kalau icon_key ADA isinya, paksa icon_url = null. Alasannya:
             //   - icon_key bawaan sosmed (instagram/facebook/x/threads/whatsapp)
             //     -> dirender sebagai SVG inline, tidak butuh icon_url.
-            //   - icon_key marketplace (toco/shopee/tokopedia/tiktokshop)
+            //   - icon_key marketplace (toco/shopee)
             //     -> dirender sebagai tombol teks di footer, tidak butuh icon_url.
             //
             // icon_url hanya relevan untuk baris CUSTOM (icon_key kosong), di
