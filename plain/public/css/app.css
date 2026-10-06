@@ -1494,20 +1494,10 @@ input[type="number"] { -moz-appearance: textfield; appearance: textfield; }
 }
 
 /* ============================================================ */
-/* 26. ACCOUNT DASHBOARD — v3 (editorial/ledger)                 */
-/*                                                               */
-/* Prinsip: hairline dividers, angka tabular, no emoji, satu     */
-/* aksen (near-black #0a0a0a), radius 3-4px.                     */
-/*                                                               */
-/* Blok ini handle DUA set class:                                */
-/*   1. v3 classes: .account-card, .account-head__*, .metrics,   */
-/*      .quick-nav, .account-empty, .account-order-list, dst.    */
-/*   2. Legacy v1: .account-stat, .account-action, .notice,      */
-/*      .badge--spammer, .empty — supaya tampil editorial tanpa  */
-/*      perlu ubah Blade.                                        */
+/* 26. ACCOUNT DASHBOARD — v3 (editorial / ledger)               */
+/*     Hairline dividers, angka tabular, no emoji,               */
+/*     satu aksen near-black (#0a0a0a), radius 3-4px.            */
 /* ============================================================ */
-
-/* ---- Page wrapper ---- */
 .account-page {
     max-width: 880px;
     margin: 0 auto;
@@ -1520,7 +1510,6 @@ input[type="number"] { -moz-appearance: textfield; appearance: textfield; }
     --_hair-soft: #f4f4f5;
 }
 
-/* ---- Container card: flat, hairline border, radius 4 ---- */
 .account-card {
     background: #fff;
     border: 1px solid var(--_hair);
@@ -1535,8 +1524,7 @@ input[type="number"] { -moz-appearance: textfield; appearance: textfield; }
     border-bottom: 1px solid var(--_hair);
     margin: 0;
 }
-.account-head__eyebrow,
-.account-page .eyebrow {
+.account-head__eyebrow {
     font-size: 11px;
     font-weight: 600;
     text-transform: uppercase;
@@ -1544,8 +1532,7 @@ input[type="number"] { -moz-appearance: textfield; appearance: textfield; }
     color: var(--_mute);
     margin: 0 0 10px;
 }
-.account-head__title,
-.account-page h1 {
+.account-head__title {
     font-family: var(--font-heading);
     font-size: 34px;
     font-weight: 600;
@@ -1562,8 +1549,7 @@ input[type="number"] { -moz-appearance: textfield; appearance: textfield; }
     color: var(--_mute);
     flex-wrap: wrap;
 }
-.account-head__role,
-.account-page .badge--spammer {
+.account-head__role {
     display: inline-flex;
     align-items: center;
     height: 20px;
@@ -1579,14 +1565,11 @@ input[type="number"] { -moz-appearance: textfield; appearance: textfield; }
 }
 .account-head__dot { color: #d4d4d8; }
 
-/* ---- Notice / kotak biru → strip netral ---- */
-.account-notice,
-.account-page .notice {
+/* ---- Notice (flash message) ---- */
+.account-notice {
     padding: 14px 40px;
     background: #fafafa;
-    border: 0;
     border-bottom: 1px solid var(--_hair);
-    border-radius: 0;
     font-size: 13px;
     color: #52525b;
     margin: 0;
@@ -1595,22 +1578,12 @@ input[type="number"] { -moz-appearance: textfield; appearance: textfield; }
 /* ---- Quota panel ---- */
 .quota-panel {
     padding: 22px 40px 24px;
-    border-top: 0;
     border-bottom: 1px solid var(--_hair);
-    border-left: 0;
-    border-right: 0;
-    border-radius: 0;
-    background: transparent;
     display: grid;
     gap: 10px;
     margin: 0;
 }
-.quota-panel--empty {
-    background: transparent;
-    border-left: 0;
-    padding: 22px 40px 24px;
-    border-radius: 0;
-}
+.quota-panel--empty { background: transparent; }
 .quota-panel__row {
     display: flex;
     align-items: baseline;
@@ -1622,8 +1595,6 @@ input[type="number"] { -moz-appearance: textfield; appearance: textfield; }
     font-size: 13px;
     color: #52525b;
     font-weight: 500;
-    text-transform: none;
-    letter-spacing: 0;
 }
 .quota-panel__value {
     font-family: var(--font-mono);
@@ -1651,45 +1622,32 @@ input[type="number"] { -moz-appearance: textfield; appearance: textfield; }
     color: var(--_faint);
     margin: 0;
 }
-.quota-panel__cta {
+.quota-panel__action {
     display: inline-flex;
     align-items: center;
-    gap: 6px;
-    margin-top: 2px;
-    padding: 0;
-    background: none;
-    color: var(--_ink);
+    gap: 8px;
+    padding: 10px 16px;
+    background: var(--_ink);
+    color: #fff;
+    border-radius: 3px;
     font-size: 13px;
     font-weight: 600;
     text-decoration: none;
-    border-bottom: 1px solid var(--_ink);
-    border-radius: 0;
     align-self: start;
-    transition: color .15s, border-color .15s;
+    transition: background .15s;
 }
-.quota-panel__cta:hover {
-    color: var(--accent-strong);
-    border-bottom-color: var(--accent-strong);
-}
-.quota-panel__cta::after {
-    content: "→";
-    transition: transform .15s;
-}
-.quota-panel__cta:hover::after { transform: translateX(3px); }
+.quota-panel__action:hover { background: #27272a; color: #fff; }
 
 /* ---- Metrics: ledger row ---- */
 .metrics {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    gap: 0;
-    border-top: 0;
     border-bottom: 1px solid var(--_hair);
     margin: 0;
 }
 .metrics__item {
     padding: 22px 24px;
     border-right: 1px solid var(--_hair);
-    border-bottom: 0;
 }
 .metrics__item:first-child { padding-left: 40px; }
 .metrics__item:last-child  { border-right: 0; padding-right: 40px; }
@@ -1712,17 +1670,14 @@ input[type="number"] { -moz-appearance: textfield; appearance: textfield; }
     line-height: 1;
     font-feature-settings: "tnum" 1;
 }
-.metrics__icon { display: none !important; }
 
 /* ---- Quick nav ---- */
 .quick-nav {
     display: flex;
     flex-wrap: wrap;
-    gap: 0;
     padding: 0 40px;
     margin: 0;
     border-bottom: 1px solid var(--_hair);
-    background: transparent;
 }
 .quick-nav__item {
     display: inline-flex;
@@ -1730,18 +1685,13 @@ input[type="number"] { -moz-appearance: textfield; appearance: textfield; }
     gap: 6px;
     padding: 16px 0;
     margin-right: 28px;
-    border-radius: 0;
     font-size: 13.5px;
     font-weight: 600;
     color: #52525b;
     text-decoration: none;
     transition: color .12s;
 }
-.quick-nav__item:hover {
-    background: none;
-    color: var(--_ink);
-}
-.quick-nav__item svg { display: none; }
+.quick-nav__item:hover { color: var(--_ink); }
 .quick-nav__item::after {
     content: "→";
     font-weight: 400;
@@ -1898,12 +1848,10 @@ input[type="number"] { -moz-appearance: textfield; appearance: textfield; }
 }
 .account-notif-list__time { font-size: 12px; color: var(--_faint); }
 
-/* ---- Empty state: statement, bukan dashed box ---- */
+/* ---- Empty state ---- */
 .account-empty {
-    padding: 44px 40px;
+    padding: 44px 0 4px;
     text-align: left;
-    border: 0;
-    border-radius: 0;
 }
 .account-empty__title {
     font-family: var(--font-heading);
@@ -1931,7 +1879,6 @@ input[type="number"] { -moz-appearance: textfield; appearance: textfield; }
     border-radius: 3px;
     font-size: 13px;
     font-weight: 600;
-    letter-spacing: .01em;
     text-decoration: none;
     transition: background .15s;
 }
@@ -1942,146 +1889,13 @@ input[type="number"] { -moz-appearance: textfield; appearance: textfield; }
 .account-empty__cta:hover { background: #27272a; color: #fff; }
 .account-empty__cta:hover::after { transform: translateX(3px); }
 
-/* ============================================================ */
-/* 26b. LEGACY OVERRIDES (v1 class names, scoped .account-page)  */
-/*      Supaya Blade lama tetap tampil editorial tanpa diubah.   */
-/* ============================================================ */
-
-/* .account-stats / .account-stat — mirip .metrics */
-.account-page .account-stats {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 0;
-    margin: 0;
-}
-.account-page .account-stat {
-    display: block;
-    padding: 22px 24px;
-    background: transparent;
-    border: 0;
-    border-right: 1px solid var(--_hair);
-    border-radius: 0;
-    transition: none;
-}
-.account-page .account-stat:first-child { padding-left: 40px; }
-.account-page .account-stat:last-child  { border-right: 0; padding-right: 40px; }
-.account-page .account-stat:hover {
-    background: transparent;
-    border-color: var(--_hair);
-}
-.account-page .account-stat__icon { display: none !important; }
-.account-page .account-stat__label {
-    display: block;
-    font-size: 11px;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: .12em;
-    color: var(--_faint);
-    margin: 0 0 12px;
-}
-.account-page .account-stat__value {
-    display: block;
-    font-family: var(--font-heading);
-    font-size: 30px;
-    font-weight: 600;
-    letter-spacing: -.025em;
-    color: var(--_ink);
-    line-height: 1;
-    font-feature-settings: "tnum" 1;
-}
-
-/* .account-actions / .account-action — mirip .quick-nav */
-.account-page .account-actions {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0;
-    padding: 0 40px;
-    margin: 0;
-    grid-template-columns: none;
-}
-.account-page .account-action {
-    display: inline-flex;
-    flex-direction: row;
-    align-items: center;
-    gap: 6px;
-    padding: 16px 0;
-    margin: 0 28px 0 0;
-    background: transparent;
-    border: 0;
-    border-radius: 0;
-    font-size: 13.5px;
-    font-weight: 600;
-    color: #52525b;
-    text-align: left;
-    box-shadow: none;
-    transform: none;
-    transition: color .12s;
-}
-.account-page .account-action:hover {
-    background: transparent;
-    border-color: transparent;
-    box-shadow: none;
-    transform: none;
-    color: var(--_ink);
-}
-.account-page .account-action__icon { display: none !important; }
-.account-page .account-action__label { font-size: 13.5px; font-weight: 600; }
-.account-page .account-action::after {
-    content: "→";
-    font-weight: 400;
-    color: var(--_faint);
-    transition: transform .15s, color .15s;
-}
-.account-page .account-action:hover::after {
-    transform: translateX(3px);
-    color: var(--_ink);
-}
-
-/* .empty (dashed box) → statement */
-.account-page .empty {
-    padding: 44px 40px;
-    text-align: left;
-    border: 0;
-    border-radius: 0;
-    color: var(--text);
-}
-
-/* CTA "Mulai Belanja" (biru) → hitam */
-.account-page .empty .button,
-.account-page .empty .button:hover {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    background: var(--_ink);
-    color: #fff;
-    border-radius: 3px;
-    padding: 11px 18px;
-    font-weight: 600;
-    font-size: 13px;
-    letter-spacing: .01em;
-}
-.account-page .empty .button:hover { background: #27272a; }
-.account-page .empty .button::after {
-    content: "→";
-    transition: transform .15s;
-}
-.account-page .empty .button:hover::after { transform: translateX(3px); }
-
-/* ============================================================ */
-/* 26c. ACCOUNT RESPONSIVE                                       */
-/* ============================================================ */
+/* ---- Responsive ---- */
 @media (max-width: 720px) {
     .account-head { padding: 28px 22px 24px; }
-    .account-head__title,
-    .account-page h1 { font-size: 28px; }
+    .account-head__title { font-size: 28px; }
+    .account-notice { padding: 14px 22px; }
+    .quota-panel { padding: 20px 22px 22px; }
 
-    .account-notice,
-    .account-page .notice { padding: 14px 22px; }
-
-    .quota-panel,
-    .quota-panel--empty { padding: 20px 22px 22px; }
-
-    /* v3 metrics */
     .metrics { grid-template-columns: repeat(2, 1fr); }
     .metrics__item { padding: 18px 22px; }
     .metrics__item:nth-child(2) { border-right: 0; }
@@ -2091,28 +1905,14 @@ input[type="number"] { -moz-appearance: textfield; appearance: textfield; }
     .metrics__item:nth-child(3) { padding-left: 22px; }
     .metrics__value { font-size: 24px; }
 
-    /* legacy stats */
-    .account-page .account-stats { grid-template-columns: repeat(2, 1fr); }
-    .account-page .account-stat { padding: 18px 22px; }
-    .account-page .account-stat:nth-child(2) { border-right: 0; }
-    .account-page .account-stat:nth-child(-n+2) { border-bottom: 1px solid var(--_hair); }
-    .account-page .account-stat:first-child,
-    .account-page .account-stat:last-child { padding-left: 22px; padding-right: 22px; }
-    .account-page .account-stat:nth-child(3) { padding-left: 22px; }
-    .account-page .account-stat__value { font-size: 24px; }
-
-    .quick-nav,
-    .account-page .account-actions {
+    .quick-nav {
         padding: 0 22px;
         overflow-x: auto;
         flex-wrap: nowrap;
     }
-    .quick-nav__item,
-    .account-page .account-action { white-space: nowrap; margin-right: 22px; }
+    .quick-nav__item { white-space: nowrap; margin-right: 22px; }
 
     .account-section { padding: 24px 22px; }
-    .account-empty,
-    .account-page .empty { padding: 32px 22px; }
 
     .account-unpaid-list__item { flex-direction: column; align-items: flex-start; }
     .account-unpaid-list__cta { width: 100%; justify-content: center; }
