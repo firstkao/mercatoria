@@ -5,9 +5,11 @@
     <div class="account-card">
 
         {{-- Header --}}
-        <header class="account-head">
+       <header class="account-head">
             <p class="account-head__eyebrow">Akun Saya</p>
             <h1 class="account-head__title">{{ $user->full_name ?? 'User' }}</h1>
+        
+            {{-- Baris 1: role + terdaftar --}}
             <div class="account-head__meta">
                 <span class="account-head__role">
                     {{ $user->role?->label() ?? 'User' }}
@@ -18,6 +20,22 @@
                     {{ $user->registered_at?->timezone('Asia/Jakarta')->translatedFormat('F Y') ?? '—' }}
                 </span>
             </div>
+        
+            {{-- Baris 2: email + tanggal lahir (readonly info) --}}
+            <dl class="account-head__facts">
+                <div>
+                    <dt>Email</dt>
+                    <dd>{{ $user->email ?? '—' }}</dd>
+                </div>
+                <div>
+                    <dt>Tanggal Lahir</dt>
+                    <dd>{{ $user->birth_date?->timezone('Asia/Jakarta')->translatedFormat('j F Y') ?? '—' }}</dd>
+                </div>
+                <div>
+                    <dt>WhatsApp</dt>
+                    <dd>{{ $user->whatsapp ?? '—' }}</dd>
+                </div>
+            </dl>
         </header>
 
         @if (session('status'))
