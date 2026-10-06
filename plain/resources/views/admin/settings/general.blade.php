@@ -37,9 +37,12 @@
         </label>
 
         <h3 style="margin-top:20px;">Sosial Media (dinamis)</h3>
-        <p class="hint">Kelola dari sini: tambah/hapus/ubah urutan. Yang aktif tampil di header &amp; footer toko. Kosongkan URL untuk menyembunyikan ikon.</p>
+        <p class="hint">Kelola dari sini: tambah/hapus/ubah urutan. Yang aktif tampil di header &amp; footer toko. Kosongkan URL untuk menyembunyikan ikon. Baris dengan ikon <strong>Marketplace</strong> (Toco/Shopee/Tokopedia/TikTok Shop) otomatis dirender sebagai tombol teks di footer, bukan ikon SVG.</p>
 
-        @php($iconKeys = \App\Models\SocialMedia::BUILT_IN_ICONS)
+        @php
+            $builtInIcons = \App\Models\SocialMedia::BUILT_IN_ICONS;
+            $marketplaceIcons = \App\Support\PublicMarketplace::ICON_KEYS;
+        @endphp
 
         <div id="socials-list" class="stack">
             @foreach ($socialMedias as $i => $sm)
@@ -54,17 +57,25 @@
                         <input type="url" name="socials[{{ $i }}][url]" value="{{ old("socials.$i.url", $sm->url) }}" maxlength="255" placeholder="https://instagram.com/mercatoria.id">
                     </label>
                     <label class="field">
-                        <span>Ikon bawaan</span>
-                        <select name="socials[{{ $i }}][icon_key]">
+                        <span>Ikon</span>
+                        <select name="socials[{{ $i }}][icon_key]" data-built-in="{{ implode(',', $builtInIcons) }}">
                             <option value="">— custom/teks —</option>
-                            @foreach ($iconKeys as $key)
-                                <option value="{{ $key }}" @selected(old("socials.$i.icon_key", $sm->icon_key) === $key)>{{ ucfirst($key) }}</option>
-                            @endforeach
+                            <optgroup label="Sosial Media">
+                                @foreach ($builtInIcons as $key)
+                                    <option value="{{ $key }}" @selected(old("socials.$i.icon_key", $sm->icon_key) === $key)>{{ ucfirst($key) }}</option>
+                                @endforeach
+                            </optgroup>
+                            <optgroup label="Marketplace Footer">
+                                @foreach ($marketplaceIcons as $key)
+                                    <option value="{{ $key }}" @selected(old("socials.$i.icon_key", $sm->icon_key) === $key)>{{ ucfirst($key) }}</option>
+                                @endforeach
+                            </optgroup>
                         </select>
                     </label>
-                    <label class="field">
+                    <label class="field icon-url-field">
                         <span>Icon URL (opsional)</span>
                         <input type="url" name="socials[{{ $i }}][icon_url]" value="{{ old("socials.$i.icon_url", $sm->icon_url) }}" maxlength="500" placeholder="https://.../icon.png">
+                        <small style="font-size:11px;opacity:.7;line-height:1.3;display:block;margin-top:2px;">Untuk platform custom. Akan diabaikan jika ikon sosial media bawaan dipilih.</small>
                     </label>
                     <label class="field" style="max-width:90px;">
                         <span>Urutan</span>
@@ -72,11 +83,6 @@
                     </label>
                     <label class="field" style="max-width:110px;">
                         <span>Aktif</span>
-                        {{-- BUG FIX: checkbox yang TIDAK dicentang tidak terkirim ke server,
-                             sehingga status lama tidak bisa dinonaktifkan. Hidden input "0"
-                             menjamin key selalu ada; browser memakai nilai checked saat
-                             checkbox dicentang (input radio-name trick tidak diperlukan karena
-                             PHP mengambil nilai terakhir untuk nama duplikat). --}}
                         <input type="hidden" name="socials[{{ $i }}][is_active]" value="0">
                         <input type="checkbox" name="socials[{{ $i }}][is_active]" value="1" @checked(old("socials.$i.is_active", $sm->is_active))>
                     </label>
@@ -93,13 +99,22 @@
                 <input type="hidden" name="socials[__INDEX__][id]" value="">
                 <label class="field"><span>Nama</span><input type="text" name="socials[__INDEX__][name]" maxlength="100" placeholder="Threads"></label>
                 <label class="field"><span>URL</span><input type="url" name="socials[__INDEX__][url]" maxlength="255" placeholder="https://..."></label>
-                <label class="field"><span>Ikon bawaan</span>
-                    <select name="socials[__INDEX__][icon_key]">
+                <label class="field"><span>Ikon</span>
+                    <select name="socials[__INDEX__][icon_key]" data-built-in="{{ implode(',', $builtInIcons) }}">
                         <option value="">— custom/teks —</option>
-                        @foreach ($iconKeys as $key)<option value="{{ $key }}">{{ ucfirst($key) }}</option>@endforeach
+                        <optgroup label="Sosial Media">
+                            @foreach ($builtInIcons as $key)<option value="{{ $key }}">{{ ucfirst($key) }}</option>@endforeach
+                        </optgroup>
+                        <optgroup label="Marketplace Footer">
+                            @foreach ($marketplaceIcons as $key)<option value="{{ $key }}">{{ ucfirst($key) }}</option>@endforeach
+                        </optgroup>
                     </select>
                 </label>
-                <label class="field"><span>Icon URL (opsional)</span><input type="url" name="socials[__INDEX__][icon_url]" maxlength="500"></label>
+                <label class="field icon-url-field">
+                    <span>Icon URL (opsional)</span>
+                    <input type="url" name="socials[__INDEX__][icon_url]" maxlength="500" placeholder="https://.../icon.png">
+                    <small style="font-size:11px;opacity:.7;line-height:1.3;display:block;margin-top:2px;">Untuk platform custom. Akan diabaikan jika ikon sosial media bawaan dipilih.</small>
+                </label>
                 <label class="field" style="max-width:90px;"><span>Urutan</span><input type="number" name="socials[__INDEX__][sort_order]" value="99" min="0" max="999"></label>
                 <label class="field" style="max-width:110px;"><span>Aktif</span><input type="hidden" name="socials[__INDEX__][is_active]" value="0"><input type="checkbox" name="socials[__INDEX__][is_active]" value="1" checked></label>
                 <label class="field" style="max-width:110px;"><span>Hapus</span><input type="checkbox" name="socials[__INDEX__][delete]" value="1"></label>
@@ -107,13 +122,52 @@
         </template>
 
         <button type="button" class="btn btn--ghost" id="add-social">+ Tambah Sosial Media</button>
+
         <script>
-            document.getElementById('add-social').addEventListener('click', function () {
-                var list = document.getElementById('socials-list');
-                var tpl = document.getElementById('social-row-template').innerHTML;
-                var index = Date.now(); // indeks unik utk array POST
-                list.insertAdjacentHTML('beforeend', tpl.replaceAll('__INDEX__', index));
-            });
+            (function () {
+                // BUG FIX UX: Sembunyikan field Icon URL ketika ikon SVG bawaan
+                // (Instagram/Facebook/X/Threads/WhatsApp) dipilih. Untuk ikon
+                // Marketplace (Toco/Shopee/Tokopedia/TikTokShop), field TETAP
+                // DITAMPILKAN karena baris marketplace tidak punya SVG inline.
+                function toggleIconUrl(row) {
+                    if (!row) return;
+                    var sel = row.querySelector('select[name*="[icon_key]"]');
+                    var urlField = row.querySelector('.icon-url-field');
+                    if (!sel || !urlField) return;
+
+                    var builtIn = (sel.dataset.builtIn || '').split(',').filter(Boolean);
+                    var urlInput = urlField.querySelector('input');
+                    var isBuiltInSvg = builtIn.indexOf(sel.value) !== -1;
+
+                    urlField.style.display = isBuiltInSvg ? 'none' : '';
+                    if (isBuiltInSvg && urlInput) {
+                        urlInput.value = '';
+                    }
+                }
+
+                function initRow(row) {
+                    if (!row) return;
+                    var sel = row.querySelector('select[name*="[icon_key]"]');
+                    if (!sel) return;
+                    toggleIconUrl(row);
+                    sel.addEventListener('change', function () { toggleIconUrl(row); });
+                }
+
+                // Init semua baris existing saat halaman dimuat.
+                document.querySelectorAll('#socials-list .social-row').forEach(initRow);
+
+                // Tombol tambah baris baru.
+                var addBtn = document.getElementById('add-social');
+                if (addBtn) {
+                    addBtn.addEventListener('click', function () {
+                        var list = document.getElementById('socials-list');
+                        var tpl = document.getElementById('social-row-template').innerHTML;
+                        var index = Date.now(); // indeks unik utk array POST
+                        list.insertAdjacentHTML('beforeend', tpl.replaceAll('__INDEX__', index));
+                        initRow(list.lastElementChild);
+                    });
+                }
+            })();
         </script>
 
         <h3 style="margin-top:20px;">Widget WhatsApp</h3>
