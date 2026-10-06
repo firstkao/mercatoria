@@ -1,227 +1,187 @@
-@extends('layouts.app', ['title' => 'Dashboard Saya'])
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="robots" content="noindex, nofollow">
+    <title>{{ $title ?? 'Dashboard' }} - Admin MERCATORIA</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <meta name="format-detection" content="telephone=no">
+    <link rel="stylesheet" href="{{ asset('css/admin.css') }}?v={{ filemtime(public_path('css/admin.css')) }}">
+    @stack('head')
+</head>
+<body>
+    @php
+        $navigation = [
+            ['label' => null, 'items' => [
+                ['route' => 'admin.dashboard', 'active' => 'admin.dashboard', 'label' => 'Ringkasan', 'icon' => 'home'],
+                ['route' => 'admin.reports.index', 'active' => 'admin.reports.*', 'label' => 'Laporan', 'icon' => 'list'],
+            ]],
+            ['label' => 'Penjualan', 'items' => [
+                ['route' => 'admin.orders.index', 'active' => 'admin.orders.*', 'label' => 'Pesanan', 'icon' => 'box', 'badge' => 'pendingOrders'],
+                ['route' => 'admin.payments.index', 'active' => 'admin.payments.*', 'label' => 'Pembayaran', 'icon' => 'rupiah', 'badge' => 'pendingProofs'],
+                ['route' => 'admin.payment-methods.index', 'active' => 'admin.payment-methods.*', 'label' => 'Metode Bayar', 'icon' => 'wallet'],
+                ['route' => 'admin.cart-reminders.index', 'active' => 'admin.cart-reminders.*', 'label' => 'Cart Reminder', 'icon' => 'users'],
+            ]],
+            ['label' => 'Katalog', 'items' => [
+                ['route' => 'admin.products.index', 'active' => 'admin.products.*', 'label' => 'Produk', 'icon' => 'box'],
+                ['route' => 'admin.best-sellers.index', 'active' => 'admin.best-sellers.*', 'label' => 'Produk Terlaris', 'icon' => 'list'],
+                ['route' => 'admin.games.index', 'active' => 'admin.games.*', 'label' => 'Game', 'icon' => 'file'],
+                ['route' => 'admin.developers.index', 'active' => 'admin.developers.*', 'label' => 'Developer', 'icon' => 'users'],
+            ]],
+            ['label' => 'Pelanggan', 'items' => [
+                ['route' => 'admin.users.index', 'active' => 'admin.users.*', 'label' => 'Pengguna', 'icon' => 'users'],
+                ['route' => 'admin.referrals.index', 'active' => 'admin.referrals.*', 'label' => 'Referral', 'icon' => 'users'],
+                ['route' => 'admin.identities.index', 'active' => ['admin.identities.*', 'admin.names.*'], 'label' => 'Blokir & banding', 'icon' => 'shield'],
+                ['route' => 'admin.logs.index', 'active' => 'admin.logs.*', 'label' => 'Log aktivitas', 'icon' => 'list'],
+            ]],
+            ['label' => 'Konten', 'items' => [
+                ['route' => 'admin.pages.index', 'active' => 'admin.pages.*', 'label' => 'Halaman', 'icon' => 'file'],
+                ['route' => 'admin.hero-slides.index', 'active' => 'admin.hero-slides.*', 'label' => 'Hero Slider', 'icon' => 'image'],
+                ['route' => 'admin.preorder.index', 'active' => 'admin.preorder.*', 'label' => 'Pre-Order Baru', 'icon' => 'image'],
+            ]],
+            ['label' => 'Pengaturan', 'items' => [
+                ['route' => 'admin.settings.general', 'active' => 'admin.settings.general', 'label' => 'Umum', 'icon' => 'sliders'],
+                ['route' => 'admin.settings.seo', 'active' => 'admin.settings.seo', 'label' => 'SEO', 'icon' => 'list'],
+                ['route' => 'admin.settings.pricing', 'active' => 'admin.settings.pricing', 'label' => 'Harga & kurs', 'icon' => 'sliders'],
+                ['route' => 'admin.settings.tiers', 'active' => 'admin.settings.tiers', 'label' => 'Tier ongkir', 'icon' => 'truck'],
+                ['route' => 'admin.settings.marketplaces', 'active' => 'admin.settings.marketplaces', 'label' => 'Marketplace', 'icon' => 'store'],
+                ['route' => 'admin.settings.display', 'active' => 'admin.settings.display', 'label' => 'Tampilan toko', 'icon' => 'eye'],
+                ['route' => 'admin.maintenance.index', 'active' => 'admin.maintenance.*', 'label' => 'Maintenance', 'icon' => 'shield'],
+            ]],
+        ];
+        $tabs = [
+            ['route' => 'admin.dashboard', 'active' => 'admin.dashboard', 'label' => 'Ringkasan', 'icon' => 'home'],
+            ['route' => 'admin.payments.index', 'active' => 'admin.payments.*', 'label' => 'Pembayaran', 'icon' => 'rupiah'],
+            ['route' => 'admin.products.index', 'active' => 'admin.products.*', 'label' => 'Produk', 'icon' => 'box'],
+            ['route' => 'admin.users.index', 'active' => 'admin.users.*', 'label' => 'Pengguna', 'icon' => 'users'],
+        ];
+    @endphp
 
-@section('content')
-<section class="account-page">
-    <div class="account-card">
-
-        {{-- ============ HEADER ============ --}}
-        <header class="account-head">
-            <p class="account-head__eyebrow">Akun Saya</p>
-            <h1 class="account-head__title">{{ $user->full_name ?? 'User' }}</h1>
-            <div class="account-head__meta">
-                <span class="account-head__role">{{ $user->role?->label() ?? 'User' }}</span>
-                <span class="account-head__dot">·</span>
-                <span>
-                    Terdaftar
-                    {{ $user->registered_at?->timezone('Asia/Jakarta')->translatedFormat('F Y') ?? '—' }}
-                </span>
-            </div>
-        </header>
-
-        @if (session('status'))
-            <div class="account-notice">{{ session('status') }}</div>
-        @endif
-
-        {{-- ============ QUOTA (khusus spammer) ============ --}}
-        @if ($user->isSpammer())
-            @php
-                $remaining = $user->remainingViewQuota() ?? 0;
-                $viewQuota = $viewQuota ?? 10;
-                $percent   = $viewQuota > 0 ? min(100, max(0, ($remaining / $viewQuota) * 100)) : 0;
-            @endphp
-
-            @if ($remaining <= 0)
-                @php
-                    $waNum = preg_replace('/\D/', '', $contactWhatsapp ?? '');
-                    if (str_starts_with($waNum, '0')) {
-                        $waNum = '62' . substr($waNum, 1);
-                    }
-                    if ($waNum === '') {
-                        $waNum = '6281219683709';
-                    }
-                    $waMessage = rawurlencode(
-                        "Halo Admin,\n" .
-                        "Saya ingin meminta reset kuota lihat produk karena sudah mencapai batas.\n" .
-                        "Email akun saya: " . ($user->email ?? '') . "\n" .
-                        "Mohon dibantu, terima kasih."
-                    );
-                @endphp
-
-                <div class="quota-panel quota-panel--empty">
-                    <div class="quota-panel__row">
-                        <span class="quota-panel__label">Kuota lihat produk</span>
-                        <span class="quota-panel__value"><strong>0</strong> / {{ $viewQuota }}</span>
-                    </div>
-                    <p class="quota-panel__hint" style="color:#b91c1c; margin-top:0;">
-                        Kuota habis. Hubungi admin untuk reset agar bisa menjelajah katalog kembali.
-                    </p>
-                    <a href="https://wa.me/{{ $waNum }}?text={{ $waMessage }}"
-                       target="_blank" rel="noopener" class="quota-panel__cta">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                             stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/>
-                        </svg>
-                        Chat admin via WhatsApp
-                    </a>
-                </div>
-            @else
-                <div class="quota-panel {{ $remaining <= 2 ? 'quota-panel--warn' : '' }}">
-                    <div class="quota-panel__row">
-                        <span class="quota-panel__label">Kuota lihat produk</span>
-                        <span class="quota-panel__value"><strong>{{ $remaining }}</strong> / {{ $viewQuota }}</span>
-                    </div>
-                    <div class="quota-bar">
-                        <div class="quota-bar__fill" style="width: {{ $percent }}%"></div>
-                    </div>
-                    @if ($user->expires_at)
-                        <p class="quota-panel__hint">
-                            Akun terhapus otomatis pada
-                            {{ $user->expires_at->timezone('Asia/Jakarta')->translatedFormat('j F Y, H:i') }} WIB
-                            jika belum ada pembayaran terverifikasi.
-                        </p>
-                    @endif
-                </div>
-            @endif
-        @endif
-
-        {{-- ============ METRICS STRIP ============ --}}
-        <div class="metrics">
-            <div class="metrics__item">
-                <span class="metrics__label">Total Pesanan</span>
-                <span class="metrics__value">{{ number_format($orderStats['total'] ?? 0, 0, ',', '.') }}</span>
-            </div>
-            <div class="metrics__item">
-                <span class="metrics__label">Total Belanja</span>
-                <span class="metrics__value">{{ \App\Support\PriceCalculator::formatRupiah($totalSpent ?? 0) }}</span>
-            </div>
-            <div class="metrics__item">
-                <span class="metrics__label">Koin Aktif</span>
-                <span class="metrics__value">{{ number_format($activeCoins ?? 0, 0, ',', '.') }}</span>
-            </div>
-            <div class="metrics__item">
-                <span class="metrics__label">Undang Teman</span>
-                <span class="metrics__value">{{ $referralCount ?? $user->referralsMade()->count() }}</span>
-            </div>
-        </div>
-
-        {{-- ============ QUICK NAV ============ --}}
-        <nav class="quick-nav">
-            <a href="{{ route('account.orders.index') }}" class="quick-nav__item">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M9 11l3 3L22 4"/>
-                    <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
-                </svg>
-                <span>Pesanan Saya</span>
-            </a>
-            <a href="{{ route('account.coins.index') }}" class="quick-nav__item">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
-                    <circle cx="12" cy="12" r="10"/>
-                    <path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/>
-                    <path d="M12 6v2M12 16v2"/>
-                </svg>
-                <span>Koin Saya</span>
-            </a>
-            <a href="{{ route('referral.index') }}" class="quick-nav__item">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
-                    <circle cx="9" cy="7" r="4"/>
-                    <path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>
-                </svg>
-                <span>Undang Teman</span>
-            </a>
-            <a href="{{ route('account.profile.edit') }}" class="quick-nav__item">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
-                    <circle cx="12" cy="12" r="3"/>
-                    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
-                </svg>
-                <span>Edit Profil</span>
-            </a>
-        </nav>
-
-        {{-- ============ TAGIHAN MENUNGGU ============ --}}
-        @if (isset($unpaidOrders) && $unpaidOrders->isNotEmpty())
-            <div class="account-section">
-                <div class="account-section__head">
-                    <h2 class="account-section__title">Tagihan Menunggu</h2>
-                    <a href="{{ route('account.orders.index') }}" class="account-section__link">Semua pesanan →</a>
-                </div>
-                <ul class="account-unpaid-list">
-                    @foreach ($unpaidOrders as $u)
-                        <li class="account-unpaid-list__item">
-                            <div class="account-unpaid-list__info">
-                                <span class="account-unpaid-list__id">{{ $u->order_number }}</span>
-                                <span class="account-unpaid-list__amount">
-                                    {{ \App\Support\PriceCalculator::formatRupiah($u->pay_now_idr) }}
-                                    ({{ $u->payment_scheme === 'FP' ? 'lunas' : 'DP' }})
-                                </span>
-                                @if ($u->payment_deadline_at)
-                                    <div class="account-unpaid-list__deadline">
-                                        Bayar sebelum
-                                        {{ $u->payment_deadline_at->timezone('Asia/Jakarta')->translatedFormat('j M Y, H:i') }} WIB
-                                    </div>
-                                @endif
-                            </div>
-                            <a href="{{ route('account.orders.show', $u->order_number) }}#upload-bukti"
-                               class="account-unpaid-list__cta">
-                                Bayar
-                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                     stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                                    <path d="M5 12h14M12 5l7 7-7 7"/>
-                                </svg>
-                            </a>
-                        </li>
-                    @endforeach
-                </ul>
-            </div>
-        @endif
-
-        {{-- ============ PESANAN TERBARU ============ --}}
-        <div class="account-section">
-            <div class="account-section__head">
-                <h2 class="account-section__title">Pesanan Terbaru</h2>
-                @if (isset($recentOrders) && $recentOrders->isNotEmpty())
-                    <a href="{{ route('account.orders.index') }}" class="account-section__link">Semua →</a>
+    <div class="shell">
+        <aside class="sidebar" aria-label="Menu admin">
+            <a href="{{ route('admin.dashboard') }}" class="sidebar__brand">
+                @if (file_exists(public_path('images/logo.png')))
+                    <img src="{{ asset('images/logo.png') }}" alt="MERCATORIA">
+                @else
+                    MERCATORIA
                 @endif
+                <span>Admin</span>
+            </a>
+            <nav class="sidebar__nav">
+                @include('admin.partials.nav', ['navigation' => $navigation])
+            </nav>
+            <div class="sidebar__footer">
+                <a href="{{ route('admin.profile.edit') }}" class="sidebar__user" title="Edit profil">{{ auth('admin')->user()->name }}</a>
+                <form method="POST" action="{{ route('admin.logout') }}">
+                    @csrf
+                    <button type="submit" class="link">Keluar</button>
+                </form>
             </div>
+        </aside>
 
-            @if (isset($recentOrders) && $recentOrders->isNotEmpty())
-                <ul class="account-order-list">
-                    @foreach ($recentOrders as $order)
-                        <li class="account-order-list__item">
-                            <a href="{{ route('account.orders.show', $order->order_number) }}" class="account-order-list__link">
-                                <div>
-                                    <div class="account-order-list__id">#{{ $order->order_number }}</div>
-                                    <div class="account-order-list__date">
-                                        {{ $order->created_at->timezone('Asia/Jakarta')->translatedFormat('j M Y, H:i') }}
-                                    </div>
-                                </div>
-                                <div style="text-align:right;">
-                                    <div class="account-order-list__amount">
-                                        {{ \App\Support\PriceCalculator::formatRupiah($order->pay_now_idr) }}
-                                    </div>
-                                    <span class="account-order-list__status {{ in_array($order->status, ['menunggu_pembayaran','pembayaran_gagal']) ? 'account-order-list__status--danger' : (in_array($order->status, ['selesai']) ? 'account-order-list__status--ok' : '') }}">
-                                        {{ $order->statusLabel() }}
-                                    </span>
-                                </div>
-                            </a>
-                        </li>
-                    @endforeach
-                </ul>
-            @else
-                <div class="account-empty">
-                    <p class="account-empty__title">Belum ada pesanan</p>
-                    <p class="account-empty__sub">Yuk mulai jelajahi katalog dan temukan merch favoritmu.</p>
-                    <a href="{{ route('catalog.index') }}" class="account-empty__cta">
-                        Jelajahi katalog
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                             stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M5 12h14M12 5l7 7-7 7"/>
-                        </svg>
-                    </a>
+        <div class="main">
+            {{-- Banner maintenance mode --}}
+            @if (\App\Models\Setting::get('maintenance_enabled') === '1')
+                <div style="background:#fef2f2;border-bottom:1px solid #fecaca;color:#991b1b;padding:12px 32px;font-size:14px;display:flex;align-items:center;gap:12px;">
+                    <strong>⚠️ Mode Pemeliharaan AKTIF</strong>
+                    <span>— Pengunjung biasa melihat halaman pemeliharaan. Kamu tetap bisa akses karena login admin.</span>
+                    <a href="{{ route('admin.settings.general') }}" style="margin-left:auto;color:#dc2626;font-weight:600;">Matikan →</a>
                 </div>
             @endif
-        </div>
 
-    </div>{{-- /.account-card --}}
-</section>
-@endsection
+            <header class="topbar">
+                <div class="topbar__title">
+                    @isset($back)
+                        <a href="{{ $back }}" class="topbar__back" aria-label="Kembali">@include('admin.partials.icon', ['name' => 'back'])</a>
+                    @endisset
+                    <h1>{{ $title ?? 'Dashboard' }}</h1>
+                </div>
+                <div class="topbar__actions">@yield('actions')</div>
+            </header>
+
+            @hasSection('tabs')
+                <nav class="subtabs" aria-label="Bagian">@yield('tabs')</nav>
+            @endif
+
+            @hasSection('filters')
+                @php($filtersActive = collect(request()->except('page', 'tab'))->filter(fn ($value) => $value !== null && $value !== '')->isNotEmpty())
+                <div @class(['filterbar', 'is-open' => $filtersActive])>
+                    <button type="button" class="filterbar__toggle" aria-expanded="{{ $filtersActive ? 'true' : 'false' }}"
+                            onclick="var bar = this.parentElement; bar.classList.toggle('is-open'); this.setAttribute('aria-expanded', bar.classList.contains('is-open'));">
+                        @include('admin.partials.icon', ['name' => 'filter']) Filter
+                    </button>
+                    <div class="filterbar__body">@yield('filters')</div>
+                </div>
+            @endif
+
+            <main class="content">
+                @if (session('status'))
+                    <div class="alert alert--success" role="status">{{ session('status') }}</div>
+                @endif
+                @if ($errors->any())
+                    <div class="alert alert--danger" role="alert">
+                        <strong>Ada {{ $errors->count() }} isian yang perlu diperbaiki.</strong>
+                        <ul>
+                            @foreach ($errors->all() as $error)
+                                <li>{{ $error }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+                @endif
+
+                @yield('content')
+            </main>
+        </div>
+    </div>
+
+    <nav class="tabbar" aria-label="Menu admin">
+        @foreach ($tabs as $item)
+            <a href="{{ route($item['route']) }}" @class(['tabbar__link', 'is-active' => request()->routeIs($item['active'])])>
+                @include('admin.partials.icon', ['name' => $item['icon']])
+                <span>{{ $item['label'] }}</span>
+            </a>
+        @endforeach
+        <button type="button" class="tabbar__link" aria-controls="mobile-menu" aria-expanded="false" data-menu-toggle>
+            @include('admin.partials.icon', ['name' => 'menu'])
+            <span>Menu</span>
+        </button>
+    </nav>
+
+    <div class="sheet" id="mobile-menu" hidden style="display:none" data-menu>
+        <div class="sheet__backdrop" data-menu-toggle></div>
+        <div class="sheet__panel" role="dialog" aria-label="Semua menu">
+            <div class="sheet__head">
+                <strong>{{ auth('admin')->user()->name }}</strong>
+                <button type="button" class="link" data-menu-toggle>Tutup</button>
+            </div>
+            <nav class="sheet__nav">
+                @include('admin.partials.nav', ['navigation' => $navigation])
+            </nav>
+            <form method="POST" action="{{ route('admin.logout') }}" class="sheet__logout">
+                @csrf
+                <button type="submit" class="btn btn--block">@include('admin.partials.icon', ['name' => 'logout']) Keluar</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function toggleMenu() {
+            var sheet = document.querySelector('[data-menu]');
+            sheet.hidden = !sheet.hidden;
+            sheet.style.display = sheet.hidden ? 'none' : 'flex';
+            document.querySelector('.tabbar [data-menu-toggle]').setAttribute('aria-expanded', String(!sheet.hidden));
+        }
+        document.querySelectorAll('button[data-menu-toggle]').forEach(function (element) {
+            element.addEventListener('click', toggleMenu);
+        });
+        document.querySelector('.sheet__backdrop').addEventListener('click', function () {
+            if (!document.querySelector('[data-menu]').hidden) toggleMenu();
+        });
+    </script>
+    <script src="{{ asset('js/admin-bulk.js') }}" defer></script>
+    @stack('scripts')
+</body>
+</html>
