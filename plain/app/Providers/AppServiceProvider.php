@@ -96,8 +96,7 @@ class AppServiceProvider extends ServiceProvider
                 //          header & footer.
                 //
                 //   - PublicMarketplace::buttons()
-                //       -> baris YANG marketplace (toco / shopee / tokopedia /
-                //          tiktokshop); dirender sebagai tombol teks di
+                //       -> baris YANG marketplace (toco / shopee); dirender sebagai tombol teks di
                 //          footer (URL diambil via key 'toco', 'shopee', dsb).
                 //
                 // Pemisahan ini menjaga tanggung jawab tiap class tetap
@@ -155,8 +154,6 @@ class AppServiceProvider extends ServiceProvider
                     ?? Setting::get('footer_toco_url');
                 $data['footerShopeeUrl'] = optional($data['marketplaceButtons']->get('shopee'))->url
                     ?? Setting::get('footer_shopee_url');
-                $data['footerTokopediaUrl'] = optional($data['marketplaceButtons']->get('tokopedia'))->url;
-                $data['footerTiktokShopUrl'] = optional($data['marketplaceButtons']->get('tiktokshop'))->url;
             } catch (\Throwable $e) {
                 // Pertahankan fallback null di $data.
             }
