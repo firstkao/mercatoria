@@ -10,49 +10,73 @@
 @endsection
 
 @section('content')
-    <div class="stats">
-        <div class="stat">
-            <span class="stat__label">Total Pendapatan</span>
-            <strong class="stat__value">{{ \App\Support\PriceCalculator::formatRupiah($totalRevenue) }}</strong>
-        </div>
-        <div class="stat">
-            <span class="stat__label">Total Pesanan</span>
-            <strong class="stat__value">{{ number_format($totalOrders, 0, ',', '.') }}</strong>
-        </div>
-        <div class="stat">
-            <span class="stat__label">Rata-rata Nilai Pesanan</span>
-            <strong class="stat__value">{{ \App\Support\PriceCalculator::formatRupiah($avgOrderValue) }}</strong>
-        </div>
-    </div>
 
-    {{-- Grafik harian --}}
+    {{-- ============ HEAD ============ --}}
+    <header class="rpt-head">
+        <div>
+            <p class="rpt-head__eyebrow">Laporan</p>
+            <h1 class="rpt-head__title">Penjualan</h1>
+            <span class="rpt-head__range">
+                {{ $from->translatedFormat('j M Y') }} — {{ $until->translatedFormat('j M Y') }}
+            </span>
+        </div>
+    </header>
+
+    {{-- ============ RINGKASAN ============ --}}
+    <section class="rpt-card">
+        <h2 class="rpt-card__label">Ringkasan</h2>
+        <div class="rpt-metrics">
+            <div class="rpt-metric">
+                <span class="rpt-metric__value">{{ \App\Support\PriceCalculator::formatRupiah($totalRevenue) }}</span>
+                <span class="rpt-metric__label">Total Pendapatan</span>
+            </div>
+            <div class="rpt-metric">
+                <span class="rpt-metric__value">{{ number_format($totalOrders, 0, ',', '.') }}</span>
+                <span class="rpt-metric__label">Total Pesanan</span>
+            </div>
+            <div class="rpt-metric">
+                <span class="rpt-metric__value">{{ \App\Support\PriceCalculator::formatRupiah($avgOrderValue) }}</span>
+                <span class="rpt-metric__label">Rata-rata Nilai Pesanan</span>
+            </div>
+        </div>
+    </section>
+
+    {{-- ============ GRAFIK HARIAN ============ --}}
     @if (! empty($dailyRevenue))
-        <section class="panel">
-            <h2>Pendapatan Harian</h2>
-            <div class="chart-bars">
+        <section class="rpt-card">
+            <h2 class="rpt-card__label">Pendapatan Harian</h2>
+            <div class="rpt-chart">
                 @php($max = max($dailyRevenue) ?: 1)
                 @foreach ($dailyRevenue as $day => $total)
-                    <div class="chart-bar" title="{{ $day }}: {{ \App\Support\PriceCalculator::formatRupiah($total) }}">
-                        <div class="chart-bar__fill" style="height: {{ round(($total / $max) * 100) }}%;"></div>
-                        <span class="chart-bar__label">{{ \Illuminate\Support\Carbon::parse($day)->format('d/m') }}</span>
+                    <div class="rpt-chart__bar" title="{{ $day }}: {{ \App\Support\PriceCalculator::formatRupiah($total) }}">
+                        <div class="rpt-chart__fill" style="height: {{ round(($total / $max) * 100) }}%;"></div>
+                        <span class="rpt-chart__label">{{ \Illuminate\Support\Carbon::parse($day)->format('d/m') }}</span>
                     </div>
                 @endforeach
             </div>
         </section>
     @endif
 
-    <div class="grid-2">
+    {{-- ============ SPLIT: STATUS + MARKETPLACE ============ --}}
+    <div class="rpt-split">
+
         {{-- Per status --}}
-        <section class="panel">
-            <h2>Pesanan per Status</h2>
+        <section class="rpt-card">
+            <h2 class="rpt-card__label">Pesanan per Status</h2>
             @if ($byStatus->isEmpty())
-                <p class="muted">Belum ada pesanan.</p>
+                <p class="rpt-empty">Belum ada pesanan pada rentang ini.</p>
             @else
-                <ul class="chip-list">
+                @php($statusMax = $byStatus->max() ?: 1)
+                <ul class="rpt-status">
                     @foreach ($byStatus as $status => $count)
-                        <li class="chip">
-                            <span>{{ \App\Enums\OrderStatus::tryFrom($status)?->label() ?? $status }}</span>
-                            <strong>{{ $count }}</strong>
+                        <li class="rpt-status__item">
+                            <span class="rpt-status__name">
+                                {{ \App\Enums\OrderStatus::tryFrom($status)?->label() ?? $status }}
+                            </span>
+                            <span class="rpt-status__count">{{ $count }}</span>
+                            <div class="rpt-status__bar">
+                                <span style="width: {{ round(($count / $statusMax) * 100) }}%"></span>
+                            </div>
                         </li>
                     @endforeach
                 </ul>
@@ -60,65 +84,63 @@
         </section>
 
         {{-- Per marketplace --}}
-        <section class="panel">
-            <h2>Per Marketplace</h2>
+        <section class="rpt-card">
+            <h2 class="rpt-card__label">Per Marketplace</h2>
             @if ($byMarketplace->isEmpty())
-                <p class="muted">Belum ada data.</p>
+                <p class="rpt-empty">Belum ada data pada rentang ini.</p>
             @else
-                <div class="table-wrap">
-                <table class="table">
+                <table class="rpt-table">
                     <thead>
                         <tr>
                             <th>Marketplace</th>
-                            <th>Pesanan</th>
-                            <th>Pendapatan</th>
+                            <th class="rpt-table__right">Pesanan</th>
+                            <th class="rpt-table__right">Pendapatan</th>
                         </tr>
                     </thead>
                     <tbody>
                         @foreach ($byMarketplace as $name => $data)
                             <tr>
-                                <td><strong>{{ $name }}</strong></td>
-                                <td class="muted">{{ $data['count'] }}</td>
-                                <td>{{ \App\Support\PriceCalculator::formatRupiah($data['revenue']) }}</td>
+                                <td class="rpt-table__name">{{ $name }}</td>
+                                <td class="rpt-table__num rpt-table__right">{{ number_format($data['count'], 0, ',', '.') }}</td>
+                                <td class="rpt-table__num rpt-table__right">{{ \App\Support\PriceCalculator::formatRupiah($data['revenue']) }}</td>
                             </tr>
                         @endforeach
                     </tbody>
                 </table>
-                </div>
             @endif
         </section>
+
     </div>
 
-    {{-- Top produk --}}
-    <section class="panel panel--flush">
-        <h2 style="padding:1rem 1rem 0;">Top 10 Produk Terjual</h2>
+    {{-- ============ TOP PRODUK ============ --}}
+    <section class="rpt-card">
+        <h2 class="rpt-card__label">Top 10 Produk Terjual</h2>
         @if ($topProducts->isEmpty())
-            <p class="muted" style="padding:1rem;">Belum ada data.</p>
+            <p class="rpt-empty">Belum ada produk terjual pada rentang ini.</p>
         @else
-            <div class="table-wrap">
-            <table class="table">
+            <table class="rpt-table">
                 <thead>
                     <tr>
-                        <th>#</th>
+                        <th class="rpt-table__rank">#</th>
                         <th>Produk</th>
                         <th>Varian</th>
-                        <th>Qty Terjual</th>
-                        <th>Pendapatan</th>
+                        <th class="rpt-table__right">Qty</th>
+                        <th class="rpt-table__right">Pendapatan</th>
                     </tr>
                 </thead>
                 <tbody>
                     @foreach ($topProducts as $index => $row)
                         <tr>
-                            <td class="muted">{{ $index + 1 }}</td>
-                            <td><strong>{{ $row->product_name_snapshot }}</strong></td>
-                            <td class="muted">{{ $row->variant_name_snapshot }}</td>
-                            <td>{{ number_format($row->total_qty, 0, ',', '.') }}</td>
-                            <td>{{ \App\Support\PriceCalculator::formatRupiah($row->total_revenue) }}</td>
+                            <td class="rpt-table__rank">{{ str_pad($index + 1, 2, '0', STR_PAD_LEFT) }}</td>
+                            <td class="rpt-table__name">{{ $row->product_name_snapshot }}</td>
+                            <td class="muted">{{ $row->variant_name_snapshot ?: '—' }}</td>
+                            <td class="rpt-table__num rpt-table__right">{{ number_format($row->total_qty, 0, ',', '.') }}</td>
+                            <td class="rpt-table__num rpt-table__right">{{ \App\Support\PriceCalculator::formatRupiah($row->total_revenue) }}</td>
                         </tr>
                     @endforeach
                 </tbody>
             </table>
-            </div>
         @endif
     </section>
-@endsection 
+
+@endsection
