@@ -21,7 +21,7 @@
 
     <label class="field">
         <span>Label</span>
-        <input type="text" name="label" value="{{ old('label', $method->label) }}" maxlength="100" required placeholder="Contoh: BCA / QRIS / Tokopedia Barcode">
+        <input type="text" name="label" value="{{ old('label', $method->label) }}" maxlength="100" required placeholder="Contoh: BCA / QRIS / Shopee Pay">
         @include('admin.partials.error', ['name' => 'label'])
     </label>
 
