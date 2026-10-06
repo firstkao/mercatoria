@@ -6,7 +6,7 @@ use App\Models\SocialMedia;
 
 /**
  * Helper untuk baris social_media yang dirender sebagai TOMBOL MARKETPLACE
- * (teks + URL) di footer publik: TOCO, Shopee, Tokopedia, TikTok Shop.
+ * (teks + URL) di footer publik: TOCO, Shopee.
  *
  * Baris-baris ini "nitip" di tabel social_media supaya admin cukup kelola
  * dari satu halaman (Pengaturan Umum), tapi diperlakukan berbeda saat
@@ -15,7 +15,7 @@ use App\Models\SocialMedia;
 class PublicMarketplace
 {
     /** Kunci icon_key yang menandai sebuah baris adalah tombol marketplace. */
-    public const ICON_KEYS = ['toco', 'tokopedia', 'shopee', 'tiktokshop'];
+    public const ICON_KEYS = ['toco', 'shopee'];
 
     /**
      * Semua baris marketplace yang aktif dan punya URL.
