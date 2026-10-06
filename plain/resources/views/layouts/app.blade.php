@@ -11,7 +11,10 @@
             <div class="account-head__meta">
                 <span class="account-head__role">{{ $user->role?->label() ?? 'User' }}</span>
                 <span class="account-head__dot">·</span>
-                <span>Terdaftar {{ $user->registered_at?->timezone('Asia/Jakarta')->translatedFormat('F Y') ?? '—' }}</span>
+                <span>
+                    Terdaftar
+                    {{ $user->registered_at?->timezone('Asia/Jakarta')->translatedFormat('F Y') ?? '—' }}
+                </span>
             </div>
         </header>
 
@@ -33,7 +36,9 @@
                     if (str_starts_with($waNum, '0')) {
                         $waNum = '62' . substr($waNum, 1);
                     }
-                    if ($waNum === '') { $waNum = '6281219683709'; }
+                    if ($waNum === '') {
+                        $waNum = '6281219683709';
+                    }
                     $waMessage = rawurlencode(
                         "Halo Admin,\n" .
                         "Saya ingin meminta reset kuota lihat produk karena sudah mencapai batas.\n" .
@@ -50,8 +55,10 @@
                     <p class="quota-panel__hint" style="color:#b91c1c; margin-top:0;">
                         Kuota habis. Hubungi admin untuk reset agar bisa menjelajah katalog kembali.
                     </p>
-                    <a href="https://wa.me/{{ $waNum }}?text={{ $waMessage }}" target="_blank" rel="noopener" class="quota-panel__cta">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <a href="https://wa.me/{{ $waNum }}?text={{ $waMessage }}"
+                       target="_blank" rel="noopener" class="quota-panel__cta">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                             stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/>
                         </svg>
                         Chat admin via WhatsApp
@@ -143,16 +150,22 @@
                         <li class="account-unpaid-list__item">
                             <div class="account-unpaid-list__info">
                                 <span class="account-unpaid-list__id">{{ $u->order_number }}</span>
-                                <span class="account-unpaid-list__amount">{{ \App\Support\PriceCalculator::formatRupiah($u->pay_now_idr) }} ({{ $u->payment_scheme === 'FP' ? 'lunas' : 'DP' }})</span>
+                                <span class="account-unpaid-list__amount">
+                                    {{ \App\Support\PriceCalculator::formatRupiah($u->pay_now_idr) }}
+                                    ({{ $u->payment_scheme === 'FP' ? 'lunas' : 'DP' }})
+                                </span>
                                 @if ($u->payment_deadline_at)
                                     <div class="account-unpaid-list__deadline">
-                                        Bayar sebelum {{ $u->payment_deadline_at->timezone('Asia/Jakarta')->translatedFormat('j M Y, H:i') }} WIB
+                                        Bayar sebelum
+                                        {{ $u->payment_deadline_at->timezone('Asia/Jakarta')->translatedFormat('j M Y, H:i') }} WIB
                                     </div>
                                 @endif
                             </div>
-                            <a href="{{ route('account.orders.show', $u->order_number) }}#upload-bukti" class="account-unpaid-list__cta">
+                            <a href="{{ route('account.orders.show', $u->order_number) }}#upload-bukti"
+                               class="account-unpaid-list__cta">
                                 Bayar
-                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                     stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                                     <path d="M5 12h14M12 5l7 7-7 7"/>
                                 </svg>
                             </a>
@@ -178,10 +191,14 @@
                             <a href="{{ route('account.orders.show', $order->order_number) }}" class="account-order-list__link">
                                 <div>
                                     <div class="account-order-list__id">#{{ $order->order_number }}</div>
-                                    <div class="account-order-list__date">{{ $order->created_at->timezone('Asia/Jakarta')->translatedFormat('j M Y, H:i') }}</div>
+                                    <div class="account-order-list__date">
+                                        {{ $order->created_at->timezone('Asia/Jakarta')->translatedFormat('j M Y, H:i') }}
+                                    </div>
                                 </div>
                                 <div style="text-align:right;">
-                                    <div class="account-order-list__amount">{{ \App\Support\PriceCalculator::formatRupiah($order->pay_now_idr) }}</div>
+                                    <div class="account-order-list__amount">
+                                        {{ \App\Support\PriceCalculator::formatRupiah($order->pay_now_idr) }}
+                                    </div>
                                     <span class="account-order-list__status {{ in_array($order->status, ['menunggu_pembayaran','pembayaran_gagal']) ? 'account-order-list__status--danger' : (in_array($order->status, ['selesai']) ? 'account-order-list__status--ok' : '') }}">
                                         {{ $order->statusLabel() }}
                                     </span>
@@ -196,7 +213,8 @@
                     <p class="account-empty__sub">Yuk mulai jelajahi katalog dan temukan merch favoritmu.</p>
                     <a href="{{ route('catalog.index') }}" class="account-empty__cta">
                         Jelajahi katalog
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                             stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M5 12h14M12 5l7 7-7 7"/>
                         </svg>
                     </a>
