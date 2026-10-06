@@ -2,186 +2,368 @@
 <html lang="id">
 <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-    <meta name="robots" content="noindex, nofollow">
-    <title>{{ $title ?? 'Dashboard' }} - Admin MERCATORIA</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+
+    <title>{{ isset($title) ? $title . ' - ' : '' }}{{ $metaTitle ?? 'MERCATORIA' }}</title>
+    <meta name="description" content="{{ $metaDescription ?? '' }}">
+    @if (! empty($metaKeywords))
+        <meta name="keywords" content="{{ $metaKeywords }}">
+    @endif
+    <link rel="canonical" href="{{ url()->current() }}">
+
+    <meta property="og:type" content="{{ $ogType ?? 'website' }}">
+    <meta property="og:title" content="{{ isset($title) ? $title . ' - ' : '' }}{{ $metaTitle ?? 'MERCATORIA' }}">
+    <meta property="og:description" content="{{ $metaDescription ?? '' }}">
+    <meta property="og:url" content="{{ url()->current() }}">
+    <meta property="og:site_name" content="MERCATORIA">
+    @if (! empty($metaImage))
+        <meta property="og:image" content="{{ $metaImage }}">
+    @elseif ($hasLogo ?? false)
+        <meta property="og:image" content="{{ asset('images/logo.png') }}">
+    @endif
+
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="{{ isset($title) ? $title . ' - ' : '' }}{{ $metaTitle ?? 'MERCATORIA' }}">
+    <meta name="twitter:description" content="{{ $metaDescription ?? '' }}">
+    @if (! empty($metaImage))
+        <meta name="twitter:image" content="{{ $metaImage }}">
+    @endif
+
+    @if (file_exists(public_path('favicon.ico')))
+        <link rel="icon" href="{{ asset('favicon.ico') }}">
+    @endif
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <meta name="format-detection" content="telephone=no">
-    <link rel="stylesheet" href="{{ asset('css/admin.css') }}?v={{ filemtime(public_path('css/admin.css')) }}">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&family=Roboto:wght@500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ asset('css/app.css') }}?v={{ filemtime(public_path('css/app.css')) }}">
     @stack('head')
 </head>
 <body>
-    @php
-        $navigation = [
-            ['label' => null, 'items' => [
-                ['route' => 'admin.dashboard', 'active' => 'admin.dashboard', 'label' => 'Ringkasan', 'icon' => 'home'],
-                ['route' => 'admin.reports.index', 'active' => 'admin.reports.*', 'label' => 'Laporan', 'icon' => 'list'],
-            ]],
-            ['label' => 'Penjualan', 'items' => [
-                ['route' => 'admin.orders.index', 'active' => 'admin.orders.*', 'label' => 'Pesanan', 'icon' => 'box', 'badge' => 'pendingOrders'],
-                ['route' => 'admin.payments.index', 'active' => 'admin.payments.*', 'label' => 'Pembayaran', 'icon' => 'rupiah', 'badge' => 'pendingProofs'],
-                ['route' => 'admin.payment-methods.index', 'active' => 'admin.payment-methods.*', 'label' => 'Metode Bayar', 'icon' => 'wallet'],
-                ['route' => 'admin.cart-reminders.index', 'active' => 'admin.cart-reminders.*', 'label' => 'Cart Reminder', 'icon' => 'users'],
-            ]],
-            ['label' => 'Katalog', 'items' => [
-                ['route' => 'admin.products.index', 'active' => 'admin.products.*', 'label' => 'Produk', 'icon' => 'box'],
-                ['route' => 'admin.best-sellers.index', 'active' => 'admin.best-sellers.*', 'label' => 'Produk Terlaris', 'icon' => 'list'],
-                ['route' => 'admin.games.index', 'active' => 'admin.games.*', 'label' => 'Game', 'icon' => 'file'],
-                ['route' => 'admin.developers.index', 'active' => 'admin.developers.*', 'label' => 'Developer', 'icon' => 'users'],
-            ]],
-            ['label' => 'Pelanggan', 'items' => [
-                ['route' => 'admin.users.index', 'active' => 'admin.users.*', 'label' => 'Pengguna', 'icon' => 'users'],
-                ['route' => 'admin.referrals.index', 'active' => 'admin.referrals.*', 'label' => 'Referral', 'icon' => 'users'],
-                ['route' => 'admin.identities.index', 'active' => ['admin.identities.*', 'admin.names.*'], 'label' => 'Blokir & banding', 'icon' => 'shield'],
-                ['route' => 'admin.logs.index', 'active' => 'admin.logs.*', 'label' => 'Log aktivitas', 'icon' => 'list'],
-            ]],
-            ['label' => 'Konten', 'items' => [
-                ['route' => 'admin.pages.index', 'active' => 'admin.pages.*', 'label' => 'Halaman', 'icon' => 'file'],
-                ['route' => 'admin.hero-slides.index', 'active' => 'admin.hero-slides.*', 'label' => 'Hero Slider', 'icon' => 'image'],
-                ['route' => 'admin.preorder.index', 'active' => 'admin.preorder.*', 'label' => 'Pre-Order Baru', 'icon' => 'image'],
-            ]],
-            ['label' => 'Pengaturan', 'items' => [
-                ['route' => 'admin.settings.general', 'active' => 'admin.settings.general', 'label' => 'Umum', 'icon' => 'sliders'],
-                ['route' => 'admin.settings.seo', 'active' => 'admin.settings.seo', 'label' => 'SEO', 'icon' => 'list'],
-                ['route' => 'admin.settings.pricing', 'active' => 'admin.settings.pricing', 'label' => 'Harga & kurs', 'icon' => 'sliders'],
-                ['route' => 'admin.settings.tiers', 'active' => 'admin.settings.tiers', 'label' => 'Tier ongkir', 'icon' => 'truck'],
-                ['route' => 'admin.settings.marketplaces', 'active' => 'admin.settings.marketplaces', 'label' => 'Marketplace', 'icon' => 'store'],
-                ['route' => 'admin.settings.display', 'active' => 'admin.settings.display', 'label' => 'Tampilan toko', 'icon' => 'eye'],
-                ['route' => 'admin.maintenance.index', 'active' => 'admin.maintenance.*', 'label' => 'Maintenance', 'icon' => 'shield'],
-            ]],
-        ];
-        $tabs = [
-            ['route' => 'admin.dashboard', 'active' => 'admin.dashboard', 'label' => 'Ringkasan', 'icon' => 'home'],
-            ['route' => 'admin.payments.index', 'active' => 'admin.payments.*', 'label' => 'Pembayaran', 'icon' => 'rupiah'],
-            ['route' => 'admin.products.index', 'active' => 'admin.products.*', 'label' => 'Produk', 'icon' => 'box'],
-            ['route' => 'admin.users.index', 'active' => 'admin.users.*', 'label' => 'Pengguna', 'icon' => 'users'],
-        ];
-    @endphp
+    <a class="skip-link" href="#main">Lewati ke konten</a>
 
-    <div class="shell">
-        <aside class="sidebar" aria-label="Menu admin">
-            <a href="{{ route('admin.dashboard') }}" class="sidebar__brand">
-                @if (file_exists(public_path('images/logo.png')))
-                    <img src="{{ asset('images/logo.png') }}" alt="MERCATORIA">
-                @else
-                    MERCATORIA
-                @endif
-                <span>Admin</span>
-            </a>
-            <nav class="sidebar__nav">
-                @include('admin.partials.nav', ['navigation' => $navigation])
-            </nav>
-            <div class="sidebar__footer">
-                <a href="{{ route('admin.profile.edit') }}" class="sidebar__user" title="Edit profil">{{ auth('admin')->user()->name }}</a>
-                <form method="POST" action="{{ route('admin.logout') }}">
-                    @csrf
-                    <button type="submit" class="link">Keluar</button>
-                </form>
-            </div>
-        </aside>
+    {{-- ===================== PROMO BAR ===================== --}}
+    @if (! empty($promoBarText))
+        @php
+            $formattedPromoText = str_replace('NEWWEB', '<strong>NEWWEB</strong>', e($promoBarText));
+            $formattedPromoText = str_replace('Rp 25.000', '<em>Rp 25.000</em>', $formattedPromoText);
+            $formattedPromoText = str_replace('Rp 150.000', '<em>Rp 150.000</em>', $formattedPromoText);
+        @endphp
+        <div class="promo-bar" style="background-color: #D3D3D3; color: #333333; border-bottom: 1px solid #fecaca; padding: 14px 24px; text-align: center; font-size: 13.5px; font-weight: 500;">
+            {!! $formattedPromoText !!}
+        </div>
+    @endif
 
-        <div class="main">
-            {{-- Banner maintenance mode --}}
-            @if (\App\Models\Setting::get('maintenance_enabled') === '1')
-                <div style="background:#fef2f2;border-bottom:1px solid #fecaca;color:#991b1b;padding:12px 32px;font-size:14px;display:flex;align-items:center;gap:12px;">
-                    <strong>⚠️ Mode Pemeliharaan AKTIF</strong>
-                    <span>— Pengunjung biasa melihat halaman pemeliharaan. Kamu tetap bisa akses karena login admin.</span>
-                    <a href="{{ route('admin.settings.general') }}" style="margin-left:auto;color:#dc2626;font-weight:600;">Matikan →</a>
-                </div>
-            @endif
+    {{-- ===================== HEADER ===================== --}}
+    <header class="site-header">
+        <div class="site-header__inner">
 
-            <header class="topbar">
-                <div class="topbar__title">
-                    @isset($back)
-                        <a href="{{ $back }}" class="topbar__back" aria-label="Kembali">@include('admin.partials.icon', ['name' => 'back'])</a>
-                    @endisset
-                    <h1>{{ $title ?? 'Dashboard' }}</h1>
-                </div>
-                <div class="topbar__actions">@yield('actions')</div>
-            </header>
+            {{-- KIRI: Menu --}}
+            <nav class="site-nav" aria-label="Menu utama">
+                <a href="{{ route('home') }}" class="site-nav__link {{ request()->routeIs('home') ? 'is-active' : '' }}">Beranda</a>
 
-            @hasSection('tabs')
-                <nav class="subtabs" aria-label="Bagian">@yield('tabs')</nav>
-            @endif
-
-            @hasSection('filters')
-                @php($filtersActive = collect(request()->except('page', 'tab'))->filter(fn ($value) => $value !== null && $value !== '')->isNotEmpty())
-                <div @class(['filterbar', 'is-open' => $filtersActive])>
-                    <button type="button" class="filterbar__toggle" aria-expanded="{{ $filtersActive ? 'true' : 'false' }}"
-                            onclick="var bar = this.parentElement; bar.classList.toggle('is-open'); this.setAttribute('aria-expanded', bar.classList.contains('is-open'));">
-                        @include('admin.partials.icon', ['name' => 'filter']) Filter
-                    </button>
-                    <div class="filterbar__body">@yield('filters')</div>
-                </div>
-            @endif
-
-            <main class="content">
-                @if (session('status'))
-                    <div class="alert alert--success" role="status">{{ session('status') }}</div>
-                @endif
-                @if ($errors->any())
-                    <div class="alert alert--danger" role="alert">
-                        <strong>Ada {{ $errors->count() }} isian yang perlu diperbaiki.</strong>
-                        <ul>
-                            @foreach ($errors->all() as $error)
-                                <li>{{ $error }}</li>
+                @if ($navGames->isNotEmpty())
+                    <div class="nav-dropdown">
+                        <button type="button" class="site-nav__link nav-dropdown__trigger">
+                            Game <span class="nav-dropdown__caret">▾</span>
+                        </button>
+                        <div class="nav-dropdown__menu">
+                            @foreach ($navGames as $game)
+                                <a href="{{ route('catalog.index', ['game' => $game->slug]) }}" class="nav-dropdown__item">{{ $game->name }}</a>
                             @endforeach
-                        </ul>
+                        </div>
                     </div>
                 @endif
 
-                @yield('content')
-            </main>
-        </div>
-    </div>
+                @if ($navDevelopers->isNotEmpty())
+                    <div class="nav-dropdown">
+                        <button type="button" class="site-nav__link nav-dropdown__trigger">
+                            Developer <span class="nav-dropdown__caret">▾</span>
+                        </button>
+                        <div class="nav-dropdown__menu">
+                            @foreach ($navDevelopers as $developer)
+                                <a href="{{ route('catalog.index', ['developer' => $developer->slug]) }}" class="nav-dropdown__item">{{ $developer->name }}</a>
+                            @endforeach
+                        </div>
+                    </div>
+                @endif
 
-    <nav class="tabbar" aria-label="Menu admin">
-        @foreach ($tabs as $item)
-            <a href="{{ route($item['route']) }}" @class(['tabbar__link', 'is-active' => request()->routeIs($item['active'])])>
-                @include('admin.partials.icon', ['name' => $item['icon']])
-                <span>{{ $item['label'] }}</span>
-            </a>
-        @endforeach
-        <button type="button" class="tabbar__link" aria-controls="mobile-menu" aria-expanded="false" data-menu-toggle>
-            @include('admin.partials.icon', ['name' => 'menu'])
-            <span>Menu</span>
-        </button>
-    </nav>
-
-    <div class="sheet" id="mobile-menu" hidden style="display:none" data-menu>
-        <div class="sheet__backdrop" data-menu-toggle></div>
-        <div class="sheet__panel" role="dialog" aria-label="Semua menu">
-            <div class="sheet__head">
-                <strong>{{ auth('admin')->user()->name }}</strong>
-                <button type="button" class="link" data-menu-toggle>Tutup</button>
-            </div>
-            <nav class="sheet__nav">
-                @include('admin.partials.nav', ['navigation' => $navigation])
+                @if (Route::has('preorder.show'))
+                    <a href="{{ route('preorder.show') }}" class="site-nav__link {{ request()->routeIs('preorder.show') ? 'is-active' : '' }}">Pre-order Baru</a>
+                @endif
             </nav>
-            <form method="POST" action="{{ route('admin.logout') }}" class="sheet__logout">
-                @csrf
-                <button type="submit" class="btn btn--block">@include('admin.partials.icon', ['name' => 'logout']) Keluar</button>
-            </form>
+
+            {{-- TENGAH: Logo --}}
+            <a href="{{ route('home') }}" class="site-logo">
+                @if ($hasLogo ?? false)
+                    <img src="{{ asset('images/logo.png') }}" alt="MERCATORIA">
+                @else
+                    <span class="site-logo__mark">M</span>
+                    <span class="site-logo__block">
+                        <span class="site-logo__text">MERCATORIA</span>
+                    </span>
+                @endif
+            </a>
+
+            {{-- KANAN: Aksi --}}
+            <div class="header-actions">
+                @if (Route::has('search.index'))
+                    <a href="{{ route('search.index') }}" class="header-icon" aria-label="Cari" title="Cari">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="11" cy="11" r="8"></circle>
+                            <path d="m21 21-4.3-4.3"></path>
+                        </svg>
+                    </a>
+                @endif
+
+                @foreach (($socialMedias ?? collect()) as $sm)
+                    @php($smHref = trim((string) ($sm->url ?? '')))
+                    @if ($smHref !== '')
+                        <a href="{{ $smHref }}" target="_blank" rel="noopener" class="header-icon" aria-label="{{ $sm->name }}" title="{{ $sm->name }}">
+                            @include('partials.social-icon', ['social' => $sm])
+                        </a>
+                    @elseif (trim((string) ($sm->icon_url ?? '')) !== '' || ! empty($sm->icon_key))
+                        <span class="header-icon" aria-label="{{ $sm->name }}" title="{{ $sm->name }}">
+                            @include('partials.social-icon', ['social' => $sm])
+                        </span>
+                    @endif
+                @endforeach
+
+                @auth
+                    @if (($cartTotal ?? 0) > 0)
+                        <span class="header-cart-total">{{ \App\Support\PriceCalculator::formatRupiah($cartTotal) }}</span>
+                    @endif
+
+                    <a href="{{ route('cart.index') }}" class="header-icon header-icon--cart" aria-label="Keranjang" title="Keranjang">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="9" cy="21" r="1"></circle>
+                            <circle cx="20" cy="21" r="1"></circle>
+                            <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+                        </svg>
+                        @if (($cartCount ?? 0) > 0)
+                            <span class="cart-badge">{{ $cartCount > 99 ? '99+' : $cartCount }}</span>
+                        @endif
+                    </a>
+
+                    <a href="{{ route('notifications.index') }}" class="header-icon" aria-label="Notifikasi" title="Notifikasi">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                            <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                        </svg>
+                        @if (($unreadNotifHeader ?? 0) > 0)
+                            <span class="cart-badge cart-badge--notif">{{ ($unreadNotifHeader ?? 0) > 99 ? '99+' : ($unreadNotifHeader ?? 0) }}</span>
+                        @endif
+                    </a>
+
+                    <div class="nav-dropdown header-account">
+                        <button type="button" class="header-icon" aria-label="Akun" title="Akun">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                                <circle cx="12" cy="7" r="4"></circle>
+                            </svg>
+                            @if (($headerUnpaidCount ?? 0) > 0)
+                                <span class="cart-badge">{{ ($headerUnpaidCount ?? 0) > 99 ? '99+' : ($headerUnpaidCount ?? 0) }}</span>
+                            @endif
+                        </button>
+                        <div class="nav-dropdown__menu nav-dropdown__menu--right">
+                            <a href="{{ route('account.show') }}" class="nav-dropdown__item">Dashboard Saya</a>
+                            <a href="{{ route('account.orders.index') }}" class="nav-dropdown__item">
+                                Pesanan Saya
+                                @if (($headerUnpaidCount ?? 0) > 0)
+                                    <span class="badge badge--danger small" style="margin-left:6px;">{{ $headerUnpaidCount ?? 0 }} tagihan</span>
+                                @endif
+                            </a>
+                            <a href="{{ route('account.coins.index') }}" class="nav-dropdown__item">Koin Saya</a>
+                            @if (Route::has('referral.index'))
+                                <a href="{{ route('referral.index') }}" class="nav-dropdown__item">Undang Teman</a>
+                            @endif
+                            <a href="{{ route('account.profile.edit') }}" class="nav-dropdown__item">Edit Profil</a>
+                            <form method="POST" action="{{ route('logout') }}">
+                                @csrf
+                                <button type="submit" class="nav-dropdown__item" style="width:100%;text-align:left;background:none;border:0;cursor:pointer;font:inherit;color:#c0392b;">Keluar</button>
+                            </form>
+                        </div>
+                    </div>
+                @else
+                    <a href="{{ route('login') }}" class="header-icon" aria-label="Masuk" title="Masuk">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="12" cy="7" r="4"></circle>
+                        </svg>
+                    </a>
+                @endauth
+            </div>
         </div>
-    </div>
+    </header>
+
+    {{-- Warning email belum diverifikasi --}}
+    @auth
+        @if (method_exists(auth()->user(), 'hasVerifiedEmail') && ! auth()->user()->hasVerifiedEmail() && Route::has('verification.notice'))
+            <div class="verify-banner">
+                <div class="container" style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+                    <span>⚠️ Email kamu belum diverifikasi. Verifikasi dulu supaya bisa checkout.</span>
+                    <a href="{{ route('verification.notice') }}" style="margin-left:auto;font-weight:600;color:#fff;text-decoration:underline;">Verifikasi Sekarang →</a>
+                </div>
+            </div>
+        @endif
+    @endauth
+
+    {{-- GATEKEEPER notices (IP blacklist / guest barrier / data integrity) --}}
+    @if (session('gatekeeper_error'))
+        <div class="verify-banner" style="background:#c0392b;" role="alert">
+            <div class="container">{{ session('gatekeeper_error') }}</div>
+        </div>
+    @endif
+    @if (session('gatekeeper_notice'))
+        <div class="verify-banner" style="background:#e67e22;" role="status">
+            <div class="container">{{ session('gatekeeper_notice') }}</div>
+        </div>
+    @endif
+
+    <main id="main" class="@yield('main_class', 'main--default')">
+        @yield('content')
+    </main>
+
+    {{-- ===================== FOOTER ===================== --}}
+    <footer class="site-footer">
+        <div class="container">
+            <div class="site-footer__grid footer-grid">
+
+                {{-- Kolom 1: Brand + Social + Marketplace --}}
+                <div class="footer-col footer-col--brand">
+                    <a href="{{ route('home') }}" class="footer-brand">
+                        @if ($hasLogo ?? false)
+                            <img src="{{ asset('images/logo.png') }}" alt="MERCATORIA">
+                        @else
+                            <span class="footer-brand__mark">M</span>
+                            <span class="footer-brand__block">
+                                <span class="footer-brand__text">MERCATORIA</span>
+                                <span class="footer-brand__tagline">MERCH FOR BETTER FUTURE</span>
+                            </span>
+                        @endif
+                    </a>
+
+                    <div class="footer-social">
+                        @foreach (($socialMedias ?? collect()) as $sm)
+                            @php($smHref = trim((string) ($sm->url ?? '')))
+                            @if ($smHref !== '')
+                                <a href="{{ $smHref }}" target="_blank" rel="noopener" aria-label="{{ $sm->name }}">
+                                    @include('partials.social-icon', ['social' => $sm])
+                                </a>
+                            @elseif (trim((string) ($sm->icon_url ?? '')) !== '' || ! empty($sm->icon_key))
+                                <span aria-label="{{ $sm->name }}">
+                                    @include('partials.social-icon', ['social' => $sm])
+                                </span>
+                            @endif
+                        @endforeach
+                    </div>
+
+                    <div class="footer-links footer-marketplace">
+                        @if (! empty($footerTocoUrl))
+                            <a href="{{ $footerTocoUrl }}" target="_blank" rel="noopener" class="footer-btn">TOCO <span>→</span></a>
+                        @endif
+                        @if (! empty($footerShopeeUrl))
+                            <a href="{{ $footerShopeeUrl }}" target="_blank" rel="noopener" class="footer-btn">SHOPEE <span>→</span></a>
+                        @endif
+                    </div>
+                </div>
+
+                {{-- Kolom 2: Game --}}
+                <div class="footer-col">
+                    <h4 class="footer-col__title">Game</h4>
+                    <ul class="footer-col__list">
+                        @foreach ($navGames as $game)
+                            <li><a href="{{ route('catalog.index', ['game' => $game->slug]) }}">{{ $game->name }}</a></li>
+                        @endforeach
+                    </ul>
+                </div>
+
+                {{-- Kolom 3: Developer + Jelajahi --}}
+                <div class="footer-col">
+                    <h4 class="footer-col__title">Developer</h4>
+                    <ul class="footer-col__list">
+                        @foreach ($navDevelopers as $developer)
+                            <li><a href="{{ route('catalog.index', ['developer' => $developer->slug]) }}">{{ $developer->name }}</a></li>
+                        @endforeach
+                    </ul>
+
+                    <h4 class="footer-jelajahi__title">Jelajahi</h4>
+                    <ul class="footer-col__list footer-jelajahi__links">
+                        {{-- FIX 500: dulu @foreach + @empty terpisah tanpa @endforelse,
+                             menyebabkan "unexpected end of file, expecting elseif/else/endif".
+                             Sekarang digabung jadi @forelse/@empty/@endforelse utuh. --}}
+                        @forelse (($footerPages ?? collect()) as $fpage)
+                            <li><a href="{{ route('slug.show', $fpage->slug) }}">{{ $fpage->title }}</a></li>
+                        @empty
+                            <li><a href="{{ route('reseller.create') }}">Reseller</a></li>
+                            <li><a href="{{ route('legal.show', 'faq') }}">Tanya Jawab Umum</a></li>
+                            <li><a href="{{ route('legal.show', 'kebijakan-privasi') }}">Kebijakan Privasi</a></li>
+                            <li><a href="{{ route('legal.show', 'syarat-dan-ketentuan') }}">Syarat &amp; Ketentuan</a></li>
+                        @endforelse
+                    </ul>
+                </div>
+
+                {{-- Kolom 4: Produk Terpopuler --}}
+                <div class="footer-col footer-products-col">
+                    <h4 class="footer-col__title">Produk Terpopuler</h4>
+                    <div class="footer-produk">
+                        @if (isset($footerProducts) && $footerProducts->isNotEmpty())
+                            @foreach ($footerProducts->take(4) as $fp)
+                                @php($fpPrices = collect(data_get($fp, 'variants', []))->map(fn ($v) => is_numeric($v->price_yuan ?? null) ? $v->sellingPrice($calculator ?? \App\Support\PriceCalculator::fromSettings()) : null)->filter(fn ($p) => is_numeric($p)))
+                                <a href="{{ route('slug.show', $fp->slug) }}" class="footer-produk__item">
+                                    <div class="footer-produk__thumb">
+                                        @if (count(data_get($fp, 'images', [])) > 0)
+                                            <img src="{{ $fp->images->first()->url() }}" alt="{{ $fp->name }}">
+                                        @else
+                                            <div class="footer-produk__placeholder">No Image</div>
+                                        @endif
+                                    </div>
+                                    <div class="footer-produk__info">
+                                        <span class="footer-produk__name">{{ $fp->name }}</span>
+                                        @if ($fpPrices->isNotEmpty())
+                                            <span class="footer-produk__price">
+                                                {{ \App\Support\PriceCalculator::formatRupiah($fpPrices->min()) }}
+                                            </span>
+                                        @endif
+                                    </div>
+                                </a>
+                            @endforeach
+                        @endif
+                    </div>
+                </div>
+            </div>
+
+            {{-- Bottom Bar --}}
+            <div class="container site-footer__bottom">
+                <span class="copyright">{{ $footerCopyright ?: '© ' . date('Y') . ' MERCATORIA' }}</span>
+                <span class="powered-by">{{ $footerPoweredBy ?? 'Powered by MERCATORIA' }}</span>
+            </div>
+        </div>
+    </footer>
+
+    {{-- WA Widget --}}
+    @if (View::exists('partials.wa-widget'))
+        @include('partials.wa-widget')
+    @endif
+
+    {{-- Back to top --}}
+    <button type="button" class="back-to-top" aria-label="Kembali ke atas" data-back-to-top>↑</button>
 
     <script>
-        function toggleMenu() {
-            var sheet = document.querySelector('[data-menu]');
-            sheet.hidden = !sheet.hidden;
-            sheet.style.display = sheet.hidden ? 'none' : 'flex';
-            document.querySelector('.tabbar [data-menu-toggle]').setAttribute('aria-expanded', String(!sheet.hidden));
-        }
-        document.querySelectorAll('button[data-menu-toggle]').forEach(function (element) {
-            element.addEventListener('click', toggleMenu);
-        });
-        document.querySelector('.sheet__backdrop').addEventListener('click', function () {
-            if (!document.querySelector('[data-menu]').hidden) toggleMenu();
-        });
+        (function () {
+            var btn = document.querySelector('[data-back-to-top]');
+            if (!btn) return;
+            window.addEventListener('scroll', function () {
+                btn.classList.toggle('is-visible', window.scrollY > 400);
+            });
+            btn.addEventListener('click', function () {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            });
+        })();
     </script>
-    <script src="{{ asset('js/admin-bulk.js') }}" defer></script>
+
     @stack('scripts')
+    @include('partials.modal-alert')
 </body>
 </html>
