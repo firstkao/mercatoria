@@ -27,11 +27,13 @@ return new class extends Migration
         // Seed default dari data settings lama + satu entri Threads baru.
         // Ikon bawaan dirender via SVG inline di layout (bukan FontAwesome).
         $defaults = [
-            ['Instagram', 'social_instagram', 'instagram', 1],
-            ['Facebook', 'social_facebook', 'facebook', 2],
-            ['X', 'social_x', 'x', 3],
-            ['Threads', null, 'threads', 4],
-            ['WhatsApp', 'contact_whatsapp', 'whatsapp', 5],
+           $defaults = [
+                ['Instagram', 'instagram', 1],
+                ['Facebook',  'facebook',  2],
+                ['X',         'x',         3],
+                ['Threads',   'threads',   4],
+                ['WhatsApp',  'whatsapp',  5],
+            ];
         ];
 
         foreach ($defaults as [$name, $settingKey, $iconKey, $order]) {
