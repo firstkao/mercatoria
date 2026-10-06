@@ -41,7 +41,7 @@ class SettingsController extends Controller
         'maintenance_message',
         'maintenance_bypass_ips',
     ];
-    
+
     private const SEO_KEYS = [
         'meta_title',
         'meta_description',
@@ -110,9 +110,6 @@ class SettingsController extends Controller
     public function updateMarketplaces(MarketplaceSettingsRequest $request): RedirectResponse
     {
         foreach ($request->validated('marketplaces') as $id => $row) {
-            // Normalisasi is_active dengan FILTER_VALIDATE_BOOLEAN: string
-            // "false" sebelumnya dianggap truthy oleh !empty() sehingga
-            // marketplace yang seharusnya nonaktif malah jadi aktif.
             $isActive = filter_var($row['is_active'] ?? false, FILTER_VALIDATE_BOOLEAN);
 
             Marketplace::whereKey($id)->update([
@@ -142,15 +139,10 @@ class SettingsController extends Controller
         return redirect()->route('admin.settings.display')->with('status', 'Tampilan toko disimpan.');
     }
 
-    // ============================================================
-    // TAMBAHAN BATCH 12: General (kontak & sosmed)
-    // ============================================================
-
     public function general(): View
     {
         return view('admin.settings.general', [
             'settings' => $this->values(self::GENERAL_KEYS),
-            // CRUD sosial media dinamis: disatukan di halaman Pengaturan Umum.
             'socialMedias' => SocialMedia::orderBy('sort_order')->get(),
         ]);
     }
@@ -159,8 +151,6 @@ class SettingsController extends Controller
     {
         $this->store($request->validated(), self::GENERAL_KEYS);
 
-        // Simpan baris sosial media (array dari form). Baris dengan flag `delete`
-        // dihapus; baris tanpa `id` dibuat baru; sisanya di-update.
         foreach ($request->validated('socials', []) as $row) {
             if (! empty($row['delete'])) {
                 if (! empty($row['id'])) {
@@ -170,11 +160,6 @@ class SettingsController extends Controller
                 continue;
             }
 
-            // BUG FIX (ikon sosmed hilang walau data ada): normalisasi is_active
-            // SEBELUM rule validasi sempat membuang key-nya. Hidden input "0" +
-            // checkbox "1" selalu terkirim berpasangan; kalau karena alasan apa
-            // pun key lenyap/gagal validasi, JANGAN diam-diam mematikan baris:
-            // pakai status lama baris tsb. sebagai fallback.
             if (array_key_exists('is_active', $row)) {
                 $isActive = filter_var(
                     is_string($row['is_active']) ? trim($row['is_active']) : $row['is_active'],
@@ -183,23 +168,37 @@ class SettingsController extends Controller
             } elseif (! empty($row['id'])) {
                 $isActive = (bool) optional(SocialMedia::find($row['id']))->is_active;
             } else {
-                // Baris baru tanpa info aktif -> default aktif (sama seperti
-                // default kolom di migration), bukan mati.
                 $isActive = true;
             }
 
+            // Normalisasi icon_key dulu supaya percabangan di bawah konsisten.
+            $iconKey = ($ik = strtolower(trim((string) ($row['icon_key'] ?? '')))) === '' ? null : $ik;
+
             $data = [
                 'name' => $row['name'],
-                // Trim URL: baris dengan url spasi/kosong dianggap tidak punya
-                // URL dan otomatis disembunyikan layout (konsisten dgn filter).
                 'url' => ($u = trim((string) ($row['url'] ?? ''))) === '' ? null : $u,
                 'icon_url' => ($iu = trim((string) ($row['icon_url'] ?? ''))) === '' ? null : $iu,
-                // Normalisasi icon_key (trim + lower) supaya pencocokan SVG
-                // bawaan di partial social-icon tidak gagal karena kapitalisasi.
-                'icon_key' => ($ik = strtolower(trim((string) ($row['icon_key'] ?? '')))) === '' ? null : $ik,
+                'icon_key' => $iconKey,
                 'sort_order' => $row['sort_order'] ?? 0,
                 'is_active' => $isActive,
             ];
+
+            // BUG FIX (ikon gelap di tema gelap + konsistensi data):
+            // Kalau icon_key ADA isinya, paksa icon_url = null. Alasannya:
+            //   - icon_key bawaan sosmed (instagram/facebook/x/threads/whatsapp)
+            //     -> dirender sebagai SVG inline, tidak butuh icon_url.
+            //   - icon_key marketplace (toco/shopee/tokopedia/tiktokshop)
+            //     -> dirender sebagai tombol teks di footer, tidak butuh icon_url.
+            //
+            // icon_url hanya relevan untuk baris CUSTOM (icon_key kosong), di
+            // mana layout jatuh ke <img src="{{ icon_url }}"> atau fallback
+            // huruf pertama nama.
+            //
+            // Ini mencegah admin tidak sengaja menyisipkan PNG hitam (mis. dari
+            // icons8) yang akan tampak gelap di footer tema gelap.
+            if ($iconKey !== null) {
+                $data['icon_url'] = null;
+            }
 
             if (! empty($row['id'])) {
                 $sm = SocialMedia::find($row['id']);
@@ -236,15 +235,15 @@ class SettingsController extends Controller
             Setting::updateOrCreate(['key' => $key], ['value' => $value === null || $value === '' ? null : (string) $value]);
         }
     }
-    
-        public function seo(): View
+
+    public function seo(): View
     {
         return view('admin.settings.seo', [
             'settings' => $this->values(self::SEO_KEYS),
         ]);
     }
 
-    public function updateSeo(\App\Http\Requests\Admin\SeoSettingsRequest $request): RedirectResponse
+    public function updateSeo(SeoSettingsRequest $request): RedirectResponse
     {
         $this->store($request->validated(), self::SEO_KEYS);
         AdminLog::record('update_seo', null, $request->validated());
