@@ -1919,6 +1919,303 @@ input[type="number"] { -moz-appearance: textfield; appearance: textfield; }
 }
 
 /* ============================================================ */
+/* 26d. ACCOUNT SUB-PAGES — profile, referral, coins             */
+/*      (ledger style, same family as account dashboard)         */
+/* ============================================================ */
+
+/* ---- Form di dalam account-card ---- */
+.account-form { margin: 0; }
+.account-form__grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px 20px;
+}
+.account-form__grid .field--full { grid-column: 1 / -1; }
+.account-form .field {
+    display: grid;
+    gap: 6px;
+    font-weight: 600;
+    font-size: 13px;
+    color: #52525b;
+}
+.account-form .field > span {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .1em;
+    color: var(--_faint);
+}
+.account-form .field input,
+.account-form .field select,
+.account-form .field textarea {
+    width: 100%;
+    font: inherit;
+    font-weight: 400;
+    font-size: 14px;
+    color: var(--_ink);
+    background: #fff;
+    border: 1px solid var(--_hair);
+    border-radius: 3px;
+    padding: 10px 12px;
+    transition: border-color .15s, box-shadow .15s;
+}
+.account-form .field input:focus,
+.account-form .field select:focus,
+.account-form .field textarea:focus {
+    outline: none;
+    border-color: var(--_ink);
+    box-shadow: 0 0 0 3px rgba(10, 10, 10, .06);
+}
+.account-form .field textarea { resize: vertical; min-height: 88px; }
+.account-form .hint {
+    font-weight: 400;
+    color: var(--_faint);
+    font-size: 11.5px;
+}
+.account-form .field-error {
+    margin: 0;
+    color: #dc2626;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+/* Section actions (tombol di bawah form) */
+.account-section--actions {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+    padding: 24px 40px;
+    border-bottom: 0;
+}
+
+/* ---- Account buttons (ledger style) ---- */
+.account-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 11px 18px;
+    background: var(--_ink);
+    color: #fff;
+    border: 1px solid var(--_ink);
+    border-radius: 3px;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: .01em;
+    text-decoration: none;
+    cursor: pointer;
+    transition: background .15s, border-color .15s, color .15s;
+}
+.account-btn:hover { background: #27272a; border-color: #27272a; color: #fff; }
+.account-btn--ghost {
+    background: transparent;
+    color: var(--_ink);
+    border-color: var(--_hair);
+}
+.account-btn--ghost:hover {
+    background: #fafafa;
+    color: var(--_ink);
+    border-color: var(--_ink);
+}
+.account-btn--sm {
+    padding: 8px 14px;
+    font-size: 12px;
+}
+
+/* ---- Referral code block ---- */
+.referral-code-block {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 16px;
+    padding: 20px 24px;
+    background: #fafafa;
+    border: 1px solid var(--_hair);
+    border-radius: 3px;
+}
+.referral-code-block .referral-code {
+    font-family: var(--font-mono);
+    font-size: 26px;
+    font-weight: 700;
+    letter-spacing: .18em;
+    color: var(--_ink);
+    margin: 0;
+    flex: 1;
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+.referral-code-block__actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+/* ---- Referral reward grid ---- */
+.referral-rewards-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0;
+    border: 1px solid var(--_hair);
+    border-radius: 3px;
+}
+.referral-reward-item {
+    padding: 22px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+.referral-reward-item + .referral-reward-item {
+    border-left: 1px solid var(--_hair);
+}
+.referral-reward-item__amount {
+    font-family: var(--font-heading);
+    font-size: 26px;
+    font-weight: 600;
+    letter-spacing: -.02em;
+    color: var(--_ink);
+    line-height: 1;
+    font-feature-settings: "tnum" 1;
+}
+.referral-reward-item__label {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--_ink);
+}
+.referral-reward-item__note {
+    font-size: 11.5px;
+    color: var(--_faint);
+}
+
+/* Metrics dengan 5 kolom (referral stats) */
+.metrics--five { grid-template-columns: repeat(5, 1fr); }
+.metrics--five .metrics__item:first-child { padding-left: 40px; }
+.metrics--five .metrics__item:last-child { padding-right: 40px; }
+.metrics--five .metrics__value { font-size: 26px; }
+
+/* ---- Coin balance hero ---- */
+.account-section--balance {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 32px 40px;
+}
+.coin-balance__label {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .12em;
+    color: var(--_faint);
+}
+.coin-balance__value {
+    font-family: var(--font-heading);
+    font-size: 48px;
+    font-weight: 600;
+    letter-spacing: -.03em;
+    line-height: 1;
+    color: var(--_ink);
+    font-feature-settings: "tnum" 1;
+}
+
+/* ---- Account table (ledger) ---- */
+.account-table-wrap {
+    overflow-x: auto;
+    margin: 0 -40px;
+    padding: 0 40px;
+}
+.account-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+}
+.account-table thead th {
+    text-align: left;
+    padding: 10px 12px 12px 0;
+    border-bottom: 1px solid var(--_hair);
+    font-size: 10.5px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .1em;
+    color: var(--_faint);
+    white-space: nowrap;
+}
+.account-table tbody td {
+    padding: 14px 12px 14px 0;
+    border-bottom: 1px solid var(--_hair-soft);
+    vertical-align: middle;
+    color: var(--_ink);
+}
+.account-table tbody tr:last-child td { border-bottom: 0; }
+.account-table .is-right { text-align: right; padding-right: 0; padding-left: 12px; }
+.account-table__muted { color: var(--_faint); font-size: 12px; }
+.account-table__amount {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--_ink);
+    font-feature-settings: "tnum" 1;
+}
+
+/* Status pill (ledger version, kotak bukan bulat) */
+.account-status {
+    display: inline-flex;
+    align-items: center;
+    height: 20px;
+    padding: 0 8px;
+    border: 1px solid var(--_hair);
+    border-radius: 3px;
+    background: transparent;
+    color: #52525b;
+    font-size: 10.5px;
+    font-weight: 700;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+.account-status--ok {
+    border-color: #a7f3d0;
+    color: #047857;
+}
+.account-status--danger {
+    border-color: #fecaca;
+    color: #b91c1c;
+}
+
+/* Notice variant untuk error gatekeeper */
+.account-notice--danger {
+    background: #fef2f2;
+    color: #991b1b;
+    border-bottom-color: #fecaca;
+}
+
+/* ---- Responsive sub-pages ---- */
+@media (max-width: 720px) {
+    .account-form__grid { grid-template-columns: 1fr; }
+    .account-section--actions {
+        padding: 20px 22px;
+        flex-direction: column-reverse;
+    }
+    .account-section--actions .account-btn { width: 100%; justify-content: center; }
+    .referral-code-block {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    .referral-code-block .referral-code { font-size: 22px; }
+    .referral-rewards-grid { grid-template-columns: 1fr; }
+    .referral-reward-item + .referral-reward-item {
+        border-left: 0;
+        border-top: 1px solid var(--_hair);
+    }
+    .metrics--five { grid-template-columns: repeat(2, 1fr); }
+    .metrics--five .metrics__item:first-child,
+    .metrics--five .metrics__item:last-child { padding-left: 22px; padding-right: 22px; }
+    .metrics--five .metrics__item:nth-child(even) { border-right: 0; }
+    .metrics--five .metrics__item:nth-child(-n+4) { border-bottom: 1px solid var(--_hair); }
+    .metrics--five .metrics__item:last-child { grid-column: 1 / -1; border-right: 0; }
+    .metrics--five .metrics__value { font-size: 22px; }
+    .account-table-wrap { margin: 0 -22px; padding: 0 22px; }
+    .coin-balance__value { font-size: 36px; }
+}
+
+/* ============================================================ */
 /* Halaman Cari — form + chip hasil                              */
 /* ============================================================ */
 .search-page-form {
