@@ -6,38 +6,47 @@
 
         {{-- Header --}}
        <header class="account-head">
-            <p class="account-head__eyebrow">Akun Saya</p>
-            <h1 class="account-head__title">{{ $user->full_name ?? 'User' }}</h1>
-        
-            {{-- Baris 1: role + terdaftar --}}
-            <div class="account-head__meta">
-                <span class="account-head__role">
-                    {{ $user->role?->label() ?? 'User' }}
-                </span>
-                <span class="account-head__dot">·</span>
-                <span>
-                    Terdaftar
-                    {{ $user->registered_at?->timezone('Asia/Jakarta')->translatedFormat('F Y') ?? '—' }}
-                </span>
+        <div class="account-head__row">
+            <div class="account-head__main">
+                <p class="account-head__eyebrow">Akun Saya</p>
+                <h1 class="account-head__title">{{ $user->full_name ?? 'User' }}</h1>
+                <div class="account-head__meta">
+                    <span class="account-head__role">{{ $user->role?->label() ?? 'User' }}</span>
+                    <span class="account-head__dot">·</span>
+                    <span>
+                        Terdaftar
+                        {{ $user->registered_at?->timezone('Asia/Jakarta')->translatedFormat('F Y') ?? '—' }}
+                    </span>
+                </div>
             </div>
+    
+            <div class="account-head__actions">
+                <a href="{{ route('account.profile.edit') }}" class="account-btn account-btn--ghost account-btn--sm">
+                    Edit Profil
+                </a>
+                <a href="{{ route('catalog.index') }}" class="account-btn account-btn--sm">
+                    Mulai Belanja
+                </a>
+            </div>
+        </div>
+    
+        {{-- Baris fakta (email, tgl lahir, WA) tetap di bawah --}}
+        <dl class="account-head__facts">
+            <div>
+                <dt>Email</dt>
+                <dd>{{ $user->email ?? '—' }}</dd>
+            </div>
+            <div>
+                <dt>Tanggal Lahir</dt>
+                <dd>{{ $user->birth_date?->timezone('Asia/Jakarta')->translatedFormat('j F Y') ?? '—' }}</dd>
+            </div>
+            <div>
+                <dt>WhatsApp</dt>
+                <dd>{{ $user->whatsapp ?? '—' }}</dd>
+            </div>
+        </dl>
+    </header>
         
-            {{-- Baris 2: email + tanggal lahir (readonly info) --}}
-            <dl class="account-head__facts">
-                <div>
-                    <dt>Email</dt>
-                    <dd>{{ $user->email ?? '—' }}</dd>
-                </div>
-                <div>
-                    <dt>Tanggal Lahir</dt>
-                    <dd>{{ $user->birth_date?->timezone('Asia/Jakarta')->translatedFormat('j F Y') ?? '—' }}</dd>
-                </div>
-                <div>
-                    <dt>WhatsApp</dt>
-                    <dd>{{ $user->whatsapp ?? '—' }}</dd>
-                </div>
-            </dl>
-        </header>
-
         @if (session('status'))
             <div class="account-notice">{{ session('status') }}</div>
         @endif
