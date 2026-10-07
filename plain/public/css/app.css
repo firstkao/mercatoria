@@ -3417,3 +3417,44 @@ input[type="number"] { -moz-appearance: textfield; appearance: textfield; }
     .cart-ledger__actions { grid-area: actions; justify-content: flex-start; padding-top: 4px; }
     .cart-options--inline { grid-template-columns: 1fr; }
 }
+
+/* ============================================================ */
+/* 43. ORDER DETAIL — item dengan thumbnail                      */
+/* ============================================================ */
+.order-items__row--with-thumb {
+    display: grid;
+    grid-template-columns: 56px 1fr auto;
+    align-items: center;
+    gap: 14px;
+}
+.order-items__thumb {
+    width: 56px;
+    height: 56px;
+    border-radius: 3px;
+    overflow: hidden;
+    background: #fafafa;
+    border: 1px solid var(--_hair);
+}
+.order-items__thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+.order-items__thumb .image-placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    font-size: 10px;
+    letter-spacing: .1em;
+    color: var(--_faint);
+}
+
+@media (max-width: 640px) {
+    .order-items__row--with-thumb {
+        grid-template-columns: 48px 1fr auto;
+        gap: 10px;
+    }
+    .order-items__thumb { width: 48px; height: 48px; }
+}
