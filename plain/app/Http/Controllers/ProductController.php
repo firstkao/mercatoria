@@ -3,30 +3,24 @@
 namespace App\Http\Controllers;
 
 use App\Models\ActivityLog;
+use App\Models\CoinLot;
 use App\Models\Product;
+use App\Models\ReferralClick;
 use App\Models\Setting;
+use App\Models\User;
 use App\Support\PriceCalculator;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\View\View;
 
 class ProductController extends Controller
 {
-    /**
-     * Halaman produk. Return type union View|RedirectResponse: untuk spammer
-     * yang kuotanya habis kita REDIRECT ke /akun (permintaan user #3: akun
-     * terkunci hanya boleh berada di area /akun), bukan render view — dulu
-     * method ini di-type-hint :View sehingga mengembalikan RedirectResponse
-     * memicu fatal error (500) di server produksi.
-     */
     public function show(Request $request, Product $product): View|RedirectResponse|Response
     {
-        // PAKSA LOGIN: guest tidak boleh akses halaman produk sama sekali
-        // (aturan bisnis user). Pilih cara if-check di controller (bukan
-        // middleware 'auth' di route) supaya tidak perlu ubah routes dan
-        // tidak double-redirect dengan GuestBarrierMiddleware.
-        if (!$request->user()) {
+        if (! $request->user()) {
             return redirect()->route('login')->with('error', 'Silakan masuk untuk melihat produk.');
         }
 
@@ -34,13 +28,11 @@ class ProductController extends Controller
 
         $user = $request->user();
 
-        // Setelah blok PAKSA LOGIN di atas, $user selalu terisi. Guard null di
-        // bawah dipertahankan secara defensif (mis. bila method dipanggil dari
-        // konteks tanpa session).
-        //
-        // STRICT MODE (permintaan user): spammer kuota habis TIDAK BOLEH
-        // mengakses detail produk sama sekali (hanya Home & Akun). Redirect
-        // POLOS tanpa flash/modal; status + tombol WA ada di dashboard /akun.
+        // Track share click: kalau URL punya ?ref=KODE dan pembuka bukan pemiliknya
+        // sendiri, catat klik + kasih reward ke pemilik kode. Gagal tracking
+        // TIDAK boleh menjatuhkan halaman → bungkus try/catch di dalam method.
+        $this->trackProductShareClick($request, $product, $user);
+
         try {
             if ($user !== null && $user->isSpammer() && $user->hasExhaustedQuota()) {
                 return redirect()->route('account.show');
@@ -54,9 +46,6 @@ class ProductController extends Controller
         }
 
         if ($user !== null) {
-            // Sama seperti di atas: pencatatan aktivitas tidak boleh bisa
-            // menjatuhkan halaman produk (tabel activity_logs belum ada di DB
-            // dump lama -> dulu ini ikut jadi sumber 500).
             try {
                 ActivityLog::record($user, 'view_product', $request, [
                     'product_id' => $product->id,
@@ -68,9 +57,6 @@ class ProductController extends Controller
             }
         }
 
-        // Load relasi satu per satu + try/catch: kalau ada relasi yang tidak
-        // bisa di-load (mis. kolom/tabel belum ada di DB dump lama), kita tetap
-        // lanjut render dengan relasi lain yang berhasil — BUKAN mati 500.
         foreach (['images', 'variants', 'shippingTier', 'game', 'developer'] as $relation) {
             try {
                 $product->load($relation);
@@ -79,8 +65,6 @@ class ProductController extends Controller
             }
         }
 
-        // Calculator WAJIB selalu ter-instantiate; dariSettings() gagal (kolom
-        // settings kosong/rusak di DB lama) → fallback default, bukan exception.
         try {
             $calculator = PriceCalculator::fromSettings();
         } catch (\Throwable $e) {
@@ -88,20 +72,10 @@ class ProductController extends Controller
             $calculator = new PriceCalculator(null, null, null, 11.0, 5000);
         }
 
-        // SEO data
         $description = $product->description
             ? \Illuminate\Support\Str::limit(strip_tags($product->description), 155)
             : 'Beli ' . $product->name . ' original dari Tmall. Kirim ke seluruh Indonesia.';
 
-        // Render view dibungkus try/catch sebagai LAST RESORT anti-500 polos:
-        // kalau ada satu saja bug data/relasi yang lolos dari semua guard
-        // (mis. kolom hilang, relasi null tak terduga), pengunjung tetap dapat
-        // halaman "tidak tersedia" yang rapi + error aslinya tercatat di log,
-        // BUKAN layar putih 500. Ini menjawab keluhan berulang "produk masih
-        // 500" — sekarang penyebabnya selalu bisa dilacak lewat storage/logs.
-        // Build daftar varian satu per satu dengan try/catch: kalau SATU varian
-        // punya data rusak (mis. price_yuan string aneh dari SQL dump lama),
-        // varian itu dilewati — BUKAN seluruh halaman produk mati 500.
         $variantRows = [];
         foreach ($product->variants as $variant) {
             try {
@@ -118,7 +92,6 @@ class ProductController extends Controller
             }
         }
 
-        // Ambil produk terkait (random dari game/developer yang sama, max 6)
         $relatedProducts = Product::where('id', '!=', $product->id)
             ->where(function ($query) use ($product) {
                 if ($product->game_id) {
@@ -133,11 +106,9 @@ class ProductController extends Controller
             ->limit(6)
             ->get();
 
-        // Load relasi yang dibutuhkan untuk tampilan
         $relatedProducts->load(['images', 'variants', 'game', 'developer']);
 
         try {
-            // render() DI DALAM try supaya error Blade ikut tertangkap -> halaman "tidak tersedia".
             return response(view('products.show', [
                 'user' => $user,
                 'product' => $product,
@@ -145,7 +116,6 @@ class ProductController extends Controller
                 'relatedProducts' => $relatedProducts,
                 'variants' => collect($variantRows),
                 'viewQuota' => Setting::integer('view_quota', 10),
-                // SEO
                 'title' => $product->name,
                 'metaDescription' => $description,
                 'metaImage' => $product->images->first()?->url(),
@@ -158,6 +128,91 @@ class ProductController extends Controller
                 'title' => 'Produk sementara tidak tersedia',
                 'productName' => $product->name ?? 'produk ini',
             ], 200);
+        }
+    }
+
+    /**
+     * Catat klik share produk dari ?ref=KODE.
+     *
+     * Aturan:
+     *  - 1 kali reward per (referrer × produk × IP) seumur hidup
+     *  - Pembuka link = si pemilik kode → tidak dihitung (biar gak farming sendiri)
+     *  - Reward berbentuk CoinLot source='referral_click' dengan masa berlaku 3 bulan
+     *  - Gagal tracking = log saja, tidak menjatuhkan halaman produk
+     */
+    private function trackProductShareClick(Request $request, Product $product, User $viewer): void
+    {
+        $refCode = strtoupper(trim((string) $request->query('ref', '')));
+        if ($refCode === '') {
+            return;
+        }
+
+        try {
+            $referrer = User::where('referral_code', $refCode)->first();
+        } catch (\Throwable $e) {
+            return;
+        }
+
+        if (! $referrer || $referrer->id === $viewer->id) {
+            return;
+        }
+
+        $ip = (string) $request->ip();
+        if ($ip === '') {
+            return;
+        }
+
+        // Fast-path cek duplikat (tanpa lock), hindari transaction untuk kasus umum.
+        $exists = ReferralClick::where('referrer_id', $referrer->id)
+            ->where('product_id', $product->id)
+            ->where('ip_address', $ip)
+            ->exists();
+
+        if ($exists) {
+            return;
+        }
+
+        try {
+            DB::transaction(function () use ($referrer, $product, $ip): void {
+                // Lock untuk cegah race dari dua request paralel (IP sama).
+                $dup = ReferralClick::where('referrer_id', $referrer->id)
+                    ->where('product_id', $product->id)
+                    ->where('ip_address', $ip)
+                    ->lockForUpdate()
+                    ->exists();
+
+                if ($dup) {
+                    return;
+                }
+
+                ReferralClick::create([
+                    'referrer_id' => $referrer->id,
+                    'product_id'  => $product->id,
+                    'ip_address'  => $ip,
+                    'clicked_on'  => now()->toDateString(),
+                ]);
+
+                $reward = (int) Setting::integer('referral_reward_click', 10);
+
+                if ($reward > 0) {
+                    CoinLot::create([
+                        'user_id'    => $referrer->id,
+                        'source'     => 'referral_click',
+                        'amount'     => $reward,
+                        'remaining'  => $reward,
+                        'earned_at'  => now(),
+                        'expires_at' => now()->addMonths(3),
+                    ]);
+                }
+            });
+        } catch (\Throwable $e) {
+            // Unique violation dari race = ok, bukan error fatal.
+            Log::info('Share click tracking dilewati', [
+                'referrer_id' => $referrer->id,
+                'product_id'  => $product->id,
+                'ip'          => $ip,
+                'error'       => $e->getMessage(),
+            ]);
         }
     }
 }
