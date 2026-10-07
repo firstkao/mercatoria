@@ -3458,3 +3458,34 @@ input[type="number"] { -moz-appearance: textfield; appearance: textfield; }
     }
     .order-items__thumb { width: 48px; height: 48px; }
 }
+
+/* ============================================================ */
+/* 44. HEADER BADGE — generalize untuk cart + bell               */
+/* ============================================================ */
+
+/* Semua badge di header icon (cart, notifikasi, dll) pakai style yang sama.
+   Sebelumnya hanya .header-icon--cart yang dapat style ini, sehingga bell
+   notifikasi tampil sebagai batang merah tanpa angka. */
+.header-icon .cart-badge,
+.header-icon .notif-bell__badge {
+    position: absolute;
+    top: -2px;
+    right: -4px;
+    min-width: 18px;
+    height: 18px;
+    padding: 0 5px;
+    border-radius: 999px;
+    background: var(--danger, #d93b3b);
+    color: #fff;
+    font-size: 10px;
+    font-weight: 700;
+    line-height: 18px;
+    text-align: center;
+    box-shadow: 0 0 0 2px var(--surface, #fff);
+}
+
+/* Bell override warna merah terang (opsional, kalau mau lebih standout) */
+.header-icon .cart-badge--notif,
+.header-icon .notif-bell__badge {
+    background: #e74c3c;
+}
