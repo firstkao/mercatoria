@@ -2963,3 +2963,59 @@ input[type="number"] { -moz-appearance: textfield; appearance: textfield; }
     .account-verify__resend { padding: 16px 22px; }
     .account-verify__help { padding: 0 22px 24px; }
 }
+
+/* ============================================================ */
+/* 36. QUICK NAV — jadi tombol outlined (bukan link + panah)     */
+/* ============================================================ */
+
+.quick-nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 24px 40px;
+    margin: 0;
+    border-bottom: 1px solid var(--_hair);
+    background: transparent;
+}
+.quick-nav__item {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 10px 18px;
+    background: #fff;
+    color: var(--_ink);
+    border: 1px solid var(--_hair);
+    border-radius: 3px;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: .01em;
+    text-decoration: none;
+    white-space: nowrap;
+    transition: background .15s, border-color .15s, color .15s;
+}
+.quick-nav__item:hover {
+    background: #fafafa;
+    border-color: var(--_ink);
+    color: var(--_ink);
+}
+/* Hilangkan panah → di tombol */
+.quick-nav__item::after { content: none; }
+
+@media (max-width: 720px) {
+    .quick-nav {
+        padding: 20px 22px;
+        overflow-x: auto;
+        flex-wrap: nowrap;
+        -webkit-overflow-scrolling: touch;
+    }
+    .quick-nav__item { flex: 0 0 auto; }
+}
+
+/* ============================================================ */
+/* 37. REVERT — hapus style header actions kalau ada             */
+/* ============================================================ */
+.account-head__row,
+.account-head__actions { all: unset; }
+.account-head__row { display: block; }
+.account-head__actions { display: none !important; }
