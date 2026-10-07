@@ -39,7 +39,7 @@
                     <span class="referral-reward-item__amount">+{{ number_format($rewardReferrer, 0, ',', '.') }}</span>
                     <span class="referral-reward-item__label">Teman daftar &amp; beli</span>
                     <small class="referral-reward-item__note">
-                        Sekali, saat order pertamanya selesai.
+                        Saat order pertamanya selesai.
                     </small>
                 </div>
                 <div class="referral-reward-item">
