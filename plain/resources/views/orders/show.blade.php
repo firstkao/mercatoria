@@ -53,12 +53,13 @@
                 <p>
                     @if ($order->payment_deadline_at)
                         {{ $order->status === 'pembayaran_gagal' ? 'Bukti pembayaran kamu belum kami validasi. Perbaiki sesuai alasan penolakan dan unggah ulang pembayaran sebesar' : 'Segera lakukan pembayaran sebesar' }}
-                        <strong>{{ \App\Support\PriceCalculator::formatRupiah($order->pay_now_idr) }}</strong>
+                        {{-- Banner reaktif: JS update nilai ini saat user pilih metode QRIS dengan nominal >Rp500rb --}}
+                        <strong id="pay-banner-amount">{{ \App\Support\PriceCalculator::formatRupiah($order->pay_now_idr) }}</strong>
                         sebelum
                         <strong>{{ $order->payment_deadline_at->timezone('Asia/Jakarta')->translatedFormat('j M Y, H:i') }} WIB</strong>.
                     @else
                         Segera lakukan pembayaran sebesar
-                        <strong>{{ \App\Support\PriceCalculator::formatRupiah($order->pay_now_idr) }}</strong>
+                        <strong id="pay-banner-amount">{{ \App\Support\PriceCalculator::formatRupiah($order->pay_now_idr) }}</strong>
                         dan unggah bukti transfer secepatnya.
                     @endif
                 </p>
@@ -100,7 +101,6 @@
                             <input type="file" name="proof" accept="image/jpeg,image/png,image/webp" required>
                         </label>
 
-                        {{-- Info metode terpilih --}}
                         <div id="pm-detail" class="account-info-box field--full" style="display:none;">
                             <p id="pm-instructions" class="account-info-box__text"></p>
                             <a id="pm-image-link" href="#" target="_blank" style="display:none;">
@@ -108,7 +108,6 @@
                             </a>
                         </div>
 
-                        {{-- Preview QRIS fee (muncul hanya saat QRIS & nominal > Rp500.000) --}}
                         <div id="qris-preview" class="account-info-box field--full" style="display:none;">
                             <p class="account-info-box__text">
                                 Nominal tagihan kamu lebih dari Rp500.000 dan memakai QRIS,
@@ -143,6 +142,7 @@
                     var sel       = document.getElementById('pm-select');
                     var box       = document.getElementById('pm-detail');
                     var qrisBox   = document.getElementById('qris-preview');
+                    var bannerEl  = document.getElementById('pay-banner-amount');
                     if (! sel || ! box) return;
 
                     function formatRp(n) { return 'Rp' + n.toLocaleString('id-ID'); }
@@ -153,10 +153,11 @@
                         if (! m) {
                             box.style.display = 'none';
                             if (qrisBox) qrisBox.style.display = 'none';
+                            if (bannerEl) bannerEl.textContent = formatRp(payNowIdr);
                             return;
                         }
 
-                        // Detail metode (existing)
+                        // Detail metode
                         var lines = [];
                         if (m.account_number) lines.push('Transfer ke: ' + m.account_number + (m.account_name ? ' a.n ' + m.account_name : ''));
                         if (m.instructions)   lines.push(m.instructions);
@@ -173,18 +174,24 @@
                         box.style.display = 'block';
 
                         // Preview QRIS fee
-                        if (! qrisBox) return;
                         var isQris   = m.type === 'qris';
                         var applyFee = isQris && payNowIdr > 500000;
+                        var fee      = applyFee ? Math.floor(payNowIdr * 0.003) : 0;
 
-                        if (applyFee) {
-                            var fee = Math.floor(payNowIdr * 0.003);
-                            document.getElementById('qris-base').textContent  = formatRp(payNowIdr);
-                            document.getElementById('qris-fee').textContent   = '+ ' + formatRp(fee);
-                            document.getElementById('qris-total').textContent = formatRp(payNowIdr + fee);
-                            qrisBox.style.display = 'block';
-                        } else {
-                            qrisBox.style.display = 'none';
+                        if (qrisBox) {
+                            if (applyFee) {
+                                document.getElementById('qris-base').textContent  = formatRp(payNowIdr);
+                                document.getElementById('qris-fee').textContent   = '+ ' + formatRp(fee);
+                                document.getElementById('qris-total').textContent = formatRp(payNowIdr + fee);
+                                qrisBox.style.display = 'block';
+                            } else {
+                                qrisBox.style.display = 'none';
+                            }
+                        }
+
+                        // Sinkronkan banner "Segera lakukan pembayaran sebesar ..."
+                        if (bannerEl) {
+                            bannerEl.textContent = formatRp(payNowIdr + fee);
                         }
                     }
 
@@ -195,7 +202,6 @@
             </section>
         @endif
 
-        {{-- ========== DAFTAR BARANG ========== --}}
         <section class="account-section">
             <div class="account-section__head">
                 <h2 class="account-section__title">Daftar Barang</h2>
@@ -226,7 +232,6 @@
             </ul>
         </section>
 
-        {{-- ========== RINCIAN TRANSAKSI ========== --}}
         <section class="account-section">
             <div class="account-section__head">
                 <h2 class="account-section__title">Rincian Transaksi</h2>
@@ -275,7 +280,6 @@
                     </div>
                 @endif
 
-                {{-- Biaya QRIS — hanya muncul kalau sudah tersimpan di order --}}
                 @if($qrisFee > 0)
                     <div class="order-summary__row">
                         <dt>Biaya QRIS (0,3%)</dt>
