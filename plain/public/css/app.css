@@ -3013,6 +3013,53 @@ input[type="number"] { -moz-appearance: textfield; appearance: textfield; }
 }
 
 /* ============================================================ */
+/* 36b. QUICK NAV — solid black buttons (match "Mulai Belanja")  */
+/* ============================================================ */
+
+.quick-nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    padding: 24px 40px;
+    margin: 0;
+    border-bottom: 1px solid var(--_hair);
+    background: transparent;
+}
+.quick-nav__item {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 11px 18px;
+    background: var(--_ink);
+    color: #fff;
+    border: 1px solid var(--_ink);
+    border-radius: 3px;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: .01em;
+    text-decoration: none;
+    white-space: nowrap;
+    transition: background .15s, border-color .15s;
+}
+.quick-nav__item:hover {
+    background: #27272a;
+    border-color: #27272a;
+    color: #fff;
+}
+.quick-nav__item::after { content: none; }
+
+@media (max-width: 720px) {
+    .quick-nav {
+        padding: 20px 22px;
+        overflow-x: auto;
+        flex-wrap: nowrap;
+        -webkit-overflow-scrolling: touch;
+    }
+    .quick-nav__item { flex: 0 0 auto; }
+}
+
+/* ============================================================ */
 /* 37. REVERT — hapus style header actions kalau ada             */
 /* ============================================================ */
 .account-head__row,
