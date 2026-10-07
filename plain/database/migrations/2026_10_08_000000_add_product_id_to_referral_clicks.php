@@ -5,18 +5,14 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
 /**
- * ReferralClick sekarang khusus untuk "share link produk".
+ * ReferralClick sekarang khusus "share link produk".
  *
- * Perubahan:
- *  - tambah product_id (FK ke products)
- *  - unique index lama (referrer_id, ip_address) → diganti jadi
- *    (referrer_id, product_id, ip_address) supaya:
- *      * orang yang sama boleh klik produk A dan produk B milik referrer sama
- *      * tapi tidak boleh klik produk A dua kali dari IP sama
+ *  - Baris lama (product_id NULL) = klik link undang teman (legacy, gak dapat reward).
+ *  - Baris baru (product_id terisi) = klik link produk (dapat reward click).
  *
- * Catatan: baris lama (klik link undang teman, product_id NULL) tetap
- * dibiarkan sebagai history; gak akan bentrok dengan unique baru karena
- * MySQL menganggap NULL berbeda satu sama lain.
+ * Unique index diganti dari (referrer, ip) → (referrer, product, ip)
+ * supaya orang boleh klik produk A dan B dari referrer sama, tapi
+ * gak boleh klik produk A dua kali dari IP yang sama.
  */
 return new class extends Migration
 {
@@ -29,14 +25,12 @@ return new class extends Migration
                 ->constrained('products')
                 ->cascadeOnDelete();
 
-            // Drop unique lama
             try {
                 $table->dropUnique('referral_clicks_unique_per_ip');
             } catch (\Throwable $e) {
-                // Index mungkin sudah beda nama / sudah hilang → lanjut
+                // mungkin sudah beda nama / sudah tidak ada → lanjut
             }
 
-            // Unique baru: 1 referrer × 1 produk × 1 IP = 1x seumur hidup
             $table->unique(
                 ['referrer_id', 'product_id', 'ip_address'],
                 'referral_clicks_unique_per_ip_product'
@@ -54,7 +48,6 @@ return new class extends Migration
             }
 
             $table->unique(['referrer_id', 'ip_address'], 'referral_clicks_unique_per_ip');
-
             $table->dropConstrainedForeignId('product_id');
         });
     }
