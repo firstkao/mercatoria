@@ -7,10 +7,7 @@
             <p class="account-head__eyebrow">Referral</p>
             <h1 class="account-head__title">Undang Teman</h1>
             <div class="account-head__meta">
-                <span>
-                    Dapat <strong>{{ number_format($rewardClick, 0, ',', '.') }} koin</strong> saat teman membuka link,
-                    dan <strong>{{ number_format($rewardReferrer, 0, ',', '.') }} koin</strong> saat order pertamanya selesai.
-                </span>
+                <span>Dua cara dapat koin: undang teman sampai mereka beli, atau bagikan link produk.</span>
             </div>
         </header>
 
@@ -21,59 +18,91 @@
         {{-- Kode undangan --}}
         <section class="account-section">
             <div class="account-section__head">
-                <h2 class="account-section__title">Kode Undangan</h2>
+                <h2 class="account-section__title">Kode Undanganmu</h2>
             </div>
             <div class="referral-code-block">
                 <span class="referral-code" id="referral-code">{{ $user->referral_code }}</span>
                 <div class="referral-code-block__actions">
                     <button type="button" class="account-btn account-btn--sm" onclick="copyReferral('code')">Copy Kode</button>
-                    <button type="button" class="account-btn account-btn--ghost account-btn--sm" onclick="copyReferral('link')">Copy Link</button>
+                    <button type="button" class="account-btn account-btn--ghost account-btn--sm" onclick="copyReferral('link')">Copy Link Undang</button>
                 </div>
             </div>
         </section>
 
-        {{-- Reward --}}
+        {{-- Reward: 2 sistem --}}
         <section class="account-section">
             <div class="account-section__head">
                 <h2 class="account-section__title">Reward</h2>
             </div>
             <div class="referral-rewards-grid">
                 <div class="referral-reward-item">
-                    <span class="referral-reward-item__amount">+{{ number_format($rewardClick, 0, ',', '.') }}</span>
-                    <span class="referral-reward-item__label">Teman buka linkmu</span>
-                    <small class="referral-reward-item__note">Sekali per IP unik, selamanya (anti-spam)</small>
+                    <span class="referral-reward-item__amount">+{{ number_format($rewardReferrer, 0, ',', '.') }}</span>
+                    <span class="referral-reward-item__label">Teman daftar &amp; beli</span>
+                    <small class="referral-reward-item__note">
+                        Sekali, saat order pertamanya selesai. Klik link undang teman <strong>tidak</strong> memberi reward.
+                    </small>
                 </div>
                 <div class="referral-reward-item">
-                    <span class="referral-reward-item__amount">{{ number_format($rewardReferrer, 0, ',', '.') }}</span>
-                    <span class="referral-reward-item__label">Teman daftar &amp; beli</span>
-                    <small class="referral-reward-item__note">Sekali, saat order pertamanya selesai</small>
+                    <span class="referral-reward-item__amount">+{{ number_format($rewardClick, 0, ',', '.') }}</span>
+                    <span class="referral-reward-item__label">Orang buka share produkmu</span>
+                    <small class="referral-reward-item__note">
+                        Sekali per IP × produk, seumur hidup. Bagikan dari halaman produk mana pun.
+                    </small>
                 </div>
             </div>
         </section>
 
-        {{-- Stats --}}
-        <div class="metrics metrics--five">
-            <div class="metrics__item">
-                <span class="metrics__label">Klik Link</span>
-                <strong class="metrics__value">{{ $stats['clicks'] }}</strong>
+        {{-- Stats: Undang Teman --}}
+        <section class="account-section">
+            <div class="account-section__head">
+                <h2 class="account-section__title">Undang Teman</h2>
+                <span class="account-section__hint">Reward setelah order pertama</span>
             </div>
-            <div class="metrics__item">
-                <span class="metrics__label">Total Diundang</span>
-                <strong class="metrics__value">{{ $stats['total'] }}</strong>
+            <div class="metrics">
+                <div class="metrics__item">
+                    <span class="metrics__label">Total Diundang</span>
+                    <strong class="metrics__value">{{ $stats['total'] }}</strong>
+                </div>
+                <div class="metrics__item">
+                    <span class="metrics__label">Berhasil</span>
+                    <strong class="metrics__value">{{ $stats['rewarded'] }}</strong>
+                </div>
+                <div class="metrics__item">
+                    <span class="metrics__label">Menunggu Order</span>
+                    <strong class="metrics__value">{{ $stats['pending'] }}</strong>
+                </div>
+                <div class="metrics__item">
+                    <span class="metrics__label">Koin dari Undang</span>
+                    <strong class="metrics__value">{{ number_format($stats['invite_coins'], 0, ',', '.') }}</strong>
+                </div>
             </div>
-            <div class="metrics__item">
-                <span class="metrics__label">Berhasil</span>
-                <strong class="metrics__value">{{ $stats['rewarded'] }}</strong>
+        </section>
+
+        {{-- Stats: Share Produk --}}
+        <section class="account-section">
+            <div class="account-section__head">
+                <h2 class="account-section__title">Share Produk</h2>
+                <span class="account-section__hint">Reward saat link dibuka</span>
             </div>
-            <div class="metrics__item">
-                <span class="metrics__label">Menunggu</span>
-                <strong class="metrics__value">{{ $stats['pending'] }}</strong>
+            <div class="metrics">
+                <div class="metrics__item">
+                    <span class="metrics__label">Link Dibuka</span>
+                    <strong class="metrics__value">{{ $stats['share_clicks'] }}</strong>
+                </div>
+                <div class="metrics__item">
+                    <span class="metrics__label">Koin dari Share</span>
+                    <strong class="metrics__value">{{ number_format($stats['share_click_coins'], 0, ',', '.') }}</strong>
+                </div>
+                <div class="metrics__item">
+                    <span class="metrics__label">Reward / Klik</span>
+                    <strong class="metrics__value">+{{ number_format($rewardClick, 0, ',', '.') }}</strong>
+                </div>
             </div>
-            <div class="metrics__item">
-                <span class="metrics__label">Koin Didapat</span>
-                <strong class="metrics__value">{{ number_format($stats['coins'], 0, ',', '.') }}</strong>
-            </div>
-        </div>
+            <p class="cart-summary__note" style="margin-top:16px;">
+                Buka halaman produk apa pun, klik tombol <strong>Bagikan</strong>. Link yang tersalin otomatis
+                berisi kode referralmu. Setiap orang yang membuka dari IP baru = koin untuk kamu.
+            </p>
+        </section>
 
         {{-- Riwayat undangan --}}
         <section class="account-section">
@@ -101,7 +130,9 @@
                             @foreach ($referrals as $ref)
                                 <tr>
                                     <td>{{ $ref->referee?->displayName() ?? 'Pengguna terhapus' }}</td>
-                                    <td class="account-table__muted">{{ $ref->created_at->timezone('Asia/Jakarta')->translatedFormat('j M Y') }}</td>
+                                    <td class="account-table__muted">
+                                        {{ $ref->created_at->timezone('Asia/Jakarta')->translatedFormat('j M Y') }}
+                                    </td>
                                     <td>
                                         @if ($ref->status === 'rewarded')
                                             <span class="account-status account-status--ok">Berhasil</span>
@@ -129,6 +160,7 @@
 
     </div>
 </div>
+@endsection
 
 @push('scripts')
 <script>
@@ -155,7 +187,7 @@
         }
 
         function doneCopy() {
-            showCopiedToast(mode === 'code' ? 'Kode disalin' : 'Link disalin');
+            showCopiedToast(mode === 'code' ? 'Kode disalin' : 'Link undang disalin');
         }
 
         if (navigator.clipboard) {
