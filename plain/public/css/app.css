@@ -2754,3 +2754,27 @@ input[type="number"] { -moz-appearance: textfield; appearance: textfield; }
 @media (max-width: 420px) {
     .product-grid-v2 { grid-template-columns: repeat(2, 1fr); }
 }
+
+/* ============================================================ */
+/* 35. ACCOUNT HEAD — row dengan actions kanan                   */
+/* ============================================================ */
+.account-head__row {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 24px;
+    flex-wrap: wrap;
+}
+.account-head__main { min-width: 0; flex: 1; }
+.account-head__actions {
+    display: flex;
+    gap: 8px;
+    flex-shrink: 0;
+    align-self: flex-start;
+}
+
+@media (max-width: 720px) {
+    .account-head__row { flex-direction: column; align-items: stretch; }
+    .account-head__actions { width: 100%; }
+    .account-head__actions .account-btn { flex: 1; justify-content: center; }
+}
