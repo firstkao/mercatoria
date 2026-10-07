@@ -70,7 +70,6 @@
                                         {{ \App\Support\PriceCalculator::formatRupiah($price * $item->quantity) }}
                                     </span>
 
-                                    {{-- Tombol submit pakai atribut `form` → nunjuk ke form qty di luar form checkout --}}
                                     <div class="product-boxed-qty">
                                         <button type="submit"
                                                 form="qty-form-{{ $item->id }}"
@@ -103,6 +102,28 @@
                             </li>
                         @endforeach
                     </ul>
+                </section>
+
+                {{-- ========== CATATAN PEMBELIAN ========== --}}
+                <section class="account-section">
+                    <div class="account-section__head">
+                        <h2 class="account-section__title">Catatan Pembelian</h2>
+                        <span class="account-section__hint">Wajib diisi</span>
+                    </div>
+                    <div class="account-form">
+                        <label class="field field--full">
+                            <span>Catatan untuk Penjual</span>
+                            <textarea name="notes"
+                                      rows="3"
+                                      maxlength="500"
+                                      required
+                                      placeholder="Contoh: bubble wrap extra, no gift card, packing rapi.">{{ old('notes') }}</textarea>
+                            <small class="hint">
+                                Instruksi khusus soal packing, gift card, atau permintaan lain ke penjual.
+                            </small>
+                            @include('partials.field-error', ['name' => 'notes'])
+                        </label>
+                    </div>
                 </section>
 
                 {{-- ========== POTONGAN ========== --}}
@@ -223,12 +244,7 @@
                 </div>
             </form>
 
-            {{-- ============================================================ --}}
-            {{-- Form tersembunyi — WAJIB di luar form checkout               --}}
-            {{-- (HTML tidak mengizinkan nested <form>, browser akan menutup   --}}
-            {{-- form checkout prematur kalau form qty ditaruh di dalamnya).   --}}
-            {{-- Tombol di atas dihubungkan ke sini via atribut `form="..."`. --}}
-            {{-- ============================================================ --}}
+            {{-- Form tersembunyi — WAJIB di luar form checkout --}}
             @foreach($cartItems as $item)
                 <form id="qty-form-{{ $item->id }}"
                       method="POST"
