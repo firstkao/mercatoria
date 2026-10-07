@@ -315,7 +315,11 @@
             if (remainingRow) {
                 if (scheme === 'DP' || mpFee > 0) {
                     remainingRow.hidden = false;
-                    if (remainingVal) remainingVal.textContent = formatRp(remaining + mpFee) + " (termasuk biaya admin)";
+                    if (remainingVal) {
+                        var text = formatRp(remaining + mpFee);
+                        if (mpFee > 0) text += " (termasuk biaya admin)";
+                        remainingVal.textContent = text;
+                    }
                 } else {
                     remainingRow.hidden = true;
                 }
