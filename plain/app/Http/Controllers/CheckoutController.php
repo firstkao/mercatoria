@@ -35,7 +35,7 @@ class CheckoutController extends Controller
             'marketplace_id' => ['required', Rule::exists('marketplaces', 'id')->where('is_active', true)],
             'discount_type' => 'required|in:none,coin,voucher',
             'voucher_code' => 'nullable|string',
-            'customer_note' => 'required|string|min:3|max:1000',
+            'customer_note' => 'nullable|string|min:3|max:1000',
         ], [
             'customer_note.required' => 'Mohon isi catatan pembelian. Contoh: "bubble wrap extra" atau "no gift card".',
             'customer_note.min' => 'Catatan minimal 3 karakter.',
