@@ -10,12 +10,12 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class Order extends Model
 {
     protected $fillable = [
-        'order_number', 'user_id', 'marketplace_id', 'status', 'payment_scheme',
-        'subtotal_idr', 'discount_type', 'discount_idr', 'total_idr', 'pay_now_idr',
-        'remaining_idr', 'marketplace_fee_idr', 'coin_estimate', 'pricing_snapshot',
-        'payment_deadline_at', 'paid_at', 'completed_at', 'cancelled_at', 'refund_note',
-        'customer_note',
-    ];
+    'order_number', 'user_id', 'marketplace_id', 'status', 'payment_scheme',
+    'subtotal_idr', 'discount_type', 'discount_idr', 'total_idr', 'pay_now_idr',
+    'remaining_idr', 'marketplace_fee_idr', 'qris_fee_idr', 'coin_estimate',  // ← tambah 'qris_fee_idr'
+    'pricing_snapshot', 'payment_deadline_at', 'paid_at', 'completed_at',
+    'cancelled_at', 'refund_note', 'customer_note',
+];
 
     protected function casts(): array
     {
@@ -31,6 +31,7 @@ class Order extends Model
             'pay_now_idr' => 'integer',
             'remaining_idr' => 'integer',
             'marketplace_fee_idr' => 'integer',
+            'qris_fee_idr' => 'integer',   // ← tambah baris ini
             'coin_estimate' => 'integer',
         ];
     }
