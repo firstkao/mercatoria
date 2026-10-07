@@ -3489,3 +3489,36 @@ input[type="number"] { -moz-appearance: textfield; appearance: textfield; }
 .header-icon .notif-bell__badge {
     background: #e74c3c;
 }
+
+/* ============================================================ */
+/* 45. PRODUCT — tombol share                                    */
+/* ============================================================ */
+.product-boxed-share {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    height: 36px;
+    padding: 0 18px;
+    background: #fff;
+    color: #1a1a25;
+    border: 1px solid #d9d9e0;
+    border-radius: 3px;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: .02em;
+    cursor: pointer;
+    white-space: nowrap;
+    align-self: flex-start;
+    transition: border-color .15s, background .15s;
+}
+.product-boxed-share:hover {
+    border-color: #1a1a25;
+    background: #fafafa;
+}
+.product-boxed-share svg {
+    width: 15px;
+    height: 15px;
+    flex-shrink: 0;
+}
