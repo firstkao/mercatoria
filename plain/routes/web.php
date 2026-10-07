@@ -324,6 +324,7 @@ Route::middleware('auth')->group(function (): void {
 
         // Akun
         Route::get('/akun', [AccountController::class, 'show'])->name('account.show');
+        Route::get('/akun/stats', [AccountController::class, 'stats'])->name('account.stats');  
         Route::get('/akun/koin', [CoinController::class, 'index'])->name('account.coins.index');
         Route::get('/akun/profil', [ProfileController::class, 'edit'])->name('account.profile.edit');
         Route::put('/akun/profil', [ProfileController::class, 'update'])->name('account.profile.update');
