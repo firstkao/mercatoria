@@ -30,11 +30,11 @@ class ReferralController extends Controller
             'pending'  => Referral::where('status', Referral::STATUS_PENDING)->count(),
             'rewarded' => Referral::where('status', Referral::STATUS_REWARDED)->count(),
 
-            // Share link produk (klik)
+            // Share produk (klik)
             'product_share_clicks' => ReferralClick::whereNotNull('product_id')->count(),
             'legacy_invite_clicks' => ReferralClick::whereNull('product_id')->count(),
 
-            // Total koin terbayar
+            // Total koin terbayar dari kedua sistem
             'coins_paid' => (int) CoinLot::whereIn('source', ['referral', 'referral_click'])->sum('amount'),
         ];
 
