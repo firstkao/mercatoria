@@ -56,14 +56,46 @@
                                         <div class="image-placeholder">IMG</div>
                                     @endif
                                 </div>
+
                                 <div class="cart-ledger__info">
                                     <strong class="cart-ledger__name">{{ $item->variant->product->name }}</strong>
                                     <span class="cart-ledger__meta">Varian: {{ $item->variant->name }}</span>
+                                    <span class="cart-ledger__unit">
+                                        {{ \App\Support\PriceCalculator::formatRupiah($price) }} / item
+                                    </span>
                                 </div>
+
                                 <div class="cart-ledger__price">
-                                    <span class="cart-ledger__amount">{{ \App\Support\PriceCalculator::formatRupiah($price) }}</span>
-                                    <span class="cart-ledger__qty">× {{ $item->quantity }}</span>
+                                    <span class="cart-ledger__amount">
+                                        {{ \App\Support\PriceCalculator::formatRupiah($price * $item->quantity) }}
+                                    </span>
+
+                                    {{-- Qty control: satu form, tombol submit value beda --}}
+                                    <form method="POST" action="{{ route('cart.update', $item) }}" class="cart-ledger__qty-form">
+                                        @csrf
+                                        @method('PUT')
+                                        <div class="product-boxed-qty">
+                                            <button type="submit"
+                                                    name="quantity"
+                                                    value="{{ $item->quantity - 1 }}"
+                                                    class="product-boxed-qty-btn"
+                                                    aria-label="Kurangi jumlah">−</button>
+                                            <input type="text"
+                                                   class="product-boxed-qty-input"
+                                                   value="{{ $item->quantity }}"
+                                                   readonly
+                                                   tabindex="-1"
+                                                   aria-label="Jumlah">
+                                            <button type="submit"
+                                                    name="quantity"
+                                                    value="{{ $item->quantity + 1 }}"
+                                                    class="product-boxed-qty-btn"
+                                                    @disabled($item->quantity >= 99)
+                                                    aria-label="Tambah jumlah">+</button>
+                                        </div>
+                                    </form>
                                 </div>
+
                                 <div class="cart-ledger__actions">
                                     <button type="button" class="cart-ledger__remove"
                                             onclick="document.getElementById('delete-{{ $item->id }}').submit();">
@@ -85,7 +117,7 @@
                         <label class="cart-option">
                             <input type="radio" name="discount_type" value="none" checked>
                             <span class="cart-option__body">
-                                <strong>Tanpa potongan</strong>
+                                <strong>Tanpa Potongan</strong>
                                 <small>Bayar harga penuh</small>
                             </span>
                         </label>
@@ -114,7 +146,7 @@
                     </div>
                 </section>
 
-                {{-- ========== PEMBAYARAN ========== --}}
+                {{-- ========== SKEMA PEMBAYARAN ========== --}}
                 <section class="account-section">
                     <div class="account-section__head">
                         <h2 class="account-section__title">Skema Pembayaran</h2>
