@@ -108,7 +108,7 @@
                 <section class="account-section">
                     <div class="account-section__head">
                         <h2 class="account-section__title">Catatan Pembelian</h2>
-                        <span class="account-section__hint">Wajib diisi</span>
+                        <span class="account-section__hint">Opsional</span>
                     </div>
                     <div class="account-form">
                         <label class="field field--full">
@@ -116,10 +116,9 @@
                             <textarea name="notes"
                                       rows="3"
                                       maxlength="500"
-                                      required
                                       placeholder="Contoh: bubble wrap extra, no gift card, packing rapi.">{{ old('notes') }}</textarea>
                             <small class="hint">
-                                Instruksi khusus soal packing, gift card, atau permintaan lain ke penjual.
+                                Instruksi khusus soal packing, gift card, atau permintaan lain ke penjual. Boleh dikosongkan.
                             </small>
                             @include('partials.field-error', ['name' => 'notes'])
                         </label>
