@@ -3030,3 +3030,31 @@ input[type="number"] { -moz-appearance: textfield; appearance: textfield; }
 .account-head__actions { all: unset; }
 .account-head__row { display: block; }
 .account-head__actions { display: none !important; }
+
+/* ============================================================ */
+/* 38. ACCOUNT HEAD — aktifkan kembali row + action slot         */
+/*     (override blok 37 yang men-disable-nya)                   */
+/* ============================================================ */
+
+.account-head__row {
+    display: flex !important;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 24px;
+    flex-wrap: wrap;
+}
+.account-head__main { min-width: 0; flex: 1; }
+.account-head__actions {
+    display: flex !important;
+    gap: 8px;
+    flex-shrink: 0;
+    align-self: flex-start;
+}
+.account-head__actions form { margin: 0; }
+
+@media (max-width: 720px) {
+    .account-head__row { flex-direction: column; align-items: stretch; }
+    .account-head__actions { width: 100%; }
+    .account-head__actions form { width: 100%; }
+    .account-head__actions .account-btn { width: 100%; justify-content: center; }
+}
