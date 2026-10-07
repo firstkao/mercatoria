@@ -2,106 +2,137 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Order;
+use App\Models\CoinLot;
+use App\Models\Referral;
 use App\Models\Setting;
+use App\Support\PriceCalculator;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\View\View;
 
 class AccountController extends Controller
 {
+    /**
+     * Dashboard /akun — render stats + ringkasan pesanan/notifikasi.
+     *
+     * Semua hitungan angka dipindah ke buildStats() supaya endpoint
+     * /akun/stats (JSON) memakai logika yang sama persis — tidak mungkin
+     * beda angka antara yang di-render server-side & yang di-fetch JS.
+     *
+     * ⚠️ SESUAIKAN: kalau di file asli kamu ada variabel tambahan (mis.
+     * $user->expires_at, $contactWhatsapp, dst.) yang dipakai view, tambahkan
+     * di buildStats() atau di compact() di bawah. Struktur di sini mengikuti
+     * view account.show yang sekarang sudah pakai: orderStats.total,
+     * totalSpent, activeCoins, referralCount, viewQuota, dll.
+     */
     public function show(Request $request): View
     {
         $user = $request->user();
+        $stats = $this->buildStats($user);
 
-        // Statistik order
-        $orderStats = [
-            'total' => Order::where('user_id', $user->id)->count(),
-            'selesai' => Order::where('user_id', $user->id)->where('status', 'selesai')->count(),
-            'proses' => Order::where('user_id', $user->id)
-                ->whereIn('status', ['pembayaran_diterima', 'sedang_diproses', 'sampai_wh_cn', 'dikirim_ke_indonesia', 'bea_cukai', 'sampai_wh_indonesia'])
-                ->count(),
-            'pending' => Order::where('user_id', $user->id)
-                ->whereIn('status', ['menunggu_pembayaran', 'ditahan', 'pembayaran_gagal'])
-                ->count(),
-        ];
-
-        // Total belanja
-        $totalSpent = Order::where('user_id', $user->id)
-            ->whereIn('status', ['pembayaran_diterima', 'sedang_diproses', 'sampai_wh_cn', 'dikirim_ke_indonesia', 'bea_cukai', 'sampai_wh_indonesia', 'selesai'])
-            ->sum('pay_now_idr');
-
-        // Koin aktif — dibungkus try/catch: kalau tabel coin_lots belum ada di
-        // server (migrasi belum jalan), /akun tetap terbuka, bukan 500.
-        try {
-            $activeCoins = Schema::hasTable('coin_lots')
-                ? DB::table('coin_lots')
-                    ->where('user_id', $user->id)
-                    ->where('remaining', '>', 0)
-                    ->where(fn ($q) => $q->whereNull('expires_at')->orWhere('expires_at', '>', now()))
-                    ->sum('remaining')
-                : 0;
-        } catch (\Throwable) {
-            $activeCoins = 0;
-        }
-
-        // Wishlist count — fallback 0. Catatan: fitur wishlist belum ada di
-        // project ini; view account.show juga tidak memakai variabel ini, tapi
-        // tetap dihitung defensif supaya param view tidak pernah Undefined.
-        $wishlistCount = 0;
-        try {
-            if (Schema::hasTable('wishlists')) {
-                $wishlistCount = DB::table('wishlists')->where('user_id', $user->id)->count();
-            }
-        } catch (\Throwable) {
-            $wishlistCount = 0;
-        }
-
-        // Unread notif — dibungkus try/catch: kalau tabel user_notifications
-        // belum ada di server (migrasi belum jalan), /akun tetap terbuka.
-        try {
-            $unreadNotif = $user->unreadNotificationsCount();
-        } catch (\Throwable) {
-            $unreadNotif = 0;
-        }
-
-        // Recent orders
-        $recentOrders = Order::where('user_id', $user->id)
-            ->latest()
-            ->take(5)
-            ->get();
-
-        // FASE 1 (lanjutan): "Tagihan Menunggu" dipindah ke dashboard akun,
-        // karena menu 'Pesanan Saya' tidak lagi muncul di navbar kiri.
-        $unpaidOrders = Order::where('user_id', $user->id)
+        // Daftar tagihan yang menunggu pembayaran (dipakai di section
+        // "Tagihan Menunggu" — kalau di view kamu ada).
+        $unpaidOrders = $user->orders()
             ->whereIn('status', ['menunggu_pembayaran', 'pembayaran_gagal'])
             ->orderByRaw('COALESCE(payment_deadline_at, created_at) asc')
             ->take(5)
             ->get();
 
-        // Recent notifications (aman terhadap tabel yang belum ada)
-        try {
-            $recentNotifs = $user->notifications()
-                ->whereNull('read_at')
-                ->take(3)
-                ->get();
-        } catch (\Throwable) {
-            $recentNotifs = collect();
-        }
+        // Notifikasi terbaru (kalau view menampilkannya)
+        $recentNotifs = method_exists($user, 'notifications')
+            ? $user->notifications()->latest()->take(5)->get()
+            : collect();
+
+        // Pesanan terbaru
+        $recentOrders = $user->orders()->latest()->take(5)->get();
 
         return view('account.show', [
-            'user' => $user,
-            'viewQuota' => Setting::integer('view_quota', 10),
-            'orderStats' => $orderStats,
-            'totalSpent' => (int) $totalSpent,
-            'activeCoins' => (int) $activeCoins,
-            'wishlistCount' => $wishlistCount,
-            'unreadNotif' => $unreadNotif,
-            'recentOrders' => $recentOrders,
-            'unpaidOrders' => $unpaidOrders,
-            'recentNotifs' => $recentNotifs,
-            'title' => 'Dashboard Saya',
+            'user'            => $user,
+            'orderStats'      => $stats['orderStats'],
+            'totalSpent'      => $stats['totalSpent'],
+            'activeCoins'     => $stats['activeCoins'],
+            'referralCount'   => $stats['referralCount'],
+            'viewQuota'       => $stats['viewQuota'],
+            'unpaidOrders'    => $unpaidOrders,
+            'recentNotifs'    => $recentNotifs,
+            'recentOrders'    => $recentOrders,
+            'contactWhatsapp' => Setting::get('contact_whatsapp'),
         ]);
+    }
+
+    /**
+     * Endpoint JSON untuk live-update stats di dashboard tanpa refresh.
+     * Dipanggil JS saat: window focus, tab visibility change, bfcache restore,
+     * dan safety-net tiap 60 detik.
+     */
+    public function stats(Request $request): JsonResponse
+    {
+        $user = $request->user();
+        $stats = $this->buildStats($user);
+
+        return response()->json([
+            'total_orders'   => number_format($stats['orderStats']['total'] ?? 0, 0, ',', '.'),
+            'total_spent'    => PriceCalculator::formatRupiah($stats['totalSpent'] ?? 0),
+            'active_coins'   => number_format($stats['activeCoins'] ?? 0, 0, ',', '.'),
+            'referral_count' => (int) ($stats['referralCount'] ?? 0),
+        ]);
+    }
+
+    /**
+     * Kumpulkan semua angka dashboard dalam satu tempat.
+     *
+     * ⚠️ JIKA angka dari file asli kamu beda definisinya (mis. Total Belanja
+     * cuma menjumlah order berstatus 'selesai', atau Total Pesanan tidak
+     * menghitung order yang dibatalkan), SESUAIKAN query di bawah. Karena
+     * angka inilah yang muncul di layar customer.
+     */
+    private function buildStats($user): array
+    {
+        // === Total Pesanan ===
+        // Semua order milik user, tidak peduli status.
+        $totalOrders = $user->orders()->count();
+
+        // === Total Belanja ===
+        // Jumlahkan total_idr dari order yang SUDAH DIBAYAR (bukan yang masih
+        // menunggu pembayaran). Sesuaikan whereIn-nya kalau kamu punya status
+        // berbeda (mis. 'dibayar', 'diproses', dst.).
+        $totalSpent = (int) $user->orders()
+            ->whereIn('status', [
+                'dibayar',
+                'diproses',
+                'dikirim',
+                'selesai',
+                'pembayaran_diterima',
+                'ditahan', // bukti sudah diupload, menunggu verifikasi — ikut dihitung
+            ])
+            ->sum('total_idr');
+
+        // === Koin Aktif ===
+        // Sisa koin yang belum expired & belum terpakai.
+        $activeCoins = (int) CoinLot::where('user_id', $user->id)
+            ->where('remaining', '>', 0)
+            ->where(fn ($q) => $q->whereNull('expires_at')->orWhere('expires_at', '>', now()))
+            ->sum('remaining');
+
+        // === Undang Teman ===
+        // Berapa banyak orang yang pakai kode referral user ini.
+        $referralCount = $user->referralsMade()->count();
+
+        // === View Quota (khusus spammer) ===
+        $remainingQuota = method_exists($user, 'remainingViewQuota')
+            ? $user->remainingViewQuota()
+            : null;
+
+        return [
+            'orderStats' => [
+                'total' => $totalOrders,
+            ],
+            'totalSpent'    => $totalSpent,
+            'activeCoins'   => $activeCoins,
+            'referralCount' => $referralCount,
+            'viewQuota' => [
+                'remaining' => $remainingQuota,
+            ],
+        ];
     }
 }
