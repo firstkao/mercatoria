@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\CoinLot;
-use App\Models\Referral;
 use App\Models\Setting;
 use App\Support\PriceCalculator;
 use Illuminate\Http\JsonResponse;
@@ -13,37 +12,43 @@ use Illuminate\View\View;
 class AccountController extends Controller
 {
     /**
-     * Dashboard /akun — render stats + ringkasan pesanan/notifikasi.
+     * Status order yang TIDAK dihitung sebagai "belanja".
      *
-     * Semua hitungan angka dipindah ke buildStats() supaya endpoint
-     * /akun/stats (JSON) memakai logika yang sama persis — tidak mungkin
-     * beda angka antara yang di-render server-side & yang di-fetch JS.
+     * Order dengan status di bawah ini dianggap tidak jadi transaksi:
+     *   - dibatalkan / cancelled : order dibatalkan (baik oleh user, admin, atau sistem)
+     *   - refund / refunded      : uang sudah dikembalikan
+     *   - dikembalikan / returned: barang dikembalikan
+     *   - gagal                  : order gagal permanen
      *
-     * ⚠️ SESUAIKAN: kalau di file asli kamu ada variabel tambahan (mis.
-     * $user->expires_at, $contactWhatsapp, dst.) yang dipakai view, tambahkan
-     * di buildStats() atau di compact() di bawah. Struktur di sini mengikuti
-     * view account.show yang sekarang sudah pakai: orderStats.total,
-     * totalSpent, activeCoins, referralCount, viewQuota, dll.
+     * Kalau nama status di enum kamu beda, SESUAIKAN list ini. Kalau status di
+     * DB tidak ada di list, tidak masalah — whereNotIn akan mengabaikannya.
      */
+    private const EXCLUDED_STATUSES = [
+        'dibatalkan',
+        'cancelled',
+        'canceled',
+        'refund',
+        'refunded',
+        'dikembalikan',
+        'returned',
+        'gagal',
+    ];
+
     public function show(Request $request): View
     {
         $user = $request->user();
         $stats = $this->buildStats($user);
 
-        // Daftar tagihan yang menunggu pembayaran (dipakai di section
-        // "Tagihan Menunggu" — kalau di view kamu ada).
         $unpaidOrders = $user->orders()
             ->whereIn('status', ['menunggu_pembayaran', 'pembayaran_gagal'])
             ->orderByRaw('COALESCE(payment_deadline_at, created_at) asc')
             ->take(5)
             ->get();
 
-        // Notifikasi terbaru (kalau view menampilkannya)
         $recentNotifs = method_exists($user, 'notifications')
             ? $user->notifications()->latest()->take(5)->get()
             : collect();
 
-        // Pesanan terbaru
         $recentOrders = $user->orders()->latest()->take(5)->get();
 
         return view('account.show', [
@@ -60,11 +65,6 @@ class AccountController extends Controller
         ]);
     }
 
-    /**
-     * Endpoint JSON untuk live-update stats di dashboard tanpa refresh.
-     * Dipanggil JS saat: window focus, tab visibility change, bfcache restore,
-     * dan safety-net tiap 60 detik.
-     */
     public function stats(Request $request): JsonResponse
     {
         $user = $request->user();
@@ -79,46 +79,55 @@ class AccountController extends Controller
     }
 
     /**
-     * Kumpulkan semua angka dashboard dalam satu tempat.
-     *
-     * ⚠️ JIKA angka dari file asli kamu beda definisinya (mis. Total Belanja
-     * cuma menjumlah order berstatus 'selesai', atau Total Pesanan tidak
-     * menghitung order yang dibatalkan), SESUAIKAN query di bawah. Karena
-     * angka inilah yang muncul di layar customer.
+     * Kumpulkan semua angka dashboard dalam satu tempat supaya:
+     *   1. show() dan stats() selalu konsisten (tidak mungkin beda angka)
+     *   2. Definisi tiap angka jelas & terkumpul di satu method
      */
     private function buildStats($user): array
     {
-        // === Total Pesanan ===
-        // Semua order milik user, tidak peduli status.
+        // ============================================================
+        // TOTAL PESANAN
+        // ============================================================
+        // Jumlah order milik user, semua status (termasuk dibatalkan).
+        // Alasan: user mungkin mau lihat "berapa kali saya checkout" — jadi
+        // order yang dibatalkan pun tetap dihitung sebagai aktivitas.
         $totalOrders = $user->orders()->count();
 
-        // === Total Belanja ===
-        // Jumlahkan total_idr dari order yang SUDAH DIBAYAR (bukan yang masih
-        // menunggu pembayaran). Sesuaikan whereIn-nya kalau kamu punya status
-        // berbeda (mis. 'dibayar', 'diproses', dst.).
+        // ============================================================
+        // TOTAL BELANJA
+        // ============================================================
+        // Definisi: sum of total_idr dari semua order yang TIDAK dibatalkan
+        // /di-refund. Dipilih supaya:
+        //   - Order yang masih menunggu pembayaran tetap terhitung
+        //     (customer sudah commit checkout, tinggal bayar)
+        //   - Order yang benar-benar batal tidak mencemari total
+        //
+        // Opsi alternatif (kalau mau pakai "uang yang benar-benar sudah dibayar"):
+        //   ->sum('pay_now_idr')  // hanya yang sudah keluar dari dompet customer
+        // Ini akan menghasilkan angka lebih kecil, karena DP / cicilan yang
+        // belum dibayar tidak dihitung.
         $totalSpent = (int) $user->orders()
-            ->whereIn('status', [
-                'dibayar',
-                'diproses',
-                'dikirim',
-                'selesai',
-                'pembayaran_diterima',
-                'ditahan', // bukti sudah diupload, menunggu verifikasi — ikut dihitung
-            ])
+            ->whereNotIn('status', self::EXCLUDED_STATUSES)
             ->sum('total_idr');
 
-        // === Koin Aktif ===
+        // ============================================================
+        // KOIN AKTIF
+        // ============================================================
         // Sisa koin yang belum expired & belum terpakai.
         $activeCoins = (int) CoinLot::where('user_id', $user->id)
             ->where('remaining', '>', 0)
             ->where(fn ($q) => $q->whereNull('expires_at')->orWhere('expires_at', '>', now()))
             ->sum('remaining');
 
-        // === Undang Teman ===
-        // Berapa banyak orang yang pakai kode referral user ini.
+        // ============================================================
+        // UNDANG TEMAN
+        // ============================================================
+        // Jumlah orang yang sudah pakai kode referral user ini.
         $referralCount = $user->referralsMade()->count();
 
-        // === View Quota (khusus spammer) ===
+        // ============================================================
+        // VIEW QUOTA (khusus spammer)
+        // ============================================================
         $remainingQuota = method_exists($user, 'remainingViewQuota')
             ? $user->remainingViewQuota()
             : null;
