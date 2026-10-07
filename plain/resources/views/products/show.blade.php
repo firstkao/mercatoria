@@ -7,6 +7,14 @@
     $calculator = $calculator ?? \App\Support\PriceCalculator::fromSettings();
     $variants = collect($variants ?? []);
     $viewQuota = $viewQuota ?? 10;
+
+    // URL share produk: pakai kode referral user yang login.
+    // Kalau belum punya kode (edge case), tombol share tidak dirender.
+    $authUser = auth()->user();
+    $shareUrl = null;
+    if ($authUser && ! empty($authUser->referral_code)) {
+        $shareUrl = url($product->slug) . '?ref=' . $authUser->referral_code;
+    }
 @endphp
 
 @push('head')
@@ -256,6 +264,27 @@
                             <button type="submit" class="product-boxed-add-to-cart button" data-add-to-cart disabled>Tambah ke keranjang</button>
                         </form>
                     @endauth
+
+                    {{-- Tombol Bagikan: muncul kalau user login & punya referral_code.
+                         Link yang dicopy otomatis bawa ?ref=KODE user tersebut, dan
+                         saat orang lain buka link itu = reward koin untuk user ini. --}}
+                    @if ($shareUrl)
+                        <button type="button"
+                                class="product-boxed-share"
+                                data-share-url="{{ $shareUrl }}"
+                                data-share-title="{{ $product->name }}"
+                                aria-label="Bagikan produk ini">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                 stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <circle cx="18" cy="5" r="3"/>
+                                <circle cx="6" cy="12" r="3"/>
+                                <circle cx="18" cy="19" r="3"/>
+                                <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/>
+                                <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+                            </svg>
+                            <span data-share-label>Bagikan produk ini</span>
+                        </button>
+                    @endif
 
                     {{-- 4. Info meta: SKU, lalu Game -> Developer -> Tag (link katalog berfilter) --}}
                     <dl class="product__meta product-boxed-meta">
@@ -679,6 +708,54 @@
                     });
                 });
             }
+        })();
+
+        // ---- Share produk ----
+        // Pakai Web Share API kalau tersedia (HP), fallback ke clipboard (desktop),
+        // fallback terakhir ke prompt manual.
+        (function () {
+            var btn = document.querySelector('[data-share-url]');
+            if (! btn) return;
+
+            btn.addEventListener('click', function () {
+                var url = btn.dataset.shareUrl;
+                var title = btn.dataset.shareTitle || document.title;
+                var labelEl = btn.querySelector('[data-share-label]');
+                var original = labelEl ? labelEl.textContent : '';
+
+                function flash(msg) {
+                    if (! labelEl) return;
+                    labelEl.textContent = msg;
+                    clearTimeout(btn._flashTimer);
+                    btn._flashTimer = setTimeout(function () {
+                        labelEl.textContent = original;
+                    }, 2000);
+                }
+
+                if (navigator.share) {
+                    navigator.share({ title: title, url: url }).catch(function () {});
+                    return;
+                }
+
+                if (navigator.clipboard) {
+                    navigator.clipboard.writeText(url).then(function () {
+                        flash('Link disalin!');
+                    }, function () {
+                        flash('Gagal menyalin');
+                    });
+                    return;
+                }
+
+                // Fallback klasik (browser lama)
+                var ta = document.createElement('textarea');
+                ta.value = url;
+                ta.style.position = 'fixed';
+                ta.style.opacity = '0';
+                document.body.appendChild(ta);
+                ta.select();
+                try { document.execCommand('copy'); flash('Link disalin!'); } catch (e) { flash('Gagal menyalin'); }
+                document.body.removeChild(ta);
+            });
         })();
     </script>
 @endpush
