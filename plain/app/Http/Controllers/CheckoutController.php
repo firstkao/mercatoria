@@ -35,10 +35,10 @@ class CheckoutController extends Controller
             'marketplace_id' => ['required', Rule::exists('marketplaces', 'id')->where('is_active', true)],
             'discount_type' => 'required|in:none,coin,voucher',
             'voucher_code' => 'nullable|string',
-            'customer_note' => 'nullable|string|min:3|max:1000',
+            // Catatan pembelian OPSIONAL — boleh dikosongkan. Kalau diisi,
+            // hanya dibatasi panjangnya (1000 char) supaya tidak overflow.
+            'customer_note' => 'nullable|string|max:1000',
         ], [
-            'customer_note.required' => 'Mohon isi catatan pembelian. Contoh: "bubble wrap extra" atau "no gift card".',
-            'customer_note.min' => 'Catatan minimal 3 karakter.',
             'customer_note.max' => 'Catatan maksimal 1000 karakter.',
         ], [
             'customer_note' => 'catatan pembelian',
