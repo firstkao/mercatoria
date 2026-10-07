@@ -2778,3 +2778,188 @@ input[type="number"] { -moz-appearance: textfield; appearance: textfield; }
     .account-head__actions { width: 100%; }
     .account-head__actions .account-btn { flex: 1; justify-content: center; }
 }
+
+/* ============================================================ */
+/* 35. AUTH PAGES — login, register, reset, verify, forgot       */
+/*     Layout selaras dengan account dashboard (ledger).         */
+/* ============================================================ */
+
+.account-page--auth     { max-width: 460px; }
+.account-page--register { max-width: 640px; }
+
+/* Tombol block full-width */
+.account-btn--block {
+    width: 100%;
+    justify-content: center;
+}
+
+/* Stack vertikal untuk section yang butuh rhythm sendiri
+   (dipakai di Persetujuan register) */
+.account-form__stack {
+    display: grid;
+    gap: 14px;
+}
+
+/* Notice netral di dalam form auth (menimpa .notice biru) */
+.account-form__notice,
+.account-form .notice {
+    margin: 0;
+    padding: 14px 16px;
+    background: #fafafa;
+    border: 1px solid var(--_hair);
+    border-radius: 3px;
+    font-size: 12.5px;
+    color: #52525b;
+    line-height: 1.6;
+}
+
+/* Turnstile wrapper — center */
+.account-form__turnstile {
+    margin-top: 16px;
+    display: flex;
+    justify-content: center;
+}
+
+/* Checkbox di dalam account-form */
+.account-form .check {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    font-size: 13px;
+    color: #52525b;
+    line-height: 1.5;
+    font-weight: 400;
+}
+.account-form .check input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    margin-top: 2px;
+    flex-shrink: 0;
+    accent-color: var(--_ink);
+    cursor: pointer;
+}
+
+/* Inline link-button di dalam checkbox label (S&K, Privasi) */
+.account-form .check .link-button,
+.link-button--inline {
+    background: none;
+    border: 0;
+    padding: 0;
+    font: inherit;
+    font-size: inherit;
+    font-weight: 500;
+    color: var(--_ink);
+    text-decoration: underline;
+    text-decoration-color: var(--_hair);
+    text-underline-offset: 3px;
+    cursor: pointer;
+    transition: text-decoration-color .15s;
+}
+.account-form .check .link-button:hover,
+.link-button--inline:hover { text-decoration-color: var(--_ink); }
+
+/* OTP input — verify email */
+.otp-input {
+    width: 100%;
+    font-family: var(--font-mono);
+    font-size: 32px;
+    letter-spacing: .4em;
+    text-align: center;
+    padding: 16px;
+    color: var(--_ink);
+    background: #fff;
+    border: 1px solid var(--_hair);
+    border-radius: 3px;
+    transition: border-color .15s, box-shadow .15s;
+}
+.otp-input:focus {
+    outline: none;
+    border-color: var(--_ink);
+    box-shadow: 0 0 0 3px rgba(10,10,10,.06);
+}
+.otp-input::placeholder {
+    color: #d4d4d8;
+    letter-spacing: .4em;
+}
+
+/* Auth card footer (link switch) */
+.account-auth-footer {
+    text-align: center;
+    padding: 20px 40px 24px;
+    font-size: 13px;
+    color: var(--_mute);
+    border-top: 1px solid var(--_hair);
+    margin: 0;
+}
+.account-auth-footer a {
+    color: var(--_ink);
+    font-weight: 600;
+    text-decoration: underline;
+    text-decoration-color: var(--_hair);
+    text-underline-offset: 3px;
+    transition: text-decoration-color .15s;
+}
+.account-auth-footer a:hover { text-decoration-color: var(--_ink); }
+
+/* Verify email — resend + help */
+.account-verify__resend {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px 40px;
+    border-top: 1px solid var(--_hair);
+}
+.account-verify__resend form {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+.account-verify__resend .link-button {
+    background: none;
+    border: 0;
+    padding: 0;
+    font: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--_ink);
+    text-decoration: underline;
+    text-decoration-color: var(--_hair);
+    text-underline-offset: 3px;
+    cursor: pointer;
+}
+.account-verify__resend .link-button:hover { text-decoration-color: var(--_ink); }
+
+.account-verify__help {
+    text-align: center;
+    font-size: 12.5px;
+    color: var(--_mute);
+    padding: 0 40px 32px;
+    margin: 0;
+    line-height: 1.7;
+}
+.account-verify__help a {
+    color: var(--_ink);
+    font-weight: 500;
+    text-decoration: underline;
+    text-decoration-color: var(--_hair);
+    text-underline-offset: 3px;
+}
+.account-verify__help a:hover { text-decoration-color: var(--_ink); }
+
+/* Alert error di dalam account-card */
+.account-card > .account-alert {
+    border-bottom: 1px solid var(--_hair);
+    padding: 16px 40px;
+    font-size: 13px;
+    line-height: 1.55;
+}
+
+/* Responsive */
+@media (max-width: 720px) {
+    .account-page--auth,
+    .account-page--register { padding: 0 22px; }
+    .account-card > .account-alert { padding: 14px 22px; }
+    .account-auth-footer { padding: 16px 22px 20px; }
+    .account-verify__resend { padding: 16px 22px; }
+    .account-verify__help { padding: 0 22px 24px; }
+}
