@@ -120,6 +120,20 @@ class OrderController extends Controller
             'payment_method_id.exists' => 'Metode pembayaran tidak valid atau sudah dinonaktifkan.',
         ]);
 
+        // =========================================================
+        // QRIS fee: kalau nominal tagihan > Rp500.000 dan metode = QRIS,
+        // tambahkan biaya 0,3% dari nominal. Disimpan ke orders.qris_fee_idr
+        // supaya: (a) user tahu persis nominal transfer, (b) kalau user
+        // re-upload dengan metode lain, fee bisa di-reset.
+        // =========================================================
+        $method = PaymentMethod::find($request->input('payment_method_id'));
+        $isQris = $method !== null && ($method->type ?? 'bank') === 'qris';
+        $qrisFee = 0;
+        if ($isQris && $order->pay_now_idr > 500_000) {
+            $qrisFee = (int) floor($order->pay_now_idr * 0.003);
+        }
+        $order->update(['qris_fee_idr' => $qrisFee]);
+
         $file = $request->file('proof');
 
         // ✅ BUG FIX: jangan paksakan ekstensi '.webp' untuk semua file.
@@ -172,7 +186,7 @@ class OrderController extends Controller
         // Cek double-submit di sini dibuat ATOMIK (lock baris order + cek ulang
         // di dalam transaksi) supaya dua upload paralel tidak sama-sama lolos.
         try {
-            DB::transaction(function () use ($order, $request, $filename): void {
+            DB::transaction(function () use ($order, $request, $filename, $qrisFee): void {
                 $lockedOrder = Order::query()->whereKey($order->id)->lockForUpdate()->firstOrFail();
 
                 if ($lockedOrder->paymentProofs()->where('status', 'pending')->exists()) {
@@ -187,7 +201,9 @@ class OrderController extends Controller
                     // di-hardcode 'lunas' walau kolomnya varchar(10) dan order DP
                     // akan salah label. FP -> lunas, selain itu dp.
                     'payment_stage' => $order->payment_scheme === 'FP' ? 'lunas' : 'dp',
-                    'amount_idr' => $order->pay_now_idr,
+                    // Nominal yang sebenarnya ditransfer user = tagihan + biaya QRIS
+                    // (kalau ada). Admin akan lihat angka yang cocok dengan mutasi.
+                    'amount_idr' => $order->pay_now_idr + $qrisFee,
                     'proof_path' => $filename,
                     'status' => 'pending',
                     'uploaded_at' => now(),
@@ -206,7 +222,6 @@ class OrderController extends Controller
             // biasa). Keputusan auto-verification dicatat ke payment_proofs
             // lewat kolom status/reviewed_at agar audit trail tetap ada.
             // =========================================================
-            $method = PaymentMethod::find($request->input('payment_method_id'));
             if ($method !== null && $method->isAutoVerifiable()) {
                 try {
                     $payload = QrisPayloadReader::read(
