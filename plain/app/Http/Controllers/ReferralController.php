@@ -19,23 +19,37 @@ class ReferralController extends Controller
             ->with('referee')
             ->paginate(20);
 
+        // Ambil query dasar sekali, clone untuk tiap agregat supaya
+        // tidak perlu query baru berulang kali.
+        $made = $user->referralsMade();
+
+        // Klik share produk = baris yang punya product_id (bukan legacy klik undang)
+        $shareClickQuery = ReferralClick::where('referrer_id', $user->id)
+            ->whereNotNull('product_id');
+        $shareClicks = (clone $shareClickQuery)->count();
+        $rewardPerClick = Setting::integer('referral_reward_click', 10);
+
         $stats = [
-            'total' => $user->referralsMade()->count(),
-            'rewarded' => $user->referralsMade()->where('status', Referral::STATUS_REWARDED)->count(),
-            'pending' => $user->referralsMade()->where('status', Referral::STATUS_PENDING)->count(),
-            'coins' => (int) $user->referralsMade()->where('status', Referral::STATUS_REWARDED)->sum('referrer_reward'),
-            'clicks' => ReferralClick::where('referrer_id', $user->id)->count(),
-            'click_coins' => (int) Setting::integer('referral_reward_click', 10)
-                * ReferralClick::where('referrer_id', $user->id)->count(),
+            // ===== Undang teman =====
+            'total'        => (clone $made)->count(),
+            'rewarded'     => (clone $made)->where('status', Referral::STATUS_REWARDED)->count(),
+            'pending'      => (clone $made)->where('status', Referral::STATUS_PENDING)->count(),
+            'invite_coins' => (int) (clone $made)
+                ->where('status', Referral::STATUS_REWARDED)
+                ->sum('referrer_reward'),
+
+            // ===== Share produk =====
+            'share_clicks'      => $shareClicks,
+            'share_click_coins' => $shareClicks * $rewardPerClick,
         ];
 
         return view('account.referral', [
-            'user' => $user,
-            'referrals' => $referrals,
-            'stats' => $stats,
+            'user'           => $user,
+            'referrals'      => $referrals,
+            'stats'          => $stats,
             'rewardReferrer' => Setting::integer('referral_reward_referrer', 5000),
-            'rewardClick' => Setting::integer('referral_reward_click', 10),
-            'title' => 'Undang Teman',
+            'rewardClick'    => $rewardPerClick,
+            'title'          => 'Undang Teman',
         ]);
     }
 }

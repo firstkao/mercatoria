@@ -25,17 +25,23 @@ class ReferralController extends Controller
             ->withQueryString();
 
         $stats = [
-            'total' => Referral::count(),
-            'pending' => Referral::where('status', Referral::STATUS_PENDING)->count(),
+            // Undang teman
+            'total'    => Referral::count(),
+            'pending'  => Referral::where('status', Referral::STATUS_PENDING)->count(),
             'rewarded' => Referral::where('status', Referral::STATUS_REWARDED)->count(),
-            'clicks' => ReferralClick::count(),
+
+            // Share produk (klik)
+            'product_share_clicks' => ReferralClick::whereNotNull('product_id')->count(),
+            'legacy_invite_clicks' => ReferralClick::whereNull('product_id')->count(),
+
+            // Total koin terbayar dari kedua sistem
             'coins_paid' => (int) CoinLot::whereIn('source', ['referral', 'referral_click'])->sum('amount'),
         ];
 
         return view('admin.referrals.index', [
             'referrals' => $referrals,
-            'status' => $status,
-            'stats' => $stats,
+            'status'    => $status,
+            'stats'     => $stats,
         ]);
     }
 }
