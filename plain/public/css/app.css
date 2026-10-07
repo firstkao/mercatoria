@@ -3522,3 +3522,17 @@ input[type="number"] { -moz-appearance: textfield; appearance: textfield; }
     height: 15px;
     flex-shrink: 0;
 }
+
+/* ============================================================ */
+/* 46. DASHBOARD METRICS — flash saat nilai berubah live         */
+/* ============================================================ */
+@keyframes metric-flash {
+    0%   { background-color: rgba(2, 153, 231, .16); }
+    100% { background-color: transparent; }
+}
+.metrics__value.is-updated {
+    animation: metric-flash 900ms ease-out;
+    border-radius: 3px;
+    padding: 2px 4px;
+    margin: -2px -4px;
+}
