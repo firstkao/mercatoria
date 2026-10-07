@@ -1,6 +1,12 @@
 @extends('layouts.app', ['title' => 'Detail Pesanan ' . $order->order_number])
 
 @section('content')
+@php
+    $mpName  = $order->marketplace->name ?? '';
+    $isToco  = strtolower(trim($mpName)) === 'toco';
+    $qrisFee = (int) ($order->qris_fee_idr ?? 0);
+@endphp
+
 <div class="account-page">
     <div class="account-card">
 
@@ -79,7 +85,7 @@
                     <div class="account-form__grid">
                         <label class="field">
                             <span>Metode Pembayaran / Transfer Ke</span>
-                            <select name="payment_method_id" required>
+                            <select name="payment_method_id" id="pm-select" required>
                                 <option value="">Pilih Rekening Tujuan</option>
                                 @foreach($paymentMethods as $pm)
                                     <option value="{{ $pm->id }}">
@@ -94,11 +100,34 @@
                             <input type="file" name="proof" accept="image/jpeg,image/png,image/webp" required>
                         </label>
 
+                        {{-- Info metode terpilih --}}
                         <div id="pm-detail" class="account-info-box field--full" style="display:none;">
                             <p id="pm-instructions" class="account-info-box__text"></p>
                             <a id="pm-image-link" href="#" target="_blank" style="display:none;">
                                 <img id="pm-image" src="" alt="QR/Barcode" class="account-info-box__img">
                             </a>
+                        </div>
+
+                        {{-- Preview QRIS fee (muncul hanya saat QRIS & nominal > Rp500.000) --}}
+                        <div id="qris-preview" class="account-info-box field--full" style="display:none;">
+                            <p class="account-info-box__text">
+                                Nominal tagihan kamu lebih dari Rp500.000 dan memakai QRIS,
+                                jadi ada biaya tambahan <strong>0,3%</strong> dari nominal.
+                            </p>
+                            <dl class="order-summary" style="margin-top:10px;">
+                                <div class="order-summary__row">
+                                    <dt>Nominal Tagihan</dt>
+                                    <dd id="qris-base">Rp0</dd>
+                                </div>
+                                <div class="order-summary__row">
+                                    <dt>Biaya QRIS (0,3%)</dt>
+                                    <dd id="qris-fee">+ Rp0</dd>
+                                </div>
+                                <div class="order-summary__row order-summary__row--total">
+                                    <dt>Total Transfer</dt>
+                                    <dd id="qris-total">Rp0</dd>
+                                </div>
+                            </dl>
                         </div>
                     </div>
 
@@ -109,17 +138,30 @@
 
                 <script>
                 (function () {
-                    var methods = @json($paymentMethodsJs);
-                    var sel = document.querySelector('select[name="payment_method_id"]');
-                    var box = document.getElementById('pm-detail');
+                    var methods   = @json($paymentMethodsJs);
+                    var payNowIdr = {{ (int) $order->pay_now_idr }};
+                    var sel       = document.getElementById('pm-select');
+                    var box       = document.getElementById('pm-detail');
+                    var qrisBox   = document.getElementById('qris-preview');
                     if (! sel || ! box) return;
+
+                    function formatRp(n) { return 'Rp' + n.toLocaleString('id-ID'); }
+
                     function sync() {
                         var m = methods.find(function (x) { return String(x.id) === sel.value; });
-                        if (! m) { box.style.display = 'none'; return; }
+
+                        if (! m) {
+                            box.style.display = 'none';
+                            if (qrisBox) qrisBox.style.display = 'none';
+                            return;
+                        }
+
+                        // Detail metode (existing)
                         var lines = [];
                         if (m.account_number) lines.push('Transfer ke: ' + m.account_number + (m.account_name ? ' a.n ' + m.account_name : ''));
-                        if (m.instructions) lines.push(m.instructions);
+                        if (m.instructions)   lines.push(m.instructions);
                         document.getElementById('pm-instructions').textContent = lines.join('\n');
+
                         var imgLink = document.getElementById('pm-image-link');
                         if (m.qr_image) {
                             document.getElementById('pm-image').src = m.qr_image;
@@ -129,7 +171,23 @@
                             imgLink.style.display = 'none';
                         }
                         box.style.display = 'block';
+
+                        // Preview QRIS fee
+                        if (! qrisBox) return;
+                        var isQris   = m.type === 'qris';
+                        var applyFee = isQris && payNowIdr > 500000;
+
+                        if (applyFee) {
+                            var fee = Math.floor(payNowIdr * 0.003);
+                            document.getElementById('qris-base').textContent  = formatRp(payNowIdr);
+                            document.getElementById('qris-fee').textContent   = '+ ' + formatRp(fee);
+                            document.getElementById('qris-total').textContent = formatRp(payNowIdr + fee);
+                            qrisBox.style.display = 'block';
+                        } else {
+                            qrisBox.style.display = 'none';
+                        }
                     }
+
                     sel.addEventListener('change', sync);
                     sync();
                 })();
@@ -137,19 +195,29 @@
             </section>
         @endif
 
+        {{-- ========== DAFTAR BARANG ========== --}}
         <section class="account-section">
             <div class="account-section__head">
                 <h2 class="account-section__title">Daftar Barang</h2>
             </div>
             <ul class="order-items">
                 @foreach($order->items as $item)
-                    <li class="order-items__row">
+                    <li class="order-items__row order-items__row--with-thumb">
+                        <div class="order-items__thumb">
+                            @if($item->variant?->image_path)
+                                <img src="{{ $item->variant->imageUrl() }}" alt="">
+                            @else
+                                <div class="image-placeholder">IMG</div>
+                            @endif
+                        </div>
+
                         <div class="order-items__info">
                             <strong class="order-items__name">{{ $item->product_name_snapshot }}</strong>
                             <span class="order-items__meta">
                                 Varian: {{ $item->variant_name_snapshot }} · Qty: {{ $item->quantity }}
                             </span>
                         </div>
+
                         <div class="order-items__price">
                             {{ \App\Support\PriceCalculator::formatRupiah($item->unit_price_idr) }}
                         </div>
@@ -158,6 +226,7 @@
             </ul>
         </section>
 
+        {{-- ========== RINCIAN TRANSAKSI ========== --}}
         <section class="account-section">
             <div class="account-section__head">
                 <h2 class="account-section__title">Rincian Transaksi</h2>
@@ -186,13 +255,35 @@
                         <dd>{{ \App\Support\PriceCalculator::formatRupiah($order->pay_now_idr) }}</dd>
                     </div>
                     <div class="order-summary__row">
-                        <dt>Sisa Pelunasan (termasuk biaya admin, di {{ $order->marketplace->name ?? 'marketplace' }})</dt>
+                        <dt>
+                            Sisa Pelunasan
+                            @unless($isToco)
+                                (termasuk biaya admin, di {{ $mpName }})
+                            @endunless
+                        </dt>
                         <dd>{{ \App\Support\PriceCalculator::formatRupiah($order->remaining_idr) }}</dd>
                     </div>
                 @else
                     <div class="order-summary__row order-summary__row--emphasis">
-                        <dt>Dibayar Sekarang (termasuk admin {{ $order->marketplace->name ?? '' }})</dt>
+                        <dt>
+                            Dibayar Sekarang
+                            @unless($isToco)
+                                (termasuk admin {{ $mpName }})
+                            @endunless
+                        </dt>
                         <dd>{{ \App\Support\PriceCalculator::formatRupiah($order->pay_now_idr) }}</dd>
+                    </div>
+                @endif
+
+                {{-- Biaya QRIS — hanya muncul kalau sudah tersimpan di order --}}
+                @if($qrisFee > 0)
+                    <div class="order-summary__row">
+                        <dt>Biaya QRIS (0,3%)</dt>
+                        <dd>+ {{ \App\Support\PriceCalculator::formatRupiah($qrisFee) }}</dd>
+                    </div>
+                    <div class="order-summary__row order-summary__row--total">
+                        <dt>Total Transfer</dt>
+                        <dd><strong>{{ \App\Support\PriceCalculator::formatRupiah($order->pay_now_idr + $qrisFee) }}</strong></dd>
                     </div>
                 @endif
             </dl>
