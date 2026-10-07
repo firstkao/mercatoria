@@ -39,14 +39,14 @@
                     <span class="referral-reward-item__amount">+{{ number_format($rewardReferrer, 0, ',', '.') }}</span>
                     <span class="referral-reward-item__label">Teman daftar &amp; beli</span>
                     <small class="referral-reward-item__note">
-                        Sekali, saat order pertamanya selesai. Klik link undang teman <strong>tidak</strong> memberi reward.
+                        Sekali, saat order pertamanya selesai.
                     </small>
                 </div>
                 <div class="referral-reward-item">
                     <span class="referral-reward-item__amount">+{{ number_format($rewardClick, 0, ',', '.') }}</span>
                     <span class="referral-reward-item__label">Orang buka share produkmu</span>
                     <small class="referral-reward-item__note">
-                        Sekali per IP × produk, seumur hidup. Bagikan dari halaman produk mana pun.
+                        Sekali per IP × produk. Bagikan dari halaman produk mana pun.
                     </small>
                 </div>
             </div>
@@ -204,4 +204,3 @@
     }
 </script>
 @endpush
-@endsection
