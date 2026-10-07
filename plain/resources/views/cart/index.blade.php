@@ -70,30 +70,28 @@
                                         {{ \App\Support\PriceCalculator::formatRupiah($price * $item->quantity) }}
                                     </span>
 
-                                    {{-- Qty control: satu form, tombol submit value beda --}}
-                                    <form method="POST" action="{{ route('cart.update', $item) }}" class="cart-ledger__qty-form">
-                                        @csrf
-                                        @method('PUT')
-                                        <div class="product-boxed-qty">
-                                            <button type="submit"
-                                                    name="quantity"
-                                                    value="{{ $item->quantity - 1 }}"
-                                                    class="product-boxed-qty-btn"
-                                                    aria-label="Kurangi jumlah">−</button>
-                                            <input type="text"
-                                                   class="product-boxed-qty-input"
-                                                   value="{{ $item->quantity }}"
-                                                   readonly
-                                                   tabindex="-1"
-                                                   aria-label="Jumlah">
-                                            <button type="submit"
-                                                    name="quantity"
-                                                    value="{{ $item->quantity + 1 }}"
-                                                    class="product-boxed-qty-btn"
-                                                    @disabled($item->quantity >= 99)
-                                                    aria-label="Tambah jumlah">+</button>
-                                        </div>
-                                    </form>
+                                    {{-- Tombol submit pakai atribut `form` → nunjuk ke form qty di luar form checkout --}}
+                                    <div class="product-boxed-qty">
+                                        <button type="submit"
+                                                form="qty-form-{{ $item->id }}"
+                                                name="quantity"
+                                                value="{{ $item->quantity - 1 }}"
+                                                class="product-boxed-qty-btn"
+                                                aria-label="Kurangi jumlah">−</button>
+                                        <input type="text"
+                                               class="product-boxed-qty-input"
+                                               value="{{ $item->quantity }}"
+                                               readonly
+                                               tabindex="-1"
+                                               aria-label="Jumlah">
+                                        <button type="submit"
+                                                form="qty-form-{{ $item->id }}"
+                                                name="quantity"
+                                                value="{{ $item->quantity + 1 }}"
+                                                class="product-boxed-qty-btn"
+                                                @disabled($item->quantity >= 99)
+                                                aria-label="Tambah jumlah">+</button>
+                                    </div>
                                 </div>
 
                                 <div class="cart-ledger__actions">
@@ -225,9 +223,24 @@
                 </div>
             </form>
 
-            {{-- Form delete terpisah --}}
+            {{-- ============================================================ --}}
+            {{-- Form tersembunyi — WAJIB di luar form checkout               --}}
+            {{-- (HTML tidak mengizinkan nested <form>, browser akan menutup   --}}
+            {{-- form checkout prematur kalau form qty ditaruh di dalamnya).   --}}
+            {{-- Tombol di atas dihubungkan ke sini via atribut `form="..."`. --}}
+            {{-- ============================================================ --}}
             @foreach($cartItems as $item)
-                <form id="delete-{{ $item->id }}" action="{{ route('cart.destroy', $item) }}" method="POST" hidden>
+                <form id="qty-form-{{ $item->id }}"
+                      method="POST"
+                      action="{{ route('cart.update', $item) }}"
+                      hidden>
+                    @csrf
+                    @method('PUT')
+                </form>
+                <form id="delete-{{ $item->id }}"
+                      method="POST"
+                      action="{{ route('cart.destroy', $item) }}"
+                      hidden>
                     @csrf
                     @method('DELETE')
                 </form>
