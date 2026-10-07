@@ -7,7 +7,7 @@
             <p class="account-head__eyebrow">Referral</p>
             <h1 class="account-head__title">Undang Teman</h1>
             <div class="account-head__meta">
-                <span>Dua cara dapat koin: undang teman sampai mereka beli, atau bagikan link produk.</span>
+                <span>Dua cara dapat koin: undang teman sampai mereka beli atau bagikan link produk.</span>
             </div>
         </header>
 
