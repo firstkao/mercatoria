@@ -15,30 +15,32 @@ class ReferralController extends Controller
         $user = $request->user();
         $user->ensureReferralCode();
 
-        // ===== Statistik Undang Teman (referral user) =====
         $referrals = $user->referralsMade()
             ->with('referee')
             ->paginate(20);
 
-        $referralsMade = $user->referralsMade();
+        // Ambil query dasar sekali, clone untuk tiap agregat supaya
+        // tidak perlu query baru berulang kali.
+        $made = $user->referralsMade();
+
+        // Klik share produk = baris yang punya product_id (bukan legacy klik undang)
+        $shareClickQuery = ReferralClick::where('referrer_id', $user->id)
+            ->whereNotNull('product_id');
+        $shareClicks = (clone $shareClickQuery)->count();
+        $rewardPerClick = Setting::integer('referral_reward_click', 10);
 
         $stats = [
-            // Undang teman
-            'total'     => (clone $referralsMade)->count(),
-            'rewarded'  => (clone $referralsMade)->where('status', Referral::STATUS_REWARDED)->count(),
-            'pending'   => (clone $referralsMade)->where('status', Referral::STATUS_PENDING)->count(),
-            'invite_coins' => (int) (clone $referralsMade)
+            // ===== Undang teman =====
+            'total'        => (clone $made)->count(),
+            'rewarded'     => (clone $made)->where('status', Referral::STATUS_REWARDED)->count(),
+            'pending'      => (clone $made)->where('status', Referral::STATUS_PENDING)->count(),
+            'invite_coins' => (int) (clone $made)
                 ->where('status', Referral::STATUS_REWARDED)
                 ->sum('referrer_reward'),
 
-            // Share link produk
-            'share_clicks' => ReferralClick::where('referrer_id', $user->id)
-                ->whereNotNull('product_id')
-                ->count(),
-            'share_click_coins' => (int) Setting::integer('referral_reward_click', 10)
-                * ReferralClick::where('referrer_id', $user->id)
-                    ->whereNotNull('product_id')
-                    ->count(),
+            // ===== Share produk =====
+            'share_clicks'      => $shareClicks,
+            'share_click_coins' => $shareClicks * $rewardPerClick,
         ];
 
         return view('account.referral', [
@@ -46,7 +48,7 @@ class ReferralController extends Controller
             'referrals'      => $referrals,
             'stats'          => $stats,
             'rewardReferrer' => Setting::integer('referral_reward_referrer', 5000),
-            'rewardClick'    => Setting::integer('referral_reward_click', 10),
+            'rewardClick'    => $rewardPerClick,
             'title'          => 'Undang Teman',
         ]);
     }
