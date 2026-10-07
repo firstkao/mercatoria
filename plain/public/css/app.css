@@ -2965,7 +2965,7 @@ input[type="number"] { -moz-appearance: textfield; appearance: textfield; }
 }
 
 /* ============================================================ */
-/* 36. QUICK NAV — jadi tombol outlined (bukan link + panah)     */
+/* 36. QUICK NAV — tombol outlined + panah                       */
 /* ============================================================ */
 
 .quick-nav {
@@ -2999,8 +2999,19 @@ input[type="number"] { -moz-appearance: textfield; appearance: textfield; }
     border-color: var(--_ink);
     color: var(--_ink);
 }
-/* Hilangkan panah → di tombol */
-.quick-nav__item::after { content: none; }
+
+/* Panah di kanan tombol */
+.quick-nav__item::after {
+    content: "→";
+    font-weight: 400;
+    color: currentColor;
+    opacity: .55;
+    transition: transform .15s, opacity .15s;
+}
+.quick-nav__item:hover::after {
+    transform: translateX(3px);
+    opacity: 1;
+}
 
 @media (max-width: 720px) {
     .quick-nav {
