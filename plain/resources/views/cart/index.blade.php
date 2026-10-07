@@ -112,15 +112,15 @@
                     </div>
                     <div class="account-form">
                         <label class="field field--full">
-                            <span>Catatan untuk Penjual</span>
-                            <textarea name="notes"
+                            <span>Catatan untuk MERCATORIA</span>
+                            <textarea name="customer_note"
                                       rows="3"
-                                      maxlength="500"
-                                      placeholder="Contoh: bubble wrap extra, no gift card, packing rapi.">{{ old('notes') }}</textarea>
+                                      maxlength="1000"
+                                      placeholder="Contoh: bubble wrap extra, packing rapi, mau bonus A/B.">{{ old('customer_note') }}</textarea>
                             <small class="hint">
-                                Instruksi khusus soal packing, gift card, atau permintaan lain ke penjual. Boleh dikosongkan.
+                                Instruksi khusus ke MERCATORIA. Boleh dikosongkan.
                             </small>
-                            @include('partials.field-error', ['name' => 'notes'])
+                            @include('partials.field-error', ['name' => 'customer_note'])
                         </label>
                     </div>
                 </section>
@@ -316,15 +316,15 @@
                 if (scheme === 'DP' || mpFee > 0) {
                     remainingRow.hidden = false;
                     if (remainingVal) {
+                        var isToco = (mp.name || '').toLowerCase().trim() === 'toco';
                         var text = formatRp(remaining + mpFee);
-                        if (mpFee > 0) text += " (termasuk biaya admin)";
+                        if (!isToco && mpFee > 0) text += " (termasuk biaya admin)";
                         remainingVal.textContent = text;
                     }
                 } else {
                     remainingRow.hidden = true;
                 }
             }
-
             if (coinEstimate) coinEstimate.textContent = Math.floor(netTotal * 0.01).toLocaleString('id-ID') + ' Koin';
         }
 
