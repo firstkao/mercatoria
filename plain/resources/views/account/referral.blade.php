@@ -39,14 +39,14 @@
                     <span class="referral-reward-item__amount">+{{ number_format($rewardReferrer, 0, ',', '.') }}</span>
                     <span class="referral-reward-item__label">Teman daftar &amp; beli</span>
                     <small class="referral-reward-item__note">
-                        Saat order pertamanya selesai.
+                        Saat order pertamanya selesai
                     </small>
                 </div>
                 <div class="referral-reward-item">
                     <span class="referral-reward-item__amount">+{{ number_format($rewardClick, 0, ',', '.') }}</span>
                     <span class="referral-reward-item__label">Orang buka share produkmu</span>
                     <small class="referral-reward-item__note">
-                        Sekali per IP × produk. Bagikan dari halaman produk mana pun.
+                        Bagikan dari halaman produk mana pun
                     </small>
                 </div>
             </div>
@@ -100,7 +100,7 @@
             </div>
             <p class="cart-summary__note" style="margin-top:16px;">
                 Buka halaman produk apa pun, klik tombol <strong>Bagikan</strong>. Link yang tersalin otomatis
-                berisi kode referralmu. Setiap orang yang membuka dari IP baru = koin untuk kamu.
+                berisi kode referralmu. Setiap orang yang membuka dari unik IP = koin untuk kamu.
             </p>
         </section>
 
