@@ -3536,3 +3536,26 @@ input[type="number"] { -moz-appearance: textfield; appearance: textfield; }
     padding: 2px 4px;
     margin: -2px -4px;
 }
+
+/* ============================================================ */
+/* 47. ACCOUNT TABLE — spacing antar kolom                       */
+/*     Override section 28: sebelumnya .is-right punya           */
+/*     padding-right: 0 sehingga kolom berikutnya nempel.        */
+/* ============================================================ */
+.account-table thead th,
+.account-table tbody td {
+    padding-left: 0;
+    padding-right: 20px;
+}
+.account-table thead th:last-child,
+.account-table tbody td:last-child {
+    padding-right: 0;
+}
+.account-table .is-right {
+    text-align: right;
+    padding-left: 20px;
+    padding-right: 20px;
+}
+.account-table .is-right:last-child {
+    padding-right: 0;
+}
