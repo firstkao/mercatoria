@@ -1,4 +1,10 @@
 @if ($order->statusHistory->isNotEmpty())
+    @php
+        // Nama pembeli untuk label "oleh ...". Fallback ke "Pembeli" kalau
+        // kolomnya kosong (mis. user sudah dihapus / full_name null).
+        $buyerName = $order->user->full_name ?? $order->user->name ?? 'Pembeli';
+    @endphp
+
     <div class="account-card" style="margin-top: 16px;">
         <section class="account-section">
             <div class="account-section__head">
@@ -15,10 +21,10 @@
                             </strong>
                             <span class="timeline-ledger__meta">
                                 {{ $history->created_at->timezone('Asia/Jakarta')->translatedFormat('j F Y, H:i') }} WIB
-                                @if ($history->changed_by === 'admin' && $history->admin)
-                                    · oleh {{ $history->admin->name }}
+                                @if ($history->changed_by === 'admin')
+                                    · oleh Mercatoria
                                 @elseif ($history->changed_by === 'user')
-                                    · oleh pembeli
+                                    · oleh {{ $buyerName }}
                                 @elseif ($history->changed_by === 'system')
                                     · otomatis
                                 @endif
