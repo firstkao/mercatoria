@@ -6,15 +6,29 @@
 
         {{-- Header --}}
        <header class="account-head">
-            <p class="account-head__eyebrow">Akun Saya</p>
-            <h1 class="account-head__title">{{ $user->full_name ?? 'User' }}</h1>
-            <div class="account-head__meta">
-                <span class="account-head__role">{{ $user->role?->label() ?? 'User' }}</span>
-                <span class="account-head__dot">·</span>
-                <span>
-                    Terdaftar
-                    {{ $user->registered_at?->timezone('Asia/Jakarta')->translatedFormat('F Y') ?? '—' }}
-                </span>
+            <div class="account-head__row">
+                <div class="account-head__main">
+                    <p class="account-head__eyebrow">Akun Saya</p>
+                    <h1 class="account-head__title">{{ $user->full_name ?? 'User' }}</h1>
+                    <div class="account-head__meta">
+                        <span class="account-head__role">{{ $user->role?->label() ?? 'User' }}</span>
+                        <span class="account-head__dot">·</span>
+                        <span>
+                            Terdaftar
+                            {{ $user->registered_at?->timezone('Asia/Jakarta')->translatedFormat('F Y') ?? '—' }}
+                        </span>
+                    </div>
+                </div>
+        
+                {{-- Jalan #1: tombol Keluar di header --}}
+                <div class="account-head__actions">
+                    <form method="POST" action="{{ route('logout') }}">
+                        @csrf
+                        <button type="submit" class="account-btn account-btn--ghost account-btn--sm">
+                            Keluar
+                        </button>
+                    </form>
+                </div>
             </div>
         
             <dl class="account-head__facts">
