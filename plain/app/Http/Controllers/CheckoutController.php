@@ -11,11 +11,11 @@ use App\Models\Order;
 use App\Models\Setting;
 use App\Models\Voucher;
 use App\Models\VoucherRedemption;
+use App\Support\OrderNumberGenerator;
 use App\Support\PriceCalculator;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 
@@ -186,13 +186,21 @@ class CheckoutController extends Controller
                 }
             }
 
-            // ✅ BUG FIX: order_number dibuat dengan retry supaya tidak tabrakan
-            // dengan baris yang sudah ada (kolom order_number UNIQUE). Probabilitas
-            // tabrakan sangat kecil (36^10), tapi retry + unique index menjamin aman.
-            $orderNumber = null;
-            do {
-                $orderNumber = 'ORD-' . strtoupper(Str::random(10));
-            } while (Order::where('order_number', $orderNumber)->exists());
+            // =========================================================
+            // Order number: format MER-YYMM-NNNN-XXXXX.
+            // Contoh: MER-2610-0047-K3A7X
+            //
+            // - YYMM  : bulan order (untuk sorting & tracking marketplace)
+            // - NNNN  : urutan per bulan, di-lock via tabel order_sequences
+            // - XXXXX : 5 char random (A-Z minus I/O + 0-9 minus 0/1)
+            //           untuk mencegah enumerasi kalau ada IDOR di masa depan
+            //
+            // Wajib dipanggil DI DALAM transaksi supaya:
+            //   1. lockForUpdate di order_sequences efektif
+            //   2. rollback outer → increment counter ikut rollback
+            //      (nomor berikutnya tidak lompat sia-sia)
+            // =========================================================
+            $orderNumber = OrderNumberGenerator::generate();
 
             $order = Order::create([
                 'order_number' => $orderNumber,
