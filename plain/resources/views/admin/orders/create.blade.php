@@ -169,8 +169,7 @@
 
     @media (max-width: 720px) {
         .mo-form-grid { grid-template-columns: 1fr; }
-        .mo-items-table th:nth-child(1),
-        .mo-items-table td:nth-child(1) { width: 100%; display: block; }
+        .mo-items-table thead { display: none; }
         .mo-items-table tr { display: block; padding: 12px 0; border-bottom: 1px solid #e5e7eb; }
         .mo-items-table td { display: block; padding: 4px 0; border: 0; }
         .mo-items-table td::before {
@@ -203,7 +202,6 @@
                 </p>
 
                 <div id="user-section">
-                    {{-- Picker (default tampil) --}}
                     <div id="user-picker-wrapper" class="mo-picker">
                         <input type="text"
                                id="user-search-input"
@@ -213,7 +211,6 @@
                         <div id="user-results" class="mo-picker__results" hidden></div>
                     </div>
 
-                    {{-- Kartu user terpilih (hidden default) --}}
                     <div id="user-selected" class="mo-selected" hidden>
                         <div class="mo-selected__info">
                             <strong id="user-selected-name">—</strong>
@@ -436,12 +433,10 @@
         items: [],   // [{variant_id, product_name, variant_name, qty, unit_price, price_yuan, weight}]
     };
 
-    const marketplaces = @json($marketplaces->map(fn ($m) => [
-        'id'             => $m->id,
-        'name'           => $m->name,
-        'fp_fee_idr'     => (int) $m->fp_fee_idr,
-        'dp_fee_percent' => (float) $m->dp_fee_percent,
-    ])->keyBy('id'));
+    // ⚠️ marketplacesJs disiapkan di controller — JANGAN map di sini,
+    // karena @json() memecah argumen dengan explode(',') dan array
+    // literal berisi koma akan memotong ekspresi → PHP invalid.
+    const marketplaces = @json($marketplacesJs);
 
     const coinEarnPercent = {{ (int) \App\Models\Setting::integer('coin_earn_percent', 1) }};
     const routes = {
@@ -753,13 +748,6 @@
     // ============================================================
     // INIT
     // ============================================================
-    // Kalau ada error validation dan old('user_id') terisi, tampilkan user terpilih
-    @if (old('user_id'))
-        // Fetch user info singkat untuk display
-        fetch(routes.searchUsers + '?q=' + encodeURIComponent('{{ old('user_id') }}'))
-            .catch(() => null);
-    @endif
-
     renderItems();
     recalcSummary();
 })();
