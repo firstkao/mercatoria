@@ -263,11 +263,11 @@ Route::prefix('office')->name('admin.')->middleware('auth:admin')->group(functio
 
     // Manajemen Order
     Route::get('/orders', [OrderManagementController::class, 'index'])->name('orders.index');
+    Route::post('/orders/bulk', [OrderManagementController::class, 'bulk'])->name('orders.bulk');
     Route::get('/orders/{order}/invoice', [OrderPrintController::class, 'invoice'])->name('orders.invoice');
     Route::get('/orders/{order}/packing-slip', [OrderPrintController::class, 'packingSlip'])->name('orders.packing-slip');
     Route::post('/orders/{order}/status', [OrderManagementController::class, 'updateStatus'])->name('orders.status');
     Route::get('/orders/{order}', [OrderManagementController::class, 'show'])->name('orders.show');
-    Route::post('/orders/bulk', [OrderManagementController::class, 'bulk'])->name('orders.bulk');
 
     // ===== Order Notes (internal admin) =====
     Route::post('/orders/{order}/notes', [OrderNoteController::class, 'store'])->name('orders.notes.store');
