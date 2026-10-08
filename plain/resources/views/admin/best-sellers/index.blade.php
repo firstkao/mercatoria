@@ -1,7 +1,7 @@
 @extends('admin.layouts.app', ['title' => 'Produk Terlaris'])
 
 @section('actions')
-    <form method="POST" action="{{ route('admin.best-sellers.refresh') }}" style="display:inline;">
+    <form method="POST" action="{{ route('admin.best-sellers.refresh') }}" class="inline-form">
         @csrf
         <button type="submit" class="btn btn--primary" onclick="return confirm('Hitung ulang ranking best seller sekarang?');">
             🔄 Refresh Sekarang
@@ -84,9 +84,9 @@
                             <td class="table__name">
                                 <a href="{{ route('admin.products.edit', $product) }}" class="table__title">{{ $product->name }}</a>
                                 @if ($product->is_published)
-                                    <span class="badge badge--on small" style="margin-left:6px;">Tayang</span>
+                                    <span class="badge badge--on small ms-2">Tayang</span>
                                 @else
-                                    <span class="badge badge--muted small" style="margin-left:6px;">Draf</span>
+                                    <span class="badge badge--muted small ms-2">Draf</span>
                                 @endif
                             </td>
                             <td class="muted">{{ $product->game?->name ?? '—' }}</td>
@@ -106,7 +106,7 @@
                                 @endif
                             </td>
                             <td>
-                                <form method="POST" action="{{ route('admin.best-sellers.toggle-exclude', $product) }}" style="display:inline;">
+                                <form method="POST" action="{{ route('admin.best-sellers.toggle-exclude', $product) }}" class="inline-form">
                                     @csrf
                                     <button type="submit" class="btn btn--small {{ $product->exclude_best_seller ? 'btn--primary' : '' }}"
                                             onclick="return confirm('{{ $product->exclude_best_seller ? 'Kembalikan produk ini ke best seller?' : 'Kecualikan produk ini dari best seller?' }}');">

@@ -1,116 +1,98 @@
 @extends('admin.layouts.app', ['title' => 'Maintenance'])
 
 @section('actions')
-    <form method="POST" action="{{ route('admin.maintenance.backup') }}" style="display:inline;">
+    <form method="POST" action="{{ route('admin.maintenance.backup') }}" class="inline-form">
         @csrf
-        <button type="submit" class="btn btn--primary" onclick="return confirm('Jalankan backup database sekarang?');">
+        <x-admin.button variant="primary" type="submit" onclick="return confirm('Jalankan backup database sekarang?');">
             Backup Sekarang
-        </button>
+        </x-admin.button>
     </form>
-    <form method="POST" action="{{ route('admin.maintenance.cleanup') }}" style="display:inline;">
+    <form method="POST" action="{{ route('admin.maintenance.cleanup') }}" class="inline-form">
         @csrf
-        <button type="submit" class="btn" onclick="return confirm('Bersihkan file orphan + log lama?');">
+        <x-admin.button type="submit" onclick="return confirm('Bersihkan file orphan + log lama?');">
             Cleanup Storage
-        </button>
+        </x-admin.button>
     </form>
 @endsection
 
 @section('content')
 
     {{-- Storage overview --}}
-    <div class="stats">
-        <div class="stat">
-            <span class="stat__label">Total Storage</span>
-            <strong class="stat__value">{{ number_format($totalStorage / 1048576, 2) }} MB</strong>
-        </div>
-        <div class="stat">
-            <span class="stat__label">Foto Produk</span>
-            <strong class="stat__value">{{ number_format($storageInfo['product_images'] / 1048576, 2) }} MB</strong>
-        </div>
-        <div class="stat">
-            <span class="stat__label">Bukti Bayar</span>
-            <strong class="stat__value">{{ number_format($storageInfo['payment_proofs'] / 1048576, 2) }} MB</strong>
-        </div>
-        <div class="stat">
-            <span class="stat__label">Backup</span>
-            <strong class="stat__value">{{ number_format($storageInfo['backups'] / 1048576, 2) }} MB</strong>
-        </div>
-    </div>
+    <x-admin.metric-strip class="mb-6">
+        <x-admin.metric :value="number_format($totalStorage / 1048576, 2).' MB'" label="Total Storage" />
+        <x-admin.metric :value="number_format($storageInfo['product_images'] / 1048576, 2).' MB'" label="Foto Produk" />
+        <x-admin.metric :value="number_format($storageInfo['payment_proofs'] / 1048576, 2).' MB'" label="Bukti Bayar" />
+        <x-admin.metric :value="number_format($storageInfo['backups'] / 1048576, 2).' MB'" label="Backup" />
+    </x-admin.metric-strip>
 
     {{-- Detail storage --}}
-    <section class="panel">
+    <x-admin.card class="mb-6">
         <h2>Detail Storage</h2>
-        <div class="table-wrap">
-        <table class="table">
-            <thead>
+        <x-admin.table>
+            <x-slot:head>
                 <tr>
                     <th>Folder</th>
                     <th>Ukuran</th>
                 </tr>
-            </thead>
-            <tbody>
-                @foreach ([
-                    'product_images' => 'Foto Produk Utama',
-                    'variants' => 'Foto Varian',
-                    'hero_slides' => 'Hero Slide',
-                    'payment_proofs' => 'Bukti Pembayaran',
-                    'logs' => 'Log Laravel',
-                    'backups' => 'Backup Database',
-                ] as $key => $label)
-                    <tr>
-                        <td>{{ $label }}</td>
-                        <td>{{ number_format($storageInfo[$key] / 1048576, 2) }} MB</td>
-                    </tr>
-                @endforeach
-            </tbody>
-        </table>
-        </div>
-    </section>
+            </x-slot:head>
+            @foreach ([
+                'product_images' => 'Foto Produk Utama',
+                'variants' => 'Foto Varian',
+                'hero_slides' => 'Hero Slide',
+                'payment_proofs' => 'Bukti Pembayaran',
+                'logs' => 'Log Laravel',
+                'backups' => 'Backup Database',
+            ] as $key => $label)
+                <tr>
+                    <td>{{ $label }}</td>
+                    <td>{{ number_format($storageInfo[$key] / 1048576, 2) }} MB</td>
+                </tr>
+            @endforeach
+        </x-admin.table>
+    </x-admin.card>
 
     {{-- Backup list --}}
-    <section class="panel panel--flush">
-        <h2 style="padding:1rem 1rem 0;">Riwayat Backup</h2>
+    <x-admin.card padding="flush" class="mb-6">
+        <h2 class="panel-title">Riwayat Backup</h2>
         @if ($backups->isEmpty())
-            <p class="muted" style="padding:1rem;">Belum ada backup.</p>
+            <p class="muted p-4">Belum ada backup.</p>
         @else
-            <div class="table-wrap">
-            <table class="table">
-                <thead>
+            <x-admin.table>
+                <x-slot:head>
                     <tr>
                         <th>Nama File</th>
                         <th>Ukuran</th>
                         <th>Dibuat</th>
                         <th>Aksi</th>
                     </tr>
-                </thead>
-                <tbody>
-                    @foreach ($backups as $backup)
-                        <tr>
-                            <td class="mono small">{{ $backup['name'] }}</td>
-                            <td>{{ number_format($backup['size'] / 1048576, 2) }} MB</td>
-                            <td class="muted small">{{ $backup['created_at']->timezone('Asia/Jakarta')->translatedFormat('j M Y, H:i') }} WIB</td>
-                            <td class="nowrap">
+                </x-slot:head>
+                @foreach ($backups as $backup)
+                    <tr>
+                        <td class="mono small">{{ $backup['name'] }}</td>
+                        <td>{{ number_format($backup['size'] / 1048576, 2) }} MB</td>
+                        <td class="muted small">{{ $backup['created_at']->timezone('Asia/Jakarta')->translatedFormat('j M Y, H:i') }} WIB</td>
+                        <td class="nowrap">
+                            <div class="table__actions">
                                 <a href="{{ route('admin.maintenance.download', $backup['name']) }}" class="link">Download</a>
                                 <form method="POST" action="{{ route('admin.maintenance.destroy', $backup['name']) }}"
                                       onsubmit="return confirm('Hapus backup ini?');"
-                                      style="display:inline;">
+                                      class="inline-form">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit" class="link" style="color:var(--danger);">Hapus</button>
+                                    <button type="submit" class="link text-danger">Hapus</button>
                                 </form>
-                            </td>
-                        </tr>
-                    @endforeach
-                </tbody>
-            </table>
-            </div>
+                            </div>
+                        </td>
+                    </tr>
+                @endforeach
+            </x-admin.table>
         @endif
-    </section>
+    </x-admin.card>
 
     {{-- Info scheduler --}}
-    <section class="panel">
+    <x-admin.card>
         <h2>Jadwal Otomatis</h2>
-        <ul style="margin:0;padding-left:20px;">
+        <ul class="list-bullets">
             <li><strong>Backup Database</strong> — tiap hari 02:00 WIB (simpan 7 terakhir)</li>
             <li><strong>Cleanup Storage</strong> — tiap Minggu 03:00 WIB</li>
             <li><strong>Prune Activity Logs</strong> — tiap hari 03:00 WIB</li>
@@ -120,8 +102,8 @@
             <li><strong>Coin Lifecycle</strong> — tiap hari 01:00 WIB</li>
             <li><strong>Birthday Vouchers</strong> — tiap hari 00:05 WIB</li>
         </ul>
-        <p class="hint" style="margin-top:12px;">
+        <p class="hint mt-3">
             Pastikan cron sudah disetup: <code>* * * * * cd /path/ke/project && php artisan schedule:run >> /dev/null 2>&1</code>
         </p>
-    </section>
+    </x-admin.card>
 @endsection

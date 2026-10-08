@@ -36,7 +36,7 @@
             @include('admin.partials.error', ['name' => 'store_address'])
         </label>
 
-        <h3 style="margin-top:20px;">Sosial Media (dinamis)</h3>
+        <h3 class="form-section-title">Sosial Media (dinamis)</h3>
         <p class="hint">Kelola dari sini: tambah/hapus/ubah urutan. Yang aktif tampil di header &amp; footer toko. Kosongkan URL untuk menyembunyikan ikon. Baris dengan ikon <strong>Marketplace</strong> (Toco/Shopee) otomatis dirender sebagai tombol teks di footer, bukan ikon SVG.</p>
 
         @php
@@ -46,7 +46,7 @@
 
         <div id="socials-list" class="stack">
             @foreach ($socialMedias as $i => $sm)
-                <div class="field-row social-row" style="align-items:end;">
+                <div class="field-row social-row row-end">
                     <input type="hidden" name="socials[{{ $i }}][id]" value="{{ $sm->id }}">
                     <label class="field">
                         <span>Nama</span>
@@ -75,18 +75,18 @@
                     <label class="field icon-url-field">
                         <span>Icon URL (opsional)</span>
                         <input type="url" name="socials[{{ $i }}][icon_url]" value="{{ old("socials.$i.icon_url", $sm->icon_url) }}" maxlength="500" placeholder="https://.../icon.png">
-                        <small style="font-size:11px;opacity:.7;line-height:1.3;display:block;margin-top:2px;">Hanya untuk platform custom (dropdown ikon = "custom/teks").</small>
+                        <small class="field-note">Hanya untuk platform custom (dropdown ikon = "custom/teks").</small>
                     </label>
-                    <label class="field" style="max-width:90px;">
+                    <label class="field field--xs">
                         <span>Urutan</span>
                         <input type="number" name="socials[{{ $i }}][sort_order]" value="{{ old("socials.$i.sort_order", $sm->sort_order) }}" min="0" max="999">
                     </label>
-                    <label class="field" style="max-width:110px;">
+                    <label class="field field--sm">
                         <span>Aktif</span>
                         <input type="hidden" name="socials[{{ $i }}][is_active]" value="0">
                         <input type="checkbox" name="socials[{{ $i }}][is_active]" value="1" @checked(old("socials.$i.is_active", $sm->is_active))>
                     </label>
-                    <label class="field" style="max-width:110px;">
+                    <label class="field field--sm">
                         <span>Hapus</span>
                         <input type="checkbox" name="socials[{{ $i }}][delete]" value="1">
                     </label>
@@ -95,7 +95,7 @@
         </div>
 
         <template id="social-row-template">
-            <div class="field-row social-row" style="align-items:end;">
+            <div class="field-row social-row row-end">
                 <input type="hidden" name="socials[__INDEX__][id]" value="">
                 <label class="field"><span>Nama</span><input type="text" name="socials[__INDEX__][name]" maxlength="100" placeholder="Threads"></label>
                 <label class="field"><span>URL</span><input type="url" name="socials[__INDEX__][url]" maxlength="255" placeholder="https://..."></label>
@@ -113,11 +113,11 @@
                 <label class="field icon-url-field">
                     <span>Icon URL (opsional)</span>
                     <input type="url" name="socials[__INDEX__][icon_url]" maxlength="500" placeholder="https://.../icon.png">
-                    <small style="font-size:11px;opacity:.7;line-height:1.3;display:block;margin-top:2px;">Hanya untuk platform custom (dropdown ikon = "custom/teks").</small>
+                    <small class="field-note">Hanya untuk platform custom (dropdown ikon = "custom/teks").</small>
                 </label>
-                <label class="field" style="max-width:90px;"><span>Urutan</span><input type="number" name="socials[__INDEX__][sort_order]" value="99" min="0" max="999"></label>
-                <label class="field" style="max-width:110px;"><span>Aktif</span><input type="hidden" name="socials[__INDEX__][is_active]" value="0"><input type="checkbox" name="socials[__INDEX__][is_active]" value="1" checked></label>
-                <label class="field" style="max-width:110px;"><span>Hapus</span><input type="checkbox" name="socials[__INDEX__][delete]" value="1"></label>
+                <label class="field field--xs"><span>Urutan</span><input type="number" name="socials[__INDEX__][sort_order]" value="99" min="0" max="999"></label>
+                <label class="field field--sm"><span>Aktif</span><input type="hidden" name="socials[__INDEX__][is_active]" value="0"><input type="checkbox" name="socials[__INDEX__][is_active]" value="1" checked></label>
+                <label class="field field--sm"><span>Hapus</span><input type="checkbox" name="socials[__INDEX__][delete]" value="1"></label>
             </div>
         </template>
 
@@ -172,7 +172,7 @@
             })();
         </script>
 
-        <h3 style="margin-top:20px;">Widget WhatsApp</h3>
+        <h3 class="form-section-title">Widget WhatsApp</h3>
         <div class="field-row">
             <label class="field">
                 <span>Aktifkan tombol WhatsApp</span>
@@ -185,7 +185,7 @@
             </label>
         </div>
 
-        <h3 style="margin-top:20px;">Pengingat Keranjang (Batch 31)</h3>
+        <h3 class="form-section-title">Pengingat Keranjang (Batch 31)</h3>
         <div class="field-row">
             <label class="field">
                 <span>Reminder #1 (jam setelah ditinggal)</span>
@@ -197,7 +197,7 @@
             </label>
         </div>
 
-        <h3 style="margin-top:20px;">Best Seller (Batch 30)</h3>
+        <h3 class="form-section-title">Best Seller (Batch 30)</h3>
         <div class="field-row">
             <label class="field">
                 <span>Periode (hari)</span>
@@ -217,7 +217,7 @@
             </label>
         </div>
 
-        <h3 style="margin-top:20px;">Verifikasi Email &amp; Pemeliharaan</h3>
+        <h3 class="form-section-title">Verifikasi Email &amp; Pemeliharaan</h3>
         <div class="field-row">
             <label class="field">
                 <span>Wajib verifikasi email saat daftar</span>

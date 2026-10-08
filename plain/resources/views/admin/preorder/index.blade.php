@@ -44,12 +44,12 @@
                             <td class="muted small nowrap">{{ $page->updated_at->timezone('Asia/Jakarta')->translatedFormat('j M Y, H:i') }}</td>
                             <td class="nowrap">
                                 @unless ($page->is_active)
-                                    <form method="POST" action="{{ route('admin.preorder.toggle', $page) }}" style="display:inline;">
+                                    <form method="POST" action="{{ route('admin.preorder.toggle', $page) }}" class="inline-form">
                                         @csrf
-                                        <button type="submit" class="link" style="color:var(--success);font-weight:600;">Aktifkan</button>
+                                        <button type="submit" class="link text-success">Aktifkan</button>
                                     </form>
                                 @else
-                                    <form method="POST" action="{{ route('admin.preorder.toggle', $page) }}" style="display:inline;">
+                                    <form method="POST" action="{{ route('admin.preorder.toggle', $page) }}" class="inline-form">
                                         @csrf
                                         <button type="submit" class="link muted">Nonaktifkan</button>
                                     </form>
@@ -57,10 +57,10 @@
                                 <a href="{{ route('admin.preorder.edit', $page) }}" class="link">Edit</a>
                                 <form method="POST" action="{{ route('admin.preorder.destroy', $page) }}"
                                       onsubmit="return confirm('Hapus halaman & semua bannernya?');"
-                                      style="display:inline;">
+                                      class="inline-form">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit" class="link" style="color:var(--danger);">Hapus</button>
+                                    <button type="submit" class="link text-danger">Hapus</button>
                                 </form>
                             </td>
                         </tr>
@@ -76,7 +76,7 @@
                             @if ($page->is_active)<span class="badge badge--on">Aktif</span>@else<span class="badge badge--muted">Nonaktif</span>@endif
                         </div>
                         <p class="card-row__meta">{{ $page->slug }} &middot; {{ $page->banners_count }} banner</p>
-                        <div style="margin-top:6px"><a href="{{ route('admin.preorder.edit', $page) }}" class="btn btn--small">Kelola</a></div>
+                        <div class="mt-2"><a href="{{ route('admin.preorder.edit', $page) }}" class="btn btn--small">Kelola</a></div>
                     </div>
                 </li>
             @endforeach

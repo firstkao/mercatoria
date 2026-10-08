@@ -1,7 +1,7 @@
 @extends('admin.layouts.app', ['title' => 'Cart Reminder'])
 
 @section('actions')
-    <form method="POST" action="{{ route('admin.cart-reminders.refresh') }}" style="display:inline;">
+    <form method="POST" action="{{ route('admin.cart-reminders.refresh') }}" class="inline-form">
         @csrf
         <button type="submit" class="btn btn--primary" onclick="return confirm('Kirim reminder cart abandonment sekarang?');">
             🔄 Jalankan Sekarang

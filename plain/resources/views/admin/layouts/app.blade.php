@@ -86,10 +86,10 @@
         <div class="main">
             {{-- Banner maintenance mode --}}
             @if (\App\Models\Setting::get('maintenance_enabled') === '1')
-                <div style="background:#fef2f2;border-bottom:1px solid #fecaca;color:#991b1b;padding:12px 32px;font-size:14px;display:flex;align-items:center;gap:12px;">
+                <div class="maintenance-banner">
                     <strong>⚠️ Mode Pemeliharaan AKTIF</strong>
                     <span>— Pengunjung biasa melihat halaman pemeliharaan. Kamu tetap bisa akses karena login admin.</span>
-                    <a href="{{ route('admin.settings.general') }}" style="margin-left:auto;color:#dc2626;font-weight:600;">Matikan →</a>
+                    <a href="{{ route('admin.settings.general') }}">Matikan →</a>
                 </div>
             @endif
 
@@ -120,17 +120,16 @@
 
             <main class="content">
                 @if (session('status'))
-                    <div class="alert alert--success" role="status">{{ session('status') }}</div>
+                    <x-admin.alert variant="success">{{ session('status') }}</x-admin.alert>
                 @endif
                 @if ($errors->any())
-                    <div class="alert alert--danger" role="alert">
-                        <strong>Ada {{ $errors->count() }} isian yang perlu diperbaiki.</strong>
+                    <x-admin.alert variant="danger" title="Ada {{ $errors->count() }} isian yang perlu diperbaiki.">
                         <ul>
                             @foreach ($errors->all() as $error)
                                 <li>{{ $error }}</li>
                             @endforeach
                         </ul>
-                    </div>
+                    </x-admin.alert>
                 @endif
 
                 @yield('content')
@@ -185,6 +184,7 @@
         });
     </script>
     <script src="{{ asset('js/admin-bulk.js') }}" defer></script>
+    <script src="{{ asset('js/admin-ui.js') }}" defer></script>
     @stack('scripts')
 </body>
 </html>

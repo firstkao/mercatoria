@@ -11,7 +11,7 @@
     <div class="print-toolbar">
         <div>
             <strong>Packing Slip {{ $order->order_number }}</strong>
-            <span style="color:#64748b;margin-left:8px;font-size:13px;">Tanpa harga — untuk packing barang</span>
+            <span class="toolbar-hint">Tanpa harga — untuk packing barang</span>
         </div>
         <div class="print-toolbar__actions">
             <button type="button" onclick="window.print()" class="print-btn print-btn--primary">🖨️ Print / Save PDF</button>
@@ -39,7 +39,7 @@
         </header>
 
         <section class="paper__parties">
-            <div class="paper__party" style="grid-column: 1 / -1;">
+            <div class="paper__party grid-span-all">
                 <div class="paper__party-label">KIRIM KE</div>
                 <div class="paper__party-name">{{ $order->user?->full_name ?? '—' }}</div>
                 <div class="paper__party-info">
@@ -60,21 +60,21 @@
         <table class="paper-table">
             <thead>
                 <tr>
-                    <th style="width:40px;text-align:center;">#</th>
+                    <th class="col-no">#</th>
                     <th>Produk</th>
                     <th>Varian</th>
-                    <th style="width:60px;text-align:center;">Qty</th>
-                    <th style="width:70px;text-align:center;">Cek ✓</th>
+                    <th class="col-qty">Qty</th>
+                    <th class="col-qty-check">Cek ✓</th>
                 </tr>
             </thead>
             <tbody>
                 @foreach ($order->items as $i => $item)
                     <tr>
-                        <td style="text-align:center;">{{ $i + 1 }}</td>
+                        <td class="text-center">{{ $i + 1 }}</td>
                         <td><strong>{{ $item->product_name_snapshot }}</strong></td>
                         <td>{{ $item->variant_name_snapshot ?: '—' }}</td>
-                        <td style="text-align:center;font-size:16px;">{{ $item->quantity }}</td>
-                        <td style="text-align:center;">
+                        <td class="text-center qty-lg">{{ $item->quantity }}</td>
+                        <td class="text-center">
                             <span class="checkbox-box"></span>
                         </td>
                     </tr>
@@ -84,7 +84,7 @@
 
         <section class="paper__note">
             <strong>Catatan Packing:</strong>
-            <div style="margin-top:8px;min-height:80px;border-bottom:1px dashed #cbd5e1;"></div>
+            <div class="signature-line"></div>
         </section>
 
         <footer class="paper__footer">

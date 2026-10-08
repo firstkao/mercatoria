@@ -56,10 +56,10 @@
                                 <a href="{{ route('admin.payment-methods.edit', $method) }}" class="link">Edit</a>
                                 <form method="POST" action="{{ route('admin.payment-methods.destroy', $method) }}"
                                       onsubmit="return confirm('Hapus metode {{ $method->label }}?');"
-                                      style="display:inline;">
+                                      class="inline-form">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit" class="link" style="color:var(--danger);">Hapus</button>
+                                    <button type="submit" class="link text-danger">Hapus</button>
                                 </form>
                             </td>
                         </tr>
@@ -76,7 +76,7 @@
                         </div>
                         <p class="card-row__meta muted">{{ \App\Models\PaymentMethod::typeLabel($method->type ?? null) }}</p>
                         <p class="card-row__meta mono">{{ $method->account_number ?: '&mdash;' }} a.n {{ $method->account_name ?: '&mdash;' }}</p>
-                        <div style="margin-top:6px"><a href="{{ route('admin.payment-methods.edit', $method) }}" class="link">Edit</a></div>
+                        <div class="mt-2"><a href="{{ route('admin.payment-methods.edit', $method) }}" class="link">Edit</a></div>
                     </div>
                 </li>
             @endforeach

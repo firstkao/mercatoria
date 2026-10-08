@@ -66,14 +66,14 @@
             @csrf
             <input type="hidden" name="action" value="" data-bulk-action-input>
 
-            <div data-bulk-toolbar style="display:flex; flex-wrap:wrap; gap:8px; align-items:center; justify-content:space-between; padding:10px 0;">
+            <div class="bulk-toolbar" data-bulk-toolbar>
                 <span class="muted"><strong data-bulk-count>0</strong> produk dipilih</span>
-                <span style="display:flex; flex-wrap:wrap; gap:8px;">
+                <span class="actions">
                     <button type="button" class="btn" data-bulk-action="publish">Tayangkan</button>
                     <button type="button" class="btn" data-bulk-action="unpublish">Jadikan Draf</button>
                     <button type="button" class="btn" data-bulk-action="feature">Jadikan Unggulan</button>
                     <button type="button" class="btn" data-bulk-action="unfeature">Hapus Unggulan</button>
-                    <button type="button" class="btn" data-bulk-action="delete" data-bulk-confirm="Hapus {count} produk terpilih?" style="color:#d9534f;">Hapus</button>
+                    <button type="button" class="btn text-danger" data-bulk-action="delete" data-bulk-confirm="Hapus {count} produk terpilih?">Hapus</button>
                 </span>
             </div>
 
@@ -82,7 +82,7 @@
             <table class="table">
                 <thead>
                     <tr>
-                        <th style="width:36px;"><input type="checkbox" data-bulk-toggle-all aria-label="Pilih semua"></th>
+                        <th class="col-no"><input type="checkbox" data-bulk-toggle-all aria-label="Pilih semua"></th>
                         <th colspan="2">Produk</th>
                         <th>SKU</th>
                         <th>Game</th>

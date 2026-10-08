@@ -1,10 +1,10 @@
 @extends('admin.layouts.app', ['title' => 'Manajemen Pesanan'])
 
 @section('content')
-<section class="panel panel--flush">
-    <div class="panel__head" style="padding: 20px;">
+<x-admin.card padding="flush">
+    <div class="panel__head p-5">
         <h2>Daftar Pesanan</h2>
-        <form method="GET" action="{{ route('admin.orders.index') }}" style="display: flex; gap: 10px;">
+        <form method="GET" action="{{ route('admin.orders.index') }}" class="actions">
             <select name="status" onchange="this.form.submit()" class="input-compact">
                 <option value="">Semua Status</option>
                 <option value="menunggu_pembayaran" @selected($status === 'menunggu_pembayaran')>Menunggu Pembayaran</option>
@@ -34,12 +34,12 @@
             <tbody>
                 @foreach($orders as $order)
                     <tr>
-                        <td style="font-family: monospace; font-weight: bold;">{{ $order->order_number }}</td>
+                        <td class="mono"><strong>{{ $order->order_number }}</strong></td>
                         <td>
                             <strong>{{ $order->user->full_name ?? 'Data Dihapus' }}</strong>
                             <div class="muted small">{{ $order->user->email ?? '' }}</div>
                         </td>
-                        <td style="color: var(--accent-strong); font-weight: bold;">{{ \App\Support\PriceCalculator::formatRupiah($order->pay_now_idr) }}</td>
+                        <td class="text-price">{{ \App\Support\PriceCalculator::formatRupiah($order->pay_now_idr) }}</td>
                         <td>{{ $order->payment_scheme }}</td>
                         <td>
                             <span class="badge {{ $order->status === 'ditahan' ? 'badge--warn' : '' }} {{ $order->status === 'selesai' ? 'badge--on' : '' }}">
@@ -69,9 +69,9 @@
                 </li>
             @endforeach
         </ul>
-        <div style="padding: 20px;">
+        <div class="p-5">
             {{ $orders->links('admin.partials.pagination') }}
         </div>
     @endif
-</section>
+</x-admin.card>
 @endsection

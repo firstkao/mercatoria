@@ -38,7 +38,7 @@
                             <td class="nowrap">
                                 <a href="{{ route('admin.developers.edit', $developer) }}" class="link">Edit</a>
                                 <form method="POST" action="{{ route('admin.developers.destroy', $developer) }}"
-                                      onsubmit="return confirm('Hapus developer {{ $developer->name }}?');" style="display:inline;">
+                                      onsubmit="return confirm('Hapus developer {{ $developer->name }}?');" class="inline-form">
                                     @csrf
                                     @method('DELETE')
                                     <button type="submit" class="link link--danger">Hapus</button>
@@ -54,7 +54,7 @@
                     <div class="card-row card-row--stack">
                         <span class="card-row__title">{{ $developer->name }}</span>
                         <p class="card-row__meta">{{ $developer->slug }} &middot; {{ number_format($developer->games_count, 0, ',', '.') }} game &middot; {{ number_format($developer->products_count, 0, ',', '.') }} produk</p>
-                        <div style="margin-top:6px"><a href="{{ route('admin.developers.edit', $developer) }}" class="link">Edit</a></div>
+                        <div class="mt-2"><a href="{{ route('admin.developers.edit', $developer) }}" class="link">Edit</a></div>
                     </div>
                 </li>
             @endforeach

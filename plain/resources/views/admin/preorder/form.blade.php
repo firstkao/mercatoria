@@ -76,7 +76,7 @@
                                                min="0" max="999">
                                     </label>
 
-                                    <label class="switch" style="margin-top:25px;">
+                                    <label class="switch mt-6">
                                         <input type="checkbox" name="banners_existing[{{ $banner->id }}][is_active]" value="1"
                                                @checked(old("banners_existing.{$banner->id}.is_active", $banner->is_active))>
                                         <span>Aktif</span>
@@ -187,7 +187,7 @@
             preview.innerHTML = '';
             Array.prototype.forEach.call(input.files, function (file) {
                 var fig = document.createElement('figure');
-                fig.style.cssText = 'margin:0;border:1px solid var(--border);border-radius:8px;overflow:hidden;background:#fff;';
+                fig.style.cssText = 'margin:0;border:1px solid var(--border);border-radius:8px;overflow:hidden;background:var(--surface);';
                 var img = document.createElement('img');
                 img.src = URL.createObjectURL(file);
                 img.style.cssText = 'width:100%;height:120px;object-fit:cover;display:block;';

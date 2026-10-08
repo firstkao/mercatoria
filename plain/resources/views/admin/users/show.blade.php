@@ -94,10 +94,10 @@
                     </form>
 
                     {{-- Permintaan user #2: tempat "buka kunci" akun spammer. --}}
-                    <hr style="margin:14px 0;border:none;border-top:1px solid var(--border,#e5e7eb);">
+                    <hr class="divider">
                     <p class="muted small">Reset Kuota = kuota lihat direset &amp; tanggal blokir dicabut — User tetap Spammer sampai ada pembelian terverifikasi. Perpanjang = tetap spammer, masa tunggu +30 hari.</p>
-                    <div style="display:flex;gap:8px;">
-                        <form method="POST" action="{{ route('admin.users.unlock', $user) }}" onsubmit="return confirm('Reset kuota akun ini? Status tetap Spammer (tidak berubah jadi Customer).');" style="flex:1;">
+                    <div class="actions">
+                        <form method="POST" action="{{ route('admin.users.unlock', $user) }}" onsubmit="return confirm('Reset kuota akun ini? Status tetap Spammer (tidak berubah jadi Customer).');" class="flex-1">
                             @csrf
                             <button type="submit" class="btn btn--primary btn--block">🔓 Reset Kuota (User tetap Spammer sampai ada pembelian terverifikasi)</button>
                         </form>

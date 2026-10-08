@@ -32,11 +32,11 @@
                 <tbody>
                     @foreach ($games as $game)
                         <tr>
-                            <td style="width:80px;">
+                            <td class="col-sm">
                                 @if ($game->image_path)
-                                    <img src="{{ $game->imageUrl() }}" alt="{{ $game->name }}" style="width:64px;height:64px;object-fit:cover;border-radius:6px;">
+                                    <img src="{{ $game->imageUrl() }}" alt="{{ $game->name }}" class="thumb-sm">
                                 @else
-                                    <span class="thumb-empty" style="width:64px;height:64px;display:flex;align-items:center;justify-content:center;background:var(--bg);border-radius:6px;font-size:11px;">No img</span>
+                                    <span class="thumb-empty thumb-empty--sm thumb-empty--box">No img</span>
                                 @endif
                             </td>
                             <td>
@@ -49,7 +49,7 @@
                             <td class="nowrap">
                                 <a href="{{ route('admin.games.edit', $game) }}" class="link">Edit</a>
                                 <form method="POST" action="{{ route('admin.games.destroy', $game) }}"
-                                      onsubmit="return confirm('Hapus game {{ $game->name }}?');" style="display:inline;">
+                                      onsubmit="return confirm('Hapus game {{ $game->name }}?');" class="inline-form">
                                     @csrf
                                     @method('DELETE')
                                     <button type="submit" class="link link--danger">Hapus</button>
@@ -67,7 +67,7 @@
                         <div class="card-row__body">
                             <span class="card-row__title">{{ $game->name }}</span>
                             <span class="card-row__meta">{{ $game->developer?->name ?? '&mdash;' }} &middot; {{ number_format($game->products_count, 0, ',', '.') }} produk</span>
-                            <div style="margin-top:6px"><a href="{{ route('admin.games.edit', $game) }}" class="link">Edit</a></div>
+                            <div class="mt-2"><a href="{{ route('admin.games.edit', $game) }}" class="link">Edit</a></div>
                         </div>
                     </div>
                 </li>

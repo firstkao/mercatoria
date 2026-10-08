@@ -59,17 +59,17 @@
                                 @if ($user->isSpammer())
                                     <form method="POST" action="{{ route('admin.users.unlock', $user) }}"
                                           onsubmit="return confirm('Reset kuota {{ $user->displayName() }}? Status tetap Spammer (tidak berubah jadi Customer).');"
-                                          style="display:inline;">
+                                          class="inline-form">
                                         @csrf
-                                        <button type="submit" class="link" style="color:var(--success,#16a34a);">🔓 Reset Kuota</button>
+                                        <button type="submit" class="link text-success">🔓 Reset Kuota</button>
                                     </form>
                                 @endif
                                 <form method="POST" action="{{ route('admin.users.destroy', $user) }}"
                                       onsubmit="return confirm('Yakin hapus {{ $user->displayName() }}? Riwayat order tetap tersimpan.');"
-                                      style="display:inline;">
+                                      class="inline-form">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit" class="link" style="color:var(--danger);">Hapus</button>
+                                    <button type="submit" class="link text-danger">Hapus</button>
                                 </form>
                             </td>
                         </tr>
@@ -89,22 +89,22 @@
                         <span class="card-row__meta">{{ $user->email ?? '—' }}</span>
                         @include('admin.users.tracking', ['user' => $user])
                     </a>
-                    <div style="display:flex;gap:.5rem;padding:.5rem 0;">
+                    <div class="actions mt-2">
                         <a href="{{ route('admin.users.edit', $user) }}" class="link">Edit</a>
                         @if ($user->isSpammer())
                             <form method="POST" action="{{ route('admin.users.unlock', $user) }}"
                                   onsubmit="return confirm('Reset kuota {{ $user->displayName() }}? Status tetap Spammer (tidak berubah jadi Customer).');"
-                                  style="display:inline;">
+                                  class="inline-form">
                                 @csrf
-                                <button type="submit" class="link" style="color:var(--success,#16a34a);">🔓 Reset Kuota</button>
+                                <button type="submit" class="link text-success">🔓 Reset Kuota</button>
                             </form>
                         @endif
                         <form method="POST" action="{{ route('admin.users.destroy', $user) }}"
                               onsubmit="return confirm('Yakin hapus {{ $user->displayName() }}?');"
-                              style="display:inline;">
+                              class="inline-form">
                             @csrf
                             @method('DELETE')
-                            <button type="submit" class="link" style="color:var(--danger);">Hapus</button>
+                            <button type="submit" class="link text-danger">Hapus</button>
                         </form>
                     </div>
                 </li>

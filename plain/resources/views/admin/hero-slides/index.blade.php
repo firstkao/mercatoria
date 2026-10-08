@@ -28,11 +28,11 @@
                 <tbody>
                     @foreach ($slides as $slide)
                         <tr>
-                            <td style="width:120px;">
+                            <td class="col-md">
                                 @if ($slide->image_path)
-                                    <img src="{{ $slide->imageUrl() }}" alt="" style="width:100px;height:56px;object-fit:cover;border-radius:6px;">
+                                    <img src="{{ $slide->imageUrl() }}" alt="" class="thumb-wide">
                                 @else
-                                    <span class="thumb-empty" style="width:100px;height:56px;display:flex;align-items:center;justify-content:center;background:var(--bg);border-radius:6px;font-size:11px;">No img</span>
+                                    <span class="thumb-empty thumb-empty--wide thumb-empty--box">No img</span>
                                 @endif
                             </td>
                             <td>
@@ -58,10 +58,10 @@
                                 <a href="{{ route('admin.hero-slides.edit', $slide) }}" class="link">Edit</a>
                                 <form method="POST" action="{{ route('admin.hero-slides.destroy', $slide) }}"
                                       onsubmit="return confirm('Hapus slide ini?');"
-                                      style="display:inline;">
+                                      class="inline-form">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit" class="link" style="color:var(--danger);">Hapus</button>
+                                    <button type="submit" class="link text-danger">Hapus</button>
                                 </form>
                             </td>
                         </tr>
@@ -76,7 +76,7 @@
                         <div class="card-row__body">
                             <span class="card-row__title">{{ $slide->title ?: '&mdash;' }}</span>
                             <span class="card-row__meta">{{ $slide->is_active ? 'Aktif' : 'Nonaktif' }} &middot; urutan {{ $slide->sort_order }}</span>
-                            <div style="margin-top:6px"><a href="{{ route('admin.hero-slides.edit', $slide) }}" class="link">Edit</a></div>
+                            <div class="mt-2"><a href="{{ route('admin.hero-slides.edit', $slide) }}" class="link">Edit</a></div>
                         </div>
                     </div>
                 </li>

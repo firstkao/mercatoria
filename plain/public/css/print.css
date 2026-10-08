@@ -1,12 +1,57 @@
+/* ============================================================ */
+/* TOKENS CETAK — palet mengacu ke public/css/admin.css          */
+/* (print.css dimuat mandiri tanpa admin.css, jadi blok token    */
+/*  ini adalah SATU-SATUNYA cermin yang diizinkan. Nilai warna   */
+/*  HARUS sama dengan palet admin.)                             */
+/* ============================================================ */
+:root {
+    --paper-bg: #f1f5f9;
+    --paper-surface: #ffffff;
+    --paper-toolbar: #1e293b;
+    --paper-ink: #1e293b;
+    --paper-ink-soft: #475569;
+    --paper-muted: #64748b;
+    --paper-muted-strong: #94a3b8;
+    --paper-line: #e2e8f0;
+    --paper-line-strong: #cbd5e1;
+    --paper-toolbar-tint: rgba(255, 255, 255, .1);
+    --paper-surface-alt: #f8fafc;
+    --paper-toolbar-line: rgba(255, 255, 255, .2);
+    --primary: #0ea5e9;
+    --primary-hover: #0284c7;
+    --on-accent: #ffffff;
+    --shadow-toolbar: 0 2px 8px rgba(0, 0, 0, .1);
+    --shadow-paper: 0 4px 24px rgba(0, 0, 0, .06);
+    --font-sans: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    --font-mono: ui-monospace, 'SF Mono', Menlo, monospace;
+    --fs-caption: 10px;
+    --fs-xs: 11px;
+    --fs-sm: 12px;
+    --fs-md: 13px;
+    --fs-body: 14px;
+    --fs-lg: 16px;
+    --fs-display: 22px;
+    --fs-title: 26px;
+    --radius-sm: 4px;
+    --radius-md: 6px;
+    --space-1: 4px;
+    --space-2: 8px;
+    --space-3: 12px;
+    --space-4: 16px;
+    --space-5: 20px;
+    --space-6: 24px;
+    --space-8: 32px;
+    --space-10: 40px;
+}
 /* Print layout: berlaku untuk invoice & packing slip */
 * { box-sizing: border-box; }
 
 body.print-page {
     margin: 0;
-    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-    background: #f1f5f9;
-    color: #1e293b;
-    font-size: 12px;
+    font-family: var(--font-sans);
+    background: var(--paper-bg);
+    color: var(--paper-ink);
+    font-size: var(--fs-sm);
     line-height: 1.5;
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
@@ -22,9 +67,9 @@ body.print-page {
     justify-content: space-between;
     gap: 12px;
     padding: 12px 20px;
-    background: #1e293b;
-    color: #fff;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    background: var(--paper-ink);
+    color: var(--on-accent);
+    box-shadow: var(--shadow-toolbar);
 }
 
 .print-toolbar__actions {
@@ -34,11 +79,11 @@ body.print-page {
 
 .print-btn {
     display: inline-block;
-    padding: 8px 14px;
-    border-radius: 6px;
-    border: 1px solid rgba(255,255,255,0.2);
-    background: rgba(255,255,255,0.1);
-    color: #fff;
+    padding: var(--space-2) var(--space-3);
+    border-radius: var(--radius-md);
+    border: 1px solid var(--paper-toolbar-line);
+    background: var(--paper-toolbar-tint);
+    color: var(--on-accent);
     font: inherit;
     font-weight: 600;
     cursor: pointer;
@@ -47,27 +92,27 @@ body.print-page {
 }
 
 .print-btn:hover {
-    background: rgba(255,255,255,0.2);
+    background: var(--paper-toolbar-line);
 }
 
 .print-btn--primary {
-    background: #0299e7;
-    border-color: #0299e7;
+    background: var(--primary);
+    border-color: var(--primary);
 }
 
 .print-btn--primary:hover {
-    background: #0284c7;
-    border-color: #0284c7;
+    background: var(--primary-hover);
+    border-color: var(--primary-hover);
 }
 
 /* Paper */
 .paper {
     max-width: 800px;
     margin: 24px auto;
-    padding: 40px;
-    background: #fff;
-    border-radius: 6px;
-    box-shadow: 0 4px 24px rgba(0,0,0,0.06);
+    padding: var(--space-10);
+    background: var(--paper-surface);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-paper);
 }
 
 /* Header */
@@ -77,7 +122,7 @@ body.print-page {
     align-items: flex-start;
     gap: 24px;
     padding-bottom: 20px;
-    border-bottom: 2px solid #1e293b;
+    border-bottom: 2px solid var(--paper-ink);
     margin-bottom: 24px;
 }
 
@@ -94,15 +139,15 @@ body.print-page {
 }
 
 .paper__brand-name {
-    font-size: 22px;
+    font-size: var(--fs-display);
     font-weight: 700;
     letter-spacing: 0.08em;
-    color: #1e293b;
+    color: var(--paper-ink);
 }
 
 .paper__brand-info {
-    font-size: 11px;
-    color: #64748b;
+    font-size: var(--fs-xs);
+    color: var(--paper-muted);
     line-height: 1.6;
 }
 
@@ -111,27 +156,27 @@ body.print-page {
 }
 
 .paper__doc-title {
-    font-size: 26px;
+    font-size: var(--fs-title);
     font-weight: 700;
     letter-spacing: 0.1em;
     margin: 0 0 12px;
-    color: #1e293b;
+    color: var(--paper-ink);
 }
 
 .paper__doc-meta {
-    font-size: 11px;
+    font-size: var(--fs-xs);
     border-collapse: collapse;
     margin-left: auto;
 }
 
 .paper__doc-meta td {
-    padding: 2px 0 2px 12px;
+    padding: var(--space-1) 0 var(--space-1) var(--space-3);
     text-align: left;
-    color: #64748b;
+    color: var(--paper-muted);
 }
 
 .paper__doc-meta td:last-child {
-    color: #1e293b;
+    color: var(--paper-ink);
     text-align: right;
 }
 
@@ -142,26 +187,26 @@ body.print-page {
     gap: 24px;
     margin-bottom: 24px;
     padding-bottom: 20px;
-    border-bottom: 1px solid #e2e8f0;
+    border-bottom: 1px solid var(--paper-line);
 }
 
 .paper__party-label {
-    font-size: 10px;
+    font-size: var(--fs-caption);
     font-weight: 700;
     letter-spacing: 0.1em;
-    color: #64748b;
-    margin-bottom: 6px;
+    color: var(--paper-muted);
+    margin-bottom: var(--space-2);
 }
 
 .paper__party-name {
-    font-size: 14px;
+    font-size: var(--fs-body);
     font-weight: 700;
-    margin-bottom: 4px;
+    margin-bottom: var(--space-1);
 }
 
 .paper__party-info {
-    font-size: 11px;
-    color: #475569;
+    font-size: var(--fs-xs);
+    color: var(--paper-ink-soft);
     line-height: 1.7;
 }
 
@@ -170,18 +215,18 @@ body.print-page {
 }
 
 .paper__party-table {
-    font-size: 11px;
+    font-size: var(--fs-xs);
     width: 100%;
     border-collapse: collapse;
 }
 
 .paper__party-table td {
-    padding: 3px 0;
+    padding: var(--space-1) 0;
     vertical-align: top;
 }
 
 .paper__party-table td:first-child {
-    color: #64748b;
+    color: var(--paper-muted);
     width: 90px;
 }
 
@@ -190,52 +235,52 @@ body.print-page {
     width: 100%;
     border-collapse: collapse;
     margin-bottom: 20px;
-    font-size: 11px;
+    font-size: var(--fs-xs);
 }
 
 .paper-table thead th {
-    background: #f1f5f9;
-    padding: 10px 12px;
+    background: var(--paper-bg);
+    padding: var(--space-3);
     text-align: left;
-    font-size: 10px;
+    font-size: var(--fs-caption);
     text-transform: uppercase;
     letter-spacing: 0.08em;
-    color: #475569;
+    color: var(--paper-ink-soft);
     font-weight: 700;
-    border-bottom: 2px solid #cbd5e1;
+    border-bottom: 2px solid var(--paper-line-strong);
 }
 
 .paper-table tbody td {
     padding: 12px;
-    border-bottom: 1px solid #e2e8f0;
+    border-bottom: 1px solid var(--paper-line);
     vertical-align: top;
 }
 
 .paper-table__sub {
-    font-size: 10px;
-    color: #64748b;
-    margin-top: 2px;
+    font-size: var(--fs-caption);
+    color: var(--paper-muted);
+    margin-top: var(--space-1);
 }
 
 .paper-table tfoot td {
-    padding: 8px 12px;
-    font-size: 11px;
+    padding: var(--space-2) var(--space-3);
+    font-size: var(--fs-xs);
 }
 
 .paper-table__total td {
-    padding-top: 14px;
-    border-top: 2px solid #1e293b;
-    font-size: 13px;
+    padding-top: var(--space-4);
+    border-top: 2px solid var(--paper-ink);
+    font-size: var(--fs-md);
 }
 
 /* Notes */
 .paper__note {
-    background: #f8fafc;
-    border-left: 3px solid #0299e7;
-    padding: 12px 16px;
-    border-radius: 4px;
-    font-size: 11px;
-    color: #475569;
+    background: var(--paper-surface-alt);
+    border-left: 3px solid var(--primary);
+    padding: var(--space-3) var(--space-4);
+    border-radius: var(--radius-sm);
+    font-size: var(--fs-xs);
+    color: var(--paper-ink-soft);
     margin-bottom: 24px;
 }
 
@@ -245,9 +290,9 @@ body.print-page {
     justify-content: space-between;
     align-items: flex-end;
     padding-top: 20px;
-    border-top: 1px solid #e2e8f0;
-    font-size: 10px;
-    color: #94a3b8;
+    border-top: 1px solid var(--paper-line);
+    font-size: var(--fs-caption);
+    color: var(--paper-muted-strong);
 }
 
 .paper__footer-meta {
@@ -259,15 +304,28 @@ body.print-page {
     display: inline-block;
     width: 16px;
     height: 16px;
-    border: 1.5px solid #64748b;
-    border-radius: 3px;
+    border: 1.5px solid var(--paper-muted);
+    border-radius: var(--radius-sm);
 }
+
+/* ---------- Utility cetak (pengganti inline style) ---------- */
+.col-no { width: var(--space-10); text-align: center; }
+.col-qty { width: 60px; text-align: center; }
+.col-qty-check { width: 70px; text-align: center; }
+.col-money { width: 110px; text-align: right; }
+.col-money-lg { width: 120px; text-align: right; }
+.text-center { text-align: center; }
+.text-right { text-align: right; }
+.qty-lg { font-size: var(--fs-lg); }
+.grid-span-all { grid-column: 1 / -1; }
+.toolbar-hint { color: var(--paper-ink-soft); margin-left: var(--space-2); font-size: var(--fs-md); }
+.signature-line { margin-top: var(--space-2); min-height: 80px; border-bottom: 1px dashed var(--paper-line-strong); }
 
 /* ============ PRINT STYLE ============ */
 @media print {
     body.print-page {
-        background: #fff;
-        font-size: 11px;
+        background: var(--paper-surface);
+        font-size: var(--fs-xs);
     }
 
     .print-toolbar {

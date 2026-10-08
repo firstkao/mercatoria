@@ -111,63 +111,63 @@
         <table class="paper-table">
             <thead>
                 <tr>
-                    <th style="width:40px;text-align:center;">#</th>
+                    <th class="col-no">#</th>
                     <th>Item</th>
-                    <th style="width:60px;text-align:center;">Qty</th>
-                    <th style="width:110px;text-align:right;">Harga</th>
-                    <th style="width:120px;text-align:right;">Subtotal</th>
+                    <th class="col-qty">Qty</th>
+                    <th class="col-money">Harga</th>
+                    <th class="col-money-lg">Subtotal</th>
                 </tr>
             </thead>
             <tbody>
                 @foreach ($order->items as $i => $item)
                     <tr>
-                        <td style="text-align:center;">{{ $i + 1 }}</td>
+                        <td class="text-center">{{ $i + 1 }}</td>
                         <td>
                             <strong>{{ $item->product_name_snapshot }}</strong>
                             @if ($item->variant_name_snapshot)
                                 <div class="paper-table__sub">Varian: {{ $item->variant_name_snapshot }}</div>
                             @endif
                         </td>
-                        <td style="text-align:center;">{{ $item->quantity }}</td>
-                        <td style="text-align:right;">{{ \App\Support\PriceCalculator::formatRupiah($item->unit_price_idr) }}</td>
-                        <td style="text-align:right;">{{ \App\Support\PriceCalculator::formatRupiah($item->line_total_idr) }}</td>
+                        <td class="text-center">{{ $item->quantity }}</td>
+                        <td class="text-right">{{ \App\Support\PriceCalculator::formatRupiah($item->unit_price_idr) }}</td>
+                        <td class="text-right">{{ \App\Support\PriceCalculator::formatRupiah($item->line_total_idr) }}</td>
                     </tr>
                 @endforeach
             </tbody>
             <tfoot>
                 <tr>
-                    <td colspan="4" style="text-align:right;">Subtotal</td>
-                    <td style="text-align:right;">{{ \App\Support\PriceCalculator::formatRupiah($order->subtotal_idr) }}</td>
+                    <td colspan="4" class="text-right">Subtotal</td>
+                    <td class="text-right">{{ \App\Support\PriceCalculator::formatRupiah($order->subtotal_idr) }}</td>
                 </tr>
                 @if ($order->discount_idr > 0)
                     <tr>
-                        <td colspan="4" style="text-align:right;">
+                        <td colspan="4" class="text-right">
                             Diskon
                             @if ($order->discount_type && $order->discount_type !== 'none')
                                 ({{ ucfirst($order->discount_type) }})
                             @endif
                         </td>
-                        <td style="text-align:right;">- {{ \App\Support\PriceCalculator::formatRupiah($order->discount_idr) }}</td>
+                        <td class="text-right">- {{ \App\Support\PriceCalculator::formatRupiah($order->discount_idr) }}</td>
                     </tr>
                 @endif
                 @if ($order->marketplace_fee_idr > 0)
                     <tr>
-                        <td colspan="4" style="text-align:right;">Biaya Marketplace ({{ $order->marketplace?->name ?? '—' }})</td>
-                        <td style="text-align:right;">{{ \App\Support\PriceCalculator::formatRupiah($order->marketplace_fee_idr) }}</td>
+                        <td colspan="4" class="text-right">Biaya Marketplace ({{ $order->marketplace?->name ?? '—' }})</td>
+                        <td class="text-right">{{ \App\Support\PriceCalculator::formatRupiah($order->marketplace_fee_idr) }}</td>
                     </tr>
                 @endif
                 <tr class="paper-table__total">
-                    <td colspan="4" style="text-align:right;"><strong>Total</strong></td>
-                    <td style="text-align:right;"><strong>{{ \App\Support\PriceCalculator::formatRupiah($order->total_idr) }}</strong></td>
+                    <td colspan="4" class="text-right"><strong>Total</strong></td>
+                    <td class="text-right"><strong>{{ \App\Support\PriceCalculator::formatRupiah($order->total_idr) }}</strong></td>
                 </tr>
                 @if ($order->payment_scheme === 'DP')
                     <tr>
-                        <td colspan="4" style="text-align:right;">DP Dibayar Sekarang</td>
-                        <td style="text-align:right;"><strong>{{ \App\Support\PriceCalculator::formatRupiah($order->pay_now_idr) }}</strong></td>
+                        <td colspan="4" class="text-right">DP Dibayar Sekarang</td>
+                        <td class="text-right"><strong>{{ \App\Support\PriceCalculator::formatRupiah($order->pay_now_idr) }}</strong></td>
                     </tr>
                     <tr>
-                        <td colspan="4" style="text-align:right;">Sisa Pelunasan</td>
-                        <td style="text-align:right;">{{ \App\Support\PriceCalculator::formatRupiah($order->remaining_idr) }}</td>
+                        <td colspan="4" class="text-right">Sisa Pelunasan</td>
+                        <td class="text-right">{{ \App\Support\PriceCalculator::formatRupiah($order->remaining_idr) }}</td>
                     </tr>
                 @endif
             </tfoot>
