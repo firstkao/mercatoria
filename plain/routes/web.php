@@ -263,12 +263,19 @@ Route::prefix('office')->name('admin.')->middleware('auth:admin')->group(functio
 
     // Manajemen Order
     Route::get('/orders', [OrderManagementController::class, 'index'])->name('orders.index');
-    Route::post('/orders/bulk', [OrderManagementController::class, 'bulk'])->name('orders.bulk');
+    
+    // ===== ORDER MANUAL (admin input order lama) =====
+    Route::get('/orders/create', [ManualOrderController::class, 'create'])->name('orders.create');
+    Route::post('/orders', [ManualOrderController::class, 'store'])->name('orders.store');
+    Route::get('/orders/search-users', [ManualOrderController::class, 'searchUsers'])->name('orders.search-users');
+    Route::get('/orders/search-variants', [ManualOrderController::class, 'searchVariants'])->name('orders.search-variants');
+    // ==================================================
+    
     Route::get('/orders/{order}/invoice', [OrderPrintController::class, 'invoice'])->name('orders.invoice');
     Route::get('/orders/{order}/packing-slip', [OrderPrintController::class, 'packingSlip'])->name('orders.packing-slip');
     Route::post('/orders/{order}/status', [OrderManagementController::class, 'updateStatus'])->name('orders.status');
     Route::get('/orders/{order}', [OrderManagementController::class, 'show'])->name('orders.show');
-
+    
     // ===== Order Notes (internal admin) =====
     Route::post('/orders/{order}/notes', [OrderNoteController::class, 'store'])->name('orders.notes.store');
     Route::delete('/orders/{order}/notes/{note}', [OrderNoteController::class, 'destroy'])->name('orders.notes.destroy');
