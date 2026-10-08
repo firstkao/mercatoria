@@ -17,10 +17,64 @@ enum OrderStatus: string
     case PembayaranGagal = 'pembayaran_gagal';
     case DanaDikembalikan = 'dana_dikembalikan';
 
+    /* ============================================================
+     * Progression rank
+     * ============================================================ */
     /**
-     * Status yang uangnya sudah diterima dan belum dikembalikan. Hanya order dengan status
-     * ini yang dihitung sebagai pendapatan (bukan menunggu_pembayaran / ditahan / dibatalkan /
-     * pembayaran_gagal / dana_dikembalikan).
+     * Urutan alur pesanan: makin besar = makin maju.
+     *
+     * Dipakai untuk menghitung status order dari status semua item:
+     *   order.status = status item dengan rank TERKECIL (paling mundur).
+     *
+     * Item yang sudah dibatalkan / dana dikembalikan punya rank 999
+     * (di luar progression normal) dan TIDAK dihitung saat menentukan
+     * status order — kecuali semua item final, dalam hal itu order
+     * ikut jadi dibatalkan / dana dikembalikan.
+     */
+    public static function rank(string $status): int
+    {
+        return match ($status) {
+            self::MenungguPembayaran->value   => 10,
+            self::Ditahan->value              => 15,
+            self::PembayaranGagal->value      => 15,
+            self::PembayaranDiterima->value   => 20,
+            self::SedangDiproses->value       => 30,
+            self::SampaiWhCn->value           => 40,
+            self::DikirimKeIndonesia->value   => 50,
+            self::BeaCukai->value             => 60,
+            self::SampaiWhIndonesia->value    => 70,
+            self::Selesai->value              => 80,
+            self::Dibatalkan->value           => 999,
+            self::DanaDikembalikan->value     => 999,
+            default                           => 0,
+        };
+    }
+
+    /**
+     * Rank minimum untuk boleh dibatalkan / dana dikembalikan.
+     * Di bawah rank ini (belum masuk "sedang_diproses") item boleh dibatalkan.
+     */
+    public static function cancelLockRank(): int
+    {
+        return self::rank(self::SedangDiproses->value);
+    }
+
+    /**
+     * Status final (tidak masuk hitungan min rank, tapi jadi status order
+     * kalau SEMUA item berada di salah satu status final ini).
+     *
+     * @return list<string>
+     */
+    public static function finalStatuses(): array
+    {
+        return [
+            self::Dibatalkan->value,
+            self::DanaDikembalikan->value,
+        ];
+    }
+
+    /**
+     * Status yang uangnya sudah diterima dan belum dikembalikan.
      *
      * @return list<string>
      */
@@ -39,7 +93,6 @@ enum OrderStatus: string
 
     /**
      * Ekspresi SQL: jumlahkan kolom uang hanya untuk order berstatus pendapatan.
-     * Aman di-inline karena nilainya konstanta enum, bukan input user.
      */
     public static function revenueSumSql(string $column = 'pay_now_idr', string $statusColumn = 'status'): string
     {
@@ -48,20 +101,9 @@ enum OrderStatus: string
         return "COALESCE(SUM(CASE WHEN {$statusColumn} IN ({$in}) THEN {$column} ELSE 0 END), 0)";
     }
 
-    /**
-     * Matriks transisi status yang DIIZINKAN.
-     *
-     * Aturan utamanya: order yang uangnya sudah masuk (revenueValues()) TIDAK BOLEH
-     * dimundurkan lagi ke status "belum bayar" (menunggu_pembayaran / pembayaran_gagal /
-     * ditahan). Dulu admin bisa menggeser order `selesai` balik ke `menunggu_pembayaran`
-     * hanya dengan memilih di dropdown — order tiba-tiba keluar dari omzet, lalu 24 jam
-     * kemudian dibatalkan otomatis oleh CancelUnpaidOrders.
-     *
-     * Selain itu, status akhir (selesai / dibatalkan / dana_dikembalikan) bersifat final
-     * supaya koin cashback & refund tidak bisa dipicu dua kali.
-     *
-     * @return array<string, list<string>>
-     */
+    /* ============================================================
+     * Transition matrix (untuk order-level / global update)
+     * ============================================================ */
     public static function transitions(): array
     {
         return [
@@ -113,10 +155,9 @@ enum OrderStatus: string
                 self::Selesai->value,
                 self::DanaDikembalikan->value,
             ],
-            // Status akhir: tidak ada transisi keluar.
-            self::Selesai->value => [],
-            self::Dibatalkan->value => [],
-            self::DanaDikembalikan->value => [],
+            self::Selesai->value            => [],
+            self::Dibatalkan->value         => [],
+            self::DanaDikembalikan->value   => [],
         ];
     }
 
@@ -125,9 +166,6 @@ enum OrderStatus: string
         return in_array($to->value, self::transitions()[$this->value] ?? [], true);
     }
 
-    /**
-     * Aman dipanggil dengan string mentah (mis. dari DB / request yang belum divalidasi).
-     */
     public static function canTransition(?string $from, ?string $to): bool
     {
         if ($from === null || $to === null) {
@@ -146,10 +184,7 @@ enum OrderStatus: string
     }
 
     /**
-     * Pilihan dropdown untuk admin: status sekarang + status yang boleh dituju.
-     * Dipakai supaya UI tidak pernah menawarkan transisi yang bakal ditolak controller.
-     *
-     * @return array<string, string>
+     * Pilihan dropdown untuk admin (order-level).
      */
     public static function nextOptionsFor(?string $current): array
     {
@@ -169,9 +204,6 @@ enum OrderStatus: string
         return $out;
     }
 
-    /**
-     * Pesan error yang ramah untuk admin.
-     */
     public static function transitionErrorMessage(?string $from, ?string $to): string
     {
         $fromLabel = ($from !== null ? self::tryFrom($from) : null)?->label() ?? ($from ?? '-');
@@ -183,18 +215,18 @@ enum OrderStatus: string
     public function label(): string
     {
         return match ($this) {
-            self::MenungguPembayaran => 'Menunggu Pembayaran',
-            self::Ditahan => 'Ditahan (Menunggu Verifikasi)',
-            self::PembayaranDiterima => 'Pembayaran Diterima',
-            self::SedangDiproses => 'Sedang Diproses',
-            self::SampaiWhCn => 'Sampai WH China',
-            self::DikirimKeIndonesia => 'Dikirim ke Indonesia',
-            self::BeaCukai => 'Bea Cukai',
-            self::SampaiWhIndonesia => 'Sampai WH Indonesia',
-            self::Selesai => 'Selesai',
-            self::Dibatalkan => 'Dibatalkan',
-            self::PembayaranGagal => 'Pembayaran Gagal',
-            self::DanaDikembalikan => 'Dana Dikembalikan',
+            self::MenungguPembayaran    => 'Menunggu Pembayaran',
+            self::Ditahan               => 'Ditahan (Menunggu Verifikasi)',
+            self::PembayaranDiterima    => 'Pembayaran Diterima',
+            self::SedangDiproses        => 'Sedang Diproses',
+            self::SampaiWhCn            => 'Sampai WH China',
+            self::DikirimKeIndonesia    => 'Dikirim ke Indonesia',
+            self::BeaCukai              => 'Bea Cukai',
+            self::SampaiWhIndonesia     => 'Sampai WH Indonesia',
+            self::Selesai               => 'Selesai',
+            self::Dibatalkan            => 'Dibatalkan',
+            self::PembayaranGagal       => 'Pembayaran Gagal',
+            self::DanaDikembalikan      => 'Dana Dikembalikan',
         };
     }
 
