@@ -192,9 +192,7 @@
     <div class="form-grid">
         <div class="form-grid__main stack">
 
-            {{-- ============================================================
-                 PELANGGAN
-                 ============================================================ --}}
+            {{-- PELANGGAN --}}
             <x-admin.card>
                 <h2>Pelanggan</h2>
                 <p class="muted small" style="margin-top:-6px;margin-bottom:12px;">
@@ -228,9 +226,7 @@
                 @error('user_id')<p class="text-danger small">{{ $message }}</p>@enderror
             </x-admin.card>
 
-            {{-- ============================================================
-                 INFO PESANAN
-                 ============================================================ --}}
+            {{-- INFO PESANAN --}}
             <x-admin.card>
                 <h2>Info Pesanan</h2>
                 <div class="mo-form-grid">
@@ -297,9 +293,7 @@
                 </div>
             </x-admin.card>
 
-            {{-- ============================================================
-                 ITEM
-                 ============================================================ --}}
+            {{-- ITEM --}}
             <x-admin.card>
                 <h2>Item</h2>
                 <p class="muted small" style="margin-top:-6px;margin-bottom:12px;">
@@ -325,9 +319,7 @@
                             <th class="col-action"></th>
                         </tr>
                     </thead>
-                    <tbody id="items-body">
-                        {{-- Rows di-inject via JS --}}
-                    </tbody>
+                    <tbody id="items-body"></tbody>
                 </table>
 
                 <p class="muted small" id="items-empty" style="padding:20px 0;text-align:center;">
@@ -337,9 +329,7 @@
                 @error('items')<p class="text-danger small">{{ $message }}</p>@enderror
             </x-admin.card>
 
-            {{-- ============================================================
-                 OPSI TAMBAHAN
-                 ============================================================ --}}
+            {{-- OPSI TAMBAHAN --}}
             <x-admin.card>
                 <h2>Opsi Tambahan</h2>
                 <div class="stack" style="gap:14px;">
@@ -362,9 +352,7 @@
 
         </div>
 
-        {{-- ============================================================
-             SIDEBAR: RINGKASAN
-             ============================================================ --}}
+        {{-- SIDEBAR --}}
         <aside class="form-grid__side stack">
             <x-admin.card class="panel--accent">
                 <h3>Ringkasan</h3>
@@ -426,27 +414,21 @@
 (function () {
     'use strict';
 
-    // ============================================================
-    // STATE
-    // ============================================================
     const state = {
-        items: [],   // [{variant_id, product_name, variant_name, qty, unit_price, price_yuan, weight}]
+        items: [],
     };
 
-    // ⚠️ marketplacesJs disiapkan di controller — JANGAN map di sini,
-    // karena @json() memecah argumen dengan explode(',') dan array
-    // literal berisi koma akan memotong ekspresi → PHP invalid.
-    const marketplaces = @json($marketplacesJs);
+    // marketplacesJs disiapkan di controller, karena Blade directive json
+    // memecah argumen pakai explode dan array literal berisi koma akan
+    // memotong ekspresi jadi PHP invalid.
+    const marketplaces = {!! json_encode($marketplacesJs, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) !!};
 
     const coinEarnPercent = {{ (int) \App\Models\Setting::integer('coin_earn_percent', 1) }};
     const routes = {
-        searchUsers:    @json(route('admin.orders.search-users')),
-        searchVariants: @json(route('admin.orders.search-variants')),
+        searchUsers:    {!! json_encode(route('admin.orders.search-users')) !!},
+        searchVariants: {!! json_encode(route('admin.orders.search-variants')) !!},
     };
 
-    // ============================================================
-    // UTILS
-    // ============================================================
     function rupiah(n) {
         if (! n || isNaN(n)) return 'Rp0';
         return 'Rp' + Math.round(n).toLocaleString('id-ID');
@@ -466,7 +448,7 @@
     }
 
     // ============================================================
-    // USER PICKER (autocomplete)
+    // USER PICKER
     // ============================================================
     const userInput      = document.getElementById('user-search-input');
     const userResults    = document.getElementById('user-results');
@@ -533,7 +515,6 @@
         doSearchUsers(q);
     });
 
-    // Close dropdown on click outside
     document.addEventListener('click', e => {
         if (! e.target.closest('#user-picker-wrapper')) userResults.hidden = true;
         if (! e.target.closest('#variant-results') && ! e.target.closest('#variant-search-input')) {
@@ -594,7 +575,6 @@
     const itemsEmpty = document.getElementById('items-empty');
 
     function addItem(variant) {
-        // Kalau variant_id sudah ada, cuma tambah qty
         const existing = state.items.find(i => i.variant_id === variant.id);
         if (existing) {
             existing.qty += 1;
@@ -667,7 +647,6 @@
             </tr>
         `).join('');
 
-        // Bind events
         itemsBody.querySelectorAll('[data-item-qty]').forEach(el => {
             el.addEventListener('input', e => {
                 const idx = parseInt(e.target.dataset.idx);
@@ -745,9 +724,6 @@
     schemeSelect.addEventListener('change', recalcSummary);
     mpSelect.addEventListener('change', recalcSummary);
 
-    // ============================================================
-    // INIT
-    // ============================================================
     renderItems();
     recalcSummary();
 })();
