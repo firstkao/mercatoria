@@ -10,13 +10,19 @@ class CoinController extends Controller
     public function index(Request $request)
     {
         $user = $request->user();
-        
-        // Hitung total koin yang masih aktif dan belum kedaluwarsa
-        $activeCoins = CoinLot::where('user_id', $user->id)
-            ->where('expires_at', '>', now())
+
+        // Konsisten dengan AccountController::buildStats():
+        //   - hitung koin yang remaining > 0
+        //   - DAN (tanpa expiry ATAU expiry masih di depan)
+        //
+        // Sebelumnya query di sini cuma `where('expires_at', '>', now())`,
+        // sehingga koin lama tanpa expires_at (NULL) tidak ikut dihitung
+        // — angka "Total Koin Aktif" jadi beda dengan yang di dashboard.
+        $activeCoins = (int) CoinLot::where('user_id', $user->id)
+            ->where('remaining', '>', 0)
+            ->where(fn ($q) => $q->whereNull('expires_at')->orWhere('expires_at', '>', now()))
             ->sum('remaining');
 
-        // Ambil riwayat perolehan koin
         $coinHistory = CoinLot::where('user_id', $user->id)
             ->latest('earned_at')
             ->paginate(15);
