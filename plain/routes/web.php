@@ -17,6 +17,7 @@ use App\Http\Controllers\Admin\GameController;
 use App\Http\Controllers\Admin\HeroSlideController;
 use App\Http\Controllers\Admin\IdentityController;
 use App\Http\Controllers\Admin\MaintenanceController;
+use App\Http\Controllers\Admin\ManualOrderController;
 use App\Http\Controllers\Admin\NameBlacklistController;
 use App\Http\Controllers\Admin\OrderManagementController;
 use App\Http\Controllers\Admin\OrderNoteController;
