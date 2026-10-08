@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\SecurityHelper;
 use App\Models\ActivityLog;
 use App\Models\CoinLot;
 use App\Models\Product;
@@ -20,18 +21,35 @@ class ProductController extends Controller
 {
     public function show(Request $request, Product $product): View|RedirectResponse|Response
     {
-        if (! $request->user()) {
+        // ============================================================
+        // BOT BYPASS
+        // ============================================================
+        // Crawler resmi (Googlebot, Bingbot, dsb.) boleh lihat produk tanpa
+        // login supaya SEO & index tetap jalan. Verifikasi pakai helper yang
+        // sama dengan Gatekeeper (triple-check: UA + reverse DNS + forward DNS),
+        // bukan cuma User-Agent — jadi bot palsu gak lolos.
+        //
+        // Guest biasa (bukan crawler) tetap harus login.
+        // Bot TIDAK bisa checkout / keranjang karena route itu di grup
+        // middleware('auth') — otomatis ditolak di layer atas.
+        $isCrawler = SecurityHelper::isLegitCrawlerBot(
+            SecurityHelper::getRealIp($request),
+            $request->userAgent()
+        );
+
+        if (! $request->user() && ! $isCrawler) {
             return redirect()->route('login')->with('error', 'Silakan masuk untuk melihat produk.');
         }
 
         abort_unless($product->is_published, 404);
 
-        $user = $request->user();
+        $user = $request->user();   // ⚠️ NULL kalau crawler — semua di bawah harus null-safe
 
-        // Track share click: kalau URL punya ?ref=KODE dan pembuka bukan pemiliknya
-        // sendiri, catat klik + kasih reward ke pemilik kode. Gagal tracking
-        // TIDAK boleh menjatuhkan halaman → bungkus try/catch di dalam method.
-        $this->trackProductShareClick($request, $product, $user);
+        // Share click: hanya dicatat kalau ada user login. Crawler yang buka
+        // link ?ref=KODE TIDAK dihitung sebagai "share" (bukan human viewer).
+        if ($user !== null) {
+            $this->trackProductShareClick($request, $product, $user);
+        }
 
         try {
             if ($user !== null && $user->isSpammer() && $user->hasExhaustedQuota()) {
@@ -215,4 +233,4 @@ class ProductController extends Controller
             ]);
         }
     }
-} 
+}
