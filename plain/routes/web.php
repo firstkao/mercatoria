@@ -264,6 +264,7 @@ Route::prefix('office')->name('admin.')->middleware('auth:admin')->group(functio
 
     // Manajemen Order
     Route::get('/orders', [OrderManagementController::class, 'index'])->name('orders.index');
+    Route::post('/orders/bulk', [OrderManagementController::class, 'bulk'])->name('orders.bulk');   // ← TAMBAH INI
     
     // ===== ORDER MANUAL (admin input order lama) =====
     Route::get('/orders/create', [ManualOrderController::class, 'create'])->name('orders.create');
