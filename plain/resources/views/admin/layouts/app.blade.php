@@ -34,6 +34,7 @@
             ['label' => 'Pelanggan', 'items' => [
                 ['route' => 'admin.users.index', 'active' => 'admin.users.*', 'label' => 'Pengguna', 'icon' => 'users'],
                 ['route' => 'admin.referrals.index', 'active' => 'admin.referrals.*', 'label' => 'Referral', 'icon' => 'users'],
+                ['route' => 'admin.coins.index', 'active' => 'admin.coins.*', 'label' => 'Koin', 'icon' => 'rupiah'],
                 // BUG 5 STRICT MODE: menu "Pesan kontak" (admin.contact.*) dihapus dari sidebar admin.
                 ['route' => 'admin.identities.index', 'active' => ['admin.identities.*', 'admin.names.*'], 'label' => 'Blokir & banding', 'icon' => 'shield'],
                 ['route' => 'admin.logs.index', 'active' => 'admin.logs.*', 'label' => 'Log aktivitas', 'icon' => 'list'],
@@ -174,11 +175,9 @@
             sheet.style.display = sheet.hidden ? 'none' : 'flex';
             document.querySelector('.tabbar [data-menu-toggle]').setAttribute('aria-expanded', String(!sheet.hidden));
         }
-        // Bind hanya pada tombol (bukan backdrop anak) agar satu klik = satu toggle
         document.querySelectorAll('button[data-menu-toggle]').forEach(function (element) {
             element.addEventListener('click', toggleMenu);
         });
-        // Klik backdrop => tutup
         document.querySelector('.sheet__backdrop').addEventListener('click', function () {
             if (!document.querySelector('[data-menu]').hidden) toggleMenu();
         });
