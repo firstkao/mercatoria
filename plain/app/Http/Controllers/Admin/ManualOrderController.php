@@ -133,10 +133,8 @@ class ManualOrderController extends Controller
 
         $coinEstimate = (int) floor($netTotal * (Setting::integer('coin_earn_percent', 1) / 100));
 
-        // Nomor order: auto-generate kalau kosong
         $orderNumber = $validated['order_number'] ?: OrderNumberGenerator::generate();
-
-        $createdAt = Carbon::parse($validated['created_at']);
+        $createdAt   = Carbon::parse($validated['created_at']);
 
         $order = DB::transaction(function () use (
             $validated, $orderItemsData, $subtotal, $discountIdr, $netTotal,
@@ -168,7 +166,6 @@ class ManualOrderController extends Controller
             $order->created_at = $createdAt;
             $order->updated_at = $createdAt;
 
-            // Auto-set timestamps berdasarkan status
             if (in_array($status, OrderStatus::revenueValues(), true)) {
                 $order->paid_at = $createdAt;
             }
@@ -184,7 +181,6 @@ class ManualOrderController extends Controller
                 $order->items()->create($itemData);
             }
 
-            // Riwayat status awal
             DB::table('order_status_history')->insert([
                 'order_id'    => $order->id,
                 'from_status' => null,
@@ -195,7 +191,6 @@ class ManualOrderController extends Controller
                 'created_at'  => $createdAt,
             ]);
 
-            // ===== Efek samping opsional =====
             $runEffects = (bool) ($validated['effects'] ?? false);
             $silent     = ! (bool) ($validated['notify'] ?? false);
 
@@ -248,6 +243,10 @@ class ManualOrderController extends Controller
 
     /**
      * Endpoint AJAX: cari varian produk untuk autocomplete.
+     *
+     * Setiap hasil sudah include image_url (thumbnail) supaya admin bisa
+     * visual-check sebelum klik — fallback ke gambar pertama produk kalau
+     * varian tidak punya gambar sendiri.
      */
     public function searchVariants(Request $request): JsonResponse
     {
@@ -260,7 +259,7 @@ class ManualOrderController extends Controller
         $calc = PriceCalculator::fromSettings();
 
         $variants = ProductVariant::query()
-            ->with('product:id,name,slug,shipping_tier_id')
+            ->with(['product:id,name,slug,shipping_tier_id', 'product.images'])
             ->where(function ($sub) use ($q) {
                 $sub->where('name', 'like', "%{$q}%")
                     ->orWhere('sku', 'like', "%{$q}%")
@@ -278,6 +277,17 @@ class ManualOrderController extends Controller
                 // varian rusak — biarkan null
             }
 
+            // Thumbnail: varian sendiri dulu, fallback ke gambar pertama produk
+            $image = null;
+            try {
+                $image = $v->imageUrl();
+                if (! $image) {
+                    $image = $v->product?->images?->first()?->url();
+                }
+            } catch (\Throwable $e) {
+                // gambar rusak — biarkan null
+            }
+
             return [
                 'id'                => $v->id,
                 'product_name'      => $v->product->name,
@@ -286,6 +296,7 @@ class ManualOrderController extends Controller
                 'price_yuan'        => $v->price_yuan,
                 'weight_grams'      => $v->weight_grams,
                 'selling_price_idr' => $selling,
+                'image_url'         => $image,
             ];
         }));
     }
