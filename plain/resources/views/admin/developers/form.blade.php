@@ -23,7 +23,7 @@
         @include('admin.partials.error', ['name' => 'slug'])
     </label>
 
-    <div style="display:flex;gap:10px;">
+    <div class="actions">
         <a href="{{ route('admin.developers.index') }}" class="btn">Batal</a>
         <button type="submit" class="btn btn--primary">Simpan</button>
     </div>

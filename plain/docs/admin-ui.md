@@ -154,14 +154,23 @@ Setelah mengubah Blade, jalankan `php artisan view:clear`.
 
 ---
 
-## 6. Status migrasi halaman
+## 6. Status
 
-Lihat bagian **Status** di laporan pekerjaan. Ringkasnya:
+**Sudah selesai (Tahap 1–3):**
 
-- **Tahap 1 (selesai):** token lengkap, komponen shared, layout, login & cetak diselaraskan.
-- **Tahap 2 (berjalan):** halaman dengan inline style terbanyak.
-- **Tahap 3 (belum):** sisa halaman + penghapusan blok alias `dsh-*`/`rpt-*`.
+| Item | Hasil |
+|---|---|
+| Token terpusat di `admin.css` | 97 token; **0** hex/font-size/font-family mentah di luar token |
+| Skala spacing | semua padding/margin/gap kelipatan 4px (kecuali 1 `-1px` untuk overlap border tab) |
+| Bahasa komponen | **satu** — `dsh-*` & `rpt-*` sudah dihapus total; tinggal primitif kanonik |
+| Library komponen | 15 komponen `<x-admin.*>` |
+| Layout | semua halaman pakai `admin.layouts.app`; judul dari topbar (tidak ada judul ganda) |
+| Halaman cetak & login | di luar shell, tapi token/tipografinya sama |
+| Inline style di view | **168 → 3** (3 sisanya: 2 nilai dinamis bar chart + 1 toggle menu mobile) |
+| Hex hardcoded di view | **0** |
 
-Setelah **semua** halaman dimigrasi, blok **29. SHARED PRIMITIVES** bagian alias
-(`.dsh-*`, `.rpt-*`, `.stat`, `.quick-action`) boleh dihapus agar hanya ada satu
-bahasa komponen.
+**Catatan:** sebagian halaman masih menulis `<button class="btn btn--primary">`
+alih-alih `<x-admin.button variant="primary">`. Keduanya menghasilkan markup yang
+**sama persis**, jadi tampilan sudah konsisten; konversi ke komponen bersifat
+kerapian kode dan bisa dilakukan bertahap tanpa perubahan visual.
+

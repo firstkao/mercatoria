@@ -42,7 +42,7 @@
         @include('admin.partials.error', ['name' => 'role'])
     </label>
 
-    <div style="display:flex;gap:10px;">
+    <div class="actions">
         <a href="{{ route('admin.users.show', $user) }}" class="btn">Batal</a>
         <button type="submit" class="btn btn--primary">Perbarui</button>
     </div>

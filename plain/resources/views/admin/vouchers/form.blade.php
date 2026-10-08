@@ -9,7 +9,7 @@
     <div class="field-row">
         <label class="field">
             <span>Kode Voucher (Unik)</span>
-            <input type="text" name="code" value="{{ old('code', $voucher->code) }}" required style="text-transform: uppercase;">
+            <input type="text" name="code" value="{{ old('code', $voucher->code) }}" required class="uppercase">
             @include('admin.partials.error', ['name' => 'code'])
         </label>
         <label class="field">
@@ -62,12 +62,12 @@
             <span>Kuota Pemakaian Global (Opsional)</span>
             <input type="number" name="usage_limit" value="{{ old('usage_limit', $voucher->usage_limit) }}">
         </label>
-        <label class="switch" style="margin-top: 25px;">
+        <label class="switch mt-6">
             <input type="checkbox" name="is_active" value="1" @checked(old('is_active', $voucher->is_active ?? true))>
             <span>Voucher Aktif</span>
         </label>
     </div>
 
-    <button type="submit" class="btn btn--primary" style="margin-top: 20px;">Simpan Voucher</button>
+    <button type="submit" class="btn btn--primary mt-5">Simpan Voucher</button>
 </form>
 @endsection

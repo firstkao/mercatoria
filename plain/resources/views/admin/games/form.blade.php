@@ -39,8 +39,8 @@
     <div class="field">
         <span>Gambar/Logo (maks 2 MB)</span>
         @if ($game->image_path)
-            <div style="margin-bottom:10px;">
-                <img src="{{ $game->imageUrl() }}" alt="" style="max-width:200px;border-radius:8px;">
+            <div class="mb-3">
+                <img src="{{ $game->imageUrl() }}" alt="" class="thumb-preview--sm">
             </div>
         @endif
         <input type="file" name="image" accept="image/jpeg,image/png,image/webp">
@@ -61,7 +61,7 @@
         @include('admin.partials.error', ['name' => 'sort_order'])
     </label>
 
-    <div style="display:flex;gap:10px;">
+    <div class="actions">
         <a href="{{ route('admin.games.index') }}" class="btn">Batal</a>
         <button type="submit" class="btn btn--primary">Simpan</button>
     </div>

@@ -2,20 +2,13 @@
 
 @section('content')
 
-    {{-- ============ HEAD ============ --}}
-    <header class="dsh-head">
-        <div>
-            <p class="dsh-head__eyebrow">Ringkasan</p>
-            <h1 class="dsh-head__title">Selamat datang kembali,<br>{{ auth('admin')->user()->name }}</h1>
-        </div>
-        <time class="dsh-head__time">{{ now()->timezone('Asia/Jakarta')->translatedFormat('l, j F Y · H:i') }} WIB</time>
-    </header>
+    <p class="muted mb-4">Selamat datang kembali, <strong class="text-strong">{{ auth('admin')->user()->name }}</strong> · {{ now()->timezone('Asia/Jakarta')->translatedFormat('l, j F Y · H:i') }} WIB</p>
 
     @unless ($ratesConfigured)
-        <div class="dsh-alert" role="alert">
-            <span><strong>Kurs &amp; tarif ongkir belum diatur.</strong> Harga produk belum bisa dihitung.</span>
+        <x-admin.alert variant="warning">
+            <strong>Kurs &amp; tarif ongkir belum diatur.</strong> Harga produk belum bisa dihitung.
             <a href="{{ route('admin.settings.pricing') }}">Atur sekarang →</a>
-        </div>
+        </x-admin.alert>
     @endunless
 
     {{-- ============ GROUPED METRICS ============ --}}
@@ -48,20 +41,15 @@
         ];
     @endphp
 
-    <div class="dsh-groups">
-        @foreach ($groups as $group)
-            <section class="dsh-group">
-                <h2 class="dsh-group__label">{{ $group['label'] }}</h2>
-                <div class="dsh-group__items">
-                    @foreach ($group['items'] as $item)
-                        <div class="dsh-item">
-                            <span class="dsh-item__value">{{ number_format($item['value'], 0, ',', '.') }}</span>
-                            <span class="dsh-item__label">{{ $item['label'] }}</span>
-                        </div>
-                    @endforeach
-                </div>
-            </section>
-        @endforeach
-    </div>
+    @foreach ($groups as $group)
+        <x-admin.card class="mb-6">
+            <h2 class="section-label">{{ $group['label'] }}</h2>
+            <x-admin.metric-strip>
+                @foreach ($group['items'] as $item)
+                    <x-admin.metric :value="number_format($item['value'], 0, ',', '.')" :label="$item['label']" />
+                @endforeach
+            </x-admin.metric-strip>
+        </x-admin.card>
+    @endforeach
 
 @endsection

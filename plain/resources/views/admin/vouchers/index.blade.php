@@ -23,12 +23,12 @@
             @foreach($vouchers as $voucher)
                 <tr>
                     <td>
-                        <strong style="font-family: monospace; font-size: 1em;">{{ $voucher->code }}</strong>
+                        <strong class="mono">{{ $voucher->code }}</strong>
                         @if ($voucher->is_personal)
-                            <div class="badge badge--warn small" style="margin-top:4px;">Personal</div>
+                            <div class="badge badge--warn small mt-1">Personal</div>
                         @endif
                         @if ($voucher->auto_type === 'birthday')
-                            <div class="badge small" style="margin-top:4px;">🎂 Ultah {{ $voucher->auto_year }}</div>
+                            <div class="badge small mt-1">🎂 Ultah {{ $voucher->auto_year }}</div>
                         @endif
                     </td>
                     <td>
@@ -59,7 +59,7 @@
                             {{ $voucher->is_active ? 'Aktif' : 'Nonaktif' }}
                         </span>
                     </td>
-                    <td style="display: flex; gap: 8px;">
+                    <td class="actions">
                         <a href="{{ route('admin.vouchers.edit', $voucher) }}" class="btn btn--small">Edit</a>
                         <form method="POST" action="{{ route('admin.vouchers.destroy', $voucher) }}" onsubmit="return confirm('Hapus voucher ini?');">
                             @csrf @method('DELETE')
@@ -80,11 +80,11 @@
                         </div>
                         <p class="card-row__meta">{{ $voucher->name }} &middot; {{ $voucher->discount_type === 'nominal' ? \App\Support\PriceCalculator::formatRupiah($voucher->value) : $voucher->value . '%' }}</p>
                         <p class="card-row__meta">Dipakai {{ $voucher->redemptions_count ?? 0 }}&times; &middot; {{ $voucher->starts_at ? $voucher->starts_at->format('d/m/Y') : 'Selamanya' }}</p>
-                        <div style="margin-top:8px"><a href="{{ route('admin.vouchers.edit', $voucher) }}" class="btn btn--small">Edit</a></div>
+                        <div class="mt-2"><a href="{{ route('admin.vouchers.edit', $voucher) }}" class="btn btn--small">Edit</a></div>
                     </div>
                 </li>
             @endforeach
         </ul>
-    <div style="padding: 20px;">{{ $vouchers->links('admin.partials.pagination') }}</div>
+    <div class="p-5">{{ $vouchers->links('admin.partials.pagination') }}</div>
 </div>
 @endsection

@@ -61,7 +61,7 @@
             <table class="table">
                 <thead>
                     <tr>
-                        <th style="width:60px;">Rank</th>
+                        <th class="col-xs">Rank</th>
                         <th>Produk</th>
                         <th>Game</th>
                         <th>Terjual ({{ $stats['period_days'] }}hr)</th>

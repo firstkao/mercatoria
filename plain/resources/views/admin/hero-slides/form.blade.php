@@ -37,8 +37,8 @@
     <div class="field">
         <span>Gambar (rasio 16:9, maks 4 MB)</span>
         @if ($slide->image_path)
-            <div style="margin-bottom:10px;">
-                <img src="{{ $slide->imageUrl() }}" alt="" style="max-width:320px;border-radius:8px;">
+            <div class="mb-3">
+                <img src="{{ $slide->imageUrl() }}" alt="" class="thumb-preview">
             </div>
         @endif
         <input type="file" name="image" accept="image/jpeg,image/png,image/webp">
@@ -57,13 +57,13 @@
                    autocomplete="off"
                    placeholder="0">
         </label>
-        <label class="switch" style="margin-top:25px;">
+        <label class="switch mt-6">
             <input type="checkbox" name="is_active" value="1" @checked(old('is_active', $slide->is_active))>
             <span>Aktif</span>
         </label>
     </div>
 
-    <div style="display:flex;gap:10px;">
+    <div class="actions">
         <a href="{{ route('admin.hero-slides.index') }}" class="btn">Batal</a>
         <button type="submit" class="btn btn--primary">Simpan</button>
     </div>

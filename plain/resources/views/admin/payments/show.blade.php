@@ -31,7 +31,7 @@
                 <div><dt>Direview</dt><dd>{{ $proof->reviewed_at->timezone('Asia/Jakarta')->translatedFormat('j F Y, H:i') }} WIB</dd></div>
             @endif
             @if ($proof->reject_reason)
-                <div><dt>Alasan Penolakan</dt><dd style="color:var(--danger);">{{ $proof->reject_reason }}</dd></div>
+                <div><dt>Alasan Penolakan</dt><dd class="text-danger">{{ $proof->reject_reason }}</dd></div>
             @endif
         </dl>
     </div>
@@ -41,8 +41,8 @@
         <div class="panel__head">
             <h2>Bukti Pembayaran</h2>
         </div>
-        <div style="text-align: center; padding: 20px;">
-            <img src="{{ $imageUrl }}" alt="Bukti pembayaran" style="max-width: 100%; max-height: 500px; border-radius: 8px;">
+        <div class="text-center p-5">
+            <img src="{{ $imageUrl }}" alt="Bukti pembayaran" class="img-viewer">
         </div>
     </div>
 
@@ -60,7 +60,7 @@
                 </button>
             </form>
 
-            <form method="POST" action="{{ route('admin.payments.reject', $proof->id) }}" class="stack" style="margin-top:16px;">
+            <form method="POST" action="{{ route('admin.payments.reject', $proof->id) }}" class="stack mt-4">
                 @csrf
                 <label class="field">
                     <span>Atau Tolak (isi alasan)</span>
