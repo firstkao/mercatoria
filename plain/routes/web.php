@@ -11,6 +11,7 @@ use App\Http\Controllers\Admin\ActivityLogController;
 use App\Http\Controllers\Admin\AuthController as AdminAuthController;
 use App\Http\Controllers\Admin\BestSellerController;
 use App\Http\Controllers\Admin\CartReminderController;
+use App\Http\Controllers\Admin\CoinController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\DeveloperController;
 use App\Http\Controllers\Admin\GameController;
@@ -80,10 +81,6 @@ Route::get('/sitemap.xml', [SitemapController::class, 'index'])->name('sitemap')
 //   - ProductController::show() dengan SecurityHelper::isLegitCrawlerBot()
 Route::get('/robots.txt', function () {
     $lines = [
-        // ------------------------------------------------------------
-        // Aturan umum: crawler boleh lihat katalog & produk,
-        // tidak boleh halaman privat.
-        // ------------------------------------------------------------
         'User-agent: *',
         'Allow: /',
         'Allow: /katalog',
@@ -264,20 +261,20 @@ Route::prefix('office')->name('admin.')->middleware('auth:admin')->group(functio
 
     // Manajemen Order
     Route::get('/orders', [OrderManagementController::class, 'index'])->name('orders.index');
-    Route::post('/orders/bulk', [OrderManagementController::class, 'bulk'])->name('orders.bulk');   // ← TAMBAH INI
-    
+    Route::post('/orders/bulk', [OrderManagementController::class, 'bulk'])->name('orders.bulk');
+
     // ===== ORDER MANUAL (admin input order lama) =====
     Route::get('/orders/create', [ManualOrderController::class, 'create'])->name('orders.create');
     Route::post('/orders', [ManualOrderController::class, 'store'])->name('orders.store');
     Route::get('/orders/search-users', [ManualOrderController::class, 'searchUsers'])->name('orders.search-users');
     Route::get('/orders/search-variants', [ManualOrderController::class, 'searchVariants'])->name('orders.search-variants');
     // ==================================================
-    
+
     Route::get('/orders/{order}/invoice', [OrderPrintController::class, 'invoice'])->name('orders.invoice');
     Route::get('/orders/{order}/packing-slip', [OrderPrintController::class, 'packingSlip'])->name('orders.packing-slip');
     Route::post('/orders/{order}/status', [OrderManagementController::class, 'updateStatus'])->name('orders.status');
     Route::get('/orders/{order}', [OrderManagementController::class, 'show'])->name('orders.show');
-    
+
     // ===== Order Notes (internal admin) =====
     Route::post('/orders/{order}/notes', [OrderNoteController::class, 'store'])->name('orders.notes.store');
     Route::delete('/orders/{order}/notes/{note}', [OrderNoteController::class, 'destroy'])->name('orders.notes.destroy');
@@ -306,6 +303,16 @@ Route::prefix('office')->name('admin.')->middleware('auth:admin')->group(functio
 
     // Referral (Batch 22)
     Route::get('/referrals', [AdminReferralController::class, 'index'])->name('referrals.index');
+
+    // ============================================================
+    // Koin Pengguna (adjustment manual)
+    // ============================================================
+    // ⚠️ Route /coins/lots/{lot} HARUS di atas /coins/{user} — kalau tidak,
+    // "/coins/lots/5" bakal match ke {user} dengan $user = "lots" → 404.
+    Route::get('/coins', [CoinController::class, 'index'])->name('coins.index');
+    Route::delete('/coins/lots/{lot}', [CoinController::class, 'destroyLot'])->name('coins.lots.destroy');
+    Route::get('/coins/{user}', [CoinController::class, 'show'])->name('coins.show');
+    Route::post('/coins/{user}/adjust', [CoinController::class, 'store'])->name('coins.adjust');
 
     // Pengaturan
     Route::get('/settings/pricing', [SettingsController::class, 'pricing'])->name('settings.pricing');
@@ -352,15 +359,6 @@ Route::middleware('auth')->group(function (): void {
         Route::delete('/keranjang/{cartItem}', [CartController::class, 'destroy'])->name('cart.destroy');
     });
 
-    // Notifikasi (canonical: /akun/notifikasi — lihat blok "Akun" di bawah.
-    // URL lama /notifikasi/* tetap dilayani via redirect permanen.)
-
-    // Referral sudah pindah ke dalam grup /akun (canonical: /akun/undang)
-    // supaya anak-menu ikut induknya; URL lama di-redirect permanen di bawah.
-
-    // Pre-Order (halaman publik /pre-order-baru sudah pindah ke blok GLOBAL;
-    // route lama di sini dihapus agar tidak duplikat/ambigu)
-
     // ========================================================
     // WAJIB VERIFIED EMAIL
     // ========================================================
@@ -370,11 +368,6 @@ Route::middleware('auth')->group(function (): void {
             Route::post('/checkout', [CheckoutController::class, 'store'])->name('checkout.store');
         });
 
-        // Pesanan (canonical: /akun/pesanan/... — lihat blok "Akun" di bawah.
-        // ✅ BUG FIX: sebelumnya ada dua set route kembar (/pesanan/* dan
-        // /akun/pesanan/*) yg menunjuk controller & view yang sama; route lama
-        // dihapus supaya tidak ada ambiguitas penamaan.)
-
         // Akun
         Route::get('/akun', [AccountController::class, 'show'])->name('account.show');
         Route::get('/akun/stats', [AccountController::class, 'stats'])->name('account.stats');
@@ -382,33 +375,27 @@ Route::middleware('auth')->group(function (): void {
         Route::get('/akun/profil', [ProfileController::class, 'edit'])->name('account.profile.edit');
         Route::put('/akun/profil', [ProfileController::class, 'update'])->name('account.profile.update');
 
-        // Referral / undang teman (canonical: /akun/undang — bug fix: dulu
-        // jalurnya /undang sehingga tidak terasa satu area dengan akun)
+        // Referral / undang teman
         Route::get('/akun/undang', [ReferralController::class, 'index'])->name('referral.index');
-        Route::redirect('/undang', '/akun/undang'); // bookmark URL lama
+        Route::redirect('/undang', '/akun/undang');
 
-        // Notifikasi milik akun (canonical: /akun/notifikasi — bug fix: dulu
-        // jalurnya /notifikasi sehingga tidak terasa satu area dengan profil)
+        // Notifikasi milik akun
         Route::get('/akun/notifikasi', [NotificationController::class, 'index'])->name('notifications.index');
         Route::put('/akun/notifikasi/baca-semua', [NotificationController::class, 'readAll'])->name('notifications.read-all');
         Route::delete('/akun/notifikasi/hapus-semua', [NotificationController::class, 'destroyAll'])->name('notifications.destroy-all');
         Route::get('/akun/notifikasi/{notification}', [NotificationController::class, 'read'])->name('notifications.read');
         Route::delete('/akun/notifikasi/{notification}', [NotificationController::class, 'destroy'])->name('notifications.destroy');
 
-        // Redirect permanen dari URL lama /notifikasi/* (bookmark terdahulu).
-        // Catatan: {notification} dipatok [0-9]+ supaya tab "Semua"/"Belum
-        // dibaca" (/notifikasi?filter=unread → /akun/notifikasi) tidak ikut ke sini.
         Route::redirect('/notifikasi/baca-semua', '/akun/notifikasi/baca-semua');
         Route::redirect('/notifikasi/hapus-semua', '/akun/notifikasi/hapus-semua');
         Route::redirect('/notifikasi/{notification}', '/akun/notifikasi/{notification}')->where('notification', '[0-9]+');
 
-        // Pesanan milik akun (canonical)
+        // Pesanan milik akun
         Route::get('/akun/pesanan', [OrderController::class, 'index'])->name('account.orders.index');
         Route::get('/akun/pesanan/{orderNumber}/invoice', [OrderController::class, 'invoice'])->name('account.orders.invoice');
         Route::get('/akun/pesanan/{orderNumber}', [OrderController::class, 'show'])->name('account.orders.show');
         Route::post('/akun/pesanan/{orderNumber}/bukti-pembayaran', [OrderController::class, 'proof'])->name('account.orders.upload');
 
-        // Redirect permanen dari URL lama /pesanan/* (bookmark & email terdahulu)
         Route::redirect('/pesanan', '/akun/pesanan');
         Route::redirect('/pesanan/{orderNumber}', '/akun/pesanan/{orderNumber}')->where('orderNumber', '[A-Za-z0-9_-]+');
         Route::redirect('/pesanan/{orderNumber}/invoice', '/akun/pesanan/{orderNumber}/invoice')->where('orderNumber', '[A-Za-z0-9_-]+');
@@ -426,9 +413,6 @@ Route::get('/{page}', [LegalPageController::class, 'show'])
     ->name('legal.show');
 
 // Slug untuk produk & halaman — INI route canonical produk: /{slug}
-// (permintaan user #1: plain.mercatoria.id/honkai-star-rail-... bukan
-// /produk/...). Produk WAJIB LOGIN: guest yang membuka /{slug} produk
-// di-redirect ke halaman login oleh ProductController::show.
 // Bot crawler resmi DIBOLEHKAN lewat (lihat SecurityHelper::isLegitCrawlerBot
 // di ProductController) supaya SEO index tetap jalan.
 Route::get('/{slug}', function (string $slug) {
