@@ -59,22 +59,65 @@ Route::get('/', [HomeController::class, 'index'])->name('home');
 
 // SEO
 Route::get('/sitemap.xml', [SitemapController::class, 'index'])->name('sitemap');
+
+// ============================================================
+// ROBOTS.TXT — ATURAN CRAWLER
+// ============================================================
+// File fisik public/robots.txt HARUS DIHAPUS. Kalau file itu ada,
+// web server akan menyajikan file fisik DULU sebelum route ini, dan
+// aturan di bawah tidak akan pernah dipakai.
+//
+// Kebijakan akses:
+//   - Katalog, produk, promo, pre-order → BOLEH di-index (SEO)
+//   - Akun, keranjang, checkout, admin  → TIDAK BOLEH di-index
+//   - Halaman auth (login/register/reset) → TIDAK BOLEH di-index
+//
+// Catatan: robots.txt hanya instruksi "sopan" untuk crawler resmi.
+// Enforcement sebenarnya (block guest & bot palsu) ada di:
+//   - middleware('auth') untuk /akun, /keranjang, /checkout
+//   - middleware('auth:admin') untuk /office/*
+//   - ProductController::show() dengan SecurityHelper::isLegitCrawlerBot()
 Route::get('/robots.txt', function () {
     $lines = [
+        // ------------------------------------------------------------
+        // Aturan umum: crawler boleh lihat katalog & produk,
+        // tidak boleh halaman privat.
+        // ------------------------------------------------------------
         'User-agent: *',
         'Allow: /',
+        'Allow: /katalog',
+        'Allow: /katalog/*',
+        'Allow: /promo',
+        'Allow: /pre-order-baru',
+        'Allow: /sitemap.xml',
+        '',
         'Disallow: /office',
         'Disallow: /office/*',
         'Disallow: /akun',
         'Disallow: /akun/*',
         'Disallow: /keranjang',
+        'Disallow: /keranjang/*',
         'Disallow: /checkout',
+        'Disallow: /checkout/*',
         'Disallow: /masuk',
         'Disallow: /daftar',
+        'Disallow: /verifikasi-email',
+        'Disallow: /lupa-password',
+        'Disallow: /reset-password',
+        'Disallow: /reset-password/*',
+        'Disallow: /undang',
+        'Disallow: /notifikasi',
+        'Disallow: /notifikasi/*',
+        'Disallow: /pesanan',
+        'Disallow: /pesanan/*',
+        'Disallow: /cari',
         '',
         'Sitemap: ' . url('/sitemap.xml'),
     ];
-    return response(implode("\n", $lines), 200, ['Content-Type' => 'text/plain']);
+
+    return response(implode("\n", $lines), 200, [
+        'Content-Type' => 'text/plain; charset=UTF-8',
+    ]);
 })->name('robots');
 
 // Kontak: controller & view /kontak sudah dihapus dari kodebase (PR user),
@@ -224,7 +267,7 @@ Route::prefix('office')->name('admin.')->middleware('auth:admin')->group(functio
     Route::get('/orders/{order}/packing-slip', [OrderPrintController::class, 'packingSlip'])->name('orders.packing-slip');
     Route::post('/orders/{order}/status', [OrderManagementController::class, 'updateStatus'])->name('orders.status');
     Route::get('/orders/{order}', [OrderManagementController::class, 'show'])->name('orders.show');
-    
+
     // ===== Order Notes (internal admin) =====
     Route::post('/orders/{order}/notes', [OrderNoteController::class, 'store'])->name('orders.notes.store');
     Route::delete('/orders/{order}/notes/{note}', [OrderNoteController::class, 'destroy'])->name('orders.notes.destroy');
@@ -295,7 +338,7 @@ Route::middleware('auth')->group(function (): void {
         // sehingga implicit binding tidak pernah jalan — Laravel membuat model
         // kosong, lalu abort_if($cartItem->user_id !== auth()->id()) selalu true
         // → hapus/ubah item keranjang selalu 403.
-        Route::patch('/keranjang/{cartItem}', [CartController::class, 'update'])->name('cart.update');
+        Route::match(['put', 'patch'], '/keranjang/{cartItem}', [CartController::class, 'update'])->name('cart.update');
         Route::delete('/keranjang/{cartItem}', [CartController::class, 'destroy'])->name('cart.destroy');
     });
 
@@ -324,7 +367,7 @@ Route::middleware('auth')->group(function (): void {
 
         // Akun
         Route::get('/akun', [AccountController::class, 'show'])->name('account.show');
-        Route::get('/akun/stats', [AccountController::class, 'stats'])->name('account.stats');  
+        Route::get('/akun/stats', [AccountController::class, 'stats'])->name('account.stats');
         Route::get('/akun/koin', [CoinController::class, 'index'])->name('account.coins.index');
         Route::get('/akun/profil', [ProfileController::class, 'edit'])->name('account.profile.edit');
         Route::put('/akun/profil', [ProfileController::class, 'update'])->name('account.profile.update');
@@ -376,6 +419,8 @@ Route::get('/{page}', [LegalPageController::class, 'show'])
 // (permintaan user #1: plain.mercatoria.id/honkai-star-rail-... bukan
 // /produk/...). Produk WAJIB LOGIN: guest yang membuka /{slug} produk
 // di-redirect ke halaman login oleh ProductController::show.
+// Bot crawler resmi DIBOLEHKAN lewat (lihat SecurityHelper::isLegitCrawlerBot
+// di ProductController) supaya SEO index tetap jalan.
 Route::get('/{slug}', function (string $slug) {
     $product = Product::query()->where('slug', $slug)->first();
     if ($product) {
@@ -392,4 +437,3 @@ Route::get('/{slug}', function (string $slug) {
 
     abort(404);
 })->name('slug.show');
-
