@@ -7,9 +7,11 @@ use App\Http\Controllers\Controller;
 use App\Models\AdminLog;
 use App\Models\CoinLot;
 use App\Models\Order;
+use App\Models\OrderItem;
 use App\Models\Referral;
 use App\Models\Setting;
 use App\Services\NotificationService;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -50,29 +52,12 @@ class OrderManagementController extends Controller
         return view('admin.orders.index', compact('orders', 'status', 'q', 'counts', 'statuses'));
     }
 
-    // ============================================================
-    // BULK ACTION
-    // ============================================================
-    /**
-     * Bulk action untuk banyak order sekaligus.
-     *
-     * Aksi yang didukung:
-     *   - status: ubah status (validasi transisi tetap jalan per-order)
-     *
-     * Setiap order diproses dalam try/catch TERPISAH supaya:
-     *   - satu order yang transisinya tidak sah tidak menggagalkan yang lain
-     *   - user dapat ringkasan: "5 berhasil, 2 dilewati"
-     *
-     * Diproses berurutan (bukan paralel) untuk hindari race condition pada
-     * coin_lots / voucher_redemptions.
-     */
     public function bulk(Request $request)
     {
         $validated = $request->validate([
             'ids'    => ['required', 'array', 'min:1', 'max:200'],
             'ids.*'  => ['integer', 'exists:orders,id'],
             'action' => ['required', 'in:status'],
-            // Wajib diisi kalau action = status
             'status' => ['required_if:action,status', Rule::enum(OrderStatus::class)],
         ], [
             'ids.required' => 'Pilih minimal satu pesanan.',
@@ -95,13 +80,11 @@ class OrderManagementController extends Controller
         foreach ($orders as $order) {
             $oldStatus = $order->status;
 
-            // Skip kalau statusnya sudah sama
             if ($oldStatus === $newStatus) {
                 $skipped[] = "{$order->order_number} (sudah {$newStatus})";
                 continue;
             }
 
-            // Validasi transisi — pakai rule yang sama dengan single update
             if (! OrderStatus::canTransition($oldStatus, $newStatus)) {
                 $skipped[] = "{$order->order_number} ({$oldStatus} → {$newStatus} tidak sah)";
                 continue;
@@ -117,7 +100,6 @@ class OrderManagementController extends Controller
                     'to'   => $newStatus,
                 ]);
 
-                // Notifikasi in-app
                 if ($order->user) {
                     try {
                         $statusLabel = OrderStatus::tryFrom($newStatus)?->label() ?? $newStatus;
@@ -135,7 +117,6 @@ class OrderManagementController extends Controller
                     }
                 }
 
-                // Email (opsional, silent fail)
                 if ($order->user?->email) {
                     try {
                         Mail::to($order->user->email)->send(new \App\Mail\OrderStatusUpdated($order));
@@ -157,7 +138,6 @@ class OrderManagementController extends Controller
             }
         }
 
-        // Susun pesan hasil
         $msg = "{$success} pesanan berhasil diperbarui.";
         if (count($skipped) > 0) {
             $msg .= ' Dilewati: ' . implode(', ', array_slice($skipped, 0, 3))
@@ -183,9 +163,6 @@ class OrderManagementController extends Controller
         return view('admin.orders.show', compact('order'));
     }
 
-    // ============================================================
-    // UPDATE STATUS ORDER (single)
-    // ============================================================
     public function updateStatus(Request $request, Order $order)
     {
         $request->validate(['status' => ['required', Rule::enum(OrderStatus::class)]]);
@@ -242,26 +219,78 @@ class OrderManagementController extends Controller
     }
 
     // ============================================================
-    // CORE: apply perubahan status + efek samping
+    // UPDATE STATUS PER ITEM
     // ============================================================
     /**
-     * Terapkan transisi status dan semua efek sampingnya.
-     *
-     * Dipakai oleh updateStatus() (single) & bulk() — supaya logika
-     * cashback koin, bonus pertama, reward referral, refund koin, dan
-     * refund voucher selalu konsisten apapun entry-point-nya.
-     *
-     * HARUS dipanggil di dalam DB::transaction.
+     * Set status per-item. Mengirim `item_status = null` berarti item
+     * ini "ikut status pesanan global". Mengirim nilai = item punya
+     * status sendiri yang independen dari order.
      */
+    public function updateItemStatus(Request $request, Order $order, OrderItem $item): RedirectResponse
+    {
+        abort_unless($item->order_id === $order->id, 404);
+
+        $validated = $request->validate([
+            'item_status' => ['nullable', Rule::enum(OrderStatus::class)],
+        ]);
+
+        $newItemStatus = $validated['item_status'] ?? null;
+
+        // Simpan status efektif sebelum perubahan (untuk notifikasi)
+        $oldEffective = $item->item_status ?? $order->status;
+        $newEffective = $newItemStatus ?? $order->status;
+
+        DB::transaction(function () use ($item, $newItemStatus) {
+            $item->update([
+                'item_status'            => $newItemStatus,
+                'item_status_updated_at' => now(),
+            ]);
+        });
+
+        AdminLog::record('update_item_status', $order, [
+            'item_id'   => $item->id,
+            'item_name' => $item->product_name_snapshot,
+            'from'      => $oldEffective,
+            'to'        => $newEffective,
+        ]);
+
+        // Notifikasi hanya kalau status efektif benar-benar berubah
+        if ($oldEffective !== $newEffective && $order->user) {
+            try {
+                $label = OrderStatus::tryFrom($newEffective)?->label() ?? $newEffective;
+                NotificationService::itemStatusChanged($order->user, $order, $item, $label);
+            } catch (\Throwable $e) {
+                Log::warning('Gagal kirim notifikasi status item', [
+                    'order_id' => $order->id,
+                    'item_id'  => $item->id,
+                    'error'    => $e->getMessage(),
+                ]);
+            }
+        }
+
+        return back()->with('status', "Status item \"{$item->product_name_snapshot}\" berhasil diperbarui.");
+    }
+
+    // ============================================================
+    // CORE: apply perubahan status + efek samping
+    // ============================================================
     private function applyStatusChange(Order $order, string $oldStatus, string $newStatus, string $by): void
     {
         $order->update(['status' => $newStatus]);
+
+        // ✅ FIX: Reset semua item_status supaya item ikut status baru.
+        // Konsisten dengan mental model admin: "Ubah Status Pesanan (global)"
+        // = semua item ikut. Kalau ada item yang mau beda, admin set lewat
+        // dropdown per-item SETELAH update global ini.
+        $order->items()->update([
+            'item_status'            => null,
+            'item_status_updated_at' => now(),
+        ]);
 
         if ($newStatus === 'selesai' && $oldStatus !== 'selesai') {
             $order->update(['completed_at' => now()]);
             $expiry = now()->addMonths(Setting::integer('coin_expiry_months', 12));
 
-            // 1) Cashback koin (idempotent)
             $cashbackAlreadyGiven = CoinLot::where('order_id', $order->id)
                 ->where('source', 'cashback')
                 ->exists();
@@ -289,7 +318,6 @@ class OrderManagementController extends Controller
                 }
             }
 
-            // 2) Bonus koin pertama
             $completedOrdersCount = Order::where('user_id', $order->user_id)
                 ->where('status', 'selesai')
                 ->count();
@@ -322,7 +350,6 @@ class OrderManagementController extends Controller
                 }
             }
 
-            // 3) Reward referral (dipanggil terpisah dari blok bonus)
             try {
                 $this->rewardReferral($order->user, $expiry);
             } catch (\Throwable $e) {
@@ -343,9 +370,6 @@ class OrderManagementController extends Controller
         $this->recordHistory($order, $oldStatus, $newStatus, $by);
     }
 
-    // ============================================================
-    // HELPER: refund koin
-    // ============================================================
     private function refundCoins(Order $order): void
     {
         $spends = DB::table('coin_spends')->where('order_id', $order->id)->get();
@@ -378,9 +402,6 @@ class OrderManagementController extends Controller
         }
     }
 
-    // ============================================================
-    // HELPER: refund voucher
-    // ============================================================
     private function refundVoucher(Order $order): void
     {
         if (! \Illuminate\Support\Facades\Schema::hasTable('voucher_redemptions')) {
@@ -390,9 +411,6 @@ class OrderManagementController extends Controller
         DB::table('voucher_redemptions')->where('order_id', $order->id)->delete();
     }
 
-    // ============================================================
-    // HELPER: catat riwayat status
-    // ============================================================
     private function recordHistory(Order $order, ?string $from, string $to, string $by, ?string $note = null): void
     {
         DB::table('order_status_history')->insert([
@@ -406,9 +424,6 @@ class OrderManagementController extends Controller
         ]);
     }
 
-    // ============================================================
-    // HELPER: reward referral
-    // ============================================================
     private function rewardReferral(?\App\Models\User $referee, \Illuminate\Support\Carbon $expiry): void
     {
         if (! $referee) {
