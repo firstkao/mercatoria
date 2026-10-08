@@ -273,6 +273,7 @@ Route::prefix('office')->name('admin.')->middleware('auth:admin')->group(functio
     Route::get('/orders/{order}/invoice', [OrderPrintController::class, 'invoice'])->name('orders.invoice');
     Route::get('/orders/{order}/packing-slip', [OrderPrintController::class, 'packingSlip'])->name('orders.packing-slip');
     Route::post('/orders/{order}/status', [OrderManagementController::class, 'updateStatus'])->name('orders.status');
+    Route::put('/orders/{order}/items/{item}/status', [OrderManagementController::class, 'updateItemStatus'])->name('orders.items.status');
     Route::get('/orders/{order}', [OrderManagementController::class, 'show'])->name('orders.show');
 
     // ===== Order Notes (internal admin) =====
