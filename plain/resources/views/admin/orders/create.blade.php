@@ -55,6 +55,48 @@
     .mo-picker__item small { color: #6b7280; font-size: 12px; }
     .mo-picker__empty { padding: 12px; text-align: center; color: #9ca3af; font-size: 13px; }
 
+    /* Thumbnail di dropdown picker */
+    .mo-picker__item--with-thumb {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 8px 10px;
+    }
+    .mo-picker__thumb {
+        flex: 0 0 36px;
+        width: 36px;
+        height: 36px;
+        border-radius: 4px;
+        object-fit: cover;
+        background: #f3f4f6;
+        border: 1px solid #e5e7eb;
+    }
+    .mo-picker__thumb--empty {
+        display: grid;
+        place-items: center;
+        font-size: 9px;
+        font-weight: 700;
+        color: #9ca3af;
+        letter-spacing: .06em;
+    }
+    .mo-picker__text {
+        display: block;
+        min-width: 0;
+        flex: 1;
+    }
+    .mo-picker__text strong {
+        display: block;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+    .mo-picker__text small {
+        display: block;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
     .mo-selected {
         display: flex;
         align-items: center;
@@ -126,6 +168,40 @@
     .mo-items-table .col-total   { width: 130px; text-align: right; font-variant-numeric: tabular-nums; font-weight: 600; }
     .mo-items-table .col-action  { width: 40px; text-align: right; }
     .mo-item-variant-name { font-size: 12.5px; color: #6b7280; }
+
+    /* Thumbnail di tabel item */
+    .mo-item-product {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+    .mo-item-thumb {
+        flex: 0 0 48px;
+        width: 48px;
+        height: 48px;
+        border-radius: 4px;
+        object-fit: cover;
+        background: #f3f4f6;
+        border: 1px solid #e5e7eb;
+    }
+    .mo-item-thumb--empty {
+        display: grid;
+        place-items: center;
+        font-size: 10px;
+        font-weight: 700;
+        color: #9ca3af;
+        letter-spacing: .06em;
+    }
+    .mo-item-product__info {
+        min-width: 0;
+        flex: 1;
+    }
+    .mo-item-product__info strong {
+        display: block;
+        font-size: 13.5px;
+        color: #111827;
+        line-height: 1.3;
+    }
 
     .mo-summary {
         display: grid;
@@ -403,8 +479,8 @@
                         onclick="return confirm('Simpan order manual ini? Pastikan data pelanggan & item sudah benar.');">
                     Simpan Pesanan
                 </button>
-            </aside>
-        </div>
+            </x-admin.card>
+        </aside>
     </div>
 </form>
 @endsection
@@ -523,7 +599,7 @@
     });
 
     // ============================================================
-    // VARIANT PICKER
+    // VARIANT PICKER (dengan thumbnail)
     // ============================================================
     const variantInput   = document.getElementById('variant-search-input');
     const variantResults = document.getElementById('variant-results');
@@ -543,9 +619,14 @@
             }
 
             variantResults.innerHTML = data.map(v => `
-                <button type="button" class="mo-picker__item" data-variant='${escapeHtml(JSON.stringify(v))}'>
-                    <strong>${escapeHtml(v.product_name)}</strong>
-                    <small>${escapeHtml(v.variant_name || '—')}${v.sku ? ' · SKU: ' + escapeHtml(v.sku) : ''} · ${rupiah(v.selling_price_idr)}</small>
+                <button type="button" class="mo-picker__item mo-picker__item--with-thumb" data-variant='${escapeHtml(JSON.stringify(v))}'>
+                    ${v.image_url
+                        ? `<img src="${escapeHtml(v.image_url)}" alt="" class="mo-picker__thumb" loading="lazy">`
+                        : `<span class="mo-picker__thumb mo-picker__thumb--empty">IMG</span>`}
+                    <span class="mo-picker__text">
+                        <strong>${escapeHtml(v.product_name)}</strong>
+                        <small>${escapeHtml(v.variant_name || '—')}${v.sku ? ' · SKU: ' + escapeHtml(v.sku) : ''} · ${rupiah(v.selling_price_idr)}</small>
+                    </span>
                 </button>
             `).join('');
             variantResults.hidden = false;
@@ -591,6 +672,7 @@
             unit_price:    variant.selling_price_idr || 0,
             price_yuan:    variant.price_yuan,
             weight_grams:  variant.weight_grams,
+            image_url:     variant.image_url || null,
         });
         renderItems();
     }
@@ -612,10 +694,17 @@
         itemsBody.innerHTML = state.items.map((item, idx) => `
             <tr data-idx="${idx}">
                 <td data-label="Produk">
-                    <strong>${escapeHtml(item.product_name)}</strong>
-                    <div class="mo-item-variant-name">
-                        ${escapeHtml(item.variant_name || '—')}
-                        ${item.sku ? ' · SKU: ' + escapeHtml(item.sku) : ''}
+                    <div class="mo-item-product">
+                        ${item.image_url
+                            ? `<img src="${escapeHtml(item.image_url)}" alt="" class="mo-item-thumb" loading="lazy">`
+                            : `<span class="mo-item-thumb mo-item-thumb--empty">IMG</span>`}
+                        <div class="mo-item-product__info">
+                            <strong>${escapeHtml(item.product_name)}</strong>
+                            <div class="mo-item-variant-name">
+                                ${escapeHtml(item.variant_name || '—')}
+                                ${item.sku ? ' · SKU: ' + escapeHtml(item.sku) : ''}
+                            </div>
+                        </div>
                     </div>
                     <input type="hidden" name="items[${idx}][variant_id]" value="${item.variant_id}">
                 </td>
