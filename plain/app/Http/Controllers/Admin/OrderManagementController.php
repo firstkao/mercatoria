@@ -21,13 +21,39 @@ class OrderManagementController extends Controller
     public function index(Request $request)
     {
         $status = $request->query('status');
+        $q      = trim((string) $request->query('q', ''));
+
         $orders = Order::query()
             ->with(['user', 'paymentProofs'])
-            ->when($status, fn($q) => $q->where('status', $status))
+            ->when($status, fn ($query) => $query->where('status', $status))
+            ->when($q !== '', function ($query) use ($q) {
+                // Search by nomor order ATAU nama/email pelanggan.
+                // orWhereHas dipakai supaya search nama customer tetap
+                // ketemu walau order_number tidak match.
+                $query->where(function ($sub) use ($q) {
+                    $sub->where('order_number', 'like', "%{$q}%")
+                        ->orWhereHas('user', function ($u) use ($q) {
+                            $u->where('full_name', 'like', "%{$q}%")
+                              ->orWhere('email', 'like', "%{$q}%");
+                        });
+                });
+            })
             ->latest()
-            ->paginate(20);
+            ->paginate(20)
+            ->withQueryString();
 
-        return view('admin.orders.index', compact('orders', 'status'));
+        // Hitung jumlah per status untuk status-tabs "Semua (307) | ...".
+        // Query TERPISAH dari paginasi supaya angka yang tampil adalah
+        // hitungan GLOBAL, bukan cuma halaman yang sedang dibuka.
+        $counts = ['all' => Order::count()];
+        $statuses = [];
+
+        foreach (OrderStatus::cases() as $case) {
+            $counts[$case->value]   = Order::where('status', $case->value)->count();
+            $statuses[$case->value] = $case->label();
+        }
+
+        return view('admin.orders.index', compact('orders', 'status', 'q', 'counts', 'statuses'));
     }
 
     public function show(Order $order)
