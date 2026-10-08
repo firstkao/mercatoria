@@ -309,10 +309,10 @@ Route::prefix('office')->name('admin.')->middleware('auth:admin')->group(functio
     // ============================================================
     // ⚠️ Route /coins/lots/{lot} HARUS di atas /coins/{user} — kalau tidak,
     // "/coins/lots/5" bakal match ke {user} dengan $user = "lots" → 404.
-    Route::get('/coins', [CoinController::class, 'index'])->name('coins.index');
-    Route::delete('/coins/lots/{lot}', [CoinController::class, 'destroyLot'])->name('coins.lots.destroy');
-    Route::get('/coins/{user}', [CoinController::class, 'show'])->name('coins.show');
-    Route::post('/coins/{user}/adjust', [CoinController::class, 'store'])->name('coins.adjust');
+    Route::get('/coins', [AdminCoinController::class, 'index'])->name('coins.index');
+    Route::delete('/coins/lots/{lot}', [AdminCoinController::class, 'destroyLot'])->name('coins.lots.destroy');
+    Route::get('/coins/{user}', [AdminCoinController::class, 'show'])->name('coins.show');
+    Route::post('/coins/{user}/adjust', [AdminCoinController::class, 'store'])->name('coins.adjust');
 
     // Pengaturan
     Route::get('/settings/pricing', [SettingsController::class, 'pricing'])->name('settings.pricing');
