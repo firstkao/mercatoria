@@ -45,7 +45,11 @@
                 </p>
             </div>
         @elseif (in_array($order->status, ['menunggu_pembayaran', 'pembayaran_gagal']))
-            @php($resubmit = $order->latestPaymentProof()?->status === 'rejected' ? $order->latestPaymentProof()->resubmit_deadline_at : null)
+            @php
+                $resubmit = $order->latestPaymentProof()?->status === 'rejected'
+                    ? $order->latestPaymentProof()->resubmit_deadline_at
+                    : null;
+            @endphp
             <div class="account-alert account-alert--warning">
                 <strong class="account-alert__title">
                     {{ $order->status === 'pembayaran_gagal' ? 'Bukti Pembayaran Ditolak — Unggah Ulang' : 'Menunggu Pembayaran' }}
@@ -53,7 +57,6 @@
                 <p>
                     @if ($order->payment_deadline_at)
                         {{ $order->status === 'pembayaran_gagal' ? 'Bukti pembayaran kamu belum kami validasi. Perbaiki sesuai alasan penolakan dan unggah ulang pembayaran sebesar' : 'Segera lakukan pembayaran sebesar' }}
-                        {{-- Banner reaktif: JS update nilai ini saat user pilih metode QRIS dengan nominal >Rp500rb --}}
                         <strong id="pay-banner-amount">{{ \App\Support\PriceCalculator::formatRupiah($order->pay_now_idr) }}</strong>
                         sebelum
                         <strong>{{ $order->payment_deadline_at->timezone('Asia/Jakarta')->translatedFormat('j M Y, H:i') }} WIB</strong>.
@@ -157,7 +160,6 @@
                             return;
                         }
 
-                        // Detail metode
                         var lines = [];
                         if (m.account_number) lines.push('Transfer ke: ' + m.account_number + (m.account_name ? ' a.n ' + m.account_name : ''));
                         if (m.instructions)   lines.push(m.instructions);
@@ -173,7 +175,6 @@
                         }
                         box.style.display = 'block';
 
-                        // Preview QRIS fee
                         var isQris   = m.type === 'qris';
                         var applyFee = isQris && payNowIdr > 500000;
                         var fee      = applyFee ? Math.floor(payNowIdr * 0.003) : 0;
@@ -189,7 +190,6 @@
                             }
                         }
 
-                        // Sinkronkan banner "Segera lakukan pembayaran sebesar ..."
                         if (bannerEl) {
                             bannerEl.textContent = formatRp(payNowIdr + fee);
                         }
@@ -221,20 +221,18 @@
                                 <div class="image-placeholder">IMG</div>
                             @endif
                         </div>
-        
+
                         <div class="order-items__info">
                             <strong class="order-items__name">{{ $item->product_name_snapshot }}</strong>
                             <span class="order-items__meta">
                                 Varian: {{ $item->variant_name_snapshot }} · Qty: {{ $item->quantity }}
                             </span>
-        
-                            {{-- Badge status per item. Kalau inherit, tampil samar.
-                                 Kalau override, tampil lebih jelas. --}}
+
                             <span class="order-items__status" data-inherit="{{ $isOverride ? '0' : '1' }}">
                                 {{ $effLabel }}
                             </span>
                         </div>
-        
+
                         <div class="order-items__price">
                             {{ \App\Support\PriceCalculator::formatRupiah($item->unit_price_idr) }}
                         </div>
