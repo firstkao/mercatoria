@@ -18,85 +18,102 @@
             </x-admin.card>
         @endif
 
-        {{-- Modul Verifikasi Bukti Pembayaran --}}
-        @if ($order->paymentProofs->isNotEmpty())
-            {{-- ✅ PERAPIAN: pakai helper latestPaymentProof() (urut uploaded_at) --}}
-            {{-- alih-alih ->last() pada collection tanpa ordering eksplisit.      --}}
-            @php($latestProof = $order->latestPaymentProof() ?? $order->paymentProofs->last())
-            <x-admin.card>
-                <div class="panel__head">
-                    <h2>Bukti Pembayaran</h2>
-                    <x-admin.badge>{{ strtoupper($latestProof->status) }}</x-admin.badge>
-                </div>
-
-                <div class="mt-4">
-                    <a href="{{ asset('storage/' . $latestProof->proof_path) }}" target="_blank">
-                        <img src="{{ asset('storage/' . $latestProof->proof_path) }}" alt="Bukti Transfer" class="img-proof">
-                    </a>
-                    <p class="muted">Ditransfer via: <strong>{{ $latestProof->method->label ?? 'Unknown' }}</strong> | Nominal: <strong>{{ \App\Support\PriceCalculator::formatRupiah($latestProof->amount_idr) }}</strong></p>
-                </div>
-
-                {{-- ✅ BUG FIX: Tombol approve/reject hanya untuk order yang
-                     masih di gerbang pembayaran (menunggu_pembayaran/ditahan).
-                     Kalau admin sudah menggeser status manual, submit dari sini
-                     dulu akan kena 422 "Status order tidak dapat diubah". --}}
-                @if ($latestProof->status === 'pending' && in_array($order->status, ['menunggu_pembayaran', 'ditahan'], true))
-                    <div class="divider-top">
-                        <form method="POST" action="{{ route('admin.payments.approve', $latestProof->id) }}" class="mb-4">
-                            @csrf
-                            <button type="submit" class="btn btn--primary"
-                                    onclick="return confirm('Setujui pembayaran ini? Akun akan jadi Customer.');">
-                                Terima &amp; Verifikasi
-                            </button>
-                        </form>
-
-                        <form method="POST" action="{{ route('admin.payments.reject', $latestProof->id) }}">
-                            @csrf
-                            <div class="field">
-                                <span>Atau Tolak Pembayaran (masukkan alasan)</span>
-                                <div class="actions">
-                                    <input type="text" name="reject_reason" required class="flex-1"
-                                           placeholder="Contoh: Mutasi belum masuk / Gambar buram">
-                                    <button type="submit" class="btn btn--danger"
-                                            onclick="return confirm('Tolak bukti pembayaran ini?');">
-                                        Tolak Bukti
-                                    </button>
-                                </div>
-                            </div>
-                        </form>
-                    </div>
-                @endif
-            </x-admin.card>
-        @endif
-
-        {{-- Rincian Produk --}}
+        {{-- Rincian Produk (dengan thumbnail + status per item) --}}
         <x-admin.card>
-            <h2>Rincian Barang</h2>
+            <div class="panel__head">
+                <h2 class="m-0">Rincian Barang</h2>
+                <span class="muted small">{{ $order->items->count() }} item</span>
+            </div>
+
             <x-admin.table>
                 <x-slot:head>
                     <tr>
+                        <th class="table__thumb"></th>
                         <th>Item</th>
                         <th>Qty</th>
                         <th>Harga Satuan</th>
                         <th>Total</th>
+                        <th>Status</th>
                     </tr>
                 </x-slot:head>
+
                 @foreach ($order->items as $item)
+                    @php
+                        $effective = $item->item_status ?? $order->status;
+                        $isOverride = $item->item_status !== null && $item->item_status !== $order->status;
+                        $badgeClass = \App\Enums\OrderStatus::tryFrom($effective)?->badgeClass() ?? '';
+                    @endphp
                     <tr>
+                        <td class="table__thumb">
+                            @if ($item->variant?->image_path)
+                                <img src="{{ $item->variant->imageUrl() }}" alt="">
+                            @else
+                                <div class="thumb-empty">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+                                        <rect x="3" y="3" width="18" height="18" rx="2"/>
+                                        <circle cx="9" cy="9" r="2"/>
+                                        <path d="M21 15l-5-5L5 21"/>
+                                    </svg>
+                                </div>
+                            @endif
+                        </td>
+
                         <td>
                             <strong>{{ $item->product_name_snapshot }}</strong>
                             <div class="muted small">Varian: {{ $item->variant_name_snapshot }}</div>
                         </td>
+
                         <td>x{{ $item->quantity }}</td>
+
                         <td>{{ \App\Support\PriceCalculator::formatRupiah($item->unit_price_idr) }}</td>
+
                         <td><strong>{{ \App\Support\PriceCalculator::formatRupiah($item->line_total_idr) }}</strong></td>
+
+                        <td>
+                            <form method="POST"
+                                  action="{{ route('admin.orders.items.status', [$order, $item]) }}"
+                                  class="item-status-form">
+                                @csrf
+                                @method('PUT')
+
+                                <select name="item_status">
+                                    <option value="" @selected($item->item_status === null)>
+                                        Ikut status pesanan
+                                    </option>
+                                    @foreach (\App\Enums\OrderStatus::options() as $value => $label)
+                                        <option value="{{ $value }}" @selected($item->item_status === $value)>
+                                            {{ $label }}
+                                        </option>
+                                    @endforeach
+                                </select>
+
+                                <button type="submit" class="btn btn--small">Update</button>
+
+                                @if ($isOverride)
+                                    <span class="item-status-form__badge">
+                                        <span class="badge {{ $badgeClass }}">{{ \App\Enums\OrderStatus::tryFrom($effective)?->label() ?? $effective }}</span>
+                                    </span>
+                                @else
+                                    <span class="item-status-form__badge">
+                                        ikut: {{ \App\Enums\OrderStatus::tryFrom($order->status)?->label() ?? $order->status }}
+                                    </span>
+                                @endif
+                            </form>
+                        </td>
                     </tr>
                 @endforeach
             </x-admin.table>
+
+            @if ($order->items->contains(fn ($i) => $i->item_status !== null))
+                <p class="hint mt-4 mb-0">
+                    <strong>Catatan:</strong> Beberapa item punya status sendiri yang berbeda dari status pesanan global.
+                    Kalau kamu update "Status Pesanan" di sidebar, semua item akan di-reset mengikuti status baru.
+                </p>
+            @endif
         </x-admin.card>
 
-        {{-- Catatan Internal Admin --}}
-        @include('admin.orders.partials.notes', ['order' => $order])
+        {{-- Catatan Internal DIHAPUS — admin tidak perlu catatan sendiri.
+             Catatan pembeli sudah ditampilkan di atas (panel kuning). --}}
     </div>
 
     <aside class="form-grid__side stack">
@@ -112,9 +129,13 @@
                     </select>
                 </div>
                 <button type="submit" class="btn btn--primary btn--block"
-                        onclick="return confirm('Peringatan: Mengubah ke Selesai akan otomatis mencairkan koin cashback.');">
+                        onclick="return confirm('Ubah status pesanan? Semua item akan di-reset mengikuti status baru ini. Mengubah ke Selesai akan otomatis mencairkan koin cashback.');">
                     Update Status
                 </button>
+                <p class="hint mt-3 mb-0">
+                    Update di sini = ubah status global + reset semua status item.
+                    Untuk mengubah 1 item saja, pakai dropdown di kolom Status.
+                </p>
             </form>
         </x-admin.card>
 
@@ -129,6 +150,56 @@
                 <div><dt>Estimasi Koin</dt><dd class="text-warning">+ {{ $order->coin_estimate }}</dd></div>
             </dl>
         </x-admin.card>
+
+        {{-- ✅ Bukti Pembayaran DIPINDAH ke sini (sidebar, bawah Ringkasan Biaya)
+             dan gambarnya dikecilkan (max-height 200px via .img-proof).
+             Sebelumnya gambar 400px di kolom utama → terlalu besar. --}}
+        @if ($order->paymentProofs->isNotEmpty())
+            @php($latestProof = $order->latestPaymentProof() ?? $order->paymentProofs->last())
+            <x-admin.card>
+                <div class="panel__head">
+                    <h3 class="m-0">Bukti Pembayaran</h3>
+                    <x-admin.badge>{{ strtoupper($latestProof->status) }}</x-admin.badge>
+                </div>
+
+                <div class="mt-4">
+                    <a href="{{ asset('storage/' . $latestProof->proof_path) }}" target="_blank" rel="noopener">
+                        <img src="{{ asset('storage/' . $latestProof->proof_path) }}"
+                             alt="Bukti Transfer"
+                             class="img-proof">
+                    </a>
+                </div>
+
+                <dl class="deflist mt-4">
+                    <div><dt>Metode</dt><dd>{{ $latestProof->method->label ?? 'Unknown' }}</dd></div>
+                    <div><dt>Nominal</dt><dd class="text-price">{{ \App\Support\PriceCalculator::formatRupiah($latestProof->amount_idr) }}</dd></div>
+                    <div><dt>Diunggah</dt><dd class="muted small">{{ $latestProof->uploaded_at?->timezone('Asia/Jakarta')->translatedFormat('j M Y, H:i') ?? '—' }}</dd></div>
+                </dl>
+
+                @if ($latestProof->status === 'pending' && in_array($order->status, ['menunggu_pembayaran', 'ditahan'], true))
+                    <div class="divider-top stack stack--tight">
+                        <form method="POST" action="{{ route('admin.payments.approve', $latestProof->id) }}">
+                            @csrf
+                            <button type="submit" class="btn btn--primary btn--block"
+                                    onclick="return confirm('Setujui pembayaran ini? Akun akan jadi Customer.');">
+                                Terima &amp; Verifikasi
+                            </button>
+                        </form>
+
+                        <form method="POST" action="{{ route('admin.payments.reject', $latestProof->id) }}" class="stack stack--tight">
+                            @csrf
+                            <input type="text" name="reject_reason" required
+                                   class="input-compact"
+                                   placeholder="Alasan tolak (mis. mutasi belum masuk)">
+                            <button type="submit" class="btn btn--danger-outline btn--block"
+                                    onclick="return confirm('Tolak bukti pembayaran ini?');">
+                                Tolak Bukti
+                            </button>
+                        </form>
+                    </div>
+                @endif
+            </x-admin.card>
+        @endif
     </aside>
 </div>
 @endsection
