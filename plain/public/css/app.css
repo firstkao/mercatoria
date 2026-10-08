@@ -3559,3 +3559,28 @@ input[type="number"] { -moz-appearance: textfield; appearance: textfield; }
 .account-table .is-right:last-child {
     padding-right: 0;
 }
+
+/* ============================================================ */
+/* 48. ORDER ITEMS — status per item                             */
+/* ============================================================ */
+.order-items__status {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 6px;
+    padding: 3px 10px;
+    border-radius: 3px;
+    font-size: 10.5px;
+    font-weight: 700;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    background: #f4f4f5;
+    color: #52525b;
+    border: 1px solid #e4e4e7;
+    width: fit-content;
+}
+.order-items__status[data-inherit="0"] {
+    background: #f0f9ff;
+    color: #0369a1;
+    border-color: #bae6fd;
+}
