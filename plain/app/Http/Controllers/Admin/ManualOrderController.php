@@ -26,37 +26,55 @@ class ManualOrderController extends Controller
 {
     public function create(): View
     {
+        $marketplaces = Marketplace::query()
+            ->where('is_active', true)
+            ->orderBy('name')
+            ->get(['id', 'name', 'fp_fee_idr', 'dp_fee_percent']);
+
+        // ⚠️ WAJIB disiapkan di controller: @json() di Blade memecah argumen
+        // dengan explode(',') sehingga `fn ($m) => ['id' => ..., ...]` di Blade
+        // akan terpotong di koma pertama → PHP invalid → "Unclosed '['".
+        // Sudah pernah kena di paymentMethodsJs (OrderController) — jangan
+        // diulang di sini.
+        $marketplacesJs = $marketplaces
+            ->map(fn ($m) => [
+                'id'             => $m->id,
+                'name'           => $m->name,
+                'fp_fee_idr'     => (int) $m->fp_fee_idr,
+                'dp_fee_percent' => (float) $m->dp_fee_percent,
+            ])
+            ->keyBy('id')
+            ->toArray();
+
         return view('admin.orders.create', [
-            'marketplaces'    => Marketplace::query()
-                ->where('is_active', true)
-                ->orderBy('name')
-                ->get(['id', 'name', 'fp_fee_idr', 'dp_fee_percent']),
-            'statuses'        => OrderStatus::options(),
+            'marketplaces'     => $marketplaces,
+            'marketplacesJs'   => $marketplacesJs,
+            'statuses'         => OrderStatus::options(),
             'defaultCreatedAt' => now()->format('Y-m-d\TH:i'),
-            'defaultDeadline' => now()->addHours(Setting::integer('payment_deadline_hours', 24))->format('Y-m-d\TH:i'),
-            'defaultStatus'   => OrderStatus::Selesai->value,
+            'defaultDeadline'  => now()->addHours(Setting::integer('payment_deadline_hours', 24))->format('Y-m-d\TH:i'),
+            'defaultStatus'    => OrderStatus::Selesai->value,
         ]);
     }
 
     public function store(Request $request): RedirectResponse
     {
         $validated = $request->validate([
-            'user_id'               => ['required', 'integer', 'exists:users,id'],
-            'order_number'          => ['nullable', 'string', 'max:40', 'unique:orders,order_number'],
-            'created_at'            => ['required', 'date'],
-            'status'                => ['required', Rule::enum(OrderStatus::class)],
-            'payment_scheme'        => ['required', 'in:FP,DP'],
-            'marketplace_id'        => ['required', 'integer', Rule::exists('marketplaces', 'id')->where('is_active', true)],
-            'customer_note'         => ['nullable', 'string', 'max:1000'],
-            'payment_deadline_at'   => ['nullable', 'date'],
-            'discount_idr'          => ['nullable', 'integer', 'min:0'],
-            'effects'               => ['nullable', 'boolean'],
-            'notify'                => ['nullable', 'boolean'],
+            'user_id'                => ['required', 'integer', 'exists:users,id'],
+            'order_number'           => ['nullable', 'string', 'max:40', 'unique:orders,order_number'],
+            'created_at'             => ['required', 'date'],
+            'status'                 => ['required', Rule::enum(OrderStatus::class)],
+            'payment_scheme'         => ['required', 'in:FP,DP'],
+            'marketplace_id'         => ['required', 'integer', Rule::exists('marketplaces', 'id')->where('is_active', true)],
+            'customer_note'          => ['nullable', 'string', 'max:1000'],
+            'payment_deadline_at'    => ['nullable', 'date'],
+            'discount_idr'           => ['nullable', 'integer', 'min:0'],
+            'effects'                => ['nullable', 'boolean'],
+            'notify'                 => ['nullable', 'boolean'],
 
-            'items'                 => ['required', 'array', 'min:1', 'max:50'],
-            'items.*.variant_id'    => ['required', 'integer', 'exists:product_variants,id'],
-            'items.*.quantity'      => ['required', 'integer', 'min:1', 'max:999'],
-            'items.*.unit_price_idr'=> ['required', 'integer', 'min:0'],
+            'items'                  => ['required', 'array', 'min:1', 'max:50'],
+            'items.*.variant_id'     => ['required', 'integer', 'exists:product_variants,id'],
+            'items.*.quantity'       => ['required', 'integer', 'min:1', 'max:999'],
+            'items.*.unit_price_idr' => ['required', 'integer', 'min:0'],
         ], [
             'items.required'              => 'Minimal satu item harus diisi.',
             'items.*.variant_id.required' => 'Pilih varian produk untuk setiap item.',
@@ -128,22 +146,22 @@ class ManualOrderController extends Controller
             $status = $validated['status'];
 
             $order = Order::create([
-                'order_number'         => $orderNumber,
-                'user_id'              => $validated['user_id'],
-                'marketplace_id'       => $mp->id,
-                'status'               => $status,
-                'payment_scheme'       => $scheme,
-                'subtotal_idr'         => $subtotal,
-                'discount_type'        => $discountIdr > 0 ? 'manual' : 'none',
-                'discount_idr'         => $discountIdr,
-                'total_idr'            => $netTotal,
-                'pay_now_idr'          => $payNow,
-                'remaining_idr'        => $remaining,
-                'marketplace_fee_idr'  => $mpFee,
-                'coin_estimate'        => $coinEstimate,
-                'pricing_snapshot'     => $calculator->toArray(),
-                'payment_deadline_at'  => $validated['payment_deadline_at'] ?? null,
-                'customer_note'        => $validated['customer_note'] ?? null,
+                'order_number'        => $orderNumber,
+                'user_id'             => $validated['user_id'],
+                'marketplace_id'      => $mp->id,
+                'status'              => $status,
+                'payment_scheme'      => $scheme,
+                'subtotal_idr'        => $subtotal,
+                'discount_type'       => $discountIdr > 0 ? 'manual' : 'none',
+                'discount_idr'        => $discountIdr,
+                'total_idr'           => $netTotal,
+                'pay_now_idr'         => $payNow,
+                'remaining_idr'       => $remaining,
+                'marketplace_fee_idr' => $mpFee,
+                'coin_estimate'       => $coinEstimate,
+                'pricing_snapshot'    => $calculator->toArray(),
+                'payment_deadline_at' => $validated['payment_deadline_at'] ?? null,
+                'customer_note'       => $validated['customer_note'] ?? null,
             ]);
 
             // Override timestamps (biar backdate-able)
