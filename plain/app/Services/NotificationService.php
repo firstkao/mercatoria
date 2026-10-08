@@ -3,14 +3,12 @@
 namespace App\Services;
 
 use App\Models\Order;
+use App\Models\OrderItem;
 use App\Models\User;
 use App\Models\UserNotification;
 
 class NotificationService
 {
-    /**
-     * Kirim notifikasi ke user.
-     */
     public static function send(
         User $user,
         string $type,
@@ -21,17 +19,14 @@ class NotificationService
     ): UserNotification {
         return UserNotification::create([
             'user_id' => $user->id,
-            'type' => $type,
-            'title' => $title,
-            'body' => $body,
-            'url' => $url,
-            'icon' => $icon,
+            'type'    => $type,
+            'title'   => $title,
+            'body'    => $body,
+            'url'     => $url,
+            'icon'    => $icon,
         ]);
     }
 
-    /**
-     * Shortcut: notifikasi perubahan status order.
-     */
     public static function orderStatus(User $user, Order $order, string $statusLabel, string $body): UserNotification
     {
         return self::send(
@@ -45,8 +40,25 @@ class NotificationService
     }
 
     /**
-     * Shortcut: notifikasi koin masuk.
+     * Notifikasi saat status SATU ITEM di pesanan berubah.
      */
+    public static function itemStatusChanged(
+        User $user,
+        Order $order,
+        OrderItem $item,
+        string $statusLabel,
+    ): UserNotification {
+        return self::send(
+            $user,
+            'item_status',
+            "Pesanan #{$order->order_number}: {$item->product_name_snapshot}",
+            "Status produk \"{$item->product_name_snapshot}\" ({$item->variant_name_snapshot}) "
+                . "diperbarui menjadi: {$statusLabel}.",
+            route('account.orders.show', $order->order_number),
+            'box',
+        );
+    }
+
     public static function coinsEarned(User $user, int $amount, string $source): UserNotification
     {
         return self::send(
@@ -59,9 +71,6 @@ class NotificationService
         );
     }
 
-    /**
-     * Shortcut: notifikasi bukti pembayaran.
-     */
     public static function payment(User $user, Order $order, string $action, ?string $reason = null): UserNotification
     {
         if ($action === 'approved') {
@@ -85,9 +94,6 @@ class NotificationService
         );
     }
 
-    /**
-     * Notifikasi saat user dapat reward dari referral.
-     */
     public static function referralRewarded(User $user, int $amount, string $role): UserNotification
     {
         $title = $role === 'referrer'
@@ -108,9 +114,6 @@ class NotificationService
         );
     }
 
-    /**
-     * Notifikasi cart abandonment (belum checkout).
-     */
     public static function cartAbandoned(User $user, int $itemCount, int $reminderNumber = 1): UserNotification
     {
         $title = $reminderNumber > 1
