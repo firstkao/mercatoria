@@ -208,6 +208,11 @@
             </div>
             <ul class="order-items">
                 @foreach($order->items as $item)
+                    @php
+                        $effStatus = $item->item_status ?? $order->status;
+                        $effLabel  = \App\Enums\OrderStatus::tryFrom($effStatus)?->label() ?? $effStatus;
+                        $isOverride = $item->item_status !== null && $item->item_status !== $order->status;
+                    @endphp
                     <li class="order-items__row order-items__row--with-thumb">
                         <div class="order-items__thumb">
                             @if($item->variant?->image_path)
@@ -216,14 +221,20 @@
                                 <div class="image-placeholder">IMG</div>
                             @endif
                         </div>
-
+        
                         <div class="order-items__info">
                             <strong class="order-items__name">{{ $item->product_name_snapshot }}</strong>
                             <span class="order-items__meta">
                                 Varian: {{ $item->variant_name_snapshot }} · Qty: {{ $item->quantity }}
                             </span>
+        
+                            {{-- Badge status per item. Kalau inherit, tampil samar.
+                                 Kalau override, tampil lebih jelas. --}}
+                            <span class="order-items__status" data-inherit="{{ $isOverride ? '0' : '1' }}">
+                                {{ $effLabel }}
+                            </span>
                         </div>
-
+        
                         <div class="order-items__price">
                             {{ \App\Support\PriceCalculator::formatRupiah($item->unit_price_idr) }}
                         </div>
