@@ -37,6 +37,8 @@
     </div>
 
     {{-- Image Preview --}}
+    {{-- imageUrl di-generate controller via route('payment-proof.show', ...).
+         Route itu cek owner/admin, jadi file private tetap bisa ditampilkan. --}}
     <div class="panel">
         <div class="panel__head">
             <h2>Bukti Pembayaran</h2>
