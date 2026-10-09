@@ -183,9 +183,11 @@
                     <x-admin.badge>{{ strtoupper($latestProof->status) }}</x-admin.badge>
                 </div>
 
+                {{-- File bukti private (storage/app/private/payment-proofs/),
+                     diakses lewat route payment-proof.show yang cek owner/admin. --}}
                 <div class="mt-4">
-                    <a href="{{ asset('storage/' . $latestProof->proof_path) }}" target="_blank" rel="noopener">
-                        <img src="{{ asset('storage/' . $latestProof->proof_path) }}"
+                    <a href="{{ $latestProof->url() }}" target="_blank" rel="noopener">
+                        <img src="{{ $latestProof->url() }}"
                              alt="Bukti Transfer"
                              class="img-proof">
                     </a>
