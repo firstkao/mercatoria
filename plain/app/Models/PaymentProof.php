@@ -16,10 +16,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
     'reject_reason',
     'reviewed_at',
     'resubmit_deadline_at',
-    // BUG FIX: OrderController mengisi uploaded_at saat membuat bukti, tapi
-    // kolom ini tidak masuk fillable → selalu NULL. Akibatnya urutan
-    // latestPaymentProof() tidak bisa diandalkan dan halaman detail bukti
-    // (admin/payments/show) error saat memanggil ->timezone() pada null.
     'uploaded_at',
 ])]
 class PaymentProof extends Model
@@ -42,5 +38,14 @@ class PaymentProof extends Model
     public function method(): BelongsTo
     {
         return $this->belongsTo(PaymentMethod::class, 'payment_method_id');
+    }
+
+    /**
+     * URL publik internal ke file bukti (route cek auth: owner atau admin).
+     * Dipakai di Blade: {{ $proof->url() }}
+     */
+    public function url(): string
+    {
+        return route('payment-proof.show', $this);
     }
 }
