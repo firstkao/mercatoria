@@ -1,1 +1,8 @@
-app/Http/Controllers/Controller.php
+<?php
+
+namespace App\Http\Controllers;
+
+abstract class Controller
+{
+    //
+}
