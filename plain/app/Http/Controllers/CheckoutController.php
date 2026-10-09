@@ -227,12 +227,12 @@ class CheckoutController extends Controller
 
                 // ===== (2) PENERIMA & PENGIRIMAN =====
                 'recipient_name'       => $request->input('recipient_name', $user->full_name),
-                'recipient_phone'      => $request->input('recipient_phone', $user->phone),
+                'recipient_phone'      => $request->input('recipient_phone', $user->whatsapp),          // ← FIX
                 'recipient_email'      => $request->input('recipient_email', $user->email),
-                'shipping_address'     => $request->input('shipping_address', $user->address),
-                'shipping_city'        => $request->input('shipping_city'),
-                'shipping_province'    => $request->input('shipping_province'),
-                'shipping_postal_code' => $request->input('shipping_postal_code'),
+                'shipping_address'     => $request->input('shipping_address', $user->street_address),   // ← FIX
+                'shipping_city'        => $request->input('shipping_city', $user->city),                // ← FIX
+                'shipping_province'    => $request->input('shipping_province', $user->province),        // ← FIX
+                'shipping_postal_code' => $request->input('shipping_postal_code', $user->postal_code),  // ← FIX
                 'shipping_note'        => $request->input('shipping_note'),
 
                 // ===== (4) TRACKING KUNJUNGAN =====
