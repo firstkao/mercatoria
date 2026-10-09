@@ -3,9 +3,6 @@
 /* ============================================================ */
 
 /* ============================================================ */
-/* 1. VARIABLES & RESET                                          */
-/* ============================================================ */
-/* ============================================================ */
 /* 0. DESIGN TOKENS — SINGLE SOURCE OF TRUTH                     */
 /* Semua warna, spacing, radius, tipografi, shadow & layout      */
 /* HARUS berasal dari sini. Dilarang menulis nilai mentah.       */
@@ -148,7 +145,7 @@ img { max-width: 100%; height: auto; display: block; }
 [hidden] { display: none !important; }
 
 /* ============================================================ */
-/* 2. SHELL & SIDEBAR                                            */
+/* 1. SHELL & SIDEBAR                                            */
 /* ============================================================ */
 .shell { display: grid; grid-template-columns: 240px 1fr; min-height: 100vh; }
 .sidebar { background: var(--sidebar); color: var(--sidebar-text); display: flex; flex-direction: column; }
@@ -175,7 +172,7 @@ img { max-width: 100%; height: auto; display: block; }
 .nav-link.is-active .nav-link__badge { background: var(--surface); color: var(--primary); }
 
 /* ============================================================ */
-/* 3. TOPBAR                                                     */
+/* 2. TOPBAR                                                     */
 /* ============================================================ */
 .main { display: flex; flex-direction: column; min-width: 0; }
 .topbar { height: 64px; background: var(--surface); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 32px; position: sticky; top: 0; z-index: 10; }
@@ -186,7 +183,7 @@ img { max-width: 100%; height: auto; display: block; }
 .topbar__actions { display: flex; gap: 12px; }
 
 /* ============================================================ */
-/* 4. SUBTABS & FILTERBAR                                        */
+/* 3. SUBTABS & FILTERBAR                                        */
 /* ============================================================ */
 .subtabs { display: flex; gap: 24px; padding: 0 32px; background: var(--surface); border-bottom: 1px solid var(--border); }
 .subtab { padding: 12px 0; color: var(--muted); font-weight: 500; border-bottom: 2px solid transparent; display: flex; align-items: center; gap: 8px; margin-bottom: -1px; }
@@ -202,7 +199,7 @@ img { max-width: 100%; height: auto; display: block; }
 .date-field { display: flex; align-items: center; gap: 8px; font-size: var(--fs-md); color: var(--muted); }
 
 /* ============================================================ */
-/* 5. CONTENT & PANELS                                           */
+/* 4. CONTENT & PANELS                                           */
 /* ============================================================ */
 .content { padding: 32px; flex: 1; }
 .panel { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; }
@@ -215,7 +212,7 @@ img { max-width: 100%; height: auto; display: block; }
 .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
 
 /* ============================================================ */
-/* 6. FORMS                                                      */
+/* 5. FORMS                                                      */
 /* ============================================================ */
 .form-grid { display: grid; grid-template-columns: 1fr 340px; gap: 24px; align-items: start; }
 .form-grid__main { display: flex; flex-direction: column; gap: 24px; min-width: 0; }
@@ -243,7 +240,7 @@ img { max-width: 100%; height: auto; display: block; }
 .switch input:checked::after { left: 18px; }
 
 /* ============================================================ */
-/* 7. BUTTONS                                                    */
+/* 6. BUTTONS                                                    */
 /* ============================================================ */
 .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; border: 1px solid var(--border); border-radius: var(--radius-md); background: var(--surface); color: var(--text); padding: 8px 16px; font: inherit; font-weight: 600; cursor: pointer; transition: .15s; }
 .btn:hover { background: var(--bg); border-color: var(--border-strong); }
@@ -263,7 +260,7 @@ img { max-width: 100%; height: auto; display: block; }
 .link:hover { text-decoration: underline; }
 
 /* ============================================================ */
-/* 8. TABLES                                                     */
+/* 7. TABLES                                                     */
 /* ============================================================ */
 .table { width: 100%; border-collapse: collapse; text-align: left; }
 .table th { background: var(--surface-alt); padding: 12px 16px; font-size: var(--fs-sm); text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); font-weight: 600; border-bottom: 1px solid var(--border); }
@@ -272,15 +269,37 @@ img { max-width: 100%; height: auto; display: block; }
 .table input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--primary); cursor: pointer; }
 .table__name { line-height: 1.4; }
 .table__title { font-weight: 600; color: var(--text); display: block; }
-.table__thumb { width: 48px; padding-right: 0; }
-.table__thumb img, .thumb-empty { width: 40px; height: 40px; border-radius: var(--radius-md); object-fit: cover; }
-.thumb-empty { background: var(--bg); color: var(--border-strong); display: flex; align-items: center; justify-content: center; }
 .table__sku { max-width: 120px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-family: var(--font-mono); font-size: var(--fs-sm); }
 .table__meta { max-width: 140px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .input-compact { padding: var(--space-2); font-size: var(--fs-md); }
 
+/* Thumbnail cell — kolom sempit untuk foto 40×40 */
+.table__thumb { width: 56px; padding-right: 0; }
+.table__thumb img {
+    width: 40px;
+    height: 40px;
+    min-width: 40px;
+    min-height: 40px;
+    max-width: 40px;
+    max-height: 40px;
+    object-fit: cover;
+    object-position: center;
+    border-radius: var(--radius-md);
+    display: block;
+}
+.table__thumb .thumb-empty {
+    width: 40px;
+    height: 40px;
+    border-radius: var(--radius-md);
+    background: var(--bg);
+    color: var(--border-strong);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
 /* ============================================================ */
-/* 9. BADGES, TAGS & STATUS                                      */
+/* 8. BADGES, TAGS & STATUS                                      */
 /* ============================================================ */
 .badge { display: inline-flex; padding: var(--space-1) var(--space-2); border-radius: var(--radius-pill); font-size: var(--fs-sm); font-weight: 600; background: var(--bg); color: var(--text); border: 1px solid var(--border); }
 .badge--on { background: var(--success); border-color: var(--success); color: var(--on-accent); }
@@ -308,7 +327,7 @@ img { max-width: 100%; height: auto; display: block; }
 .row-muted { opacity: 0.55; }
 
 /* ============================================================ */
-/* 10. TRACKING & LOGS                                           */
+/* 9. TRACKING & LOGS                                            */
 /* ============================================================ */
 .tracking { display: grid; gap: 4px; font-size: var(--fs-md); }
 .tracking > span { display: flex; justify-content: space-between; gap: 16px; }
@@ -330,7 +349,7 @@ img { max-width: 100%; height: auto; display: block; }
 .log__detail { font-size: var(--fs-md); }
 
 /* ============================================================ */
-/* 11. ALERTS, NOTICES & EMPTY                                   */
+/* 10. ALERTS, NOTICES & EMPTY                                   */
 /* ============================================================ */
 .alert { padding: 12px 16px; border-radius: var(--radius); margin-bottom: 24px; line-height: 1.4; border: 1px solid transparent; }
 .alert--success { background: var(--success-bg); color: var(--success-text); border-color: var(--success-border); }
@@ -340,7 +359,7 @@ img { max-width: 100%; height: auto; display: block; }
 .empty { padding: 48px 24px; text-align: center; color: var(--muted); border: 1px dashed var(--border-strong); border-radius: var(--radius); }
 
 /* ============================================================ */
-/* 12. GALLERY & UPLOAD                                          */
+/* 11. GALLERY & UPLOAD                                          */
 /* ============================================================ */
 .gallery { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
 .gallery__item { position: relative; aspect-ratio: 1; border: 1px solid var(--border); border-radius: var(--radius-md); overflow: hidden; background: var(--surface); }
@@ -356,7 +375,7 @@ img { max-width: 100%; height: auto; display: block; }
 .upload input { position: absolute; opacity: 0; width: 1px; }
 
 /* ============================================================ */
-/* 13. VARIANTS                                                  */
+/* 12. VARIANTS                                                  */
 /* ============================================================ */
 .variants { display: flex; flex-direction: column; gap: 16px; }
 .variant { background: var(--surface-alt); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; position: relative; }
@@ -372,7 +391,7 @@ img { max-width: 100%; height: auto; display: block; }
 .file-link input { position: absolute; opacity: 0; width: 1px; }
 
 /* ============================================================ */
-/* 14. STATS (legacy)                                            */
+/* 13. STATS (legacy)                                            */
 /* ============================================================ */
 .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin-bottom: 24px; }
 .stat { background: var(--surface); border: 1px solid var(--border); padding: 20px; border-radius: var(--radius); display: flex; flex-direction: column; gap: 8px; }
@@ -380,7 +399,7 @@ img { max-width: 100%; height: auto; display: block; }
 .stat__value { font-size: var(--fs-3xl); color: var(--text-strong); line-height: 1; }
 
 /* ============================================================ */
-/* 15. DEFLIST, TIMELINE & IDENTITY                              */
+/* 14. DEFLIST, TIMELINE & IDENTITY                              */
 /* ============================================================ */
 .deflist { display: grid; gap: 12px; margin: 0; font-size: var(--fs-body); }
 .deflist div { display: grid; grid-template-columns: 140px 1fr; gap: 16px; }
@@ -393,7 +412,7 @@ img { max-width: 100%; height: auto; display: block; }
 .identity-line:last-child { border-bottom: 0; }
 
 /* ============================================================ */
-/* 16. CHIPS                                                     */
+/* 15. CHIPS                                                     */
 /* ============================================================ */
 .chips, .chip-list { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px; }
 .chips { margin-bottom: 24px; }
@@ -402,7 +421,7 @@ img { max-width: 100%; height: auto; display: block; }
 .chip__remove:hover { color: var(--danger); }
 
 /* ============================================================ */
-/* 17. LOGIN                                                     */
+/* 16. LOGIN                                                     */
 /* ============================================================ */
 .login-page { background: var(--surface); display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 20px; }
 .login { width: 100%; max-width: 400px; }
@@ -410,14 +429,14 @@ img { max-width: 100%; height: auto; display: block; }
 .login__brand span { color: var(--primary); font-weight: 400; }
 
 /* ============================================================ */
-/* 18. PAGER & DANGER ZONE                                       */
+/* 17. PAGER & DANGER ZONE                                       */
 /* ============================================================ */
 .pager { display: flex; align-items: center; justify-content: space-between; padding-top: 24px; margin-top: 24px; border-top: 1px solid var(--border); }
 .danger-zone { margin-top: 48px; border-top: 1px solid var(--border); padding-top: 24px; }
 .manual-block { margin-top: 32px; background: var(--danger-bg-soft); border-color: var(--danger-border); }
 
 /* ============================================================ */
-/* 19. UTILITIES                                                 */
+/* 18. UTILITIES                                                 */
 /* ============================================================ */
 .only-mobile { display: none; }
 .nowrap { white-space: nowrap; }
@@ -425,7 +444,7 @@ img { max-width: 100%; height: auto; display: block; }
 .mono { font-family: var(--font-mono); }
 
 /* ============================================================ */
-/* 20. QUICK ACTION                                              */
+/* 19. QUICK ACTION                                              */
 /* ============================================================ */
 .quick-action { display: flex; align-items: center; gap: 12px; padding: var(--space-4) var(--space-5); border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); color: var(--text); text-decoration: none; transition: all .15s; }
 .quick-action:hover { border-color: var(--primary); background: var(--primary-bg); }
@@ -433,7 +452,7 @@ img { max-width: 100%; height: auto; display: block; }
 .quick-action__arrow { margin-left: auto; color: var(--primary); font-weight: 700; }
 
 /* ============================================================ */
-/* 21. CHART BARS (legacy)                                       */
+/* 20. CHART BARS (legacy)                                       */
 /* ============================================================ */
 .chart-bars { display: flex; align-items: flex-end; gap: var(--space-2); height: 220px; padding: 16px 0; overflow-x: auto; }
 .chart-bar { flex: 1; min-width: 30px; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; height: 100%; position: relative; }
@@ -442,7 +461,7 @@ img { max-width: 100%; height: auto; display: block; }
 .chart-bar__label { font-size: var(--fs-caption); color: var(--muted); margin-top: var(--space-2); white-space: nowrap; }
 
 /* ============================================================ */
-/* 22. RESPONSIVE — TABLET                                       */
+/* 21. RESPONSIVE — TABLET                                       */
 /* ============================================================ */
 @media (max-width: 1024px) {
     .log { grid-template-columns: auto 1fr; }
@@ -450,7 +469,7 @@ img { max-width: 100%; height: auto; display: block; }
 }
 
 /* ============================================================ */
-/* 23. RESPONSIVE — MOBILE (tabbar, sheet)                       */
+/* 22. RESPONSIVE — MOBILE (tabbar, sheet)                       */
 /* ============================================================ */
 .tabbar { display: none; }
 .sheet { display: none; }
@@ -502,7 +521,7 @@ img { max-width: 100%; height: auto; display: block; }
 }
 
 /* ============================================================ */
-/* 24. BATCH 25 — Top list & Stat mini                           */
+/* 23. BATCH 25 — Top list & Stat mini                           */
 /* ============================================================ */
 .top-list { list-style: none; margin: 0; padding: 0; }
 .top-list__item { display: flex; align-items: center; gap: 12px; padding: var(--space-3) 0; border-bottom: 1px solid var(--border); font-size: var(--fs-body); }
@@ -520,7 +539,7 @@ img { max-width: 100%; height: auto; display: block; }
 .stat-mini strong { color: var(--text-strong); font-size: var(--fs-lg); }
 
 /* ============================================================ */
-/* 25. BATCH 26 — Preorder banner admin                          */
+/* 24. BATCH 26 — Preorder banner admin                          */
 /* ============================================================ */
 .preorder-banner-list { display: flex; flex-direction: column; gap: 20px; }
 .preorder-banner-item { display: grid; grid-template-columns: 200px 1fr; gap: 20px; padding: 16px; background: var(--bg); border-radius: var(--radius); }
@@ -534,7 +553,7 @@ img { max-width: 100%; height: auto; display: block; }
 }
 
 /* ============================================================ */
-/* 26. BATCH 28 — Bulk toolbar                                   */
+/* 25. BATCH 28 — Bulk toolbar                                   */
 /* ============================================================ */
 .bulk-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 12px 20px; background: var(--primary-bg); border: 1px solid var(--primary-border); border-radius: var(--radius); margin-bottom: 16px; opacity: 0; max-height: 0; padding-top: 0; padding-bottom: 0; border-width: 0; overflow: hidden; transition: all .2s ease; }
 .bulk-toolbar.is-active { opacity: 1; max-height: 100px; padding-top: 12px; padding-bottom: 12px; border-width: 1px; }
@@ -543,23 +562,15 @@ img { max-width: 100%; height: auto; display: block; }
 .bulk-toolbar__actions { display: flex; gap: 8px; flex-wrap: wrap; }
 
 /* ============================================================ */
-/* 27. BATCH 31 — Dashboard (Grouped Metric Cards)               */
+/* 26. BATCH 31 — Dashboard (Grouped Metric Cards)               */
 /* Full width. Tiap grup = card putih di atas background abu.    */
 /* ============================================================ */
-
-/* ---------- Page head ---------- */
-
-/* ---------- Alert strip ---------- */
-
-/* ---------- Group cards ---------- */
-
-/* ---------- Responsive ---------- */
 @media (max-width: 720px) {
     .chart { height: 200px; }
 }
 
 /* ============================================================ */
-/* 29. SHARED PRIMITIVES — KANONIK                               */
+/* 27. SHARED PRIMITIVES — KANONIK                               */
 /* Semua halaman admin WAJIB memakai class di sini. Varian hanya */
 /* lewat modifier (.btn--primary, .alert--warning, .badge--on).  */
 /* ============================================================ */
@@ -780,7 +791,7 @@ img { max-width: 100%; height: auto; display: block; }
 .chart__fill, .chart-bar__fill { border-radius: var(--radius-sm) var(--radius-sm) 0 0; }
 
 /* ============================================================ */
-/* 30. UTILITIES — pengganti inline style yang berulang          */
+/* 28. UTILITIES — pengganti inline style yang berulang          */
 /* Pakai class di sini, JANGAN tulis style="..." untuk hal ini.  */
 /* ============================================================ */
 
@@ -825,7 +836,7 @@ img { max-width: 100%; height: auto; display: block; }
 .field--sm { max-width: 120px; }
 .field--md { max-width: 200px; }
 
-/* Section heading di dalam form (pengganti <h3 style="margin-top:20px">) */
+/* Section heading di dalam form */
 .form-section-title { margin: var(--space-5) 0 0; font-size: var(--fs-lg); }
 .field-note { display: block; margin-top: var(--space-1); font-size: var(--fs-xs); color: var(--muted); }
 
@@ -845,7 +856,7 @@ img { max-width: 100%; height: auto; display: block; }
 .thumb-box img { max-width: 150px; border-radius: var(--radius-sm); }
 .thumb-empty--wide { width: 100px; height: 56px; }
 
-/* Kartu bertema state (pengganti inline style warna latar) */
+/* Kartu bertema state */
 .panel--warning { background: var(--warning-bg); border-color: var(--warning-border); }
 .panel--danger { background: var(--danger-bg); border-color: var(--danger-border); }
 .panel--success { background: var(--success-bg); border-color: var(--success-border); }
@@ -906,7 +917,7 @@ img { max-width: 100%; height: auto; display: block; }
 .textarea:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-bg); }
 .divider { margin: var(--space-4) 0; border: none; border-top: 1px solid var(--border); }
 
-/* Utility tambahan (Tahap 3) */
+/* Utility tambahan */
 .ms-2 { margin-left: var(--space-2); }
 .ml-2 { margin-left: var(--space-2); }
 .col-xs { width: 60px; }
@@ -919,7 +930,7 @@ img { max-width: 100%; height: auto; display: block; }
 .uppercase { text-transform: uppercase; }
 
 /* ============================================================ */
-/* 31. CHART, BAR-LIST & SPLIT (nama generik, dipakai laporan)    */
+/* 29. CHART, BAR-LIST & SPLIT (nama generik, dipakai laporan)    */
 /* ============================================================ */
 .chart {
     display: flex;
@@ -989,7 +1000,10 @@ img { max-width: 100%; height: auto; display: block; }
     gap: var(--space-5);
     margin-bottom: var(--space-5);
 }
-/* ---------- Catatan internal pesanan ---------- */
+
+/* ============================================================ */
+/* 30. CATATAN INTERNAL PESANAN                                  */
+/* ============================================================ */
 .notes-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--space-3); }
 .note {
     background: var(--surface-alt);
@@ -1003,11 +1017,11 @@ img { max-width: 100%; height: auto; display: block; }
 .note__body { margin: 0; white-space: pre-wrap; line-height: 1.7; font-size: var(--fs-body); }
 
 /* ============================================================ */
-/* 32. ORDER DETAIL — bukti pembayaran kecil di sidebar          */
+/* 31. ORDER DETAIL — layout khusus halaman detail pesanan       */
 /* ============================================================ */
+
+/* Bukti pembayaran kecil di sidebar (lebar card ~340px) */
 .img-proof {
-    /* override: dulu max-height 400px, sekarang lebih kecil karena
-       card-nya pindah ke sidebar (lebar ~340px) */
     max-height: 200px;
     width: 100%;
     object-fit: contain;
@@ -1042,7 +1056,7 @@ img { max-width: 100%; height: auto; display: block; }
     white-space: nowrap;
 }
 
-/* Layout 2 kolom untuk Penerima & Pengiriman */
+/* Layout 2 kolom untuk Penerima & Pengiriman + Asal Kunjungan */
 .penerima-grid,
 .tracking-grid {
     display: grid;
