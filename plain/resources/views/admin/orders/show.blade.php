@@ -10,198 +10,8 @@
 <div class="form-grid">
     <div class="form-grid__main stack">
 
- {{-- ============================================================
-     (2 + 4) INFORMASI PENERIMA, PENGIRIMAN & ASAL KUNJUNGAN
-     ============================================================ --}}
-    <x-admin.card>
-        <div class="panel__head">
-            <h2 class="m-0">Penerima &amp; Pengiriman</h2>
-            <span class="muted small">#{{ $order->order_number }}</span>
-        </div>
-    
         {{-- ============================================================
-             BAGIAN A — PENERIMA
-             ============================================================ --}}
-        <h3 class="mt-2 mb-2">👤 Penerima</h3>
-        <dl class="deflist">
-            <div>
-                <dt>Nama Penerima</dt>
-                <dd>
-                    {{ $order->recipient_name ?? $order->user?->full_name ?? '—' }}
-                    @if (
-                        $order->user?->full_name
-                        && $order->recipient_name
-                        && $order->recipient_name !== $order->user->full_name
-                    )
-                        <span class="muted small">(akun: {{ $order->user->full_name }})</span>
-                    @endif
-                </dd>
-            </div>
-    
-            <div>
-                <dt>No. HP</dt>
-                <dd>
-                    @php $phone = $order->recipient_phone ?? $order->user?->phone; @endphp
-                    @if ($phone)
-                        <a href="tel:{{ $phone }}">{{ $phone }}</a>
-                        <a href="https://wa.me/{{ preg_replace('/^0/', '62', preg_replace('/\D/', '', $phone)) }}"
-                           target="_blank" rel="noopener"
-                           class="muted small">💬 WA</a>
-                    @else
-                        —
-                    @endif
-                </dd>
-            </div>
-    
-            <div>
-                <dt>Email</dt>
-                <dd>
-                    @php $email = $order->recipient_email ?? $order->user?->email; @endphp
-                    @if ($email)
-                        <a href="mailto:{{ $email }}">{{ $email }}</a>
-                    @else
-                        —
-                    @endif
-                </dd>
-            </div>
-        </dl>
-    
-        {{-- ============================================================
-             BAGIAN B — ALAMAT PENGIRIMAN
-             ============================================================ --}}
-        <h3 class="mt-4 mb-2">📦 Alamat Pengiriman</h3>
-        <dl class="deflist">
-            <div>
-                <dt>Alamat</dt>
-                <dd>
-                    @php
-                        $addressParts = array_filter([
-                            $order->shipping_address ?? null,
-                            $order->shipping_city ?? null,
-                            $order->shipping_province ?? null,
-                            $order->shipping_postal_code ?? null,
-                        ]);
-                    @endphp
-                    @if (! empty($addressParts))
-                        {!! nl2br(e(implode(",\n", $addressParts))) !!}
-                    @else
-                        <span class="muted">—</span>
-                    @endif
-                </dd>
-            </div>
-    
-            @if ($order->shipping_note)
-                <div>
-                    <dt>Catatan Kirim</dt>
-                    <dd>{{ $order->shipping_note }}</dd>
-                </div>
-            @endif
-        </dl>
-    
-        {{-- ============================================================
-             BAGIAN C — ASAL KUNJUNGAN (nomor 4)
-             Hanya tampil kalau ada data tracking
-             ============================================================ --}}
-        @php
-            $hasTracking = ! empty($order->source)
-                || ! empty($order->device_type)
-                || ! empty($order->landing_page)
-                || ! empty($order->referrer)
-                || ! empty($order->session_page_views)
-                || ! empty($order->ip_address);
-        @endphp
-    
-        @if ($hasTracking)
-            <h3 class="mt-4 mb-2">🌐 Asal Kunjungan</h3>
-            <dl class="deflist">
-                @if (! empty($order->source))
-                    <div>
-                        <dt>Asal</dt>
-                        <dd>
-                            @php
-                                $sourceIcons = [
-                                    'google'    => '🔍 Google',
-                                    'instagram' => '📷 Instagram',
-                                    'tiktok'    => '🎵 TikTok',
-                                    'facebook'  => '📘 Facebook',
-                                    'twitter'   => '🐦 Twitter',
-                                    'shopee'    => '🛒 Shopee',
-                                    'tokopedia' => '🟢 Tokopedia',
-                                    'whatsapp'  => '💬 WhatsApp',
-                                    'youtube'   => '▶️ YouTube',
-                                    'direct'    => '🔗 Direct',
-                                    'referral'  => '↗️ Referral',
-                                ];
-                            @endphp
-                            {{ $sourceIcons[strtolower($order->source)] ?? ucfirst($order->source) }}
-                        </dd>
-                    </div>
-                @endif
-    
-                @if (! empty($order->device_type))
-                    <div>
-                        <dt>Jenis Perangkat</dt>
-                        <dd>
-                            @php
-                                $deviceIcons = [
-                                    'mobile'  => '📱 Mobile',
-                                    'tablet'  => '📱 Tablet',
-                                    'desktop' => '💻 Desktop',
-                                    'unknown' => '❓ Unknown',
-                                ];
-                            @endphp
-                            {{ $deviceIcons[strtolower($order->device_type)] ?? ucfirst($order->device_type) }}
-                        </dd>
-                    </div>
-                @endif
-    
-                @if (! empty($order->session_page_views))
-                    <div>
-                        <dt>Kunjungan Halaman</dt>
-                        <dd>{{ $order->session_page_views }} halaman dalam sesi ini</dd>
-                    </div>
-                @endif
-    
-                @if (! empty($order->landing_page))
-                    <div>
-                        <dt>Landing Page</dt>
-                        <dd class="muted small" style="word-break: break-all;">
-                            {{ $order->landing_page }}
-                        </dd>
-                    </div>
-                @endif
-    
-                @if (! empty($order->referrer))
-                    <div>
-                        <dt>Referrer</dt>
-                        <dd class="muted small" style="word-break: break-all;">
-                            {{ $order->referrer }}
-                        </dd>
-                    </div>
-                @endif
-    
-                @if (! empty($order->ip_address))
-                    <div>
-                        <dt>IP Address</dt>
-                        <dd class="muted small">{{ $order->ip_address }}</dd>
-                    </div>
-                @endif
-            </dl>
-        @endif
-    </x-admin.card>
-        
-        {{-- ============================================================
-             Catatan Pembeli
-             ============================================================ --}}
-        @if ($order->customer_note)
-            <x-admin.card class="panel--warning">
-                <h3 class="mb-2">📝 Catatan Pembeli</h3>
-                <p class="note-body">{{ $order->customer_note }}</p>
-            </x-admin.card>
-        @endif
-
-        {{-- ============================================================
-             INFORMASI PESANAN — tanggal + penerima + pengiriman
+             INFORMASI PESANAN — tanggal & status
              ============================================================ --}}
         <x-admin.card>
             <div class="panel__head">
@@ -209,7 +19,6 @@
                 <span class="muted small">#{{ $order->order_number }}</span>
             </div>
 
-            {{-- --- Tanggal & Status --- --}}
             <dl class="deflist">
                 <div>
                     <dt>Tanggal Order</dt>
@@ -241,9 +50,19 @@
                     </dd>
                 </div>
             </dl>
+        </x-admin.card>
 
-            {{-- --- Penerima & Pengiriman --- --}}
-            <h3 class="mt-4">Penerima &amp; Pengiriman</h3>
+        {{-- ============================================================
+             (2 + 4) PENERIMA, PENGIRIMAN & ASAL KUNJUNGAN
+             ============================================================ --}}
+        <x-admin.card>
+            <div class="panel__head">
+                <h2 class="m-0">Penerima &amp; Pengiriman</h2>
+                <span class="muted small">#{{ $order->order_number }}</span>
+            </div>
+
+            {{-- BAGIAN A — PENERIMA --}}
+            <h3 class="mt-2 mb-2">👤 Penerima</h3>
             <dl class="deflist">
                 <div>
                     <dt>Nama Penerima</dt>
@@ -258,37 +77,57 @@
                         @endif
                     </dd>
                 </div>
+
                 <div>
                     <dt>No. HP</dt>
-                    <dd>{{ $order->recipient_phone ?? $order->user?->phone ?? '—' }}</dd>
-                </div>
-                <div>
-                    <dt>Email</dt>
                     <dd>
-                        @if ($order->user?->email)
-                            <a href="mailto:{{ $order->user->email }}">{{ $order->user->email }}</a>
+                        @php $phone = $order->recipient_phone ?? $order->user?->phone; @endphp
+                        @if ($phone)
+                            <a href="tel:{{ $phone }}">{{ $phone }}</a>
+                            <a href="https://wa.me/{{ preg_replace('/^0/', '62', preg_replace('/\D/', '', $phone)) }}"
+                               target="_blank" rel="noopener"
+                               class="muted small">💬 WA</a>
                         @else
                             —
                         @endif
                     </dd>
                 </div>
+
                 <div>
-                    <dt>Alamat Pengiriman</dt>
+                    <dt>Email</dt>
+                    <dd>
+                        @php $email = $order->recipient_email ?? $order->user?->email; @endphp
+                        @if ($email)
+                            <a href="mailto:{{ $email }}">{{ $email }}</a>
+                        @else
+                            —
+                        @endif
+                    </dd>
+                </div>
+            </dl>
+
+            {{-- BAGIAN B — ALAMAT PENGIRIMAN --}}
+            <h3 class="mt-4 mb-2">📦 Alamat Pengiriman</h3>
+            <dl class="deflist">
+                <div>
+                    <dt>Alamat</dt>
                     <dd>
                         @php
                             $addressParts = array_filter([
                                 $order->shipping_address ?? null,
                                 $order->shipping_city ?? null,
+                                $order->shipping_province ?? null,
                                 $order->shipping_postal_code ?? null,
                             ]);
                         @endphp
                         @if (! empty($addressParts))
-                            {{ implode(', ', $addressParts) }}
+                            {!! nl2br(e(implode(",\n", $addressParts))) !!}
                         @else
                             <span class="muted">—</span>
                         @endif
                     </dd>
                 </div>
+
                 @if ($order->shipping_note)
                     <div>
                         <dt>Catatan Kirim</dt>
@@ -296,10 +135,108 @@
                     </div>
                 @endif
             </dl>
+
+            {{-- BAGIAN C — ASAL KUNJUNGAN --}}
+            @php
+                $hasTracking = ! empty($order->source)
+                    || ! empty($order->device_type)
+                    || ! empty($order->landing_page)
+                    || ! empty($order->referrer)
+                    || ! empty($order->session_page_views)
+                    || ! empty($order->ip_address);
+            @endphp
+
+            @if ($hasTracking)
+                <h3 class="mt-4 mb-2">🌐 Asal Kunjungan</h3>
+                <dl class="deflist">
+                    @if (! empty($order->source))
+                        <div>
+                            <dt>Asal</dt>
+                            <dd>
+                                @php
+                                    $sourceIcons = [
+                                        'google'    => '🔍 Google',
+                                        'instagram' => '📷 Instagram',
+                                        'tiktok'    => '🎵 TikTok',
+                                        'facebook'  => '📘 Facebook',
+                                        'twitter'   => '🐦 Twitter',
+                                        'shopee'    => '🛒 Shopee',
+                                        'tokopedia' => '🟢 Tokopedia',
+                                        'whatsapp'  => '💬 WhatsApp',
+                                        'youtube'   => '▶️ YouTube',
+                                        'direct'    => '🔗 Direct',
+                                        'referral'  => '↗️ Referral',
+                                    ];
+                                @endphp
+                                {{ $sourceIcons[strtolower($order->source)] ?? ucfirst($order->source) }}
+                            </dd>
+                        </div>
+                    @endif
+
+                    @if (! empty($order->device_type))
+                        <div>
+                            <dt>Jenis Perangkat</dt>
+                            <dd>
+                                @php
+                                    $deviceIcons = [
+                                        'mobile'  => '📱 Mobile',
+                                        'tablet'  => '📱 Tablet',
+                                        'desktop' => '💻 Desktop',
+                                        'unknown' => '❓ Unknown',
+                                    ];
+                                @endphp
+                                {{ $deviceIcons[strtolower($order->device_type)] ?? ucfirst($order->device_type) }}
+                            </dd>
+                        </div>
+                    @endif
+
+                    @if (! empty($order->session_page_views))
+                        <div>
+                            <dt>Kunjungan Halaman</dt>
+                            <dd>{{ $order->session_page_views }} halaman dalam sesi ini</dd>
+                        </div>
+                    @endif
+
+                    @if (! empty($order->landing_page))
+                        <div>
+                            <dt>Landing Page</dt>
+                            <dd class="muted small" style="word-break: break-all;">
+                                {{ $order->landing_page }}
+                            </dd>
+                        </div>
+                    @endif
+
+                    @if (! empty($order->referrer))
+                        <div>
+                            <dt>Referrer</dt>
+                            <dd class="muted small" style="word-break: break-all;">
+                                {{ $order->referrer }}
+                            </dd>
+                        </div>
+                    @endif
+
+                    @if (! empty($order->ip_address))
+                        <div>
+                            <dt>IP Address</dt>
+                            <dd class="muted small">{{ $order->ip_address }}</dd>
+                        </div>
+                    @endif
+                </dl>
+            @endif
         </x-admin.card>
 
         {{-- ============================================================
-             Rincian Barang
+             CATATAN PEMBELI
+             ============================================================ --}}
+        @if ($order->customer_note)
+            <x-admin.card class="panel--warning">
+                <h3 class="mb-2">📝 Catatan Pembeli</h3>
+                <p class="note-body">{{ $order->customer_note }}</p>
+            </x-admin.card>
+        @endif
+
+        {{-- ============================================================
+             RINCIAN BARANG
              ============================================================ --}}
         <x-admin.card>
             <div class="panel__head">
@@ -406,7 +343,7 @@
     <aside class="form-grid__side stack">
 
         {{-- ============================================================
-             Ubah Status Pesanan (GLOBAL — set semua item)
+             UBAH STATUS PESANAN
              ============================================================ --}}
         <x-admin.card>
             <h2>Ubah Status Pesanan</h2>
@@ -433,7 +370,7 @@
         </x-admin.card>
 
         {{-- ============================================================
-             Ringkasan Biaya
+             RINGKASAN BIAYA
              ============================================================ --}}
         <x-admin.card class="panel--accent">
             <h3>Ringkasan Biaya</h3>
@@ -448,7 +385,7 @@
         </x-admin.card>
 
         {{-- ============================================================
-             Riwayat Pelanggan
+             RIWAYAT PELANGGAN
              ============================================================ --}}
         @if (! empty($customerStats))
             <x-admin.card>
@@ -507,51 +444,7 @@
         @endif
 
         {{-- ============================================================
-             Asal Kunjungan (opsional — butuh kolom tracking)
-             ============================================================ --}}
-        @php
-            $hasTracking = ! empty($order->source)
-                || ! empty($order->device_type)
-                || ! empty($order->landing_page)
-                || ! empty($order->referrer)
-                || ! empty($order->session_page_views);
-        @endphp
-
-        @if ($hasTracking)
-            <x-admin.card>
-                <h3>Asal Kunjungan</h3>
-                <dl class="deflist">
-                    @if (! empty($order->source))
-                        <div><dt>Asal</dt><dd>{{ $order->source }}</dd></div>
-                    @endif
-                    @if (! empty($order->device_type))
-                        <div><dt>Jenis Perangkat</dt><dd>{{ $order->device_type }}</dd></div>
-                    @endif
-                    @if (! empty($order->session_page_views))
-                        <div><dt>Kunjungan Halaman</dt><dd>{{ $order->session_page_views }} halaman</dd></div>
-                    @endif
-                    @if (! empty($order->landing_page))
-                        <div>
-                            <dt>Landing Page</dt>
-                            <dd class="muted small" style="word-break: break-all;">
-                                {{ $order->landing_page }}
-                            </dd>
-                        </div>
-                    @endif
-                    @if (! empty($order->referrer))
-                        <div>
-                            <dt>Referrer</dt>
-                            <dd class="muted small" style="word-break: break-all;">
-                                {{ $order->referrer }}
-                            </dd>
-                        </div>
-                    @endif
-                </dl>
-            </x-admin.card>
-        @endif
-
-        {{-- ============================================================
-             Bukti Pembayaran
+             BUKTI PEMBAYARAN
              ============================================================ --}}
         @if ($order->paymentProofs->isNotEmpty())
             @php($latestProof = $order->latestPaymentProof() ?? $order->paymentProofs->last())
