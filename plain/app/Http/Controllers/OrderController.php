@@ -71,6 +71,8 @@ class OrderController extends Controller
                 'account_number' => $pm->account_number,
                 'account_name' => $pm->account_name,
                 'instructions' => $pm->instructions,
+                // QR image tetap di disk 'public' (public/uploads/...),
+                // karena itu file publik metode pembayaran, bukan bukti bayar.
                 'qr_image' => ! empty($pm->qr_image) ? \Illuminate\Support\Facades\Storage::disk('public')->url($pm->qr_image) : null,
             ])
             ->values();
@@ -178,8 +180,11 @@ class OrderController extends Controller
 
         $filename = 'payment-proofs/' . Str::random(40) . '.' . $extension;
 
-        // Simpan file ke storage (setelah nama & konten final ditentukan)
-        Storage::disk('public')->put($filename, $storedContent);
+        // Simpan file ke storage private (setelah nama & konten final ditentukan).
+        // Disk 'payment_proofs' → root storage/app/private, jadi file fisik
+        // ada di storage/app/private/payment-proofs/xxx.webp. Akses lewat
+        // route payment-proof.show (cek owner/admin).
+        Storage::disk('payment_proofs')->put($filename, $storedContent);
 
         // ✅ PERBAIKAN: Buat record DB. Jika gagal, hapus file yang sudah
         // diupload agar tidak ada file sampah (orphaned file) di server.
@@ -225,7 +230,7 @@ class OrderController extends Controller
             if ($method !== null && $method->isAutoVerifiable()) {
                 try {
                     $payload = QrisPayloadReader::read(
-                        Storage::disk('public')->path($filename)
+                        Storage::disk('payment_proofs')->path($filename)
                     );
                     $matched = QrisPayloadReader::matchesMerchant(
                         $payload,
@@ -305,10 +310,10 @@ class OrderController extends Controller
                 }
             }
         } catch (ValidationException $e) {
-            Storage::disk('public')->delete($filename);
+            Storage::disk('payment_proofs')->delete($filename);
             throw $e;
         } catch (\Throwable $e) {
-            Storage::disk('public')->delete($filename);
+            Storage::disk('payment_proofs')->delete($filename);
 
             return back()->withErrors([
                 'proof' => 'Gagal menyimpan bukti pembayaran. Silakan coba lagi.',
