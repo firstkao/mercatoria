@@ -82,20 +82,43 @@
                                         : (str_contains($badge, 'success') ? 'account-status--ok' : '');
                                 @endphp
                                 <tr>
+                                    {{-- ==== Kolom No. Pesanan + thumbnail produk ==== --}}
                                     <td class="account-table__id">
-                                    @php $firstItem = $order->items->first(); @endphp
-                                    <div style="display:flex;align-items:center;gap:8px;">
-                                        @if ($firstItem)
-                                            @php $imgUrl = $firstItem->variant?->imageUrl(); @endphp
-                                            @if ($imgUrl)
-                                                <img src="{{ $imgUrl }}"
-                                                     alt=""
-                                                     style="width:36px;height:36px;min-width:36px;max-width:36px;min-height:36px;max-height:36px;object-fit:cover;border-radius:6px;">
+                                        @php $firstItem = $order->items->first(); @endphp
+                                        <div class="account-order-cell">
+                                            @if ($firstItem)
+                                                @php $imgUrl = $firstItem->variant?->imageUrl(); @endphp
+                                                @if ($imgUrl)
+                                                    <img src="{{ $imgUrl }}"
+                                                         alt=""
+                                                         class="account-order-cell__thumb">
+                                                @endif
                                             @endif
-                                        @endif
-                                        <span>{{ $order->order_number }}</span>
-                                    </div>
-                                </td>
+                                            <span class="account-order-cell__id">{{ $order->order_number }}</span>
+                                        </div>
+                                    </td>
+
+                                    <td class="account-table__muted">
+                                        {{ $order->created_at->timezone('Asia/Jakarta')->translatedFormat('j M Y, H:i') }}
+                                    </td>
+
+                                    <td class="is-right">
+                                        <span class="account-table__amount">
+                                            {{ \App\Support\PriceCalculator::formatRupiah($order->pay_now_idr) }}
+                                        </span>
+                                        <span class="account-table__scheme">{{ $order->payment_scheme }}</span>
+                                    </td>
+
+                                    <td>
+                                        <span class="account-status {{ $mod }}">{{ $order->statusLabel() }}</span>
+                                    </td>
+
+                                    <td class="is-right">
+                                        <a href="{{ route('account.orders.show', $order->order_number) }}"
+                                           class="account-btn account-btn--ghost account-btn--sm">
+                                            Detail
+                                        </a>
+                                    </td>
                                 </tr>
                             @endforeach
                         </tbody>
