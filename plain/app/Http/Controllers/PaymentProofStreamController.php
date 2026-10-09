@@ -11,13 +11,15 @@ class PaymentProofStreamController extends Controller
 {
     public function show(Request $request, PaymentProof $proof): StreamedResponse
     {
-        $user    = $request->user();
+        $webUser = auth('web')->user();
         $isAdmin = auth('admin')->check();
-        $isOwner = $user && $user->id === $proof->order?->user_id;
+        $isOwner = $webUser !== null
+            && (int) $webUser->id === (int) ($proof->order?->user_id);
 
         abort_unless($isAdmin || $isOwner, 403);
 
         $disk = Storage::disk('payment_proofs');
+
         abort_unless($disk->exists($proof->proof_path), 404);
 
         return $disk->response($proof->proof_path);
