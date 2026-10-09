@@ -1041,3 +1041,16 @@ img { max-width: 100%; height: auto; display: block; }
     color: var(--muted);
     white-space: nowrap;
 }
+
+/* Layout 2 kolom untuk Penerima & Pengiriman */
+.penerima-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 0 2rem;
+}
+
+.tracking-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 0 2rem;
+}
