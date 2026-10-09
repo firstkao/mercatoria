@@ -2240,12 +2240,46 @@ input[type="number"] { -moz-appearance: textfield; appearance: textfield; }
 }
 .account-table .is-right:last-child { padding-right: 0; }
 .account-table__muted { color: var(--_faint); font-size: 12px; }
-.account-table__amount {
+
+/* Order cell — thumbnail + nomor pesanan (halaman /akun/pesanan) */
+.account-table__id {
     font-family: var(--font-mono);
     font-size: 13px;
-    font-weight: 600;
+    font-weight: 500;
     color: var(--_ink);
-    font-feature-settings: "tnum" 1;
+    letter-spacing: -.01em;
+}
+
+.account-order-cell {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 0;
+}
+
+.account-order-cell__thumb {
+    width: 40px;
+    height: 40px;
+    min-width: 40px;
+    min-height: 40px;
+    max-width: 40px;
+    max-height: 40px;
+    object-fit: cover;
+    object-position: center;
+    border-radius: 3px;
+    background: var(--_hair-soft);
+    border: 1px solid var(--_hair);
+    flex-shrink: 0;
+    display: block;
+}
+
+.account-order-cell__id {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--_ink);
+    letter-spacing: -.01em;
+    overflow-wrap: anywhere;
 }
 
 /* --- Status pill --- */
