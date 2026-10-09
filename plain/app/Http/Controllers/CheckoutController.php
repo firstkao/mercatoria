@@ -207,6 +207,7 @@ class CheckoutController extends Controller
                 'status'              => 'menunggu_pembayaran',
                 'subtotal_idr'        => $subtotal,
                 'discount_idr'        => $discountIdr,      // ✅ FIX
+                'total_idr'           => $netTotal,         // ✅ FIX
                 'pay_now_idr'         => $payNow,
                 'remaining_idr'       => $remaining,
                 'coin_estimate'       => $coinEstimate,
