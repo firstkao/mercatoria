@@ -53,90 +53,101 @@
         </x-admin.card>
 
         {{-- ============================================================
-             (2 + 4) PENERIMA, PENGIRIMAN & ASAL KUNJUNGAN
-             ============================================================ --}}
+     (2 + 4) PENERIMA, PENGIRIMAN & ASAL KUNJUNGAN — 2 KOLOM
+     ============================================================ --}}
         <x-admin.card>
             <div class="panel__head">
                 <h2 class="m-0">Penerima &amp; Pengiriman</h2>
                 <span class="muted small">#{{ $order->order_number }}</span>
             </div>
-
-            {{-- BAGIAN A — PENERIMA --}}
-            <h3 class="mt-2 mb-2">👤 Penerima</h3>
-            <dl class="deflist">
-                <div>
-                    <dt>Nama Penerima</dt>
-                    <dd>
-                        {{ $order->recipient_name ?? $order->user?->full_name ?? '—' }}
-                        @if (
-                            $order->user?->full_name
-                            && $order->recipient_name
-                            && $order->recipient_name !== $order->user->full_name
-                        )
-                            <span class="muted small">(akun: {{ $order->user->full_name }})</span>
+        
+            {{-- ============================================================
+                 BARIS 1 — Penerima (kiri) + Alamat Pengiriman (kanan)
+                 ============================================================ --}}
+            <div class="penerima-grid">
+                {{-- Kolom Kiri: Penerima --}}
+                <section>
+                    <h3 class="mt-2 mb-2">👤 Penerima</h3>
+                    <dl class="deflist">
+                        <div>
+                            <dt>Nama Penerima</dt>
+                            <dd>
+                                {{ $order->recipient_name ?? $order->user?->full_name ?? '—' }}
+                                @if (
+                                    $order->user?->full_name
+                                    && $order->recipient_name
+                                    && $order->recipient_name !== $order->user->full_name
+                                )
+                                    <span class="muted small">(akun: {{ $order->user->full_name }})</span>
+                                @endif
+                            </dd>
+                        </div>
+        
+                        <div>
+                            <dt>No. HP</dt>
+                            <dd>
+                                @php $phone = $order->recipient_phone ?? $order->user?->whatsapp; @endphp
+                                @if ($phone)
+                                    <a href="tel:{{ $phone }}">{{ $phone }}</a>
+                                    <a href="https://wa.me/{{ preg_replace('/^0/', '62', preg_replace('/\D/', '', $phone)) }}"
+                                       target="_blank" rel="noopener"
+                                       class="muted small">💬 WA</a>
+                                @else
+                                    —
+                                @endif
+                            </dd>
+                        </div>
+        
+                        <div>
+                            <dt>Email</dt>
+                            <dd>
+                                @php $email = $order->recipient_email ?? $order->user?->email; @endphp
+                                @if ($email)
+                                    <a href="mailto:{{ $email }}">{{ $email }}</a>
+                                @else
+                                    —
+                                @endif
+                            </dd>
+                        </div>
+                    </dl>
+                </section>
+        
+                {{-- Kolom Kanan: Alamat Pengiriman --}}
+                <section>
+                    <h3 class="mt-2 mb-2">📦 Alamat Pengiriman</h3>
+                    <dl class="deflist">
+                        <div>
+                            <dt>Alamat</dt>
+                            <dd>
+                                @php
+                                    $addressParts = array_filter([
+                                        $order->shipping_address ?? null,
+                                        $order->shipping_city ?? null,
+                                        $order->shipping_province ?? null,
+                                        $order->shipping_postal_code ?? null,
+                                    ]);
+                                @endphp
+                                @if (! empty($addressParts))
+                                    {!! nl2br(e(implode(",\n", $addressParts))) !!}
+                                @else
+                                    <span class="muted">—</span>
+                                @endif
+                            </dd>
+                        </div>
+        
+                        @if ($order->shipping_note)
+                            <div>
+                                <dt>Catatan Kirim</dt>
+                                <dd>{{ $order->shipping_note }}</dd>
+                            </div>
                         @endif
-                    </dd>
-                </div>
-
-                <div>
-                    <dt>No. HP</dt>
-                    <dd>
-                        @php $phone = $order->recipient_phone ?? $order->user?->phone; @endphp
-                        @if ($phone)
-                            <a href="tel:{{ $phone }}">{{ $phone }}</a>
-                            <a href="https://wa.me/{{ preg_replace('/^0/', '62', preg_replace('/\D/', '', $phone)) }}"
-                               target="_blank" rel="noopener"
-                               class="muted small">💬 WA</a>
-                        @else
-                            —
-                        @endif
-                    </dd>
-                </div>
-
-                <div>
-                    <dt>Email</dt>
-                    <dd>
-                        @php $email = $order->recipient_email ?? $order->user?->email; @endphp
-                        @if ($email)
-                            <a href="mailto:{{ $email }}">{{ $email }}</a>
-                        @else
-                            —
-                        @endif
-                    </dd>
-                </div>
-            </dl>
-
-            {{-- BAGIAN B — ALAMAT PENGIRIMAN --}}
-            <h3 class="mt-4 mb-2">📦 Alamat Pengiriman</h3>
-            <dl class="deflist">
-                <div>
-                    <dt>Alamat</dt>
-                    <dd>
-                        @php
-                            $addressParts = array_filter([
-                                $order->shipping_address ?? null,
-                                $order->shipping_city ?? null,
-                                $order->shipping_province ?? null,
-                                $order->shipping_postal_code ?? null,
-                            ]);
-                        @endphp
-                        @if (! empty($addressParts))
-                            {!! nl2br(e(implode(",\n", $addressParts))) !!}
-                        @else
-                            <span class="muted">—</span>
-                        @endif
-                    </dd>
-                </div>
-
-                @if ($order->shipping_note)
-                    <div>
-                        <dt>Catatan Kirim</dt>
-                        <dd>{{ $order->shipping_note }}</dd>
-                    </div>
-                @endif
-            </dl>
-
-            {{-- BAGIAN C — ASAL KUNJUNGAN --}}
+                    </dl>
+                </section>
+            </div>
+        
+            {{-- ============================================================
+                 BARIS 2 — Asal Kunjungan (full width, isi 2 kolom)
+                 ============================================================ --}}
             @php
                 $hasTracking = ! empty($order->source)
                     || ! empty($order->device_type)
@@ -145,10 +156,10 @@
                     || ! empty($order->session_page_views)
                     || ! empty($order->ip_address);
             @endphp
-
+        
             @if ($hasTracking)
                 <h3 class="mt-4 mb-2">🌐 Asal Kunjungan</h3>
-                <dl class="deflist">
+                <dl class="deflist tracking-grid">
                     @if (! empty($order->source))
                         <div>
                             <dt>Asal</dt>
@@ -172,7 +183,7 @@
                             </dd>
                         </div>
                     @endif
-
+        
                     @if (! empty($order->device_type))
                         <div>
                             <dt>Jenis Perangkat</dt>
@@ -189,14 +200,14 @@
                             </dd>
                         </div>
                     @endif
-
+        
                     @if (! empty($order->session_page_views))
                         <div>
                             <dt>Kunjungan Halaman</dt>
                             <dd>{{ $order->session_page_views }} halaman dalam sesi ini</dd>
                         </div>
                     @endif
-
+        
                     @if (! empty($order->landing_page))
                         <div>
                             <dt>Landing Page</dt>
@@ -205,7 +216,7 @@
                             </dd>
                         </div>
                     @endif
-
+        
                     @if (! empty($order->referrer))
                         <div>
                             <dt>Referrer</dt>
@@ -214,7 +225,7 @@
                             </dd>
                         </div>
                     @endif
-
+        
                     @if (! empty($order->ip_address))
                         <div>
                             <dt>IP Address</dt>
