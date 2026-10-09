@@ -53,18 +53,32 @@
         </x-admin.card>
 
         {{-- ============================================================
-     (2 + 4) PENERIMA, PENGIRIMAN & ASAL KUNJUNGAN — 2 KOLOM
-     ============================================================ --}}
+             PENERIMA, PENGIRIMAN & ASAL KUNJUNGAN
+             ============================================================ --}}
         <x-admin.card>
             <div class="panel__head">
                 <h2 class="m-0">Penerima &amp; Pengiriman</h2>
                 <span class="muted small">#{{ $order->order_number }}</span>
             </div>
-        
+
+            {{-- Layout 2 kolom responsive --}}
+            <style>
+                .order-penerima-grid {
+                    display: grid;
+                    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+                    gap: 0 2rem;
+                }
+                .order-tracking-grid {
+                    display: grid;
+                    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+                    gap: 0 2rem;
+                }
+            </style>
+
             {{-- ============================================================
                  BARIS 1 — Penerima (kiri) + Alamat Pengiriman (kanan)
                  ============================================================ --}}
-            <div class="penerima-grid">
+            <div class="order-penerima-grid">
                 {{-- Kolom Kiri: Penerima --}}
                 <section>
                     <h3 class="mt-2 mb-2">👤 Penerima</h3>
@@ -82,7 +96,7 @@
                                 @endif
                             </dd>
                         </div>
-        
+
                         <div>
                             <dt>No. HP</dt>
                             <dd>
@@ -97,7 +111,7 @@
                                 @endif
                             </dd>
                         </div>
-        
+
                         <div>
                             <dt>Email</dt>
                             <dd>
@@ -111,7 +125,7 @@
                         </div>
                     </dl>
                 </section>
-        
+
                 {{-- Kolom Kanan: Alamat Pengiriman --}}
                 <section>
                     <h3 class="mt-2 mb-2">📦 Alamat Pengiriman</h3>
@@ -134,7 +148,7 @@
                                 @endif
                             </dd>
                         </div>
-        
+
                         @if ($order->shipping_note)
                             <div>
                                 <dt>Catatan Kirim</dt>
@@ -144,7 +158,7 @@
                     </dl>
                 </section>
             </div>
-        
+
             {{-- ============================================================
                  BARIS 2 — Asal Kunjungan (full width, isi 2 kolom)
                  ============================================================ --}}
@@ -156,10 +170,10 @@
                     || ! empty($order->session_page_views)
                     || ! empty($order->ip_address);
             @endphp
-        
+
             @if ($hasTracking)
                 <h3 class="mt-4 mb-2">🌐 Asal Kunjungan</h3>
-                <dl class="deflist tracking-grid">
+                <dl class="deflist order-tracking-grid">
                     @if (! empty($order->source))
                         <div>
                             <dt>Asal</dt>
@@ -183,7 +197,7 @@
                             </dd>
                         </div>
                     @endif
-        
+
                     @if (! empty($order->device_type))
                         <div>
                             <dt>Jenis Perangkat</dt>
@@ -200,14 +214,14 @@
                             </dd>
                         </div>
                     @endif
-        
+
                     @if (! empty($order->session_page_views))
                         <div>
                             <dt>Kunjungan Halaman</dt>
                             <dd>{{ $order->session_page_views }} halaman dalam sesi ini</dd>
                         </div>
                     @endif
-        
+
                     @if (! empty($order->landing_page))
                         <div>
                             <dt>Landing Page</dt>
@@ -216,7 +230,7 @@
                             </dd>
                         </div>
                     @endif
-        
+
                     @if (! empty($order->referrer))
                         <div>
                             <dt>Referrer</dt>
@@ -225,7 +239,7 @@
                             </dd>
                         </div>
                     @endif
-        
+
                     @if (! empty($order->ip_address))
                         <div>
                             <dt>IP Address</dt>
