@@ -77,9 +77,11 @@ class PaymentProofController extends Controller
             ? Carbon::parse($proofRecord->reviewed_at)
             : null;
 
+        // File bukti sekarang di disk private 'payment_proofs' (tidak publik).
+        // URL di-generate lewat route payment-proof.show yang cek owner/admin.
         return view('admin.payments.show', [
             'proof' => $proofRecord,
-            'imageUrl' => Storage::disk('public')->url($proofRecord->proof_path),
+            'imageUrl' => route('payment-proof.show', $proofRecord->id),
         ]);
     }
 
