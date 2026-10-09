@@ -10,11 +10,51 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class Order extends Model
 {
     protected $fillable = [
-    'order_number', 'user_id', 'marketplace_id', 'status', 'payment_scheme',
-    'subtotal_idr', 'discount_type', 'discount_idr', 'total_idr', 'pay_now_idr',
-    'remaining_idr', 'marketplace_fee_idr', 'qris_fee_idr', 'coin_estimate',  // ← tambah 'qris_fee_idr'
-    'pricing_snapshot', 'payment_deadline_at', 'paid_at', 'completed_at',
-    'cancelled_at', 'refund_note', 'customer_note',
+    // ===== Order & Pembayaran =====
+    'user_id',
+    'order_number',
+    'status',
+    'payment_scheme',
+    'subtotal_idr',
+    'discount_type',
+    'discount_idr',
+    'total_idr',
+    'pay_now_idr',
+    'remaining_idr',
+    'marketplace_id',
+    'marketplace_fee_idr',
+    'qris_fee_idr',
+    'coin_estimate',
+    'pricing_snapshot',
+
+    // ===== Timestamp Status =====
+    'payment_deadline_at',
+    'paid_at',
+    'completed_at',
+    'cancelled_at',
+
+    // ===== Catatan =====
+    'refund_note',
+    'customer_note',
+
+    // ===== (2) PENERIMA & PENGIRIMAN =====
+    'recipient_name',
+    'recipient_phone',
+    'recipient_email',
+    'shipping_address',
+    'shipping_city',
+    'shipping_province',
+    'shipping_postal_code',
+    'shipping_note',
+
+    // ===== (4) TRACKING KUNJUNGAN =====
+    'source',
+    'device_type',
+    'landing_page',
+    'referrer',
+    'session_page_views',
+    'user_agent',
+    'ip_address',
 ];
 
     protected function casts(): array
