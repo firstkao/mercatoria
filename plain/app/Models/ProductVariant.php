@@ -45,9 +45,32 @@ class ProductVariant extends Model
         return $this->status === self::STATUS_AVAILABLE;
     }
 
+    /**
+     * URL foto varian.
+     *
+     * Prioritas:
+     *   1. Foto varian sendiri (image_path)
+     *   2. Foto pertama galeri produk (product_images, urut sort_order)
+     *   3. null → Blade tampilkan placeholder
+     */
     public function imageUrl(): ?string
     {
-        return $this->image_path ? Storage::disk('public')->url($this->image_path) : null;
+        // 1) Foto varian sendiri
+        if (! empty($this->image_path)
+            && Storage::disk('public')->exists($this->image_path)) {
+            return Storage::disk('public')->url($this->image_path);
+        }
+
+        // 2) Fallback ke galeri produk
+        $firstImage = $this->product?->images()->first();
+
+        if ($firstImage && ! empty($firstImage->image_path)
+            && Storage::disk('public')->exists($firstImage->image_path)) {
+            return Storage::disk('public')->url($firstImage->image_path);
+        }
+
+        // 3) Kosong
+        return null;
     }
 
     /**
