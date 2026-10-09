@@ -10,6 +10,85 @@
 <div class="form-grid">
     <div class="form-grid__main stack">
 
+ {{-- ============================================================
+     (2) PENERIMA & PENGIRIMAN
+     ============================================================ --}}
+    <x-admin.card>
+        <div class="panel__head">
+            <h2 class="m-0">Penerima &amp; Pengiriman</h2>
+            <span class="muted small">#{{ $order->order_number }}</span>
+        </div>
+    
+        <dl class="deflist">
+            <div>
+                <dt>Nama Penerima</dt>
+                <dd>
+                    {{ $order->recipient_name ?? $order->user?->full_name ?? '—' }}
+                    @if (
+                        $order->user?->full_name
+                        && $order->recipient_name
+                        && $order->recipient_name !== $order->user->full_name
+                    )
+                        <span class="muted small">(akun: {{ $order->user->full_name }})</span>
+                    @endif
+                </dd>
+            </div>
+    
+            <div>
+                <dt>No. HP</dt>
+                <dd>
+                    @php $phone = $order->recipient_phone ?? $order->user?->phone; @endphp
+                    @if ($phone)
+                        <a href="tel:{{ $phone }}">{{ $phone }}</a>
+                        <a href="https://wa.me/{{ preg_replace('/^0/', '62', preg_replace('/\D/', '', $phone)) }}"
+                           target="_blank" rel="noopener"
+                           class="muted small">💬 WA</a>
+                    @else
+                        —
+                    @endif
+                </dd>
+            </div>
+    
+            <div>
+                <dt>Email</dt>
+                <dd>
+                    @php $email = $order->recipient_email ?? $order->user?->email; @endphp
+                    @if ($email)
+                        <a href="mailto:{{ $email }}">{{ $email }}</a>
+                    @else
+                        —
+                    @endif
+                </dd>
+            </div>
+    
+            <div>
+                <dt>Alamat Pengiriman</dt>
+                <dd>
+                    @php
+                        $addressParts = array_filter([
+                            $order->shipping_address ?? null,
+                            $order->shipping_city ?? null,
+                            $order->shipping_province ?? null,
+                            $order->shipping_postal_code ?? null,
+                        ]);
+                    @endphp
+                    @if (! empty($addressParts))
+                        {!! nl2br(e(implode(",\n", $addressParts))) !!}
+                    @else
+                        <span class="muted">—</span>
+                    @endif
+                </dd>
+            </div>
+    
+            @if ($order->shipping_note)
+                <div>
+                    <dt>Catatan Kirim</dt>
+                    <dd>{{ $order->shipping_note }}</dd>
+                </div>
+            @endif
+        </dl>
+    </x-admin.card>
+        
         {{-- ============================================================
              Catatan Pembeli
              ============================================================ --}}
