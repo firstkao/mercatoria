@@ -264,76 +264,77 @@
                 </x-slot:head>
 
                 @foreach ($order->items as $item)
-                    @php
-                        $effStatus = $item->item_status ?? $order->status;
-                        $effLabel  = \App\Enums\OrderStatus::tryFrom($effStatus)?->label() ?? $effStatus;
-                        $effBadge  = \App\Enums\OrderStatus::tryFrom($effStatus)?->badgeClass() ?? '';
-                        $canCancel = \App\Enums\OrderStatus::rank($effStatus) < \App\Enums\OrderStatus::cancelLockRank();
-                    @endphp
-                    <tr>
-                        <td class="table__thumb">
-                            @if ($item->variant?->image_path)
-                                <img src="{{ $item->variant->imageUrl() }}" alt="">
-                            @else
-                                <div class="thumb-empty">
-                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
-                                        <rect x="3" y="3" width="18" height="18" rx="2"/>
-                                        <circle cx="9" cy="9" r="2"/>
-                                        <path d="M21 15l-5-5L5 21"/>
-                                    </svg>
-                                </div>
-                            @endif
-                        </td>
-
-                        <td>
-                            <strong>{{ $item->product_name_snapshot }}</strong>
-                            <div class="muted small">Varian: {{ $item->variant_name_snapshot }}</div>
-                        </td>
-
-                        <td>x{{ $item->quantity }}</td>
-
-                        <td>{{ \App\Support\PriceCalculator::formatRupiah($item->unit_price_idr) }}</td>
-
-                        <td><strong>{{ \App\Support\PriceCalculator::formatRupiah($item->line_total_idr) }}</strong></td>
-
-                        <td>
-                            <form method="POST"
-                                  action="{{ route('admin.orders.items.status', [$order, $item]) }}"
-                                  class="item-status-form">
-                                @csrf
-                                @method('PUT')
-
-                                <select name="item_status">
-                                    <option value="" @selected($item->item_status === null)>
-                                        Ikut status pesanan
+                @php
+                    $effStatus = $item->item_status ?? $order->status;
+                    $effLabel  = \App\Enums\OrderStatus::tryFrom($effStatus)?->label() ?? $effStatus;
+                    $effBadge  = \App\Enums\OrderStatus::tryFrom($effStatus)?->badgeClass() ?? '';
+                    $canCancel = \App\Enums\OrderStatus::rank($effStatus) < \App\Enums\OrderStatus::cancelLockRank();
+                    $imgUrl    = $item->variant?->imageUrl();
+                @endphp
+                <tr>
+                    <td class="table__thumb">
+                        @if ($imgUrl)
+                            <img src="{{ $imgUrl }}" alt="">
+                        @else
+                            <div class="thumb-empty">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+                                    <rect x="3" y="3" width="18" height="18" rx="2"/>
+                                    <circle cx="9" cy="9" r="2"/>
+                                    <path d="M21 15l-5-5L5 21"/>
+                                </svg>
+                            </div>
+                        @endif
+                    </td>
+            
+                    <td>
+                        <strong>{{ $item->product_name_snapshot }}</strong>
+                        <div class="muted small">Varian: {{ $item->variant_name_snapshot }}</div>
+                    </td>
+            
+                    <td>x{{ $item->quantity }}</td>
+            
+                    <td>{{ \App\Support\PriceCalculator::formatRupiah($item->unit_price_idr) }}</td>
+            
+                    <td><strong>{{ \App\Support\PriceCalculator::formatRupiah($item->line_total_idr) }}</strong></td>
+            
+                    <td>
+                        <form method="POST"
+                              action="{{ route('admin.orders.items.status', [$order, $item]) }}"
+                              class="item-status-form">
+                            @csrf
+                            @method('PUT')
+            
+                            <select name="item_status">
+                                <option value="" @selected($item->item_status === null)>
+                                    Ikut status pesanan
+                                </option>
+                                @foreach (\App\Enums\OrderStatus::options() as $value => $label)
+                                    @php
+                                        $isFinal = in_array($value, ['dibatalkan', 'dana_dikembalikan'], true);
+                                    @endphp
+                                    <option value="{{ $value }}"
+                                            @selected($item->item_status === $value)
+                                            @disabled($isFinal && ! $canCancel)>
+                                        {{ $label }}{{ ($isFinal && ! $canCancel) ? ' (sudah diproses)' : '' }}
                                     </option>
-                                    @foreach (\App\Enums\OrderStatus::options() as $value => $label)
-                                        @php
-                                            $isFinal = in_array($value, ['dibatalkan', 'dana_dikembalikan'], true);
-                                        @endphp
-                                        <option value="{{ $value }}"
-                                                @selected($item->item_status === $value)
-                                                @disabled($isFinal && ! $canCancel)>
-                                            {{ $label }}{{ ($isFinal && ! $canCancel) ? ' (sudah diproses)' : '' }}
-                                        </option>
-                                    @endforeach
-                                </select>
-
-                                <button type="submit" class="btn btn--small">Update</button>
-
-                                <span class="item-status-form__badge">
-                                    @if ($item->item_status !== null)
-                                        <span class="badge {{ $effBadge }}">{{ $effLabel }}</span>
-                                    @else
-                                        <span class="text-muted">
-                                            ikut: {{ \App\Enums\OrderStatus::tryFrom($order->status)?->label() ?? $order->status }}
-                                        </span>
-                                    @endif
-                                </span>
-                            </form>
-                        </td>
-                    </tr>
-                @endforeach
+                                @endforeach
+                            </select>
+            
+                            <button type="submit" class="btn btn--small">Update</button>
+            
+                            <span class="item-status-form__badge">
+                                @if ($item->item_status !== null)
+                                    <span class="badge {{ $effBadge }}">{{ $effLabel }}</span>
+                                @else
+                                    <span class="text-muted">
+                                        ikut: {{ \App\Enums\OrderStatus::tryFrom($order->status)?->label() ?? $order->status }}
+                                    </span>
+                                @endif
+                            </span>
+                        </form>
+                    </td>
+                </tr>
+            @endforeach
             </x-admin.table>
 
             @if ($order->items->contains(fn ($i) => $i->item_status !== null))
