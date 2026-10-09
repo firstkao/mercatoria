@@ -216,6 +216,15 @@ class CheckoutController extends Controller
                 'marketplace_fee_idr' => $mpFee,            // ✅ FIX
                 'customer_note'       => $request->input('customer_note'),
 
+                // ✅ TAMBAH INI
+                'pricing_snapshot'    => json_encode([
+                    'yuan_rate'            => Setting::get('yuan_rate'),
+                    'markup_percent'       => Setting::get('markup_percent'),
+                    'coin_earn_percent'    => Setting::get('coin_earn_percent'),
+                    'coin_max_use_percent' => Setting::get('coin_max_use_percent'),
+                    'calculated_at'        => now()->toIso8601String(),
+                ]),
+
                 // ===== (2) PENERIMA & PENGIRIMAN =====
                 'recipient_name'       => $request->input('recipient_name', $user->full_name),
                 'recipient_phone'      => $request->input('recipient_phone', $user->phone),
