@@ -47,11 +47,14 @@
                     </div>
                     <ul class="cart-ledger">
                         @foreach($cartItems as $item)
-                            @php($price = $item->variant->sellingPrice($calculator))
+                            @php
+                                $price = $item->variant->sellingPrice($calculator);
+                                $imgUrl = $item->variant->imageUrl();
+                            @endphp
                             <li class="cart-ledger__item">
                                 <div class="cart-ledger__thumb">
-                                    @if($item->variant->image_path)
-                                        <img src="{{ $item->variant->imageUrl() }}" alt="">
+                                    @if($imgUrl)
+                                        <img src="{{ $imgUrl }}" alt="{{ $item->variant->name }}">
                                     @else
                                         <div class="image-placeholder">IMG</div>
                                     @endif
