@@ -35,8 +35,6 @@ class CheckoutController extends Controller
             'marketplace_id' => ['required', Rule::exists('marketplaces', 'id')->where('is_active', true)],
             'discount_type' => 'required|in:none,coin,voucher',
             'voucher_code' => 'nullable|string',
-            // Catatan pembelian OPSIONAL — boleh dikosongkan. Kalau diisi,
-            // hanya dibatasi panjangnya (1000 char) supaya tidak overflow.
             'customer_note' => 'nullable|string|max:1000',
         ], [
             'customer_note.max' => 'Catatan maksimal 1000 karakter.',
@@ -203,22 +201,38 @@ class CheckoutController extends Controller
             $orderNumber = OrderNumberGenerator::generate();
 
             $order = Order::create([
-                'order_number' => $orderNumber,
-                'user_id' => $user->id,
-                'marketplace_id' => $mp->id,
-                'status' => 'menunggu_pembayaran',
-                'payment_scheme' => $scheme,
-                'subtotal_idr' => $subtotal,
-                'discount_type' => $discountType,
-                'discount_idr' => $discountIdr,
-                'total_idr' => $netTotal,
-                'pay_now_idr' => $payNow,
-                'remaining_idr' => $remaining,
-                'marketplace_fee_idr' => $mpFee,
-                'coin_estimate' => $coinEstimate,
-                'pricing_snapshot' => $calculator->toArray(),
-                'payment_deadline_at' => now()->addHours(Setting::integer('payment_deadline_hours', 24)),
-                'customer_note' => $request->input('customer_note'),
+                // ===== field existing =====
+                'user_id'             => $user->id,
+                'order_number'        => $orderNumber,
+                'status'              => 'menunggu_pembayaran',
+                'subtotal_idr'        => $subtotal,
+                'discount_idr'        => $discountIdr,      // ✅ FIX
+                'pay_now_idr'         => $payNow,
+                'remaining_idr'       => $remaining,
+                'coin_estimate'       => $coinEstimate,
+                'payment_scheme'      => $scheme,
+                'marketplace_id'      => $mp->id,           // ✅ FIX
+                'marketplace_fee_idr' => $mpFee,            // ✅ FIX
+                'customer_note'       => $request->input('customer_note'),
+
+                // ===== (2) PENERIMA & PENGIRIMAN =====
+                'recipient_name'       => $request->input('recipient_name', $user->full_name),
+                'recipient_phone'      => $request->input('recipient_phone', $user->phone),
+                'recipient_email'      => $request->input('recipient_email', $user->email),
+                'shipping_address'     => $request->input('shipping_address', $user->address),
+                'shipping_city'        => $request->input('shipping_city'),
+                'shipping_province'    => $request->input('shipping_province'),
+                'shipping_postal_code' => $request->input('shipping_postal_code'),
+                'shipping_note'        => $request->input('shipping_note'),
+
+                // ===== (4) TRACKING KUNJUNGAN =====
+                'source'             => $this->detectSource($request),
+                'device_type'        => $this->detectDevice($request->userAgent()),
+                'landing_page'       => session('landing_page') ?? url()->previous(),
+                'referrer'           => $request->header('referer'),
+                'session_page_views' => (int) session('page_views', 0),
+                'user_agent'         => mb_substr((string) $request->userAgent(), 0, 500),
+                'ip_address'         => $request->ip(),
             ]);
 
             foreach ($orderItemsData as $itemData) {
@@ -283,5 +297,71 @@ class CheckoutController extends Controller
         return redirect()
             ->route('account.orders.show', $order->order_number)
             ->with('status', "Pesanan {$order->order_number} berhasil dibuat! Silakan upload bukti pembayaran.");
+    }
+
+    // ============================================================
+    // HELPER METHODS — di luar store(), sejajar dengan store()
+    // ============================================================
+
+    /**
+     * Deteksi asal kunjungan dari UTM / session / referer.
+     */
+    private function detectSource(Request $request): string
+    {
+        // 1. UTM parameter
+        if ($utm = $request->input('utm_source') ?? session('utm_source')) {
+            return strtolower(substr($utm, 0, 50));
+        }
+
+        // 2. HTTP referer
+        $referer = strtolower((string) $request->header('referer'));
+
+        if ($referer === '') {
+            return 'direct';
+        }
+
+        $map = [
+            'google'    => ['google.', 'googleapis'],
+            'instagram' => ['instagram.', 'ig.me'],
+            'tiktok'    => ['tiktok.', 'vt.tiktok'],
+            'facebook'  => ['facebook.', 'fb.me', 'fb.com'],
+            'twitter'   => ['twitter.', 't.co', 'x.com'],
+            'shopee'    => ['shopee.'],
+            'tokopedia' => ['tokopedia.'],
+            'whatsapp'  => ['wa.me', 'whatsapp.'],
+            'youtube'   => ['youtube.', 'youtu.be'],
+        ];
+
+        foreach ($map as $source => $needles) {
+            foreach ($needles as $needle) {
+                if (str_contains($referer, $needle)) {
+                    return $source;
+                }
+            }
+        }
+
+        return 'referral';
+    }
+
+    /**
+     * Deteksi jenis perangkat dari User-Agent.
+     */
+    private function detectDevice(?string $userAgent): string
+    {
+        if (! $userAgent) {
+            return 'unknown';
+        }
+
+        $ua = strtolower($userAgent);
+
+        if (preg_match('/ipad|tablet|playbook|silk/i', $ua)) {
+            return 'tablet';
+        }
+
+        if (preg_match('/mobile|android|iphone|ipod|blackberry|opera mini|iemobile/i', $ua)) {
+            return 'mobile';
+        }
+
+        return 'desktop';
     }
 }
