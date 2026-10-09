@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\ActivityLog;
 use App\Enums\OrderStatus;
+use App\Models\ActivityLog;
 use App\Models\Order;
 use App\Models\PaymentMethod;
 use App\Models\Setting;
@@ -23,33 +23,49 @@ use Intervention\Image\ImageManager;
 
 class OrderController extends Controller
 {
+    /**
+     * Halaman /akun/pesanan — daftar semua pesanan + tagihan menunggu.
+     */
     public function index(Request $request): View
     {
-        $orders = $request->user()->orders()->latest()->paginate(20);
+        // Eager-load relasi yang dipakai di Blade:
+        // - items.variant.product.images → untuk thumbnail fallback (varian → galeri produk)
+        // Ini mencegah N+1 query di kolom thumbnail order history.
+        $orders = $request->user()
+            ->orders()
+            ->with(['items.variant.product.images'])
+            ->latest()
+            ->paginate(20);
 
-        // FASE 1: "Tagihan Menunggu" — order yang butuh aksi bayar/unggah bukti.
-        // Query TERPISAH dari seluruh order user (bukan hanya halaman pagination
-        // saat ini), supaya order lama yang belum dibayar tetap muncul di sini.
-        $unpaid = $request->user()->orders()
+        // "Tagihan Menunggu" — query TERPISAH dari seluruh order user
+        // (bukan hanya halaman pagination saat ini), supaya order lama
+        // yang belum dibayar tetap muncul di sini.
+        $unpaid = $request->user()
+            ->orders()
             ->whereIn('status', [
                 OrderStatus::MenungguPembayaran->value,
                 OrderStatus::PembayaranGagal->value,
             ])
-            ->orderByRaw('COALESCE(payment_deadline_at, created_at) asc')
+            ->orderByRaw('COALESCE(payment_deadline_at, created_at) ASC')
             ->take(5)
             ->get();
 
         return view('orders.index', compact('orders', 'unpaid'));
     }
 
+    /**
+     * Halaman /akun/pesanan/{orderNumber} — detail satu pesanan.
+     */
     public function show(Request $request, string $orderNumber): View
     {
         $order = Order::where('user_id', $request->user()->id)
             ->where('order_number', $orderNumber)
             ->firstOrFail();
 
+        // Eager-load semua relasi yang dipakai di Blade. `items.variant.product.images`
+        // dipakai untuk thumbnail fallback (varian → galeri produk).
         $order->load([
-            'items.variant.product',
+            'items.variant.product.images',
             'paymentProofs.method',
             'marketplace',
             'statusHistory.admin',
@@ -66,20 +82,25 @@ class OrderController extends Controller
         // dan menghasilkan PHP tidak valid → halaman detail pesanan 500.
         $paymentMethodsJs = $paymentMethods
             ->map(fn (PaymentMethod $pm): array => [
-                'id' => $pm->id,
-                'type' => $pm->type ?? 'bank',
+                'id'             => $pm->id,
+                'type'           => $pm->type ?? 'bank',
                 'account_number' => $pm->account_number,
-                'account_name' => $pm->account_name,
-                'instructions' => $pm->instructions,
+                'account_name'   => $pm->account_name,
+                'instructions'   => $pm->instructions,
                 // QR image tetap di disk 'public' (public/uploads/...),
                 // karena itu file publik metode pembayaran, bukan bukti bayar.
-                'qr_image' => ! empty($pm->qr_image) ? \Illuminate\Support\Facades\Storage::disk('public')->url($pm->qr_image) : null,
+                'qr_image'       => ! empty($pm->qr_image)
+                    ? Storage::disk('public')->url($pm->qr_image)
+                    : null,
             ])
             ->values();
 
         return view('orders.show', compact('order', 'paymentMethods', 'paymentMethodsJs'));
     }
 
+    /**
+     * Upload bukti pembayaran dari sisi customer.
+     */
     public function proof(Request $request, string $orderNumber): RedirectResponse
     {
         $order = Order::where('user_id', $request->user()->id)
@@ -112,7 +133,7 @@ class OrderController extends Controller
 
         $request->validate([
             // ✅ PERBAIKAN: Cek juga is_active agar user tidak bisa pilih
-            // metode pembayaran yang sudah dinonaktifkan admin
+            // metode pembayaran yang sudah dinonaktifkan admin.
             'payment_method_id' => [
                 'required',
                 Rule::exists('payment_methods', 'id')->where('is_active', true),
@@ -123,7 +144,7 @@ class OrderController extends Controller
         ]);
 
         // =========================================================
-        // QRIS fee: kalau nominal tagihan > Rp500.000 dan metode = QRIS,
+        // QRIS fee — kalau nominal tagihan > Rp500.000 dan metode = QRIS,
         // tambahkan biaya 0,3% dari nominal. Disimpan ke orders.qris_fee_idr
         // supaya: (a) user tahu persis nominal transfer, (b) kalau user
         // re-upload dengan metode lain, fee bisa di-reset.
@@ -131,9 +152,11 @@ class OrderController extends Controller
         $method = PaymentMethod::find($request->input('payment_method_id'));
         $isQris = $method !== null && ($method->type ?? 'bank') === 'qris';
         $qrisFee = 0;
+
         if ($isQris && $order->pay_now_idr > 500_000) {
             $qrisFee = (int) floor($order->pay_now_idr * 0.003);
         }
+
         $order->update(['qris_fee_idr' => $qrisFee]);
 
         $file = $request->file('proof');
@@ -143,7 +166,10 @@ class OrderController extends Controller
         // dengan nama xxx.webp sehingga admin melihat "bukti" berlabel webp
         // yang isinya data JPEG (membingungkan browser saat preview/download).
         // Format asli dipertahankan; konversi ke webp hanya bila aman dilakukan.
-        $extension = strtolower($file->getClientOriginalExtension() ?: ($file->guessExtension() ?? 'jpg'));
+        $extension = strtolower(
+            $file->getClientOriginalExtension() ?: ($file->guessExtension() ?? 'jpg')
+        );
+
         if (! in_array($extension, ['jpg', 'jpeg', 'png', 'webp'], true)) {
             $extension = 'jpg';
         }
@@ -152,19 +178,24 @@ class OrderController extends Controller
         // Jika GD/Imagick tidak tersedia di server, user dapat pesan error
         // yang jelas, bukan 500 error.
         $storedContent = null;
+
         try {
             $manager = new ImageManager(new Driver());
             $img = $manager->read($file)->scaleDown(width: 800);
+
             // Simpan sebagai webp HANYA jika hasilnya benar-benar WebP;
             // jika tidak, gunakan format asli agar ekstensi & isi file cocok.
             $encoded = (string) $img->toWebp(75);
+
             if (str_starts_with($encoded, 'RIFF') && str_contains($encoded, 'WEBP')) {
                 $storedContent = $encoded;
                 $extension = 'webp';
             } else {
-                $storedContent = (string) (in_array($extension, ['jpg', 'jpeg', 'webp'], true)
-                    ? $img->toJpeg(80)
-                    : $img->toPng());
+                $storedContent = (string) (
+                    in_array($extension, ['jpg', 'jpeg', 'webp'], true)
+                        ? $img->toJpeg(80)
+                        : $img->toPng()
+                );
             }
         } catch (\Throwable $e) {
             // Pipeline gambar gagal (GD tidak mendukung format, dsb.) —
@@ -192,7 +223,10 @@ class OrderController extends Controller
         // di dalam transaksi) supaya dua upload paralel tidak sama-sama lolos.
         try {
             DB::transaction(function () use ($order, $request, $filename, $qrisFee): void {
-                $lockedOrder = Order::query()->whereKey($order->id)->lockForUpdate()->firstOrFail();
+                $lockedOrder = Order::query()
+                    ->whereKey($order->id)
+                    ->lockForUpdate()
+                    ->firstOrFail();
 
                 if ($lockedOrder->paymentProofs()->where('status', 'pending')->exists()) {
                     throw ValidationException::withMessages([
@@ -205,13 +239,13 @@ class OrderController extends Controller
                     // ✅ BUG FIX: isi payment_stage sesuai skema order — dulu
                     // di-hardcode 'lunas' walau kolomnya varchar(10) dan order DP
                     // akan salah label. FP -> lunas, selain itu dp.
-                    'payment_stage' => $order->payment_scheme === 'FP' ? 'lunas' : 'dp',
+                    'payment_stage'     => $order->payment_scheme === 'FP' ? 'lunas' : 'dp',
                     // Nominal yang sebenarnya ditransfer user = tagihan + biaya QRIS
                     // (kalau ada). Admin akan lihat angka yang cocok dengan mutasi.
-                    'amount_idr' => $order->pay_now_idr + $qrisFee,
-                    'proof_path' => $filename,
-                    'status' => 'pending',
-                    'uploaded_at' => now(),
+                    'amount_idr'        => $order->pay_now_idr + $qrisFee,
+                    'proof_path'        => $filename,
+                    'status'            => 'pending',
+                    'uploaded_at'       => now(),
                 ]);
 
                 $order->update(['status' => 'ditahan']);
@@ -232,6 +266,7 @@ class OrderController extends Controller
                     $payload = QrisPayloadReader::read(
                         Storage::disk('payment_proofs')->path($filename)
                     );
+
                     $matched = QrisPayloadReader::matchesMerchant(
                         $payload,
                         $method->account_number ?: $method->account_name
@@ -250,27 +285,27 @@ class OrderController extends Controller
                             }
 
                             DB::table('payment_proofs')->where('id', $proofRow->id)->update([
-                                'status' => 'approved',
+                                'status'      => 'approved',
                                 'reviewed_at' => now(),
-                                'updated_at' => now(),
+                                'updated_at'  => now(),
                             ]);
 
                             $fromStatus = $order->status;
 
                             DB::table('orders')->where('id', $order->id)->update([
-                                'status' => 'pembayaran_diterima',
-                                'paid_at' => now(),
+                                'status'     => 'pembayaran_diterima',
+                                'paid_at'    => now(),
                                 'updated_at' => now(),
                             ]);
 
                             DB::table('order_status_history')->insert([
-                                'order_id' => $order->id,
+                                'order_id'    => $order->id,
                                 'from_status' => $fromStatus,
-                                'to_status' => 'pembayaran_diterima',
-                                'changed_by' => 'system',
-                                'admin_id' => null,
-                                'note' => 'Verifikasi otomatis QRIS (merchant ID cocok)',
-                                'created_at' => now(),
+                                'to_status'   => 'pembayaran_diterima',
+                                'changed_by'  => 'system',
+                                'admin_id'    => null,
+                                'note'        => 'Verifikasi otomatis QRIS (merchant ID cocok)',
+                                'created_at'  => now(),
                                 // BUG FIX: tabel order_status_history tidak punya
                                 // kolom updated_at (lihat migration
                                 // 2024_01_01_000013) → insert ini melempar
@@ -293,7 +328,7 @@ class OrderController extends Controller
                         }
 
                         ActivityLog::record($request->user(), 'auto_verify_payment', $request, [
-                            'order_number' => $order->order_number,
+                            'order_number'   => $order->order_number,
                             'payment_method' => $method->label,
                         ]);
 
@@ -329,23 +364,31 @@ class OrderController extends Controller
             ->with('status', 'Bukti pembayaran berhasil diunggah. Menunggu verifikasi admin.');
     }
 
+    /**
+     * Halaman cetak invoice untuk satu pesanan.
+     */
     public function invoice(Request $request, string $orderNumber): View
     {
         $order = Order::where('user_id', $request->user()->id)
             ->where('order_number', $orderNumber)
             ->firstOrFail();
 
-        $order->load(['items.variant', 'user', 'marketplace', 'paymentProofs.method']);
+        $order->load([
+            'items.variant.product.images',
+            'user',
+            'marketplace',
+            'paymentProofs.method',
+        ]);
 
         return view('orders.print.invoice', [
-            'order' => $order,
-            'branding' => [
-                'store_name' => 'MERCATORIA',
-                'store_address' => Setting::get('store_address'),
-                'contact_email' => Setting::get('contact_email'),
+            'order'       => $order,
+            'branding'    => [
+                'store_name'       => 'MERCATORIA',
+                'store_address'    => Setting::get('store_address'),
+                'contact_email'    => Setting::get('contact_email'),
                 'contact_whatsapp' => Setting::get('contact_whatsapp'),
-                'has_logo' => file_exists(public_path('images/logo.png')),
-                'logo_url' => asset('images/logo.png'),
+                'has_logo'         => file_exists(public_path('images/logo.png')),
+                'logo_url'         => asset('images/logo.png'),
             ],
             'generatedAt' => now(),
         ]);
