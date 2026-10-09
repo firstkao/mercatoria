@@ -46,6 +46,7 @@ use App\Http\Controllers\CoinController;
 use App\Http\Controllers\LegalPageController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\OrderController;
+use App\Http\Controllers\PaymentProofStreamController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ResellerApplicationController;
 use App\Http\Controllers\SearchController;
@@ -405,6 +406,16 @@ Route::middleware('auth')->group(function (): void {
     // Logout
     Route::post('/keluar', [AuthenticatedSessionController::class, 'destroy'])->name('logout');
 });
+
+// ============================================================
+// 5b. STREAM BUKTI PEMBAYARAN (owner atau admin)
+// ============================================================
+// File fisik disimpan di storage/app/private/payment-proofs/ (tidak
+// publik). Akses lewat route ini, diverifikasi di controller:
+// owner order atau admin yang login boleh lihat; selain itu 403.
+Route::get('/payment-proof/{proof}', [PaymentProofStreamController::class, 'show'])
+    ->middleware('auth:web,admin')
+    ->name('payment-proof.show');
 
 // ============================================================
 // 6. LEGAL & SLUG (paling bawah)
