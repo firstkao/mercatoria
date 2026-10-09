@@ -15,6 +15,7 @@
             <div class="account-notice">{{ session('status') }}</div>
         @endif
 
+        {{-- ========== TAGIHAN MENUNGGU ========== --}}
         @if ($unpaid->isNotEmpty())
             <section class="account-section">
                 <div class="account-section__head">
@@ -48,6 +49,7 @@
             </section>
         @endif
 
+        {{-- ========== SEMUA PESANAN ========== --}}
         <section class="account-section">
             <div class="account-section__head">
                 <h2 class="account-section__title">Semua Pesanan</h2>
@@ -63,45 +65,45 @@
                 <div class="account-table-wrap">
                     <table class="account-table">
                         <thead>
-    <tr>
-        <th>No. Pesanan</th>
-        <th>Tanggal</th>
-        <th class="is-right">Tagihan</th>
-        <th>Status</th>
-        <th class="is-right"></th>
-    </tr>
-</thead>
-<tbody>
-    @foreach($orders as $order)
-        @php
-            $badge = $order->statusBadgeClass();
-            $mod = str_contains($badge, 'danger')
-                ? 'account-status--danger'
-                : (str_contains($badge, 'success') ? 'account-status--ok' : '');
-        @endphp
-        <tr>
-            <td class="account-table__id">{{ $order->order_number }}</td>
-            <td class="account-table__muted">
-                {{ $order->created_at->timezone('Asia/Jakarta')->translatedFormat('j M Y, H:i') }}
-            </td>
-            <td class="is-right">
-                <span class="account-table__amount">
-                    {{ \App\Support\PriceCalculator::formatRupiah($order->pay_now_idr) }}
-                </span>
-                <span class="account-table__scheme">{{ $order->payment_scheme }}</span>
-            </td>
-            <td>
-                <span class="account-status {{ $mod }}">{{ $order->statusLabel() }}</span>
-            </td>
-            <td class="is-right">
-                <a href="{{ route('account.orders.show', $order->order_number) }}"
-                   class="account-btn account-btn--ghost account-btn--sm">
-                    Detail
-                </a>
-            </td>
-        </tr>
-    @endforeach
-</tbody>
+                            <tr>
+                                <th>No. Pesanan</th>
+                                <th>Tanggal</th>
+                                <th class="is-right">Tagihan</th>
+                                <th>Status</th>
+                                <th class="is-right"></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach($orders as $order)
+                                @php
+                                    $badge = $order->statusBadgeClass();
+                                    $mod = str_contains($badge, 'danger')
+                                        ? 'account-status--danger'
+                                        : (str_contains($badge, 'success') ? 'account-status--ok' : '');
+                                @endphp
+                                <tr>
+                                    <td class="account-table__id">{{ $order->order_number }}</td>
+                                    <td class="account-table__muted">
+                                        {{ $order->created_at->timezone('Asia/Jakarta')->translatedFormat('j M Y, H:i') }}
+                                    </td>
+                                    <td class="is-right">
+                                        <span class="account-table__amount">
+                                            {{ \App\Support\PriceCalculator::formatRupiah($order->pay_now_idr) }}
+                                        </span>
+                                        <span class="account-table__scheme">{{ $order->payment_scheme }}</span>
+                                    </td>
+                                    <td>
+                                        <span class="account-status {{ $mod }}">{{ $order->statusLabel() }}</span>
+                                    </td>
+                                    <td class="is-right">
+                                        <a href="{{ route('account.orders.show', $order->order_number) }}"
+                                           class="account-btn account-btn--ghost account-btn--sm">
+                                            Detail
+                                        </a>
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
                     </table>
                 </div>
 
