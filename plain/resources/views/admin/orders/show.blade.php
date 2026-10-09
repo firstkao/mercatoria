@@ -11,7 +11,7 @@
     <div class="form-grid__main stack">
 
  {{-- ============================================================
-     (2) PENERIMA & PENGIRIMAN
+     (2 + 4) INFORMASI PENERIMA, PENGIRIMAN & ASAL KUNJUNGAN
      ============================================================ --}}
     <x-admin.card>
         <div class="panel__head">
@@ -19,6 +19,10 @@
             <span class="muted small">#{{ $order->order_number }}</span>
         </div>
     
+        {{-- ============================================================
+             BAGIAN A — PENERIMA
+             ============================================================ --}}
+        <h3 class="mt-2 mb-2">👤 Penerima</h3>
         <dl class="deflist">
             <div>
                 <dt>Nama Penerima</dt>
@@ -60,9 +64,15 @@
                     @endif
                 </dd>
             </div>
+        </dl>
     
+        {{-- ============================================================
+             BAGIAN B — ALAMAT PENGIRIMAN
+             ============================================================ --}}
+        <h3 class="mt-4 mb-2">📦 Alamat Pengiriman</h3>
+        <dl class="deflist">
             <div>
-                <dt>Alamat Pengiriman</dt>
+                <dt>Alamat</dt>
                 <dd>
                     @php
                         $addressParts = array_filter([
@@ -87,6 +97,97 @@
                 </div>
             @endif
         </dl>
+    
+        {{-- ============================================================
+             BAGIAN C — ASAL KUNJUNGAN (nomor 4)
+             Hanya tampil kalau ada data tracking
+             ============================================================ --}}
+        @php
+            $hasTracking = ! empty($order->source)
+                || ! empty($order->device_type)
+                || ! empty($order->landing_page)
+                || ! empty($order->referrer)
+                || ! empty($order->session_page_views)
+                || ! empty($order->ip_address);
+        @endphp
+    
+        @if ($hasTracking)
+            <h3 class="mt-4 mb-2">🌐 Asal Kunjungan</h3>
+            <dl class="deflist">
+                @if (! empty($order->source))
+                    <div>
+                        <dt>Asal</dt>
+                        <dd>
+                            @php
+                                $sourceIcons = [
+                                    'google'    => '🔍 Google',
+                                    'instagram' => '📷 Instagram',
+                                    'tiktok'    => '🎵 TikTok',
+                                    'facebook'  => '📘 Facebook',
+                                    'twitter'   => '🐦 Twitter',
+                                    'shopee'    => '🛒 Shopee',
+                                    'tokopedia' => '🟢 Tokopedia',
+                                    'whatsapp'  => '💬 WhatsApp',
+                                    'youtube'   => '▶️ YouTube',
+                                    'direct'    => '🔗 Direct',
+                                    'referral'  => '↗️ Referral',
+                                ];
+                            @endphp
+                            {{ $sourceIcons[strtolower($order->source)] ?? ucfirst($order->source) }}
+                        </dd>
+                    </div>
+                @endif
+    
+                @if (! empty($order->device_type))
+                    <div>
+                        <dt>Jenis Perangkat</dt>
+                        <dd>
+                            @php
+                                $deviceIcons = [
+                                    'mobile'  => '📱 Mobile',
+                                    'tablet'  => '📱 Tablet',
+                                    'desktop' => '💻 Desktop',
+                                    'unknown' => '❓ Unknown',
+                                ];
+                            @endphp
+                            {{ $deviceIcons[strtolower($order->device_type)] ?? ucfirst($order->device_type) }}
+                        </dd>
+                    </div>
+                @endif
+    
+                @if (! empty($order->session_page_views))
+                    <div>
+                        <dt>Kunjungan Halaman</dt>
+                        <dd>{{ $order->session_page_views }} halaman dalam sesi ini</dd>
+                    </div>
+                @endif
+    
+                @if (! empty($order->landing_page))
+                    <div>
+                        <dt>Landing Page</dt>
+                        <dd class="muted small" style="word-break: break-all;">
+                            {{ $order->landing_page }}
+                        </dd>
+                    </div>
+                @endif
+    
+                @if (! empty($order->referrer))
+                    <div>
+                        <dt>Referrer</dt>
+                        <dd class="muted small" style="word-break: break-all;">
+                            {{ $order->referrer }}
+                        </dd>
+                    </div>
+                @endif
+    
+                @if (! empty($order->ip_address))
+                    <div>
+                        <dt>IP Address</dt>
+                        <dd class="muted small">{{ $order->ip_address }}</dd>
+                    </div>
+                @endif
+            </dl>
+        @endif
     </x-admin.card>
         
         {{-- ============================================================
