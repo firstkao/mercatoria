@@ -11,7 +11,7 @@
     <div class="form-grid__main stack">
 
         {{-- ============================================================
-             Catatan Pembeli (dari customer, bukan admin)
+             Catatan Pembeli
              ============================================================ --}}
         @if ($order->customer_note)
             <x-admin.card class="panel--warning">
@@ -21,7 +21,105 @@
         @endif
 
         {{-- ============================================================
-             Rincian Barang — thumbnail + status per item
+             INFORMASI PESANAN — tanggal + penerima + pengiriman
+             ============================================================ --}}
+        <x-admin.card>
+            <div class="panel__head">
+                <h2 class="m-0">Informasi Pesanan</h2>
+                <span class="muted small">#{{ $order->order_number }}</span>
+            </div>
+
+            {{-- --- Tanggal & Status --- --}}
+            <dl class="deflist">
+                <div>
+                    <dt>Tanggal Order</dt>
+                    <dd>
+                        @if ($order->created_at)
+                            {{ $order->created_at->timezone('Asia/Jakarta')->translatedFormat('j F Y, H:i') }} WIB
+                            <span class="muted small">({{ $order->created_at->diffForHumans() }})</span>
+                        @else
+                            —
+                        @endif
+                    </dd>
+                </div>
+                <div>
+                    <dt>Terakhir Update</dt>
+                    <dd>
+                        @if ($order->updated_at)
+                            {{ $order->updated_at->timezone('Asia/Jakarta')->translatedFormat('j M Y, H:i') }} WIB
+                        @else
+                            —
+                        @endif
+                    </dd>
+                </div>
+                <div>
+                    <dt>Status</dt>
+                    <dd>
+                        <span class="badge {{ \App\Enums\OrderStatus::tryFrom($order->status)?->badgeClass() ?? '' }}">
+                            {{ \App\Enums\OrderStatus::tryFrom($order->status)?->label() ?? $order->status }}
+                        </span>
+                    </dd>
+                </div>
+            </dl>
+
+            {{-- --- Penerima & Pengiriman --- --}}
+            <h3 class="mt-4">Penerima &amp; Pengiriman</h3>
+            <dl class="deflist">
+                <div>
+                    <dt>Nama Penerima</dt>
+                    <dd>
+                        {{ $order->recipient_name ?? $order->user?->full_name ?? '—' }}
+                        @if (
+                            $order->user?->full_name
+                            && $order->recipient_name
+                            && $order->recipient_name !== $order->user->full_name
+                        )
+                            <span class="muted small">(akun: {{ $order->user->full_name }})</span>
+                        @endif
+                    </dd>
+                </div>
+                <div>
+                    <dt>No. HP</dt>
+                    <dd>{{ $order->recipient_phone ?? $order->user?->phone ?? '—' }}</dd>
+                </div>
+                <div>
+                    <dt>Email</dt>
+                    <dd>
+                        @if ($order->user?->email)
+                            <a href="mailto:{{ $order->user->email }}">{{ $order->user->email }}</a>
+                        @else
+                            —
+                        @endif
+                    </dd>
+                </div>
+                <div>
+                    <dt>Alamat Pengiriman</dt>
+                    <dd>
+                        @php
+                            $addressParts = array_filter([
+                                $order->shipping_address ?? null,
+                                $order->shipping_city ?? null,
+                                $order->shipping_postal_code ?? null,
+                            ]);
+                        @endphp
+                        @if (! empty($addressParts))
+                            {{ implode(', ', $addressParts) }}
+                        @else
+                            <span class="muted">—</span>
+                        @endif
+                    </dd>
+                </div>
+                @if ($order->shipping_note)
+                    <div>
+                        <dt>Catatan Kirim</dt>
+                        <dd>{{ $order->shipping_note }}</dd>
+                    </div>
+                @endif
+            </dl>
+        </x-admin.card>
+
+        {{-- ============================================================
+             Rincian Barang
              ============================================================ --}}
         <x-admin.card>
             <div class="panel__head">
@@ -43,10 +141,10 @@
 
                 @foreach ($order->items as $item)
                     @php
-                        $effStatus  = $item->item_status ?? $order->status;
-                        $effLabel   = \App\Enums\OrderStatus::tryFrom($effStatus)?->label() ?? $effStatus;
-                        $effBadge   = \App\Enums\OrderStatus::tryFrom($effStatus)?->badgeClass() ?? '';
-                        $canCancel  = \App\Enums\OrderStatus::rank($effStatus) < \App\Enums\OrderStatus::cancelLockRank();
+                        $effStatus = $item->item_status ?? $order->status;
+                        $effLabel  = \App\Enums\OrderStatus::tryFrom($effStatus)?->label() ?? $effStatus;
+                        $effBadge  = \App\Enums\OrderStatus::tryFrom($effStatus)?->badgeClass() ?? '';
+                        $canCancel = \App\Enums\OrderStatus::rank($effStatus) < \App\Enums\OrderStatus::cancelLockRank();
                     @endphp
                     <tr>
                         <td class="table__thumb">
@@ -123,9 +221,6 @@
             @endif
         </x-admin.card>
 
-        {{-- Catatan Internal sengaja TIDAK ditampilkan untuk admin
-             (sesuai keputusan: catatan buyer sudah cukup di atas). --}}
-
     </div>
 
     <aside class="form-grid__side stack">
@@ -173,7 +268,110 @@
         </x-admin.card>
 
         {{-- ============================================================
-             Bukti Pembayaran (pindah ke sidebar, thumbnail kecil)
+             Riwayat Pelanggan
+             ============================================================ --}}
+        @if (! empty($customerStats))
+            <x-admin.card>
+                <div class="panel__head">
+                    <h3 class="m-0">Riwayat Pelanggan</h3>
+                    @if ($customerStats['is_repeat'])
+                        <x-admin.badge>REPEAT</x-admin.badge>
+                    @endif
+                </div>
+
+                <dl class="deflist">
+                    <div>
+                        <dt>Total Pesanan</dt>
+                        <dd><strong>{{ $customerStats['total_orders'] }}x</strong></dd>
+                    </div>
+                    <div>
+                        <dt>Total Pendapatan</dt>
+                        <dd class="text-price">
+                            {{ \App\Support\PriceCalculator::formatRupiah($customerStats['total_revenue']) }}
+                        </dd>
+                    </div>
+                    <div>
+                        <dt>Rata-rata Pesanan</dt>
+                        <dd>{{ \App\Support\PriceCalculator::formatRupiah($customerStats['avg_order']) }}</dd>
+                    </div>
+                    <div>
+                        <dt>Pesanan Selesai</dt>
+                        <dd>
+                            {{ $customerStats['completed_orders'] }}x
+                            @if ($customerStats['total_orders'] > 0)
+                                <span class="muted small">
+                                    ({{ (int) round($customerStats['completed_orders'] / $customerStats['total_orders'] * 100) }}%)
+                                </span>
+                            @endif
+                        </dd>
+                    </div>
+                    <div>
+                        <dt>Pelanggan Sejak</dt>
+                        <dd>
+                            @if ($customerStats['first_order_at'])
+                                {{ $customerStats['first_order_at']->timezone('Asia/Jakarta')->translatedFormat('j M Y') }}
+                            @else
+                                —
+                            @endif
+                        </dd>
+                    </div>
+                </dl>
+
+                @if ($order->user?->email)
+                    <a href="{{ route('admin.orders.index', ['q' => $order->user->email]) }}"
+                       class="btn btn--outline btn--block mt-3">
+                        Lihat Semua Pesanan Pelanggan →
+                    </a>
+                @endif
+            </x-admin.card>
+        @endif
+
+        {{-- ============================================================
+             Asal Kunjungan (opsional — butuh kolom tracking)
+             ============================================================ --}}
+        @php
+            $hasTracking = ! empty($order->source)
+                || ! empty($order->device_type)
+                || ! empty($order->landing_page)
+                || ! empty($order->referrer)
+                || ! empty($order->session_page_views);
+        @endphp
+
+        @if ($hasTracking)
+            <x-admin.card>
+                <h3>Asal Kunjungan</h3>
+                <dl class="deflist">
+                    @if (! empty($order->source))
+                        <div><dt>Asal</dt><dd>{{ $order->source }}</dd></div>
+                    @endif
+                    @if (! empty($order->device_type))
+                        <div><dt>Jenis Perangkat</dt><dd>{{ $order->device_type }}</dd></div>
+                    @endif
+                    @if (! empty($order->session_page_views))
+                        <div><dt>Kunjungan Halaman</dt><dd>{{ $order->session_page_views }} halaman</dd></div>
+                    @endif
+                    @if (! empty($order->landing_page))
+                        <div>
+                            <dt>Landing Page</dt>
+                            <dd class="muted small" style="word-break: break-all;">
+                                {{ $order->landing_page }}
+                            </dd>
+                        </div>
+                    @endif
+                    @if (! empty($order->referrer))
+                        <div>
+                            <dt>Referrer</dt>
+                            <dd class="muted small" style="word-break: break-all;">
+                                {{ $order->referrer }}
+                            </dd>
+                        </div>
+                    @endif
+                </dl>
+            </x-admin.card>
+        @endif
+
+        {{-- ============================================================
+             Bukti Pembayaran
              ============================================================ --}}
         @if ($order->paymentProofs->isNotEmpty())
             @php($latestProof = $order->latestPaymentProof() ?? $order->paymentProofs->last())
@@ -183,8 +381,6 @@
                     <x-admin.badge>{{ strtoupper($latestProof->status) }}</x-admin.badge>
                 </div>
 
-                {{-- File bukti private (storage/app/private/payment-proofs/),
-                     diakses lewat route payment-proof.show yang cek owner/admin. --}}
                 <div class="mt-4">
                     <a href="{{ $latestProof->url() }}" target="_blank" rel="noopener">
                         <img src="{{ $latestProof->url() }}"
