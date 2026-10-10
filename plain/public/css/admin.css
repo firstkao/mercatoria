@@ -1128,3 +1128,46 @@ img { max-width: 100%; height: auto; display: block; }
 .wa-inline-btn svg {
     flex-shrink: 0;
 }
+
+/* ============================================================ */
+/* 33. PAYMENT PROOF DETAIL                                     */
+/* ============================================================ */
+
+/* Wrapper gambar bukti — center, background abu, constraint tinggi */
+.payment-proof-image-wrap {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--surface-sunken);
+    border-radius: var(--radius-md);
+    padding: var(--space-4);
+    min-height: 320px;
+    text-decoration: none;
+    transition: background .15s;
+}
+.payment-proof-image-wrap:hover {
+    background: var(--bg);
+}
+
+/* Gambar bukti — dibatasi tinggi biar gak nutup layar */
+.payment-proof-image {
+    max-width: 100%;
+    max-height: 700px;
+    width: auto;
+    height: auto;
+    object-fit: contain;
+    background: #fff;
+    border-radius: var(--radius-sm);
+    box-shadow: var(--shadow-sm);
+    display: block;
+}
+
+@media (max-width: 768px) {
+    .payment-proof-image {
+        max-height: 400px;
+    }
+    .payment-proof-image-wrap {
+        min-height: 200px;
+        padding: var(--space-2);
+    }
+}
