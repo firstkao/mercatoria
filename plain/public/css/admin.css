@@ -1103,3 +1103,28 @@ img { max-width: 100%; height: auto; display: block; }
 /* Warna khusus tiap icon (opsional, kalau mau berwarna) */
 .invoice-contact-item[href*="wa.me"] .invoice-contact-item__icon { color: #25D366; }
 .invoice-contact-item[href*="mailto"] .invoice-contact-item__icon { color: #0299e7; }
+
+/* Tombol WA inline — di samping nomor HP */
+.wa-inline-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    margin-left: 8px;
+    padding: 3px 8px;
+    background: #25D366;
+    color: #fff;
+    border-radius: 3px;
+    font-size: 11px;
+    font-weight: 600;
+    line-height: 1;
+    text-decoration: none;
+    vertical-align: middle;
+    transition: background .15s;
+}
+.wa-inline-btn:hover {
+    background: #1ebe5b;
+    color: #fff;
+}
+.wa-inline-btn svg {
+    flex-shrink: 0;
+}
