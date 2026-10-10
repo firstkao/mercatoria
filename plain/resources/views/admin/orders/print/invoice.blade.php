@@ -57,15 +57,6 @@
                     <div class="paper__brand-name">{{ $branding['store_name'] }}</div>
                 @endif
                 <div class="paper__brand-info brand-contact">
-                    @if ($branding['store_address'])
-                        <span class="brand-contact__item brand-contact__item--address">
-                            <svg class="brand-contact__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                                <path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"/>
-                                <circle cx="12" cy="10" r="3"/>
-                            </svg>
-                            <span>{{ $branding['store_address'] }}</span>
-                        </span>
-                    @endif
 
                     @if ($branding['contact_whatsapp'])
                         <a href="https://wa.me/{{ preg_replace('/[^0-9]/', '', $branding['contact_whatsapp']) }}"
