@@ -1,136 +1,113 @@
-@extends('layouts.app', ['title' => 'Pesanan Saya'])
+@extends('admin.layouts.app', ['title' => 'Pembayaran'])
+
+@section('filters')
+    <form method="GET" action="{{ route('admin.payments.index') }}" class="filters">
+        <select name="status" aria-label="Status">
+            <option value="all" @selected($status === 'all')>Semua status</option>
+            <option value="pending" @selected($status === 'pending')>Menunggu verifikasi</option>
+            <option value="approved" @selected($status === 'approved')>Disetujui</option>
+            <option value="rejected" @selected($status === 'rejected')>Ditolak</option>
+        </select>
+    </form>
+@endsection
 
 @section('content')
-<div class="account-page">
-    <div class="account-card">
-        <header class="account-head">
-            <p class="account-head__eyebrow">Akun Saya</p>
-            <h1 class="account-head__title">Pesanan Saya</h1>
-            <div class="account-head__meta">
-                <span>{{ $orders->total() }} pesanan</span>
-            </div>
-        </header>
-
-        @if (session('status'))
-            <div class="account-notice">{{ session('status') }}</div>
-        @endif
-
-        {{-- ========== TAGIHAN MENUNGGU ========== --}}
-        @if ($unpaid->isNotEmpty())
-            <section class="account-section">
-                <div class="account-section__head">
-                    <h2 class="account-section__title">Tagihan Menunggu</h2>
-                    <span class="account-section__hint">{{ $unpaid->count() }} pesanan</span>
-                </div>
-                <ul class="account-unpaid-list">
-                    @foreach($unpaid as $u)
-                        <li class="account-unpaid-list__item">
-                            <div class="account-unpaid-list__info">
-                                <span class="account-unpaid-list__id">{{ $u->order_number }}</span>
-                                <span class="account-unpaid-list__amount">
-                                    · {{ \App\Support\PriceCalculator::formatRupiah($u->pay_now_idr) }}
-                                    ({{ $u->payment_scheme === 'FP' ? 'lunas' : 'DP' }})
+    @if ($proofs->isEmpty())
+        <div class="panel">
+            <p class="muted text-center">Tidak ada bukti pembayaran.</p>
+        </div>
+    @else
+        {{-- ============================================================
+             DESKTOP — Tabel
+             ============================================================ --}}
+        <div class="panel panel--flush only-desktop">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Order</th>
+                        <th>Pembeli</th>
+                        <th>Metode</th>
+                        <th>Jumlah</th>
+                        <th>Status</th>
+                        <th>Diunggah</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach ($proofs as $proof)
+                        @php
+                            $statusLabel = match ($proof->status) {
+                                'pending'  => 'Menunggu',
+                                'approved' => 'Disetujui',
+                                'rejected' => 'Ditolak',
+                                default    => ucfirst((string) $proof->status),
+                            };
+                        @endphp
+                        <tr>
+                            <td class="table__name">
+                                <a href="{{ route('admin.payments.show', $proof->id) }}" class="table__title">
+                                    {{ $proof->order_number }}
+                                </a>
+                            </td>
+                            <td class="muted">
+                                {{ $proof->full_name }}<br>
+                                <small>{{ $proof->email }}</small>
+                            </td>
+                            <td class="muted">{{ $proof->payment_method_label }}</td>
+                            <td class="nowrap">Rp {{ number_format($proof->amount_idr, 0, ',', '.') }}</td>
+                            <td>
+                                <span @class([
+                                    'badge',
+                                    'badge--on' => $proof->status === 'approved',
+                                    'badge--off' => $proof->status === 'rejected',
+                                ])>
+                                    {{ $statusLabel }}
                                 </span>
-                                @if($u->payment_deadline_at)
-                                    <div class="account-unpaid-list__deadline">
-                                        Batas bayar:
-                                        {{ $u->payment_deadline_at->timezone('Asia/Jakarta')->translatedFormat('j M Y, H:i') }}
-                                        WIB
-                                    </div>
-                                @endif
-                            </div>
-                            <a href="{{ route('account.orders.show', $u->order_number) }}#upload-bukti"
-                               class="account-unpaid-list__cta">
-                                Bayar &amp; unggah bukti
-                            </a>
-                        </li>
+                            </td>
+                            <td class="muted nowrap">
+                                {{ $proof->uploaded_at ? $proof->uploaded_at->timezone('Asia/Jakarta')->translatedFormat('j M Y, H:i') : '—' }} WIB
+                            </td>
+                        </tr>
                     @endforeach
-                </ul>
-            </section>
-        @endif
+                </tbody>
+            </table>
+        </div>
 
-        {{-- ========== SEMUA PESANAN ========== --}}
-        <section class="account-section">
-            <div class="account-section__head">
-                <h2 class="account-section__title">Semua Pesanan</h2>
-            </div>
+        {{-- ============================================================
+             MOBILE — Cards
+             ============================================================ --}}
+        <ul class="cards only-mobile">
+            @foreach ($proofs as $proof)
+                @php
+                    $statusLabel = match ($proof->status) {
+                        'pending'  => 'Menunggu',
+                        'approved' => 'Disetujui',
+                        'rejected' => 'Ditolak',
+                        default    => ucfirst((string) $proof->status),
+                    };
+                @endphp
+                <li>
+                    <a href="{{ route('admin.payments.show', $proof->id) }}" class="card-row">
+                        <div class="card-row__body">
+                            <p class="card-row__title">{{ $proof->order_number }}</p>
+                            <p class="card-row__subtitle">{{ $proof->full_name }}</p>
+                            <p class="card-row__meta">
+                                Rp {{ number_format($proof->amount_idr, 0, ',', '.') }} ·
+                                <span @class([
+                                    'badge-small',
+                                    'badge-small--on' => $proof->status === 'approved',
+                                    'badge-small--off' => $proof->status === 'rejected',
+                                ])>
+                                    {{ $statusLabel }}
+                                </span>
+                            </p>
+                        </div>
+                    </a>
+                </li>
+            @endforeach
+        </ul>
 
-            @if($orders->isEmpty())
-                <div class="account-empty">
-                    <h3 class="account-empty__title">Belum ada pesanan.</h3>
-                    <p class="account-empty__sub">Begitu kamu checkout, semua riwayat pesanan muncul di sini.</p>
-                    <a href="{{ route('catalog.index') }}" class="account-empty__cta">Mulai belanja</a>
-                </div>
-            @else
-                <div class="account-table-wrap">
-                    <table class="account-table">
-                        <thead>
-                            <tr>
-                                <th>No. Pesanan</th>
-                                <th>Tanggal</th>
-                                <th class="is-right">Tagihan</th>
-                                <th>Status</th>
-                                <th class="is-right"></th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach($orders as $order)
-                                @php
-                                    $badge = $order->statusBadgeClass();
-                                    $mod = str_contains($badge, 'danger')
-                                        ? 'account-status--danger'
-                                        : (str_contains($badge, 'success') ? 'account-status--ok' : '');
-                                @endphp
-                                <tr>
-                                    {{-- ==== Kolom No. Pesanan + thumbnail produk ==== --}}
-                                    <td class="account-table__id">
-                                        @php $firstItem = $order->items->first(); @endphp
-                                        <div class="account-order-cell">
-                                            @if ($firstItem)
-                                                @php $imgUrl = $firstItem->variant?->imageUrl(); @endphp
-                                                @if ($imgUrl)
-                                                    <img src="{{ $imgUrl }}"
-                                                         alt=""
-                                                         class="account-order-cell__thumb">
-                                                @endif
-                                            @endif
-                                            <span class="account-order-cell__id">{{ $order->order_number }}</span>
-                                        </div>
-                                    </td>
-
-                                    <td class="account-table__muted">
-                                        {{ $order->created_at->timezone('Asia/Jakarta')->translatedFormat('j M Y, H:i') }}
-                                    </td>
-
-                                    <td class="is-right">
-                                        <span class="account-table__amount">
-                                            {{ \App\Support\PriceCalculator::formatRupiah($order->pay_now_idr) }}
-                                        </span>
-                                        <span class="account-table__scheme">{{ $order->payment_scheme }}</span>
-                                    </td>
-
-                                    <td>
-                                        <span class="account-status {{ $mod }}">{{ $order->statusLabel() }}</span>
-                                    </td>
-
-                                    <td class="is-right">
-                                        <a href="{{ route('account.orders.show', $order->order_number) }}"
-                                           class="account-btn account-btn--ghost account-btn--sm">
-                                            Detail
-                                        </a>
-                                    </td>
-                                </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
-                </div>
-
-                <div class="account-pagination">
-                    {{ $orders->links('partials.pagination') }}
-                </div>
-            @endif
-        </section>
-
-    </div>
-</div>
+        <div class="pagination">
+            {{ $proofs->links() }}
+        </div>
+    @endif
 @endsection
