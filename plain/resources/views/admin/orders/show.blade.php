@@ -3,7 +3,6 @@
 @section('actions')
     <x-admin.button :href="route('admin.orders.invoice', $order)" target="_blank" rel="noopener" size="sm">🖨️ Invoice</x-admin.button>
     <x-admin.button :href="route('admin.orders.packing-slip', $order)" target="_blank" rel="noopener" size="sm">📦 Packing Slip</x-admin.button>
-    @include('admin.orders.partials.whatsapp-menu', ['order' => $order])
 @endsection
 
 @section('content')
