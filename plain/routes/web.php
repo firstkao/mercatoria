@@ -54,7 +54,6 @@ use App\Http\Controllers\Admin\MaintenanceController;
 use App\Http\Controllers\Admin\ManualOrderController;
 use App\Http\Controllers\Admin\NameBlacklistController;
 use App\Http\Controllers\Admin\OrderManagementController;
-use App\Http\Controllers\Admin\OrderNoteController;
 use App\Http\Controllers\Admin\OrderPrintController;
 use App\Http\Controllers\Admin\PageController;
 use App\Http\Controllers\Admin\PaymentMethodController;
@@ -295,13 +294,6 @@ Route::prefix('office')->name('admin.')->middleware('auth:admin')->group(functio
 
     // Detail order (paling bawah setelah route statis di atas)
     Route::get('/orders/{order}', [OrderManagementController::class, 'show'])->name('orders.show');
-
-    // Catatan internal admin
-    Route::post('/orders/{order}/notes', [OrderNoteController::class, 'store'])->name('orders.notes.store');
-    Route::delete('/orders/{order}/notes/{note}', [OrderNoteController::class, 'destroy'])
-        ->name('orders.notes.destroy');
-    Route::post('/orders/{order}/notes/{note}/toggle-pin', [OrderNoteController::class, 'togglePin'])
-        ->name('orders.notes.toggle-pin');
 
     // === Bukti Pembayaran (panel admin) ===
     Route::get('/pembayaran', [PaymentProofController::class, 'index'])->name('payments.index');
