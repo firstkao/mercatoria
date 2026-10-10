@@ -1,16 +1,5 @@
 @extends('admin.layouts.app', ['title' => 'Pembayaran'])
 
-@section('filters')
-    <form method="GET" action="{{ route('admin.payments.index') }}" class="filters">
-        <select name="status" aria-label="Status">
-            <option value="all" @selected($status === 'all')>Semua status</option>
-            <option value="pending" @selected($status === 'pending')>Menunggu verifikasi</option>
-            <option value="approved" @selected($status === 'approved')>Disetujui</option>
-            <option value="rejected" @selected($status === 'rejected')>Ditolak</option>
-        </select>
-    </form>
-@endsection
-
 @section('content')
     @if ($proofs->isEmpty())
         <div class="panel">
@@ -34,14 +23,6 @@
                 </thead>
                 <tbody>
                     @foreach ($proofs as $proof)
-                        @php
-                            $statusLabel = match ($proof->status) {
-                                'pending'  => 'Menunggu',
-                                'approved' => 'Disetujui',
-                                'rejected' => 'Ditolak',
-                                default    => ucfirst((string) $proof->status),
-                            };
-                        @endphp
                         <tr>
                             <td class="table__name">
                                 <a href="{{ route('admin.payments.show', $proof->id) }}" class="table__title">
@@ -57,10 +38,9 @@
                             <td>
                                 <span @class([
                                     'badge',
-                                    'badge--on' => $proof->status === 'approved',
-                                    'badge--off' => $proof->status === 'rejected',
+                                    $proof->statusBadgeClass(),
                                 ])>
-                                    {{ $statusLabel }}
+                                    {{ $proof->statusLabel() }}
                                 </span>
                             </td>
                             <td class="muted nowrap">
@@ -77,14 +57,6 @@
              ============================================================ --}}
         <ul class="cards only-mobile">
             @foreach ($proofs as $proof)
-                @php
-                    $statusLabel = match ($proof->status) {
-                        'pending'  => 'Menunggu',
-                        'approved' => 'Disetujui',
-                        'rejected' => 'Ditolak',
-                        default    => ucfirst((string) $proof->status),
-                    };
-                @endphp
                 <li>
                     <a href="{{ route('admin.payments.show', $proof->id) }}" class="card-row">
                         <div class="card-row__body">
@@ -94,10 +66,9 @@
                                 Rp {{ number_format($proof->amount_idr, 0, ',', '.') }} ·
                                 <span @class([
                                     'badge-small',
-                                    'badge-small--on' => $proof->status === 'approved',
-                                    'badge-small--off' => $proof->status === 'rejected',
+                                    $proof->statusBadgeSmallClass(),
                                 ])>
-                                    {{ $statusLabel }}
+                                    {{ $proof->statusLabel() }}
                                 </span>
                             </p>
                         </div>
