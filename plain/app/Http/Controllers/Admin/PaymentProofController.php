@@ -163,6 +163,19 @@ class PaymentProofController extends Controller
                 }
             }
 
+            // Approve slot split box kalau ada
+$slotIds = \App\Models\OrderItem::where('order_id', $orderRow->id)
+    ->whereNotNull('split_box_slot_id')
+    ->pluck('split_box_slot_id');
+
+if ($slotIds->isNotEmpty()) {
+    \App\Models\SplitBoxSlot::whereIn('id', $slotIds)
+        ->update([
+            'status'      => \App\Models\SplitBoxSlot::STATUS_APPROVED,
+            'approved_at' => now(),
+        ]);
+}
+
             // ✅ BUG FIX: hanya catat history saat status benar-benar berubah.
             // Sebelumnya baris ini di-insert juga saat status TIDAK di-advance
             // (from_status === to_status) sehingga timeline customer tercemar
