@@ -16,7 +16,8 @@
         default    => '',
     };
 
-    $isPending = ($proof->status ?? '') === 'pending';
+    $isPending  = ($proof->status ?? '') === 'pending';
+    $isSpammer  = ($proof->user_role ?? '') === 'spammer';
 @endphp
 
 <div class="form-grid">
@@ -38,6 +39,9 @@
                         {{ $proof->full_name ?? '—' }}
                         @if ($proof->email)
                             <span class="muted small">({{ $proof->email }})</span>
+                        @endif
+                        @if ($isSpammer)
+                            <span class="badge badge--danger ms-2">Spammer</span>
                         @endif
                     </dd>
                 </div>
@@ -129,7 +133,8 @@
                       data-modal-type="approve"
                       data-modal-order="{{ $proof->order_number }}"
                       data-modal-amount="Rp {{ number_format($proof->amount_idr, 0, ',', '.') }}"
-                      data-modal-buyer="{{ $proof->full_name }}">
+                      data-modal-buyer="{{ $proof->full_name }}"
+                      data-modal-spammer="{{ $isSpammer ? '1' : '0' }}">
                     @csrf
                     <button type="submit" class="btn btn--primary btn--block">
                         ✓ Setujui Pembayaran
@@ -168,7 +173,7 @@
             </x-admin.card>
         @else
             {{-- ============================================================
-                 SUDAH DIREVIEW — tampilkan hasil
+                 SUDAH DIREVIEW
                  ============================================================ --}}
             <x-admin.card>
                 <h3>Hasil Verifikasi</h3>
@@ -198,7 +203,7 @@
 </div>
 
 {{-- ============================================================
-     MODAL KONFIRMASI — dipakai untuk Setujui & Tolak
+     MODAL KONFIRMASI
      ============================================================ --}}
 @if ($isPending)
     <div class="modal" id="confirm-modal" hidden>
@@ -212,7 +217,7 @@
 
             <div class="modal__body">
                 {{-- Ikon + heading --}}
-                <div class="confirm-modal__hero" id="confirm-modal-hero">
+                <div class="confirm-modal__hero">
                     <div class="confirm-modal__icon" id="confirm-modal-icon"></div>
                     <h3 class="confirm-modal__title" id="confirm-modal-heading"></h3>
                 </div>
@@ -238,7 +243,6 @@
             const modalContent = document.getElementById('confirm-modal-content');
             const modalIcon    = document.getElementById('confirm-modal-icon');
             const modalAction  = document.getElementById('confirm-modal-action');
-            const modalHero    = document.getElementById('confirm-modal-hero');
 
             if (!modal) return;
 
@@ -247,27 +251,40 @@
             function openModal(form) {
                 pendingForm = form;
 
-                const type   = form.dataset.modalType;
-                const order  = form.dataset.modalOrder || '';
-                const amount = form.dataset.modalAmount || '';
-                const buyer  = form.dataset.modalBuyer || '';
+                const type    = form.dataset.modalType;
+                const order   = form.dataset.modalOrder || '';
+                const amount  = form.dataset.modalAmount || '';
+                const buyer   = form.dataset.modalBuyer || '';
+                const spammer = form.dataset.modalSpammer === '1';
 
-                // Reset style
+                // Reset
                 modalAction.classList.remove('btn--primary', 'btn--danger');
-                modalHero.classList.remove('confirm-modal__hero--danger');
 
                 if (type === 'approve') {
                     modalIcon.textContent = '✓';
                     modalIcon.className = 'confirm-modal__icon confirm-modal__icon--success';
                     modalHeading.textContent = 'Setujui Pembayaran?';
-                    modalContent.innerHTML = `
-                        <p class="mb-3">Order <strong>#${order}</strong> dari <strong>${buyer}</strong> akan ditandai <strong>Pembayaran Diterima</strong>.</p>
-                        <ul class="list-bullets mb-0">
+
+                    // Bullet list — conditional spammer
+                    let bullets = `
+                        <li>Nominal: <strong>${amount}</strong></li>
+                        <li>Order masuk antrian <strong>Sedang Diproses</strong></li>
+                    `;
+
+                    // Cuma tampil kalau role user = spammer
+                    if (spammer) {
+                        bullets = `
                             <li>Nominal: <strong>${amount}</strong></li>
                             <li>Akun pembeli otomatis jadi <strong>Customer</strong></li>
                             <li>Order masuk antrian <strong>Sedang Diproses</strong></li>
-                        </ul>
+                        `;
+                    }
+
+                    modalContent.innerHTML = `
+                        <p class="confirm-modal__lead">Order <strong>#${order}</strong> dari <strong>${buyer}</strong> akan ditandai <strong>Pembayaran Diterima</strong>.</p>
+                        <ul class="confirm-modal__list">${bullets}</ul>
                     `;
+
                     modalAction.textContent = 'Ya, Setujui';
                     modalAction.classList.add('btn--primary');
                     modalAction.dataset.action = 'approve';
@@ -276,24 +293,24 @@
                     modalIcon.textContent = '✗';
                     modalIcon.className = 'confirm-modal__icon confirm-modal__icon--danger';
                     modalHeading.textContent = 'Tolak Bukti Pembayaran?';
+
                     modalContent.innerHTML = `
-                        <p class="mb-3">Order <strong>#${order}</strong> akan ditandai <strong>Ditolak</strong>.</p>
-                        <ul class="list-bullets mb-0">
+                        <p class="confirm-modal__lead">Order <strong>#${order}</strong> akan ditandai <strong>Ditolak</strong>.</p>
+                        <ul class="confirm-modal__list">
                             <li>Pembeli dapat <strong>waktu 24 jam</strong> untuk upload ulang</li>
                             <li>Notifikasi + email otomatis dikirim ke pembeli</li>
                         </ul>
                     `;
+
                     modalAction.textContent = 'Ya, Tolak';
                     modalAction.classList.remove('btn--primary');
                     modalAction.classList.add('btn--danger');
                     modalAction.dataset.action = 'reject';
-                    modalHero.classList.add('confirm-modal__hero--danger');
                 }
 
                 modal.removeAttribute('hidden');
                 document.body.style.overflow = 'hidden';
 
-                // Fokus ke tombol aksi biar bisa Enter
                 setTimeout(() => modalAction.focus(), 50);
             }
 
@@ -303,7 +320,6 @@
                 pendingForm = null;
             }
 
-            // Intercept semua form ber-class .js-confirm-form
             document.querySelectorAll('.js-confirm-form').forEach(function (form) {
                 form.addEventListener('submit', function (e) {
                     e.preventDefault();
@@ -311,22 +327,18 @@
                 });
             });
 
-            // Tombol "Batal" / "✕" / backdrop → tutup
             modal.querySelectorAll('[data-modal-close]').forEach(function (el) {
                 el.addEventListener('click', closeModal);
             });
 
-            // Tombol "Lanjut" / "Ya, ..." → submit form asli
             modalAction.addEventListener('click', function () {
                 if (pendingForm) {
                     const form = pendingForm;
                     closeModal();
-                    // Bypass event listener biar gak loop
                     form.submit();
                 }
             });
 
-            // ESC untuk tutup
             document.addEventListener('keydown', function (e) {
                 if (e.key === 'Escape' && !modal.hasAttribute('hidden')) {
                     closeModal();
@@ -338,18 +350,20 @@
 @endif
 
 {{-- ============================================================
-     CSS KHUSUS MODAL KONFIRMASI
+     CSS MODAL KONFIRMASI — DIPERBAIKI
      ============================================================ --}}
 @push('styles')
 <style>
+    /* Hero: ikon + judul, center */
     .confirm-modal__hero {
         display: flex;
         flex-direction: column;
         align-items: center;
         gap: 12px;
-        margin-bottom: var(--space-5);
+        margin-bottom: 20px;
         text-align: center;
     }
+
     .confirm-modal__icon {
         width: 56px;
         height: 56px;
@@ -360,31 +374,81 @@
         font-size: 26px;
         font-weight: 700;
         line-height: 1;
+        flex-shrink: 0;
     }
     .confirm-modal__icon--success {
-        background: var(--success-bg);
-        color: var(--success-text);
+        background: #ecfdf5;
+        color: #059669;
     }
     .confirm-modal__icon--danger {
-        background: var(--danger-bg);
-        color: var(--danger-text);
+        background: #fef2f2;
+        color: #dc2626;
     }
+
     .confirm-modal__title {
         margin: 0;
-        font-size: var(--fs-xl);
-        font-weight: var(--fw-semibold);
-        color: var(--text-strong);
+        font-size: 18px;
+        font-weight: 600;
+        color: #0f172a;
+        letter-spacing: -.01em;
+        line-height: 1.3;
     }
+
+    /* Konten */
     .confirm-modal__content {
-        font-size: var(--fs-body);
-        color: var(--text);
+        font-size: 14px;
+        color: #1e293b;
         line-height: 1.6;
     }
-    .confirm-modal__content p {
-        margin: 0 0 var(--space-3);
+
+    .confirm-modal__lead {
+        margin: 0 0 16px;
+        color: #475569;
+        line-height: 1.65;
     }
-    .confirm-modal__content strong {
-        color: var(--text-strong);
+    .confirm-modal__lead strong {
+        color: #0f172a;
+        font-weight: 600;
+    }
+
+    /* List bullet rapi */
+    .confirm-modal__list {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        padding: 14px 16px;
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+    }
+    .confirm-modal__list li {
+        position: relative;
+        padding-left: 20px;
+        font-size: 13.5px;
+        color: #334155;
+        line-height: 1.55;
+    }
+    .confirm-modal__list li::before {
+        content: "";
+        position: absolute;
+        left: 2px;
+        top: 8px;
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: #94a3b8;
+    }
+    .confirm-modal__list li strong {
+        color: #0f172a;
+        font-weight: 600;
+    }
+
+    /* Tombol footer */
+    .modal__foot .btn {
+        min-width: 96px;
     }
 
     /* Mobile */
@@ -394,6 +458,14 @@
         }
         .modal__foot .btn {
             width: 100%;
+        }
+        .confirm-modal__icon {
+            width: 48px;
+            height: 48px;
+            font-size: 22px;
+        }
+        .confirm-modal__title {
+            font-size: 16px;
         }
     }
 </style>
