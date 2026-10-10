@@ -12,15 +12,22 @@ use Illuminate\Support\Facades\DB;
 
 class SendCartReminders extends Command
 {
-    protected $signature = 'carts:send-reminders {--dry-run : Tampilkan saja tanpa kirim}';
-    protected $description = 'Kirim reminder ke user yang cart-nya nganggur (belum checkout)';
+    protected $signature = 'carts:send-reminders
+                            {--minutes=30 : Jeda antar reminder (menit)}
+                            {--dry-run : Tampilkan saja tanpa kirim}';
+
+    protected $description = 'Kirim reminder ke user yang cart-nya nganggur ≥30 menit (repeat sampai checkout / cart kosong)';
 
     public function handle(): int
     {
-        $dryRun = (bool) $this->option('dry-run');
-        $reminder1Hours = Setting::integer('cart_reminder_1_hours', 4);
-        $reminder2Hours = Setting::integer('cart_reminder_2_hours', 24);
-        $maxReminders = 2;
+        $dryRun  = (bool) $this->option('dry-run');
+        $minutes = (int) ($this->option('minutes') ?: 30);
+
+        if ($minutes < 1) {
+            $minutes = 30;
+        }
+
+        $cutoff = now()->subMinutes($minutes);
 
         // ============================================================
         // 1 QUERY: agregat cart per user (last_activity + total qty)
@@ -54,7 +61,6 @@ class SendCartReminders extends Command
 
         // ============================================================
         // 1 QUERY: semua reminder untuk user-user ini
-        // (filter per user dilakukan di memory)
         // ============================================================
         $reminders = CartReminder::query()
             ->whereIn('user_id', $userIds)
@@ -63,7 +69,8 @@ class SendCartReminders extends Command
             ->groupBy('user_id');
 
         $sent = 0;
-        $now = now();
+        $skipped = 0;
+        $now  = now();
 
         foreach ($cartData as $userId => $data) {
             $user = $users->get($userId);
@@ -72,50 +79,52 @@ class SendCartReminders extends Command
             }
 
             $lastActivityAt = Carbon::parse($data->last_activity);
-            $hoursIdle = (int) $lastActivityAt->diffInHours($now);
 
-            // Skip kalau belum cukup idle
-            if ($hoursIdle < $reminder1Hours) {
+            // ------------------------------------------------------------
+            // Skip kalau cart baru berubah < 30 menit lalu
+            // (timer otomatis reset karena cart_items.updated_at berubah)
+            // ------------------------------------------------------------
+            if ($lastActivityAt->greaterThan($cutoff)) {
                 continue;
             }
 
-            // Hitung reminder yang sudah dikirim SETELAH last activity cart
+            // ------------------------------------------------------------
+            // Cari reminder terakhir yang dikirim SETELAH last activity.
+            // Reminder yang dikirim sebelum user ubah cart = session lama,
+            // tidak dihitung.
+            // ------------------------------------------------------------
             $userReminders = $reminders->get($userId, collect());
-            $sentAfterActivity = $userReminders->filter(
-                fn ($r) => $r->sent_at && $r->sent_at->greaterThan($lastActivityAt)
-            );
 
-            $remindersInSession = $sentAfterActivity->count();
+            $remindersInSession = $userReminders
+                ->filter(fn ($r) => $r->sent_at && $r->sent_at->greaterThan($lastActivityAt))
+                ->sortByDesc('sent_at');
 
-            if ($remindersInSession >= $maxReminders) {
+            // Reminder terakhir di session ini
+            $lastReminder = $remindersInSession->first();
+
+            // Kalau udah ada reminder < 30 menit dari sekarang → skip
+            if ($lastReminder && $lastReminder->sent_at->greaterThan($cutoff)) {
+                $skipped++;
                 continue;
             }
 
-            // Tentukan nomor reminder berikutnya
-            $nextNumber = $remindersInSession + 1;
+            // Nomor reminder berikutnya = jumlah reminder dalam session + 1
+            $nextNumber  = $remindersInSession->count() + 1;
+            $itemCount   = (int) $data->item_count;
+            $idleMinutes = (int) $lastActivityAt->diffInMinutes($now);
 
-            // Kalau user sudah idle >= batas reminder #2 & belum pernah dapat reminder apa pun,
-            // langsung kirim #2 (skip #1) — hindari double-notif dalam 1-2 jam
-            if ($remindersInSession === 0 && $hoursIdle >= $reminder2Hours) {
-                $nextNumber = 2;
-            }
-
-            // Kalau mau kirim #2 tapi belum cukup idle → skip
-            if ($nextNumber === 2 && $hoursIdle < $reminder2Hours) {
-                continue;
-            }
-
-            $itemCount = (int) $data->item_count;
-
+            // ------------------------------------------------------------
+            // Kirim
+            // ------------------------------------------------------------
             if (! $dryRun) {
                 try {
                     NotificationService::cartAbandoned($user, $itemCount, $nextNumber);
 
                     CartReminder::create([
-                        'user_id' => $userId,
+                        'user_id'         => $userId,
                         'reminder_number' => $nextNumber,
-                        'item_count' => $itemCount,
-                        'sent_at' => now(),
+                        'item_count'      => $itemCount,
+                        'sent_at'         => now(),
                     ]);
                 } catch (\Throwable $e) {
                     $this->warn("  ⚠️ Gagal kirim ke {$user->email}: {$e->getMessage()}");
@@ -123,11 +132,12 @@ class SendCartReminders extends Command
                 }
             }
 
-            $this->line("  🛒 Reminder #{$nextNumber} → {$user->email} ({$itemCount} item, idle {$hoursIdle}h)");
+            $this->line("  🛒 Reminder #{$nextNumber} → {$user->email} ({$itemCount} item, idle {$idleMinutes} menit)");
             $sent++;
         }
 
-        $this->info(($dryRun ? '[DRY RUN] ' : '') . "Selesai. {$sent} reminder dikirim.");
+        $suffix = $skipped > 0 ? " ({$skipped} di-skip, belum 30 menit)" : '';
+        $this->info(($dryRun ? '[DRY RUN] ' : '') . "Selesai. {$sent} reminder dikirim." . $suffix);
 
         return self::SUCCESS;
     }
