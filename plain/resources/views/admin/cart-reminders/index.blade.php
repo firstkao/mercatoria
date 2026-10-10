@@ -31,8 +31,9 @@
     </div>
 
     <p class="hint intro">
-        Sistem otomatis kirim reminder ke user yang cart-nya nganggur tanpa checkout.
-        Reminder #1 setelah <strong>4 jam</strong>, reminder #2 setelah <strong>24 jam</strong>. Maks 2 reminder per cart session (reset kalau user ubah cart).
+        Reminder dikirim <strong>setiap 30 menit</strong> ke user yang cart-nya nganggur tanpa checkout.
+        Berlanjut otomatis sampai user <strong>checkout</strong> atau <strong>mengosongkan cart</strong>.
+        Timer otomatis reset kalau user menambah atau mengubah item.
     </p>
 
     @if ($reminders->isEmpty())
