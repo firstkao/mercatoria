@@ -17,6 +17,9 @@
             <p class="muted text-center">Tidak ada bukti pembayaran.</p>
         </div>
     @else
+        {{-- ============================================================
+             DESKTOP — Tabel
+             ============================================================ --}}
         <div class="panel panel--flush only-desktop">
             <table class="table">
                 <thead>
@@ -31,6 +34,14 @@
                 </thead>
                 <tbody>
                     @foreach ($proofs as $proof)
+                        @php
+                            $statusLabel = match ($proof->status) {
+                                'pending'  => 'Menunggu',
+                                'approved' => 'Disetujui',
+                                'rejected' => 'Ditolak',
+                                default    => ucfirst((string) $proof->status),
+                            };
+                        @endphp
                         <tr>
                             <td class="table__name">
                                 <a href="{{ route('admin.payments.show', $proof->id) }}" class="table__title">
@@ -44,12 +55,12 @@
                             <td class="muted">{{ $proof->payment_method_label }}</td>
                             <td class="nowrap">Rp {{ number_format($proof->amount_idr, 0, ',', '.') }}</td>
                             <td>
-                                <span @class(['badge', 'badge--on' => $proof->status === 'approved', 'badge--off' => $proof->status === 'rejected'])>
-                                    @match($proof->status)
-                                        'pending' => 'Menunggu',
-                                        'approved' => 'Disetujui',
-                                        'rejected' => 'Ditolak',
-                                    @endmatch
+                                <span @class([
+                                    'badge',
+                                    'badge--on' => $proof->status === 'approved',
+                                    'badge--off' => $proof->status === 'rejected',
+                                ])>
+                                    {{ $statusLabel }}
                                 </span>
                             </td>
                             <td class="muted nowrap">
@@ -61,22 +72,32 @@
             </table>
         </div>
 
-        {{-- Mobile: cards --}}
+        {{-- ============================================================
+             MOBILE — Cards
+             ============================================================ --}}
         <ul class="cards only-mobile">
             @foreach ($proofs as $proof)
+                @php
+                    $statusLabel = match ($proof->status) {
+                        'pending'  => 'Menunggu',
+                        'approved' => 'Disetujui',
+                        'rejected' => 'Ditolak',
+                        default    => ucfirst((string) $proof->status),
+                    };
+                @endphp
                 <li>
                     <a href="{{ route('admin.payments.show', $proof->id) }}" class="card-row">
                         <div class="card-row__body">
                             <p class="card-row__title">{{ $proof->order_number }}</p>
                             <p class="card-row__subtitle">{{ $proof->full_name }}</p>
                             <p class="card-row__meta">
-                                Rp {{ number_format($proof->amount_idr, 0, ',', '.') }} · 
-                                <span @class(['badge-small', 'badge-small--on' => $proof->status === 'approved', 'badge-small--off' => $proof->status === 'rejected'])>
-                                    @match($proof->status)
-                                        'pending' => 'Menunggu',
-                                        'approved' => 'Disetujui',
-                                        'rejected' => 'Ditolak',
-                                    @endmatch
+                                Rp {{ number_format($proof->amount_idr, 0, ',', '.') }} ·
+                                <span @class([
+                                    'badge-small',
+                                    'badge-small--on' => $proof->status === 'approved',
+                                    'badge-small--off' => $proof->status === 'rejected',
+                                ])>
+                                    {{ $statusLabel }}
                                 </span>
                             </p>
                         </div>
