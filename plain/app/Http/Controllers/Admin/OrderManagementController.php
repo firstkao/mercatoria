@@ -20,6 +20,9 @@ use Illuminate\Validation\Rule;
 
 class OrderManagementController extends Controller
 {
+    /**
+     * Daftar semua order + filter status + search.
+     */
     public function index(Request $request)
     {
         $status = $request->query('status');
@@ -52,6 +55,16 @@ class OrderManagementController extends Controller
         return view('admin.orders.index', compact('orders', 'status', 'q', 'counts', 'statuses'));
     }
 
+    /**
+     * Bulk action: set status untuk banyak order sekaligus.
+     *
+     * ⚠️ Cancel/refund TIDAK boleh lewat bulk — harus per-item.
+     * Alasan: cancel/refund punya efek samping (refund koin, voucher, dst)
+     * yang butuh review individual.
+     *
+     * Validasi transisi status DIHAPUS — admin bebas pilih status apapun.
+     * Cuma cek: order tidak boleh di-set ke status yang sama (skip).
+     */
     public function bulk(Request $request)
     {
         $validated = $request->validate([
@@ -60,8 +73,8 @@ class OrderManagementController extends Controller
             'action' => ['required', 'in:status'],
             'status' => ['required_if:action,status', Rule::enum(OrderStatus::class)],
         ], [
-            'ids.required' => 'Pilih minimal satu pesanan.',
-            'ids.max'      => 'Maksimal 200 pesanan per aksi bulk.',
+            'ids.required'       => 'Pilih minimal satu pesanan.',
+            'ids.max'            => 'Maksimal 200 pesanan per aksi bulk.',
             'status.required_if' => 'Pilih status tujuan.',
         ]);
 
@@ -88,10 +101,13 @@ class OrderManagementController extends Controller
                 continue;
             }
 
-            if (! OrderStatus::canTransition($oldStatus, $newStatus)) {
-                $skipped[] = "{$order->order_number} ({$oldStatus} → {$newStatus} tidak sah)";
-                continue;
-            }
+            // Validasi transisi DIHAPUS — admin bebas pilih status apapun.
+            // Kalau butuh balik ke strict mode, aktifkan blok di bawah:
+            //
+            // if (! OrderStatus::canTransition($oldStatus, $newStatus)) {
+            //     $skipped[] = "{$order->order_number} ({$oldStatus} → {$newStatus} tidak sah)";
+            //     continue;
+            // }
 
             try {
                 DB::transaction(function () use ($order, $oldStatus, $newStatus) {
@@ -106,10 +122,17 @@ class OrderManagementController extends Controller
                 if ($order->user) {
                     try {
                         $label = OrderStatus::tryFrom($newStatus)?->label() ?? $newStatus;
-                        NotificationService::orderStatus($order->user, $order, $label,
-                            "Status pesanan kamu berubah menjadi: {$label}.");
+                        NotificationService::orderStatus(
+                            $order->user,
+                            $order,
+                            $label,
+                            "Status pesanan kamu berubah menjadi: {$label}."
+                        );
                     } catch (\Throwable $e) {
-                        Log::warning('Gagal kirim notifikasi bulk status', ['order_id' => $order->id, 'error' => $e->getMessage()]);
+                        Log::warning('Gagal kirim notifikasi bulk status', [
+                            'order_id' => $order->id,
+                            'error'    => $e->getMessage(),
+                        ]);
                     }
                 }
 
@@ -117,13 +140,19 @@ class OrderManagementController extends Controller
                     try {
                         Mail::to($order->user->email)->send(new \App\Mail\OrderStatusUpdated($order));
                     } catch (\Throwable $e) {
-                        Log::warning('Gagal kirim email bulk status', ['order_id' => $order->id, 'error' => $e->getMessage()]);
+                        Log::warning('Gagal kirim email bulk status', [
+                            'order_id' => $order->id,
+                            'error'    => $e->getMessage(),
+                        ]);
                     }
                 }
 
                 $success++;
             } catch (\Throwable $e) {
-                Log::error('Bulk update status gagal', ['order_id' => $order->id, 'error' => $e->getMessage()]);
+                Log::error('Bulk update status gagal', [
+                    'order_id' => $order->id,
+                    'error'    => $e->getMessage(),
+                ]);
                 $failed[] = $order->order_number;
             }
         }
@@ -140,10 +169,13 @@ class OrderManagementController extends Controller
         return back()->with('status', $msg);
     }
 
+    /**
+     * Detail satu order.
+     */
     public function show(Order $order)
     {
         $order->load([
-            'items.variant.product',
+            'items.variant.product.images',
             'paymentProofs.method',
             'user',
             'marketplace',
@@ -154,16 +186,18 @@ class OrderManagementController extends Controller
     }
 
     // ============================================================
-    // UPDATE STATUS ORDER (GLOBAL) — Opsi A
+    // UPDATE STATUS ORDER (GLOBAL)
     // ============================================================
     /**
      * Set semua item ke status baru. Order.status di-set sama.
      *
-     * - Untuk status normal (non-cancel/refund): semua item di-set ke status
-     *   itu, item_status di-reset jadi NULL (semua inherit).
-     * - Untuk cancel/refund: hanya boleh kalau SEMUA item belum masuk
+     * - Untuk status normal: semua item di-reset ke NULL (inherit order.status).
+     * - Untuk cancel/refund: cuma boleh kalau SEMUA item belum masuk
      *   "sedang_diproses" (rank < 30). Kalau ada 1 item yang sudah diproses,
      *   admin harus cancel per-item.
+     *
+     * ✅ Validasi transisi DIHAPUS — admin bebas pilih status apapun untuk
+     * koreksi data (mis. salah input, order lama, dsb). Yang penting enum valid.
      */
     public function updateStatus(Request $request, Order $order)
     {
@@ -181,8 +215,8 @@ class OrderManagementController extends Controller
             OrderStatus::DanaDikembalikan->value,
         ], true);
 
+        // Guard cancel/refund: cek item yang sudah diproses
         if ($isCancelOrRefund) {
-            // Hitung item yang sudah "diproses" (rank >= sedang_diproses)
             $processedCount = $order->items->filter(function ($item) use ($order) {
                 $eff = $item->item_status ?? $order->status;
                 return OrderStatus::rank($eff) >= OrderStatus::cancelLockRank();
@@ -194,28 +228,39 @@ class OrderManagementController extends Controller
                                 "Cancel/refund per-item yang masih bisa dibatalkan saja.",
                 ]);
             }
-        } else {
-            if (! OrderStatus::canTransition($oldOrderStatus, $newStatus)) {
-                return back()->withErrors([
-                    'status' => OrderStatus::transitionErrorMessage($oldOrderStatus, $newStatus),
-                ]);
-            }
         }
+
+        // ✅ Validasi transisi DIHAPUS. Kalau mau balik ke strict mode,
+        // aktifkan blok di bawah:
+        //
+        // if (! $isCancelOrRefund && ! OrderStatus::canTransition($oldOrderStatus, $newStatus)) {
+        //     return back()->withErrors([
+        //         'status' => OrderStatus::transitionErrorMessage($oldOrderStatus, $newStatus),
+        //     ]);
+        // }
 
         DB::transaction(function () use ($order, $oldOrderStatus, $newStatus) {
             $this->applyGlobalStatus($order, $oldOrderStatus, $newStatus);
         });
 
-        AdminLog::record('update_order_status', $order, ['from' => $oldOrderStatus, 'to' => $newStatus]);
+        AdminLog::record('update_order_status', $order, [
+            'from' => $oldOrderStatus,
+            'to'   => $newStatus,
+        ]);
 
         if ($order->user) {
             try {
                 $label = OrderStatus::tryFrom($newStatus)?->label() ?? $newStatus;
-                NotificationService::orderStatus($order->user, $order, $label,
-                    "Status pesanan kamu berubah menjadi: {$label}.");
+                NotificationService::orderStatus(
+                    $order->user,
+                    $order,
+                    $label,
+                    "Status pesanan kamu berubah menjadi: {$label}."
+                );
             } catch (\Throwable $e) {
                 Log::warning('Gagal kirim notifikasi perubahan status order', [
-                    'order_id' => $order->id, 'error' => $e->getMessage(),
+                    'order_id' => $order->id,
+                    'error'    => $e->getMessage(),
                 ]);
             }
         }
@@ -225,7 +270,8 @@ class OrderManagementController extends Controller
                 Mail::to($order->user->email)->send(new \App\Mail\OrderStatusUpdated($order));
             } catch (\Throwable $e) {
                 Log::warning('Gagal kirim email update status order', [
-                    'order_id' => $order->id, 'error' => $e->getMessage(),
+                    'order_id' => $order->id,
+                    'error'    => $e->getMessage(),
                 ]);
             }
         }
@@ -239,11 +285,8 @@ class OrderManagementController extends Controller
     /**
      * Set status per-item lalu recompute order.status = min rank item.
      *
-     * Validasi cancel/refund: hanya boleh kalau status efektif item
+     * Validasi cancel/refund: cuma boleh kalau status efektif item
      * masih < "sedang_diproses" (rank < 30).
-     *
-     * Efek samping (koin, bonus, referral, refund) dijalankan otomatis
-     * lewat recomputeOrderStatus() kalau order.status berubah.
      */
     public function updateItemStatus(Request $request, Order $order, OrderItem $item): RedirectResponse
     {
@@ -253,8 +296,8 @@ class OrderManagementController extends Controller
             'item_status' => ['nullable', Rule::enum(OrderStatus::class)],
         ]);
 
-        $newItemStatus = $validated['item_status'] ?? null;
-        $oldEffective  = $item->item_status ?? $order->status;
+        $newItemStatus  = $validated['item_status'] ?? null;
+        $oldEffective   = $item->item_status ?? $order->status;
         $oldOrderStatus = $order->status;
 
         // Kalau set ke cancel/refund: cek rank lama
@@ -278,34 +321,33 @@ class OrderManagementController extends Controller
         $order->refresh();
         $item->refresh();
 
-        $newEffective  = $item->item_status ?? $order->status;
+        $newEffective   = $item->item_status ?? $order->status;
         $newOrderStatus = $order->status;
 
-        // Timeline order-level hanya kalau order.status berubah
         if ($oldOrderStatus !== $newOrderStatus) {
             AdminLog::record('update_item_status', $order, [
-                'item_id'      => $item->id,
-                'item_name'    => $item->product_name_snapshot,
-                'item_status'  => $newItemStatus,
-                'order_from'   => $oldOrderStatus,
-                'order_to'     => $newOrderStatus,
+                'item_id'     => $item->id,
+                'item_name'   => $item->product_name_snapshot,
+                'item_status' => $newItemStatus,
+                'order_from'  => $oldOrderStatus,
+                'order_to'    => $newOrderStatus,
             ]);
         }
 
-        // Notifikasi per-item kalau status efektif item berubah
         if ($oldEffective !== $newEffective && $order->user) {
             try {
                 $label = OrderStatus::tryFrom($newEffective)?->label() ?? $newEffective;
                 NotificationService::itemStatusChanged($order->user, $order, $item, $label);
             } catch (\Throwable $e) {
                 Log::warning('Gagal kirim notifikasi status item', [
-                    'order_id' => $order->id, 'item_id' => $item->id, 'error' => $e->getMessage(),
+                    'order_id' => $order->id,
+                    'item_id'  => $item->id,
+                    'error'    => $e->getMessage(),
                 ]);
             }
         }
 
-        return back()->with('status',
-            "Status item \"{$item->product_name_snapshot}\" diperbarui.");
+        return back()->with('status', "Status item \"{$item->product_name_snapshot}\" diperbarui.");
     }
 
     // ============================================================
@@ -314,7 +356,7 @@ class OrderManagementController extends Controller
     /**
      * HARUS dipanggil di dalam DB::transaction.
      *
-     * Logika:
+     * Langkah:
      * 1. Reset semua item_status ke NULL (semua inherit).
      * 2. Jalankan efek samping (koin, refund) kalau status berubah ke final/revenue.
      * 3. Set order.status = newStatus.
@@ -347,10 +389,7 @@ class OrderManagementController extends Controller
      *
      * Khusus: kalau SEMUA item final:
      *   - ada dana_dikembalikan → order = dana_dikembalikan
-     *   - selain itu           → order = dibatalkan
-     *
-     * Efek samping (koin, refund) dipanggil otomatis kalau order.status
-     * berubah ke status yang butuh trigger.
+     *   - selain itu            → order = dibatalkan
      *
      * HARUS dipanggil di dalam DB::transaction.
      */
@@ -370,7 +409,7 @@ class OrderManagementController extends Controller
             ->values();
 
         $finalStatuses = OrderStatus::finalStatuses();
-        $nonFinal = $effectiveStatuses->reject(fn ($s) => in_array($s, $finalStatuses, true));
+        $nonFinal      = $effectiveStatuses->reject(fn ($s) => in_array($s, $finalStatuses, true));
 
         if ($nonFinal->isEmpty()) {
             // Semua item final → order final juga
@@ -438,13 +477,16 @@ class OrderManagementController extends Controller
                     try {
                         NotificationService::coinsEarned($order->user, $order->coin_estimate, 'cashback');
                     } catch (\Throwable $e) {
-                        Log::warning('Gagal notif koin cashback', ['order_id' => $order->id, 'error' => $e->getMessage()]);
+                        Log::warning('Gagal notif koin cashback', [
+                            'order_id' => $order->id,
+                            'error'    => $e->getMessage(),
+                        ]);
                     }
                 }
             }
 
             // 2) Bonus pertama
-            $completed = Order::where('user_id', $order->user_id)->where('status', 'selesai')->count();
+            $completed  = Order::where('user_id', $order->user_id)->where('status', 'selesai')->count();
             $bonusGiven = CoinLot::where('user_id', $order->user_id)->where('source', 'bonus_pertama')->exists();
             if ($completed === 1 && ! $bonusGiven) {
                 $bonus = Setting::integer('customer_bonus_coin', 1000);
@@ -462,7 +504,10 @@ class OrderManagementController extends Controller
                     try {
                         NotificationService::coinsEarned($order->user, $bonus, 'bonus_pertama');
                     } catch (\Throwable $e) {
-                        Log::warning('Gagal notif bonus koin', ['order_id' => $order->id, 'error' => $e->getMessage()]);
+                        Log::warning('Gagal notif bonus koin', [
+                            'order_id' => $order->id,
+                            'error'    => $e->getMessage(),
+                        ]);
                     }
                 }
             }
@@ -471,7 +516,10 @@ class OrderManagementController extends Controller
             try {
                 $this->rewardReferral($order->user, $expiry);
             } catch (\Throwable $e) {
-                Log::error('Gagal reward referral', ['order_id' => $order->id, 'error' => $e->getMessage()]);
+                Log::error('Gagal reward referral', [
+                    'order_id' => $order->id,
+                    'error'    => $e->getMessage(),
+                ]);
             }
         }
 
@@ -585,7 +633,10 @@ class OrderManagementController extends Controller
             try {
                 NotificationService::referralRewarded($referrer, $referrerReward, 'referrer');
             } catch (\Throwable $e) {
-                Log::warning('Gagal notif reward referral', ['referrer_id' => $referrer->id, 'error' => $e->getMessage()]);
+                Log::warning('Gagal notif reward referral', [
+                    'referrer_id' => $referrer->id,
+                    'error'       => $e->getMessage(),
+                ]);
             }
         }
 
