@@ -13,10 +13,13 @@
              INFORMASI PESANAN — tanggal & status
              ============================================================ --}}
         <x-admin.card>
-            <div class="panel__head">
-                <h2 class="m-0">Informasi Pesanan</h2>
+        <div class="panel__head">
+            <h2 class="m-0">Penerima &amp; Pengiriman</h2>
+            <div class="panel__head-actions">
                 <span class="muted small">#{{ $order->order_number }}</span>
+                @include('admin.orders.partials.whatsapp-menu', ['order' => $order])
             </div>
+        </div>
 
             <dl class="deflist">
                 <div>
