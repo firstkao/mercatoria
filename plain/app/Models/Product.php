@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 #[Fillable([
     'game_id',
@@ -28,6 +29,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
     'best_seller_score',
     'best_seller_rank',
     'exclude_best_seller',
+    'is_split_box',
 ])]
 class Product extends Model
 {
@@ -124,6 +126,16 @@ class Product extends Model
     public function images(): HasMany
     {
         return $this->hasMany(ProductImage::class)->orderBy('sort_order')->orderBy('id');
+    }
+
+    public function splitBox(): HasOne
+    {
+        return $this->hasOne(SplitBox::class);
+    }
+    
+    public function isSplitBox(): bool
+    {
+        return (bool) $this->is_split_box;
     }
 
     // ============================================================
