@@ -12,7 +12,7 @@ class OrderItem extends Model
         'order_id', 'product_variant_id', 'product_name_snapshot', 'variant_name_snapshot',
         'price_yuan_snapshot', 'weight_grams_snapshot', 'cn_shipping_yuan_snapshot',
         'unit_price_idr', 'quantity', 'line_total_idr',
-        'item_status', 'item_status_updated_at',
+        'item_status', 'item_status_updated_at', 'split_box_slot_id',
     ];
 
     protected function casts(): array
@@ -57,5 +57,10 @@ class OrderItem extends Model
     public function hasStatusOverride(): bool
     {
         return $this->item_status !== null && $this->item_status !== $this->order->status;
+    }
+
+    public function splitBoxSlot(): BelongsTo
+    {
+        return $this->belongsTo(SplitBoxSlot::class, 'split_box_slot_id');
     }
 }
