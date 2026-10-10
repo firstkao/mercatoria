@@ -32,13 +32,47 @@
         }
         .brand-contact__item--wa .brand-contact__icon { color: #25D366; }
         .brand-contact__item--email .brand-contact__icon { color: #0299e7; }
+
+        /* === Catatan packing === */
+        .packing-notes {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+        .packing-notes__block {
+            padding: 12px 14px;
+            background: #fafafa;
+            border: 1px solid #e4e4e7;
+            border-radius: 4px;
+        }
+        .packing-notes__label {
+            display: block;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .1em;
+            color: #71717a;
+            margin-bottom: 6px;
+        }
+        .packing-notes__body {
+            margin: 0;
+            font-size: 13px;
+            color: #1a1a25;
+            line-height: 1.55;
+            white-space: pre-wrap;
+        }
+        .packing-notes__block--buyer {
+            background: #fffbeb;
+            border-color: #fde68a;
+        }
+        .packing-notes__block--buyer .packing-notes__label { color: #92400e; }
+        .packing-notes__block--buyer .packing-notes__body { color: #422006; }
     </style>
 </head>
 <body class="print-page">
     <div class="print-toolbar">
         <div>
             <strong>Packing Slip {{ $order->order_number }}</strong>
-            <span class="toolbar-hint">Tanpa harga — untuk packing barang</span>
         </div>
         <div class="print-toolbar__actions">
             <button type="button" onclick="window.print()" class="print-btn print-btn--primary">🖨️ Print / Save PDF</button>
@@ -133,9 +167,15 @@
             </tbody>
         </table>
 
+        {{-- === Catatan Packing === --}}
         <section class="paper__note">
-            <strong>Catatan Packing:</strong>
-            <div class="signature-line"></div>
+            <div class="packing-notes">
+                @if ($order->customer_note)
+                    <div class="packing-notes__block packing-notes__block--buyer">
+                        <span class="packing-notes__label">Catatan dari Pembeli</span>
+                        <p class="packing-notes__body">{{ $order->customer_note }}</p>
+                    </div>
+                @endif
         </section>
 
         <footer class="paper__footer">
