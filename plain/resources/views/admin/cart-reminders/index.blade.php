@@ -3,7 +3,8 @@
 @section('actions')
     <form method="POST" action="{{ route('admin.cart-reminders.refresh') }}" class="inline-form">
         @csrf
-        <button type="submit" class="btn btn--primary" onclick="return confirm('Kirim reminder cart abandonment sekarang?');">
+        <button type="submit" class="btn btn--primary"
+                onclick="return confirm('Kirim reminder ke cart yang sudah nganggur ≥30 menit?');">
             🔄 Jalankan Sekarang
         </button>
     </form>
@@ -14,19 +15,19 @@
     <div class="stats">
         <div class="stat">
             <span class="stat__label">Cart Aktif</span>
-            <strong class="stat__value">{{ number_format($stats['active_carts'], 0, ',', '.') }}</strong>
+            <strong class="stat__value">{{ number_format($stats['active_carts'] ?? 0, 0, ',', '.') }}</strong>
         </div>
         <div class="stat">
             <span class="stat__label">Reminder Terkirim</span>
-            <strong class="stat__value">{{ number_format($stats['total_sent'], 0, ',', '.') }}</strong>
+            <strong class="stat__value">{{ number_format($stats['total_sent'] ?? 0, 0, ',', '.') }}</strong>
         </div>
         <div class="stat">
             <span class="stat__label">30 Hari Terakhir</span>
-            <strong class="stat__value">{{ number_format($stats['sent_30d'], 0, ',', '.') }}</strong>
+            <strong class="stat__value">{{ number_format($stats['sent_30d'] ?? 0, 0, ',', '.') }}</strong>
         </div>
         <div class="stat">
-            <span class="stat__label">Reminder #1 / #2</span>
-            <strong class="stat__value">{{ $stats['reminder1'] }} / {{ $stats['reminder2'] }}</strong>
+            <span class="stat__label">Rata-rata per Cart</span>
+            <strong class="stat__value">{{ $stats['avg_per_cart'] ?? 0 }}x</strong>
         </div>
     </div>
 
@@ -55,31 +56,47 @@
                             <td><span class="badge">#{{ $reminder->reminder_number }}</span></td>
                             <td>
                                 @if ($reminder->user)
-                                    <a href="{{ route('admin.users.show', $reminder->user) }}" class="link">{{ $reminder->user->displayName() }}</a>
+                                    <a href="{{ route('admin.users.show', $reminder->user) }}" class="link">
+                                        {{ $reminder->user->displayName() }}
+                                    </a>
                                     <div class="muted small">{{ $reminder->user->email }}</div>
                                 @else
                                     <span class="muted">—</span>
                                 @endif
                             </td>
                             <td class="muted">{{ $reminder->item_count }} item</td>
-                            <td class="muted small nowrap">{{ $reminder->sent_at->timezone('Asia/Jakarta')->translatedFormat('j M Y, H:i') }} WIB</td>
+                            <td class="muted small nowrap">
+                                {{ $reminder->sent_at->timezone('Asia/Jakarta')->translatedFormat('j M Y, H:i') }} WIB
+                            </td>
                         </tr>
                     @endforeach
                 </tbody>
             </table>
-        <ul class="cards only-mobile">
-            @foreach ($reminders as $reminder)
-                <li>
-                    <div class="card-row card-row--stack">
-                        <div class="card-row__head">
-                            <span class="card-row__title">@if ($reminder->user)<a href="{{ route('admin.users.show', $reminder->user) }}" class="link">{{ $reminder->user->displayName() }}</a>@else<span class="muted">&mdash;</span>@endif</span>
-                            <span class="badge">#{{ $reminder->reminder_number }}</span>
+
+            <ul class="cards only-mobile">
+                @foreach ($reminders as $reminder)
+                    <li>
+                        <div class="card-row card-row--stack">
+                            <div class="card-row__head">
+                                <span class="card-row__title">
+                                    @if ($reminder->user)
+                                        <a href="{{ route('admin.users.show', $reminder->user) }}" class="link">
+                                            {{ $reminder->user->displayName() }}
+                                        </a>
+                                    @else
+                                        <span class="muted">&mdash;</span>
+                                    @endif
+                                </span>
+                                <span class="badge">#{{ $reminder->reminder_number }}</span>
+                            </div>
+                            <p class="card-row__meta">
+                                {{ $reminder->item_count }} item &middot;
+                                Dikirim {{ $reminder->sent_at->timezone('Asia/Jakarta')->translatedFormat('j M Y, H:i') }} WIB
+                            </p>
                         </div>
-                        <p class="card-row__meta">{{ $reminder->item_count }} item &middot; Dikirim {{ $reminder->sent_at->timezone('Asia/Jakarta')->translatedFormat('j M Y, H:i') }} WIB</p>
-                    </div>
-                </li>
-            @endforeach
-        </ul>
+                    </li>
+                @endforeach
+            </ul>
         </div>
 
         @include('admin.partials.pagination', ['paginator' => $reminders])
