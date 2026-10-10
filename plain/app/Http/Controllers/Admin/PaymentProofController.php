@@ -55,17 +55,23 @@ class PaymentProofController extends Controller
     }
 
     public function show(int $proof): View
-    {
-        // ✅ PERAPIAN: sama seperti index(), LEFT JOIN agar detail bukti tetap
-        // bisa dibuka walau payment method-nya sudah dihapus.
-        $proofRecord = DB::table('payment_proofs')
-            ->join('orders', 'orders.id', '=', 'payment_proofs.order_id')
-            ->join('users', 'users.id', '=', 'orders.user_id')
-            ->leftJoin('payment_methods', 'payment_methods.id', '=', 'payment_proofs.payment_method_id')
-            ->where('payment_proofs.id', $proof)
-            // ✅ BUG FIX: sama seperti index(), kolom orders adalah `status`.
-            ->select('payment_proofs.*', 'orders.order_number', 'orders.pay_now_idr', 'orders.status as order_status', 'users.full_name', 'users.email', DB::raw("COALESCE(payment_methods.label, '(metode dihapus)') as payment_method_label"))
-            ->firstOrFail();
+{
+    $proofRecord = DB::table('payment_proofs')
+        ->join('orders', 'orders.id', '=', 'payment_proofs.order_id')
+        ->join('users', 'users.id', '=', 'orders.user_id')
+        ->leftJoin('payment_methods', 'payment_methods.id', '=', 'payment_proofs.payment_method_id')
+        ->where('payment_proofs.id', $proof)
+        ->select(
+            'payment_proofs.*',
+            'orders.order_number',
+            'orders.pay_now_idr',
+            'orders.status as order_status',
+            'users.full_name',
+            'users.email',
+            'users.role as user_role',   // ← TAMBAH INI
+            DB::raw("COALESCE(payment_methods.label, '(metode dihapus)') as payment_method_label")
+        )
+        ->firstOrFail();
 
         // BUG FIX: sama seperti index(), baris DB::table() adalah stdClass dengan
         // tanggal berupa string, sedangkan view memanggil ->timezone() pada
