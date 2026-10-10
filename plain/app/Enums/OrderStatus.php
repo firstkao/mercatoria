@@ -18,8 +18,9 @@ enum OrderStatus: string
     case DanaDikembalikan = 'dana_dikembalikan';
 
     /* ============================================================
-     * Progression rank
+     * URUTAN & RANK
      * ============================================================ */
+
     /**
      * Urutan alur pesanan: makin besar = makin maju.
      *
@@ -60,8 +61,8 @@ enum OrderStatus: string
     }
 
     /**
-     * Status final (tidak masuk hitungan min rank, tapi jadi status order
-     * kalau SEMUA item berada di salah satu status final ini).
+     * Status final — tidak masuk hitungan min rank, tapi jadi status order
+     * kalau SEMUA item berada di salah satu status final ini.
      *
      * @return list<string>
      */
@@ -102,8 +103,15 @@ enum OrderStatus: string
     }
 
     /* ============================================================
-     * Transition matrix (untuk order-level / global update)
+     * TRANSITION MATRIX
      * ============================================================ */
+
+    /**
+     * Peta transisi status yang valid.
+     * Dipakai untuk validasi backend (canTransition).
+     *
+     * @return array<string, list<string>>
+     */
     public static function transitions(): array
     {
         return [
@@ -155,9 +163,9 @@ enum OrderStatus: string
                 self::Selesai->value,
                 self::DanaDikembalikan->value,
             ],
-            self::Selesai->value            => [],
-            self::Dibatalkan->value         => [],
-            self::DanaDikembalikan->value   => [],
+            self::Selesai->value          => [],
+            self::Dibatalkan->value       => [],
+            self::DanaDikembalikan->value => [],
         ];
     }
 
@@ -183,15 +191,77 @@ enum OrderStatus: string
         return self::transitions()[$this->value] === [];
     }
 
+    public static function transitionErrorMessage(?string $from, ?string $to): string
+    {
+        $fromLabel = ($from !== null ? self::tryFrom($from) : null)?->label() ?? ($from ?? '-');
+        $toLabel = ($to !== null ? self::tryFrom($to) : null)?->label() ?? ($to ?? '-');
+
+        return "Status pesanan tidak bisa diubah dari \"{$fromLabel}\" ke \"{$toLabel}\".";
+    }
+
+    /* ============================================================
+     * OPTIONS — UNTUK DROPDOWN ADMIN
+     * ============================================================ */
+
     /**
-     * Pilihan dropdown untuk admin (order-level).
+     * SEMUA status dalam urutan alur logis — untuk dropdown admin.
+     *
+     * Berbeda dari nextOptionsFor() yang cuma kasih transisi valid.
+     * Method ini kasih SEMUA opsi biar admin bebas pilih kalau salah input.
+     *
+     * Urutan:
+     *   1. Menunggu Pembayaran
+     *   2. Ditahan
+     *   3. Pembayaran Gagal
+     *   4. Pembayaran Diterima
+     *   5. Sedang Diproses
+     *   6. Sampai WH China
+     *   7. Dikirim ke Indonesia
+     *   8. Bea Cukai
+     *   9. Sampai WH Indonesia
+     *  10. Selesai
+     *  11. Dibatalkan
+     *  12. Dana Dikembalikan
+     *
+     * @return array<string, string>
+     */
+    public static function allOptionsOrdered(): array
+    {
+        $ordered = [
+            self::MenungguPembayaran,
+            self::Ditahan,
+            self::PembayaranGagal,
+            self::PembayaranDiterima,
+            self::SedangDiproses,
+            self::SampaiWhCn,
+            self::DikirimKeIndonesia,
+            self::BeaCukai,
+            self::SampaiWhIndonesia,
+            self::Selesai,
+            self::Dibatalkan,
+            self::DanaDikembalikan,
+        ];
+
+        $options = [];
+        foreach ($ordered as $case) {
+            $options[$case->value] = $case->label();
+        }
+
+        return $options;
+    }
+
+    /**
+     * Opsi dropdown yang VALID dari status saat ini (transisi + current).
+     * Kalau kamu mau dropdown dibatasi (bukan semua), pakai method ini.
+     *
+     * @return array<string, string>
      */
     public static function nextOptionsFor(?string $current): array
     {
         $currentCase = $current !== null ? self::tryFrom($current) : null;
 
         if ($currentCase === null) {
-            return self::options();
+            return self::allOptionsOrdered();
         }
 
         $allowed = self::transitions()[$currentCase->value] ?? [];
@@ -204,43 +274,10 @@ enum OrderStatus: string
         return $out;
     }
 
-    public static function transitionErrorMessage(?string $from, ?string $to): string
-    {
-        $fromLabel = ($from !== null ? self::tryFrom($from) : null)?->label() ?? ($from ?? '-');
-        $toLabel = ($to !== null ? self::tryFrom($to) : null)?->label() ?? ($to ?? '-');
-
-        return "Status pesanan tidak bisa diubah dari \"{$fromLabel}\" ke \"{$toLabel}\".";
-    }
-
-    public function label(): string
-    {
-        return match ($this) {
-            self::MenungguPembayaran    => 'Menunggu Pembayaran',
-            self::Ditahan               => 'Ditahan (Menunggu Verifikasi)',
-            self::PembayaranDiterima    => 'Pembayaran Diterima',
-            self::SedangDiproses        => 'Sedang Diproses',
-            self::SampaiWhCn            => 'Sampai WH China',
-            self::DikirimKeIndonesia    => 'Dikirim ke Indonesia',
-            self::BeaCukai              => 'Bea Cukai',
-            self::SampaiWhIndonesia     => 'Sampai WH Indonesia',
-            self::Selesai               => 'Selesai',
-            self::Dibatalkan            => 'Dibatalkan',
-            self::PembayaranGagal       => 'Pembayaran Gagal',
-            self::DanaDikembalikan      => 'Dana Dikembalikan',
-        };
-    }
-
-    public function badgeClass(): string
-    {
-        return match ($this) {
-            self::Selesai => 'badge--on',
-            self::Dibatalkan, self::PembayaranGagal, self::DanaDikembalikan => 'badge--danger',
-            self::Ditahan, self::BeaCukai => 'badge--warn',
-            default => '',
-        };
-    }
-
     /**
+     * SEMUA opsi (urutan deklarasi enum, bukan alur logis).
+     * Biasanya dipakai untuk filter dropdown di index admin.
+     *
      * @return array<string, string>
      */
     public static function options(): array
@@ -249,6 +286,39 @@ enum OrderStatus: string
         foreach (self::cases() as $case) {
             $options[$case->value] = $case->label();
         }
+
         return $options;
+    }
+
+    /* ============================================================
+     * LABEL & BADGE
+     * ============================================================ */
+
+    public function label(): string
+    {
+        return match ($this) {
+            self::MenungguPembayaran  => 'Menunggu Pembayaran',
+            self::Ditahan             => 'Ditahan (Menunggu Verifikasi)',
+            self::PembayaranDiterima  => 'Pembayaran Diterima',
+            self::SedangDiproses      => 'Sedang Diproses',
+            self::SampaiWhCn          => 'Sampai WH China',
+            self::DikirimKeIndonesia  => 'Dikirim ke Indonesia',
+            self::BeaCukai            => 'Bea Cukai',
+            self::SampaiWhIndonesia   => 'Sampai WH Indonesia',
+            self::Selesai             => 'Selesai',
+            self::Dibatalkan          => 'Dibatalkan',
+            self::PembayaranGagal     => 'Pembayaran Gagal',
+            self::DanaDikembalikan    => 'Dana Dikembalikan',
+        };
+    }
+
+    public function badgeClass(): string
+    {
+        return match ($this) {
+            self::Selesai                                                   => 'badge--on',
+            self::Dibatalkan, self::PembayaranGagal, self::DanaDikembalikan => 'badge--danger',
+            self::Ditahan, self::BeaCukai                                   => 'badge--warn',
+            default                                                         => '',
+        };
     }
 }
