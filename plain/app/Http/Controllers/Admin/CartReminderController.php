@@ -12,6 +12,9 @@ use Illuminate\View\View;
 
 class CartReminderController extends Controller
 {
+    /**
+     * Halaman daftar cart reminder + statistik.
+     */
     public function index(Request $request): View
     {
         $reminders = CartReminder::query()
@@ -19,23 +22,30 @@ class CartReminderController extends Controller
             ->latest('sent_at')
             ->paginate(40);
 
+        $totalSent   = CartReminder::count();
+        $uniqueUsers = CartReminder::distinct()->count('user_id');
+
         $stats = [
-            'total_sent' => CartReminder::count(),
-            'sent_30d' => CartReminder::where('sent_at', '>=', now()->subDays(30))->count(),
             'active_carts' => DB::table('cart_items')->distinct()->count('user_id'),
-            'reminder1' => CartReminder::where('reminder_number', 1)->count(),
-            'reminder2' => CartReminder::where('reminder_number', 2)->count(),
+            'total_sent'   => $totalSent,
+            'sent_30d'     => CartReminder::where('sent_at', '>=', now()->subDays(30))->count(),
+            'avg_per_cart' => $uniqueUsers > 0
+                ? round($totalSent / $uniqueUsers, 1)
+                : 0,
         ];
 
         return view('admin.cart-reminders.index', [
             'reminders' => $reminders,
-            'stats' => $stats,
+            'stats'     => $stats,
         ]);
     }
 
+    /**
+     * Jalankan command reminder manual (dari tombol "Jalankan Sekarang").
+     */
     public function refresh(): RedirectResponse
     {
-        Artisan::call('carts:send-reminders');
+        Artisan::call('carts:send-reminders', ['--minutes' => 30]);
         $output = trim(Artisan::output());
 
         return back()->with('status', 'Reminder dijalankan. ' . $output);
