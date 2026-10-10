@@ -32,7 +32,6 @@
         }
         .brand-contact__item--wa .brand-contact__icon { color: #25D366; }
         .brand-contact__item--email .brand-contact__icon { color: #0299e7; }
-        .brand-contact__item--address .brand-contact__icon { color: #94a3b8; }
     </style>
 </head>
 <body class="print-page">
@@ -57,7 +56,6 @@
                     <div class="paper__brand-name">{{ $branding['store_name'] }}</div>
                 @endif
                 <div class="paper__brand-info brand-contact">
-
                     @if ($branding['contact_whatsapp'])
                         <a href="https://wa.me/{{ preg_replace('/[^0-9]/', '', $branding['contact_whatsapp']) }}"
                            class="brand-contact__item brand-contact__item--wa"
