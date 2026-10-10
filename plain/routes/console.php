@@ -46,7 +46,8 @@ Schedule::command('products:refresh-best-sellers')
     ->timezone('Asia/Jakarta')
     ->withoutOverlapping();
 
-// Cart abandonment reminder tiap jam (Batch 31)
-Schedule::command('carts:send-reminders')
-    ->hourly()
+// Cart abandonment reminder — cek tiap 5 menit, kirim yang udah nganggur ≥30 menit.
+// Berulang otomatis sampai user checkout / cart dikosongkan.
+Schedule::command('carts:send-reminders --minutes=30')
+    ->everyFiveMinutes()
     ->withoutOverlapping();
