@@ -6,10 +6,11 @@ use App\Enums\OrderStatus;
 use App\Http\Controllers\Controller;
 use App\Models\AdminLog;
 use App\Models\Order;
-use App\Models\OrderItemSnapshot;
+use App\Models\OrderStatusLog;
 use App\Models\Product;
 use App\Models\ProductVariant;
 use App\Models\User;
+use App\Services\Order\OrderItemSnapshotService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -19,9 +20,12 @@ use Illuminate\View\View;
 
 class LegacyOrderImportController extends Controller
 {
+    public function __construct(private readonly OrderItemSnapshotService $snapshots) {}
+
     public function create(Request $request): View
     {
         $filters = $request->validate([
+            'q' => ['nullable', 'string', 'max:100'],
             'user_id' => [
                 'nullable',
                 'integer',
@@ -29,10 +33,31 @@ class LegacyOrderImportController extends Controller
             ],
         ]);
 
+        $usersQuery = User::query()
+            ->where('role', 'customer')
+            ->where('is_migrated', true)
+            ->when($filters['q'] ?? null, fn ($query, $search) => $query->where(
+                fn ($where) => $where->where('name', 'like', "%{$search}%")
+                    ->orWhere('email', 'like', "%{$search}%")
+                    ->orWhere('no_hp', 'like', "%{$search}%"),
+            ))
+            ->orderBy('name');
+        $users = $usersQuery->limit(100)->get();
+        if (! empty($filters['user_id']) && ! $users->contains('id', $filters['user_id'])) {
+            $selectedUser = User::query()
+                ->where('role', 'customer')
+                ->where('is_migrated', true)
+                ->find($filters['user_id']);
+            if ($selectedUser) {
+                $users->push($selectedUser);
+            }
+        }
+
         return view('admin.orders.import', [
-            'users' => User::query()->where('role', 'customer')->where('is_migrated', true)->orderBy('name')->get(),
+            'users' => $users,
             'products' => Product::query()->with('variants')->orderBy('name')->get(),
             'selectedUserId' => $filters['user_id'] ?? null,
+            'search' => $filters['q'] ?? '',
         ]);
     }
 
@@ -55,7 +80,7 @@ class LegacyOrderImportController extends Controller
             'ordered_at' => ['required', 'date', 'before_or_equal:now'],
         ]);
 
-        [$order, $user] = DB::transaction(function () use ($validated): array {
+        [$order, $user] = DB::transaction(function () use ($validated, $request): array {
             $user = User::query()->where('role', 'customer')->where('is_migrated', true)->findOrFail($validated['user_id']);
             $product = Product::query()->with(['games.developers', 'tags'])->findOrFail($validated['product_id']);
             $variant = isset($validated['variant_id'])
@@ -96,34 +121,13 @@ class LegacyOrderImportController extends Controller
                 'qty' => $validated['qty'],
             ]);
 
-            $game = $product->games->first();
-            $snapshot = OrderItemSnapshot::create([
-                'order_item_id' => $item->id,
-                'product_id_audit' => $product->id,
-                'variant_id_audit' => $variant?->id,
-                'product_name' => $product->name,
-                'product_slug' => $product->slug,
-                'product_sku' => $product->sku,
-                'game_name' => $game?->name,
-                'developer_name' => $game?->developers->first()?->name,
-                'store_name' => $product->effectiveStore()?->name,
-                'tag' => $product->tags->first()?->name,
-                'variant_name' => $variant?->name,
-                'variant_sku' => $variant?->sku,
-                'variant_attributes' => $variant?->attributesArray() ?? [],
-                'base_price' => $unitPrice,
-                'discount_amount' => 0,
-                'final_price' => $unitPrice,
-                'qty' => $validated['qty'],
-                'subtotal' => $subtotal,
-                'weight_gram' => $variant?->effectiveWeight() ?? $product->effectiveWeight(),
-                'ongkir_lokal_cn_idr' => 0,
-                'ongkir_cn_btm_idr' => 0,
-                'ongkir_btm_jkt_idr' => 0,
-                'ongkir_total_idr' => 0,
-                'product_image_path' => $product->main_image_path,
-                'variant_image_path' => $variant?->image_path,
-                'snapshot_at' => $orderedAt,
+            $snapshot = $this->snapshots->createForLegacyOrderItem($item, $order->order_no, $unitPrice, $orderedAt);
+            OrderStatusLog::create([
+                'order_id' => $order->id,
+                'status' => OrderStatus::SELESAI->value,
+                'note' => 'Order lama diimpor dari WooCommerce sebagai transaksi selesai.',
+                'changed_by' => $request->user()->id,
+                'meta' => ['legacy_import' => true, 'snapshot_id' => $snapshot->id],
             ]);
 
             AdminLog::record(

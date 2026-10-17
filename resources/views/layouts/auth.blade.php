@@ -30,6 +30,8 @@
         </p>
     </main>
 
+    <x-ga4-tracking />
+
     @stack('scripts')
 </body>
 </html>

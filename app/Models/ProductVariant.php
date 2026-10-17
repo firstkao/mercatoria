@@ -19,13 +19,19 @@ class ProductVariant extends Model
     ];
 
     public function product(): BelongsTo
-    { return $this->belongsTo(Product::class); }
+    {
+        return $this->belongsTo(Product::class);
+    }
 
     public function combinations(): HasMany
-    { return $this->hasMany(VariantCombination::class, 'variant_id'); }
+    {
+        return $this->hasMany(VariantCombination::class, 'variant_id');
+    }
 
     public function images(): HasMany
-    { return $this->hasMany(VariantImage::class, 'variant_id'); }
+    {
+        return $this->hasMany(VariantImage::class, 'variant_id');
+    }
 
     public function displayImage(): ?string
     {
@@ -41,6 +47,6 @@ class ProductVariant extends Model
 
     public function effectiveWeight(): int
     {
-        return $this->weight_gram ?? $this->product?->weight_gram ?? 0;
+        return $this->weight_gram ?? $this->product?->effectiveWeight() ?? (int) setting('default_weight_gram', 0);
     }
 }

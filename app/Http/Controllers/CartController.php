@@ -83,7 +83,24 @@ class CartController extends Controller
             ]);
         });
 
-        return back()->with('success', 'Produk berhasil ditambahkan ke keranjang.');
+        $pricing = $this->pricing->calculate($product, $variant);
+
+        return back()
+            ->with('success', 'Produk berhasil ditambahkan ke keranjang.')
+            ->with('ga4_events', [[
+                'name' => 'add_to_cart',
+                'params' => [
+                    'currency' => 'IDR',
+                    'value' => $pricing['final_price'] * $validated['qty'],
+                    'items' => [[
+                        'item_id' => $product->sku,
+                        'item_name' => $product->name,
+                        'item_variant' => $variant?->name,
+                        'price' => $pricing['final_price'],
+                        'quantity' => $validated['qty'],
+                    ]],
+                ],
+            ]]);
     }
 
     public function update(Request $request, int $cart): RedirectResponse
@@ -138,8 +155,36 @@ class CartController extends Controller
         ]);
         $cartIds = $this->checkout->validatedCartIds($validated);
         $order = $this->checkout->placeOrder($request->user(), $cartIds, $validated);
+        $order->load('items.snapshot');
+        $items = $order->items->map(fn ($item): array => [
+            'item_id' => $item->snapshot->product_sku,
+            'item_name' => $item->snapshot->product_name,
+            'item_variant' => $item->snapshot->variant_name,
+            'price' => (float) $item->snapshot->final_price,
+            'quantity' => $item->snapshot->qty,
+        ])->values()->all();
+        $ecommerce = [
+            'currency' => 'IDR',
+            'value' => (float) $order->total,
+            'items' => $items,
+        ];
+        $ga4Events = [[
+            'name' => 'add_payment_info',
+            'params' => [
+                ...$ecommerce,
+                'payment_type' => $order->payment_method,
+            ],
+        ]];
+        if (filled($order->customer_note)) {
+            $ga4Events[] = [
+                'name' => 'checkout_with_note',
+                'params' => [...$ecommerce, 'note_added' => true],
+            ];
+        }
 
-        return redirect()->route('orders.show', $order)->with('success', 'Pesanan berhasil dibuat.');
+        return redirect()->route('orders.show', $order)
+            ->with('success', 'Pesanan berhasil dibuat.')
+            ->with('ga4_events', $ga4Events);
     }
 
     public function showOrder(Request $request, int $order): View

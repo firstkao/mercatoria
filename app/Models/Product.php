@@ -28,22 +28,34 @@ class Product extends Model
 
     // ─── Relationships ─────────────────────────
     public function store(): BelongsTo
-    { return $this->belongsTo(Store::class); }
+    {
+        return $this->belongsTo(Store::class);
+    }
 
     public function games(): BelongsToMany
-    { return $this->belongsToMany(Game::class, 'product_game'); }
+    {
+        return $this->belongsToMany(Game::class, 'product_game');
+    }
 
     public function tags(): BelongsToMany
-    { return $this->belongsToMany(Tag::class, 'product_tag'); }
+    {
+        return $this->belongsToMany(Tag::class, 'product_tag');
+    }
 
     public function merchCategories(): BelongsToMany
-    { return $this->belongsToMany(MerchCategory::class, 'product_merch_category'); }
+    {
+        return $this->belongsToMany(MerchCategory::class, 'product_merch_category');
+    }
 
     public function variants(): HasMany
-    { return $this->hasMany(ProductVariant::class)->orderByDesc('id'); }
+    {
+        return $this->hasMany(ProductVariant::class)->orderByDesc('id');
+    }
 
     public function images(): HasMany
-    { return $this->hasMany(ProductImage::class); }
+    {
+        return $this->hasMany(ProductImage::class);
+    }
 
     public function relatedProducts(): BelongsToMany
     {
@@ -53,10 +65,14 @@ class Product extends Model
     }
 
     public function views(): HasMany
-    { return $this->hasMany(ProductView::class); }
+    {
+        return $this->hasMany(ProductView::class);
+    }
 
     public function orderItems(): HasMany
-    { return $this->hasMany(OrderItem::class); }
+    {
+        return $this->hasMany(OrderItem::class);
+    }
 
     // ─── Helpers: Store & Weight ──────────────
     public function effectiveStore(): ?Store
@@ -68,12 +84,13 @@ class Product extends Model
         if ($game && $game->default_store_id) {
             return $game->defaultStore;
         }
+
         return null;
     }
 
     public function effectiveWeight(): int
     {
-        return $this->weight_gram ?? 0;
+        return $this->weight_gram ?? (int) setting('default_weight_gram', 0);
     }
 
     // ─── Helpers: Harga ───────────────────────
@@ -83,8 +100,13 @@ class Product extends Model
             return false;
         }
         $now = now();
-        if ($this->discount_start && $now->lt($this->discount_start)) return false;
-        if ($this->discount_end && $now->gt($this->discount_end)) return false;
+        if ($this->discount_start && $now->lt($this->discount_start)) {
+            return false;
+        }
+        if ($this->discount_end && $now->gt($this->discount_end)) {
+            return false;
+        }
+
         return true;
     }
 
@@ -107,15 +129,22 @@ class Product extends Model
     public function hargaSetelahDiskon(): float
     {
         $harga = $this->hargaJual();
-        if (! $this->hasActiveDiscount()) return $harga;
+        if (! $this->hasActiveDiscount()) {
+            return $harga;
+        }
+
         return max(0, $harga - (float) $this->discount_amount);
     }
 
     public function getFinalPriceAttribute(): float
-    { return $this->hargaSetelahDiskon(); }
+    {
+        return $this->hargaSetelahDiskon();
+    }
 
     public function getDisplayPriceAttribute(): string
-    { return format_rupiah($this->hargaSetelahDiskon()); }
+    {
+        return format_rupiah($this->hargaSetelahDiskon());
+    }
 
     public function getIsPurchasableAttribute(): bool
     {
@@ -124,7 +153,9 @@ class Product extends Model
 
     // ─── Scopes ────────────────────────────────
     public function scopeActive($query)
-    { return $query->where('is_active', true); }
+    {
+        return $query->where('is_active', true);
+    }
 
     public function scopeWithActiveDiscount($query)
     {
@@ -139,7 +170,9 @@ class Product extends Model
     }
 
     public function scopePopular($query)
-    { return $query->orderByDesc('sold_count'); }
+    {
+        return $query->orderByDesc('sold_count');
+    }
 
     public function scopeBestOffer($query, int $limit = 5)
     {

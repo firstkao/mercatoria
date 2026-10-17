@@ -7,6 +7,7 @@ use App\Http\Controllers\Admin\OrderController as AdminOrderController;
 use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\ProductVariantController;
 use App\Http\Controllers\Admin\RefundController as AdminRefundController;
+use App\Http\Controllers\Admin\SettingsController as AdminSettingsController;
 use App\Http\Controllers\Admin\StoreController;
 use App\Http\Controllers\Admin\UserMigrationController;
 use App\Http\Controllers\Auth\ForgotPasswordController;
@@ -103,6 +104,8 @@ Route::prefix('office')->name('office.')->middleware(['auth', 'admin'])->group(f
     Route::get('payments/{payment}/proof', [AdminOrderController::class, 'paymentProof'])->name('payments.proof');
     Route::get('refunds', [AdminRefundController::class, 'index'])->name('refunds.index');
     Route::patch('refunds/{refund}', [AdminRefundController::class, 'process'])->name('refunds.process');
+    Route::get('settings', [AdminSettingsController::class, 'edit'])->name('settings.edit');
+    Route::patch('settings', [AdminSettingsController::class, 'update'])->name('settings.update');
     Route::get('notifications', [AdminNotificationController::class, 'index'])->name('notifications.index');
     Route::post('notifications/read-all', [AdminNotificationController::class, 'markAllRead'])->name('notifications.read-all');
     Route::post('notifications/{notification}/open', [AdminNotificationController::class, 'open'])->name('notifications.open');

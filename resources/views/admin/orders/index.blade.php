@@ -5,7 +5,10 @@
 @section('content')
 <div class="flex flex-wrap items-center justify-between gap-3">
     <div><h1 class="text-2xl font-bold text-navy-500">Pesanan</h1><p class="mt-1 text-sm text-text-muted">Kelola status, pembayaran, dan refund.</p></div>
-    <a href="{{ route('office.refunds.index') }}" class="rounded-lg border border-border px-4 py-2 text-sm font-semibold text-navy-500 hover:bg-surface-2">Kelola Refund</a>
+    <div class="flex flex-wrap gap-2">
+        <a href="{{ route('office.orders.create') }}" class="rounded-lg bg-primary-600 px-4 py-2 text-sm font-semibold text-white hover:bg-primary-700">Tambah Pesanan</a>
+        <a href="{{ route('office.refunds.index') }}" class="rounded-lg border border-border px-4 py-2 text-sm font-semibold text-navy-500 hover:bg-surface-2">Kelola Refund</a>
+    </div>
 </div>
 <form method="GET" action="{{ route('office.orders.index') }}" class="mt-5 grid gap-3 rounded-xl border border-border bg-white p-4 sm:grid-cols-[1fr_1fr_auto]">
     <label class="sr-only" for="order-search">Cari order</label>

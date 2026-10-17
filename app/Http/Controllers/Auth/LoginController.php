@@ -110,6 +110,10 @@ class LoginController extends Controller
         $request->session()->regenerate();
 
         // ─── 6. Redirect ke intended URL atau dashboard ──
-        return redirect()->intended(route('dashboard'));
+        return redirect()->intended(route('dashboard'))
+            ->with('ga4_events', [[
+                'name' => 'login',
+                'params' => ['method' => 'email'],
+            ]]);
     }
 }
