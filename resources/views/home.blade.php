@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Beranda Mercatoria')
+@section('title', 'Beranda')
 
 @section('content')
 <section class="bg-surface-2">
