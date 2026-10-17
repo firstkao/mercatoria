@@ -8,12 +8,7 @@
 <form method="POST" action="{{ route('register') }}" class="space-y-4">
     @csrf
 
-    {{-- Honeypot (tersembunyi) --}}
-    <div class="hidden" aria-hidden="true">
-        <input type="text" name="website" tabindex="-1" autocomplete="off">
-        <input type="text" name="url" tabindex="-1" autocomplete="off">
-        <input type="text" name="phone2" tabindex="-1" autocomplete="off">
-    </div>
+    <x-honeypot />
 
     {{-- Referral code (auto dari URL ?ref=XXX) --}}
     <input type="hidden" name="referral_code" value="{{ request('ref') }}">

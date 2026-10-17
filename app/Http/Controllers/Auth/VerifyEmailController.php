@@ -31,6 +31,8 @@ class VerifyEmailController extends Controller
             event(new Verified($user));
         }
 
+        $user->crush()->update(['verified_at' => $user->email_verified_at]);
+
         // Nanti kalau /profile/complete udah ada, otomatis diarahkan ke sana
         if ($user->tgl_lahir === null && Route::has('profile.complete')) {
             return redirect()->route('profile.complete');
