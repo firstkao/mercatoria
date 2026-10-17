@@ -31,7 +31,10 @@ class VerifyEmailController extends Controller
             event(new Verified($user));
         }
 
-        $user->crush()->update(['verified_at' => $user->email_verified_at]);
+        $user->crush()->update([
+            'verified_at' => $user->email_verified_at,
+            'expires_at' => $user->email_verified_at->copy()->addDays(30),
+        ]);
 
         // Nanti kalau /profile/complete udah ada, otomatis diarahkan ke sana
         if ($user->tgl_lahir === null && Route::has('profile.complete')) {

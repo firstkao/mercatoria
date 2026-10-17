@@ -49,6 +49,23 @@
                 {{ $product->availability === 'tersedia' ? 'Tersedia' : 'Stok kosong' }}
             </p>
 
+            @auth
+                @if (auth()->user()->referral_code)
+                    @php
+                        $shareBaseUrl = $game
+                            ? route('games.products.show', [$game->slug, $product->slug])
+                            : route('products.direct', $product->slug);
+                        $shareUrl = $shareBaseUrl.'?ref='.urlencode(auth()->user()->referral_code);
+                    @endphp
+                    <div class="mt-4">
+                        <button id="share-product" type="button" data-share-url="{{ $shareUrl }}" data-share-title="{{ $product->name }}" class="rounded-lg border border-border px-4 py-2 text-sm font-semibold text-navy-500 hover:bg-surface-2">
+                            Bagikan produk
+                        </button>
+                        <span id="share-product-feedback" role="status" class="ml-2 text-sm text-text-muted"></span>
+                    </div>
+                @endif
+            @endauth
+
             @if ($product->variants->isNotEmpty())
                 <section class="mt-6">
                     <h2 class="font-semibold">Varian</h2>
@@ -121,6 +138,35 @@
 
 @push('scripts')
     <script>
+        const shareProductButton = document.getElementById('share-product');
+        shareProductButton?.addEventListener('click', () => {
+            const url = shareProductButton.dataset.shareUrl;
+            const title = shareProductButton.dataset.shareTitle;
+            const feedback = document.getElementById('share-product-feedback');
+
+            if (navigator.share) {
+                navigator.share({ title, url }).then(
+                    () => { feedback.textContent = 'Link berhasil dibagikan.'; },
+                    (error) => {
+                        if (error.name !== 'AbortError') {
+                            feedback.textContent = 'Link tidak dapat dibagikan.';
+                        }
+                    }
+                );
+                return;
+            }
+
+            if (navigator.clipboard?.writeText) {
+                navigator.clipboard.writeText(url).then(
+                    () => { feedback.textContent = 'Link berhasil disalin.'; },
+                    () => { feedback.textContent = 'Link tidak dapat disalin.'; }
+                );
+                return;
+            }
+
+            window.prompt('Salin link produk ini:', url);
+        });
+
         if (typeof window.mercatoriaTrack === 'function') {
             window.mercatoriaTrack('view_product', {
                 currency: 'IDR',

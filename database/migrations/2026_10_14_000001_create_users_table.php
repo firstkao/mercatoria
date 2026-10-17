@@ -1,9 +1,11 @@
 <?php
+
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration {
+return new class extends Migration
+{
     public function up(): void
     {
         Schema::create('users', function (Blueprint $table) {
@@ -26,7 +28,7 @@ return new class extends Migration {
             $table->boolean('has_seen_tour')->default(false);
             $table->boolean('is_migrated')->default(false);  // BARU v1.5
             $table->timestamp('last_login')->nullable();
-            $table->string('admin_otp', 6)->nullable();
+            $table->string('admin_otp')->nullable();
             $table->timestamp('admin_otp_expires_at')->nullable();
             $table->rememberToken();
             $table->timestamps();
@@ -34,5 +36,9 @@ return new class extends Migration {
             $table->index(['last_login']);
         });
     }
-    public function down(): void { Schema::dropIfExists('users'); }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('users');
+    }
 };

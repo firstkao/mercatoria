@@ -4,6 +4,7 @@ use App\Http\Middleware\BlockSpammerIps;
 use App\Http\Middleware\EnsureAdmin;
 use App\Http\Middleware\EnsureEmailVerified;
 use App\Http\Middleware\EnsureProfileComplete;
+use App\Http\Middleware\VerifyTurnstile;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -16,11 +17,20 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        $trustedProxies = array_values(array_filter(array_map(
+            'trim',
+            explode(',', (string) env('TRUSTED_PROXIES', '')),
+        )));
+        $middleware->trustProxies(
+            at: $trustedProxies,
+            headers: Request::HEADER_X_FORWARDED_FOR,
+        );
         $middleware->appendToGroup('web', BlockSpammerIps::class);
         $middleware->alias([
             'admin' => EnsureAdmin::class,
             'ensure.verified' => EnsureEmailVerified::class,
             'ensure.profile' => EnsureProfileComplete::class,
+            'turnstile' => VerifyTurnstile::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

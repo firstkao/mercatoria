@@ -1,10 +1,14 @@
 <?php
 
 use App\Http\Controllers\Admin\AdminNotificationController;
+use App\Http\Controllers\Admin\AdminSearchController;
+use App\Http\Controllers\Admin\AnnouncementController;
+use App\Http\Controllers\Admin\AuditLogController;
 use App\Http\Controllers\Admin\ContentPageController;
 use App\Http\Controllers\Admin\CustomerGiftController;
 use App\Http\Controllers\Admin\EmailTemplateController;
 use App\Http\Controllers\Admin\GameController;
+use App\Http\Controllers\Admin\HeroSlideController;
 use App\Http\Controllers\Admin\LegacyOrderImportController;
 use App\Http\Controllers\Admin\OrderController as AdminOrderController;
 use App\Http\Controllers\Admin\PreorderPageController;
@@ -16,6 +20,8 @@ use App\Http\Controllers\Admin\SettingsController as AdminSettingsController;
 use App\Http\Controllers\Admin\SpammerController;
 use App\Http\Controllers\Admin\StoreController;
 use App\Http\Controllers\Admin\UserMigrationController;
+use App\Http\Controllers\Admin\VoucherController;
+use App\Http\Controllers\Auth\AdminOtpController;
 use App\Http\Controllers\Auth\ForgotPasswordController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\LogoutController;
@@ -28,15 +34,20 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ProfileCompleteController;
 use App\Http\Controllers\PublishedContentController;
+use App\Http\Controllers\ReferralController;
 use App\Http\Controllers\SeoSettingsController;
 use App\Http\Controllers\SitemapController;
 use App\Http\Controllers\UserNotificationController;
+use App\Http\Controllers\WalletController;
+use App\Models\HeroSlide;
 use Illuminate\Support\Facades\Route;
 use Spatie\Honeypot\ProtectAgainstSpam;
 
 // ─── Public Routes ──────────────────────────────
 Route::get('/', function () {
-    return view('home');
+    return view('home', [
+        'heroSlides' => HeroSlide::query()->active()->get(),
+    ]);
 })->name('home');
 
 // ─── Guest Routes (belum login) ─────────────────
@@ -44,21 +55,24 @@ Route::middleware('guest')->group(function () {
     // Register
     Route::get('/register', [RegisterController::class, 'showForm'])->name('register');
     Route::post('/register', [RegisterController::class, 'store'])
-        ->middleware(['throttle:3,1', ProtectAgainstSpam::class]);
+        ->middleware(['throttle:3,1', ProtectAgainstSpam::class, 'turnstile']);
 
     // Login
     Route::get('/login', [LoginController::class, 'showForm'])->name('login');
     Route::post('/login', [LoginController::class, 'store'])
-        ->middleware(['throttle:5,1', ProtectAgainstSpam::class]);
+        ->middleware(['throttle:5,1', ProtectAgainstSpam::class, 'turnstile']);
+    Route::get('/login/admin-otp', [AdminOtpController::class, 'challenge'])->name('admin.otp.challenge');
+    Route::post('/login/admin-otp', [AdminOtpController::class, 'verify'])
+        ->middleware('throttle:10,1')->name('admin.otp.verify');
 
     // Forgot Password
     Route::get('/forgot-password', [ForgotPasswordController::class, 'create'])->name('password.request');
     Route::post('/forgot-password', [ForgotPasswordController::class, 'store'])
-        ->middleware(['throttle:5,1', ProtectAgainstSpam::class])->name('password.email');
+        ->middleware(['throttle:5,1', ProtectAgainstSpam::class, 'turnstile'])->name('password.email');
 
     Route::get('/reset-password/{token}', [ResetPasswordController::class, 'create'])->name('password.reset');
     Route::post('/reset-password', [ResetPasswordController::class, 'store'])
-        ->middleware(['throttle:5,1', ProtectAgainstSpam::class])->name('password.update');
+        ->middleware(['throttle:5,1', ProtectAgainstSpam::class, 'turnstile'])->name('password.update');
 });
 
 // ─── Auth Routes (udah login) ───────────────────
@@ -69,6 +83,8 @@ Route::middleware('auth')->group(function () {
     Route::delete('/cart/{cart}', [CartController::class, 'remove'])->name('cart.remove');
     Route::get('/checkout', [CartController::class, 'checkout'])->name('cart.checkout');
     Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');
+    Route::get('/profile/wallet', [WalletController::class, 'index'])->name('wallet.index');
+    Route::get('/profile/referrals', [ReferralController::class, 'index'])->name('referrals.index');
     Route::get('/orders/{order}', [OrderController::class, 'show'])->name('orders.show');
     Route::get('/orders/{order}/snapshots/{snapshot}/{image}', [OrderController::class, 'snapshotImage'])->name('orders.snapshots.image');
     Route::post('/orders/{order}/payment-proof', [OrderController::class, 'uploadProof'])->name('orders.payment-proof');
@@ -103,6 +119,11 @@ Route::middleware('auth')->group(function () {
 });
 
 Route::prefix('office')->name('office.')->middleware(['auth', 'admin'])->group(function () {
+    Route::get('search', AdminSearchController::class)->name('search');
+    Route::get('activity-logs', [AuditLogController::class, 'activity'])->name('logs.activity');
+    Route::get('auth-logs', [AuditLogController::class, 'auth'])->name('logs.auth');
+    Route::get('admin-logs', [AuditLogController::class, 'admin'])->name('logs.admin');
+    Route::get('logs/{kind}/export', [AuditLogController::class, 'export'])->name('logs.export');
     Route::get('orders', [AdminOrderController::class, 'index'])->name('orders.index');
     Route::get('orders/{order}', [AdminOrderController::class, 'show'])->whereNumber('order')->name('orders.show');
     Route::patch('orders/bulk-status', [AdminOrderController::class, 'bulkUpdateStatus'])->name('orders.bulk-status');
@@ -138,6 +159,9 @@ Route::prefix('office')->name('office.')->middleware(['auth', 'admin'])->group(f
     Route::get('reports', [ReportsController::class, 'index'])->name('reports.index');
     Route::get('reports/customers/export', [ReportsController::class, 'exportCustomers'])->name('reports.customers.export');
     Route::get('reports/customers', [ReportsController::class, 'customers'])->name('reports.customers');
+    Route::resource('vouchers', VoucherController::class)->except('show');
+    Route::resource('hero-slides', HeroSlideController::class)->except('show');
+    Route::resource('announcements', AnnouncementController::class)->except('show');
     Route::post('users/{user}/gifts', [CustomerGiftController::class, 'store'])->name('users.gifts.store');
     Route::resource('pages', ContentPageController::class)->except('show');
     Route::resource('email-templates', EmailTemplateController::class)->except('show');

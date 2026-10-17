@@ -15,7 +15,8 @@ class Order extends Model
         'customer_name', 'customer_email', 'customer_phone', 'customer_address',
         'referral_source', 'landing_page', 'customer_note',
         'note_to_customer', 'admin_note', 'note_to_customer_updated_at',
-        'subtotal', 'discount_amount', 'fee_marketplace', 'fee_qris',
+        'subtotal', 'discount_amount', 'coin_discount_amount', 'voucher_discount_amount',
+        'user_voucher_id', 'fee_marketplace', 'fee_qris',
         'shipping_cost', 'total',
         'frozen_rate_rmb_idr', 'frozen_profit_percent',
         'pickup_deadline_at', 'hangus_at',
@@ -24,6 +25,8 @@ class Order extends Model
     protected $casts = [
         'subtotal' => 'decimal:2',
         'discount_amount' => 'decimal:2',
+        'coin_discount_amount' => 'decimal:2',
+        'voucher_discount_amount' => 'decimal:2',
         'fee_marketplace' => 'decimal:2',
         'fee_qris' => 'decimal:2',
         'shipping_cost' => 'decimal:2',
@@ -47,6 +50,11 @@ class Order extends Model
     public function payments(): HasMany
     {
         return $this->hasMany(Payment::class);
+    }
+
+    public function userVoucher(): BelongsTo
+    {
+        return $this->belongsTo(UserVoucher::class);
     }
 
     public function refunds(): HasMany

@@ -66,14 +66,14 @@
             <p class="text-xs uppercase tracking-wide text-text-muted">Total Belanja</p>
             <p class="mt-1 text-2xl font-bold">{{ format_rupiah($totalSpent) }}</p>
         </article>
-        <article class="rounded-xl border border-border bg-white p-4">
+        <a href="{{ route('wallet.index') }}" class="rounded-xl border border-border bg-white p-4 hover:bg-surface-2">
             <p class="text-xs uppercase tracking-wide text-text-muted">Koin Aktif</p>
             <p class="mt-1 text-2xl font-bold">{{ number_format($coinBalance, 0, ',', '.') }}</p>
-        </article>
-        <article class="rounded-xl border border-border bg-white p-4">
+        </a>
+        <a href="{{ route('referrals.index') }}" class="rounded-xl border border-border bg-white p-4 hover:bg-surface-2">
             <p class="text-xs uppercase tracking-wide text-text-muted">Teman Diundang</p>
             <p class="mt-1 text-2xl font-bold">{{ number_format($referralCount) }}</p>
-        </article>
+        </a>
     </div>
 
     <section id="orders" class="overflow-hidden rounded-xl border border-border bg-white">

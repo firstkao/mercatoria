@@ -49,7 +49,15 @@
             </div>
             <dl class="space-y-2 border-t border-border p-4 text-sm">
                 <div class="flex justify-between"><dt>Subtotal</dt><dd>{{ format_rupiah($order->subtotal) }}</dd></div>
-                <div class="flex justify-between"><dt>Diskon</dt><dd>{{ format_rupiah($order->discount_amount) }}</dd></div>
+                @if ($order->coin_discount_amount > 0)
+                    <div class="flex justify-between"><dt>Diskon koin</dt><dd>-{{ format_rupiah($order->coin_discount_amount) }}</dd></div>
+                @endif
+                @if ($order->voucher_discount_amount > 0)
+                    <div class="flex justify-between"><dt>Diskon voucher</dt><dd>-{{ format_rupiah($order->voucher_discount_amount) }}</dd></div>
+                @endif
+                @if ($order->discount_amount > $order->coin_discount_amount + $order->voucher_discount_amount)
+                    <div class="flex justify-between"><dt>Diskon produk</dt><dd>-{{ format_rupiah($order->discount_amount - $order->coin_discount_amount - $order->voucher_discount_amount) }}</dd></div>
+                @endif
                 <div class="flex justify-between"><dt>Biaya marketplace</dt><dd>{{ format_rupiah($order->fee_marketplace) }}</dd></div>
                 <div class="flex justify-between"><dt>Fee QRIS</dt><dd>{{ format_rupiah($order->fee_qris) }}</dd></div>
                 <div class="flex justify-between"><dt>Ongkir</dt><dd>{{ format_rupiah($order->shipping_cost) }}</dd></div>

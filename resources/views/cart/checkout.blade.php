@@ -25,7 +25,15 @@
             <div class="flex justify-between"><span>Subtotal item + ongkir</span><span>{{ format_rupiah($quote['subtotal']) }}</span></div>
             <div class="flex justify-between text-text-muted"><span>Ongkir termasuk di subtotal</span><span>{{ format_rupiah($quote['shipping_cost']) }}</span></div>
             @if ($quote['discount_amount'] > 0)
-                <div class="flex justify-between"><span>Diskon</span><span>-{{ format_rupiah($quote['discount_amount']) }}</span></div>
+                @if ($quote['coin_discount_amount'] > 0)
+                    <div class="flex justify-between"><span>Diskon koin</span><span>-{{ format_rupiah($quote['coin_discount_amount']) }}</span></div>
+                @endif
+                @if ($quote['voucher_discount_amount'] > 0)
+                    <div class="flex justify-between"><span>Diskon voucher</span><span>-{{ format_rupiah($quote['voucher_discount_amount']) }}</span></div>
+                @endif
+                @if ($quote['discount_amount'] > $quote['coin_discount_amount'] + $quote['voucher_discount_amount'])
+                    <div class="flex justify-between"><span>Diskon produk</span><span>-{{ format_rupiah($quote['discount_amount'] - $quote['coin_discount_amount'] - $quote['voucher_discount_amount']) }}</span></div>
+                @endif
             @endif
             <div class="flex justify-between"><span>Biaya marketplace &amp; QRIS</span><span>{{ format_rupiah($quote['fee_marketplace'] + $quote['fee_qris']) }}</span></div>
             <div class="text-xs text-text-muted">Margin layanan {{ number_format($profitPercent, 2, ',', '.') }}% dan pembulatan telah diperhitungkan pada total.</div>
@@ -63,6 +71,27 @@
                 <option value="shopeepay" @selected(request('payment_method') === 'shopeepay')>ShopeePay</option>
             </select>
         </div>
+        <fieldset class="space-y-3 border-t border-border pt-4">
+            <legend class="text-sm font-semibold">Diskon koin atau voucher</legend>
+            <label class="flex items-start gap-2 text-sm">
+                <input type="checkbox" name="use_coins" value="1" @checked(request()->boolean('use_coins')) @disabled($coinBalance <= 0) class="mt-1">
+                <span>Gunakan koin (saldo {{ number_format($coinBalance, 0, ',', '.') }}). Maksimal 5% dari pesanan dan tidak dapat digabung dengan voucher.</span>
+            </label>
+            <div>
+                <label for="user_voucher_id" class="mb-1 block text-sm font-medium">Voucher</label>
+                <select id="user_voucher_id" name="user_voucher_id" class="w-full rounded-lg border-border">
+                    <option value="">Tanpa voucher</option>
+                    @foreach ($userVouchers as $userVoucher)
+                        <option value="{{ $userVoucher->id }}" @selected((string) request('user_voucher_id') === (string) $userVoucher->id)>
+                            {{ $userVoucher->voucher->code }} — {{ $userVoucher->voucher->name }}
+                        </option>
+                    @endforeach
+                </select>
+                @if ($userVouchers->isEmpty())
+                    <p class="mt-1 text-xs text-text-muted">Belum ada voucher yang dapat digunakan.</p>
+                @endif
+            </div>
+        </fieldset>
         <button type="submit" class="w-full rounded-lg border border-border px-5 py-3 font-semibold text-navy-500 hover:bg-surface-2">
             Perbarui Ringkasan
         </button>
@@ -76,6 +105,10 @@
         <input type="hidden" name="platform" value="{{ request('platform', 'toco') }}">
         <input type="hidden" name="payment_scheme" value="{{ request('payment_scheme', 'fp') }}">
         <input type="hidden" name="payment_method" value="{{ request('payment_method', 'bca') }}">
+        <input type="hidden" name="use_coins" value="{{ request()->boolean('use_coins') ? 1 : 0 }}">
+        @if (request('user_voucher_id'))
+            <input type="hidden" name="user_voucher_id" value="{{ request('user_voucher_id') }}">
+        @endif
         <button type="submit" class="w-full rounded-lg bg-primary-600 px-5 py-3 font-semibold text-white hover:bg-primary-700">
             Buat Pesanan
         </button>

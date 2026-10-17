@@ -34,6 +34,8 @@
 </head>
 <body class="min-h-screen flex flex-col bg-white text-text antialiased">
 
+    <x-announcement-bar />
+
     @auth
         <x-navbar-user />
     @else

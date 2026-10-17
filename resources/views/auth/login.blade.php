@@ -9,6 +9,7 @@
     @csrf
 
     <x-honeypot />
+    <x-turnstile />
 
     {{-- Email --}}
     <div>
