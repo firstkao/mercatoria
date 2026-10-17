@@ -2,10 +2,10 @@
 
 namespace App\Models;
 
+use App\Enums\OrderStatus;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use App\Enums\OrderStatus;
 
 class Order extends Model
 {
@@ -35,27 +35,60 @@ class Order extends Model
 
     // ─── Relationships ─────────────────────────
     public function user(): BelongsTo
-    { return $this->belongsTo(User::class); }
+    {
+        return $this->belongsTo(User::class);
+    }
 
     public function items(): HasMany
-    { return $this->hasMany(OrderItem::class); }
+    {
+        return $this->hasMany(OrderItem::class);
+    }
 
     public function payments(): HasMany
-    { return $this->hasMany(Payment::class); }
+    {
+        return $this->hasMany(Payment::class);
+    }
 
     public function refunds(): HasMany
-    { return $this->hasMany(Refund::class); }
+    {
+        return $this->hasMany(Refund::class);
+    }
 
     public function statusLogs(): HasMany
-    { return $this->hasMany(OrderStatusLog::class)->orderBy('created_at'); }
+    {
+        return $this->hasMany(OrderStatusLog::class)->orderBy('created_at');
+    }
+
+    public function paidAmount(): float
+    {
+        return (float) $this->payments()->where('status', 'verified')->sum('amount');
+    }
+
+    public function getSnapshotItemsAttribute()
+    {
+        return $this->items->sortBy('id');
+    }
 
     // ─── Helpers ───────────────────────────────
     public function getStatusEnumAttribute(): OrderStatus
-    { return OrderStatus::from($this->status); }
+    {
+        return OrderStatus::from($this->status);
+    }
 
-    public function isFp(): bool { return $this->payment_scheme === 'fp'; }
-    public function isDp(): bool { return $this->payment_scheme === 'dp'; }
-    public function isHangus(): bool { return $this->status === 'hangus'; }
+    public function isFp(): bool
+    {
+        return $this->payment_scheme === 'fp';
+    }
+
+    public function isDp(): bool
+    {
+        return $this->payment_scheme === 'dp';
+    }
+
+    public function isHangus(): bool
+    {
+        return $this->status === 'hangus';
+    }
 
     public function isPickupActive(): bool
     {
@@ -66,30 +99,43 @@ class Order extends Model
 
     public function getIsPickupUrgentAttribute(): bool
     {
-        if (! $this->isPickupActive()) return false;
+        if (! $this->isPickupActive()) {
+            return false;
+        }
+
         return $this->pickup_deadline_at->diffInHours(now()) < 24;
     }
 
     public function getPickupRemainingSecondsAttribute(): int
     {
-        if (! $this->isPickupActive()) return 0;
+        if (! $this->isPickupActive()) {
+            return 0;
+        }
+
         return max(0, now()->diffInSeconds($this->pickup_deadline_at, false));
     }
 
     public function dpAmount(): float
-    { return (float) $this->total * 0.5; }
+    {
+        return (float) $this->total * 0.5;
+    }
 
     public function remainingAmount(): float
     {
-        if ($this->isFp()) return 0;
+        if ($this->isFp()) {
+            return 0;
+        }
         $paid = $this->payments()->where('status', 'verified')->sum('amount');
+
         return max(0, (float) $this->total - (float) $paid);
     }
 
     public function canTransitionTo(OrderStatus $newStatus): bool
     {
         $current = $this->status_enum;
-        if ($current->isEnded()) return false;
+        if ($current->isEnded()) {
+            return false;
+        }
 
         $allowed = [
             OrderStatus::MENUNGGU_PEMBAYARAN->value => [
@@ -113,6 +159,20 @@ class Order extends Model
             ],
             OrderStatus::SEDANG_DIKEMAS->value => [OrderStatus::SELESAI->value],
         ];
+
+        if ($newStatus === OrderStatus::DANA_DIKEMBALIKAN) {
+            return in_array($current, OrderStatus::activeStatuses(), true)
+                && in_array($current, [
+                    OrderStatus::PEMBAYARAN_DITERIMA,
+                    OrderStatus::SEDANG_DIPROSES,
+                    OrderStatus::SAMPAI_WH_CHINA,
+                    OrderStatus::DIKIRIM_KE_INDONESIA,
+                    OrderStatus::BEA_CUKAI,
+                    OrderStatus::SAMPAI_WH_INDONESIA,
+                    OrderStatus::MENUNGGU_PELUNASAN,
+                    OrderStatus::SEDANG_DIKEMAS,
+                ], true);
+        }
 
         return in_array($newStatus->value, $allowed[$current->value] ?? []);
     }

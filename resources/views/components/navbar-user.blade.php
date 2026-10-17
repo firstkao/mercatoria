@@ -10,6 +10,7 @@
         {{-- Aksi kanan (desktop) --}}
         <div class="hidden items-center gap-1 md:flex">
             <a href="{{ route('cart.index') }}" class="px-3 py-2 text-sm text-navy-500 hover:underline">Keranjang</a>
+            <x-notification-bell />
             @if (auth()->user()->isAdmin())
                 <a href="{{ route('office.games.index') }}" class="px-3 py-2 text-sm text-navy-500 hover:underline">Office Admin</a>
             @endif
@@ -52,6 +53,7 @@
             <div class="flex flex-col gap-1">
                 <x-nav-links mobile />
                 <a href="{{ route('cart.index') }}" class="block px-3 py-2 text-sm text-navy-500">Keranjang</a>
+                <div class="flex items-center gap-2 px-3 py-2"><x-notification-bell /><span class="text-sm text-text-muted">Notifikasi</span></div>
                 @if (auth()->user()->isAdmin())
                     <a href="{{ route('office.games.index') }}" class="block px-3 py-2 text-sm text-navy-500">Office Admin</a>
                 @endif
