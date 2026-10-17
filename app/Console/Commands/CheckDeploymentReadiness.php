@@ -17,11 +17,18 @@ class CheckDeploymentReadiness extends Command
             'APP_KEY is configured' => filled(config('app.key')),
             'APP_DEBUG is disabled' => config('app.debug') === false,
             'APP_URL uses HTTPS' => parse_url((string) config('app.url'), PHP_URL_SCHEME) === 'https',
-            'Database is not SQLite' => config('database.default') !== 'sqlite',
+            'Database uses MySQL' => config('database.default') === 'mysql',
             'Cache is not an in-memory array' => config('cache.default') !== 'array',
-            'Session storage is persistent' => ! in_array(config('session.driver'), ['array', 'file'], true),
+            'Session storage uses a durable driver' => config('session.driver') !== 'array',
             'Public storage link exists' => is_link(public_path('storage')) || is_dir(public_path('storage')),
             'Mail transport is configured' => ! in_array(config('mail.default'), ['log', 'array'], true),
+            'Mail sender address is valid' => filter_var(config('mail.from.address'), FILTER_VALIDATE_EMAIL) !== false,
+            'SMTP connection settings are configured' => config('mail.default') !== 'smtp'
+                || (filled(config('mail.mailers.smtp.host'))
+                    && config('mail.mailers.smtp.host') !== '127.0.0.1'
+                    && filled(config('mail.mailers.smtp.port'))
+                    && filled(config('mail.mailers.smtp.username'))
+                    && filled(config('mail.mailers.smtp.password'))),
         ];
 
         $failed = [];

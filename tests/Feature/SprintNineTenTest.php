@@ -324,7 +324,16 @@ class SprintNineTenTest extends TestCase
             ->assertSee('"@type":"Organization"', false);
         $this->get(route('sitemap'))->assertOk()->assertHeader('content-type', 'application/xml; charset=UTF-8');
 
-        $this->artisan('app:deployment-check')->assertExitCode(1);
+        config()->set('session.driver', 'file');
+        $this->artisan('app:deployment-check')
+            ->expectsOutputToContain('PASS Session storage uses a durable driver')
+            ->expectsOutputToContain('FAIL Database uses MySQL')
+            ->assertExitCode(1);
+
+        config()->set('session.driver', 'array');
+        $this->artisan('app:deployment-check')
+            ->expectsOutputToContain('FAIL Session storage uses a durable driver')
+            ->assertExitCode(1);
     }
 
     public function test_expired_spammer_grace_period_is_reblocked(): void

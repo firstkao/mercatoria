@@ -1,0 +1,46 @@
+name: Laravel CI
+
+on:
+  push:
+    branches:
+      - "**"
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.5"
+          extensions: dom, fileinfo, gd, mbstring, pdo_sqlite, sqlite3, zip
+          coverage: none
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+
+      - name: Install PHP dependencies
+        run: composer install --no-interaction --prefer-dist --no-progress
+
+      - name: Install JavaScript dependencies
+        run: npm ci
+
+      - name: Build production assets
+        run: npm run build
+
+      - name: Check PHP formatting
+        run: php vendor/bin/pint --test app/Console/Commands/CheckDeploymentReadiness.php tests/Feature/LaunchSmokeTest.php tests/Feature/SprintNineTenTest.php
+
+      - name: Run Laravel test suite
+        run: php artisan test --compact
