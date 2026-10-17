@@ -3,9 +3,7 @@
 @php
     $links = [
         ['label' => 'Beranda',   'href' => route('home'), 'active' => request()->routeIs('home')],
-        ['label' => 'Game',      'href' => '#',           'active' => false],
-        ['label' => 'Developer', 'href' => '#',           'active' => false],
-        ['label' => 'Pre-order', 'href' => '#',           'active' => false],
+        ['label' => 'Katalog',   'href' => route('catalog.index'), 'active' => request()->routeIs('catalog.*', 'games.*', 'developers.*', 'products.*')],
     ];
 
     $size = $mobile ? 'block px-3 py-2 text-sm' : 'px-3 py-2 text-sm';

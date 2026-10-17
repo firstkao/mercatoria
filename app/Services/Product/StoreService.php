@@ -2,7 +2,9 @@
 
 namespace App\Services\Product;
 
+use App\Models\Product;
 use App\Models\Store;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 
 class StoreService
@@ -42,8 +44,20 @@ class StoreService
     public function getUsageCount(Store $store): array
     {
         return [
-            'products' => $store->products()->count(),
+            'products' => $this->productsUsing($store)->count(),
             'games' => $store->games()->count(),
         ];
+    }
+
+    public function productsUsing(Store $store): Builder
+    {
+        return Product::query()
+            ->where(function (Builder $query) use ($store): void {
+                $query->where('store_id', $store->id)
+                    ->orWhere(function (Builder $query) use ($store): void {
+                        $query->whereNull('store_id')
+                            ->whereHas('games', fn (Builder $gameQuery) => $gameQuery->where('default_store_id', $store->id));
+                    });
+            });
     }
 }

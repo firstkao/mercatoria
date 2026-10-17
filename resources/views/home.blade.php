@@ -16,6 +16,7 @@
                 Mercatoria membantu penggemar di Indonesia menemukan dan membeli merchandise game, anime, donghua, dan novel dari Tiongkok.
             </p>
             <div class="mt-8 flex flex-wrap gap-3">
+                <x-button variant="ghost" href="{{ route('catalog.index') }}">Jelajahi katalog</x-button>
                 <x-button href="{{ route('register') }}">Mulai belanja</x-button>
                 <x-button variant="ghost" href="{{ route('login') }}">Masuk ke akun</x-button>
             </div>

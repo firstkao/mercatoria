@@ -1,13 +1,17 @@
 <?php
 
+use App\Http\Controllers\Admin\GameController;
+use App\Http\Controllers\Admin\ProductController;
+use App\Http\Controllers\Admin\StoreController;
 use App\Http\Controllers\Auth\ForgotPasswordController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\LogoutController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Auth\ResetPasswordController;
 use App\Http\Controllers\Auth\VerifyEmailController;
+use App\Http\Controllers\CatalogController;
 use App\Http\Controllers\ProfileCompleteController;
-use Illuminate\Support\Facades\Route;   // ← tambah
+use Illuminate\Support\Facades\Route;
 use Spatie\Honeypot\ProtectAgainstSpam;
 
 // ─── Public Routes ──────────────────────────────
@@ -60,3 +64,17 @@ Route::middleware('auth')->group(function () {
         Route::post('/profile/complete', [ProfileCompleteController::class, 'store']);
     });
 });
+
+Route::prefix('office')->name('office.')->middleware(['auth', 'admin'])->group(function () {
+    Route::resource('games', GameController::class)->except(['show', 'destroy']);
+    Route::resource('products', ProductController::class)->except(['show', 'destroy']);
+    Route::resource('stores', StoreController::class)->except('show');
+});
+
+Route::get('/catalog', [CatalogController::class, 'index'])->name('catalog.index');
+Route::get('/search', [CatalogController::class, 'search'])->name('catalog.search');
+Route::get('/developer/{developer:slug}', [CatalogController::class, 'showDeveloper'])->name('developers.show');
+Route::get('/product/{product:slug}', [CatalogController::class, 'showProduct'])->name('products.direct');
+Route::get('/{game:slug}/kategori/{category:slug}', [CatalogController::class, 'showCategory'])->name('games.categories.show');
+Route::get('/{game:slug}/{product:slug}', [CatalogController::class, 'showProductInGame'])->name('games.products.show');
+Route::get('/{game:slug}', [CatalogController::class, 'showGame'])->name('games.show');
