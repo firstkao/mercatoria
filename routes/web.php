@@ -1,8 +1,11 @@
 <?php
 
 use App\Http\Controllers\Admin\GameController;
+use App\Http\Controllers\Admin\LegacyOrderImportController;
 use App\Http\Controllers\Admin\ProductController;
+use App\Http\Controllers\Admin\ProductVariantController;
 use App\Http\Controllers\Admin\StoreController;
+use App\Http\Controllers\Admin\UserMigrationController;
 use App\Http\Controllers\Auth\ForgotPasswordController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\LogoutController;
@@ -68,7 +71,15 @@ Route::middleware('auth')->group(function () {
 Route::prefix('office')->name('office.')->middleware(['auth', 'admin'])->group(function () {
     Route::resource('games', GameController::class)->except(['show', 'destroy']);
     Route::resource('products', ProductController::class)->except(['show', 'destroy']);
+    Route::post('products/{product}/variants', [ProductVariantController::class, 'store'])->name('products.variants.store');
+    Route::patch('products/{product}/variants/{variant}/weight', [ProductVariantController::class, 'updateWeight'])->name('products.variants.weight.update');
+    Route::patch('products/{product}/variants/weight', [ProductVariantController::class, 'bulkUpdateWeight'])->name('products.variants.weight.bulk');
     Route::resource('stores', StoreController::class)->except('show');
+    Route::resource('users', UserMigrationController::class)->only(['index', 'create', 'store', 'show']);
+    Route::get('orders/create', [LegacyOrderImportController::class, 'create'])->name('orders.create');
+    Route::post('orders', [LegacyOrderImportController::class, 'store'])->name('orders.store');
+    Route::post('users/{user}/force-reset-password', [UserMigrationController::class, 'forceResetPassword'])->name('users.force-reset-password');
+    Route::post('users/{user}/force-verify-email', [UserMigrationController::class, 'forceVerifyEmail'])->name('users.force-verify-email');
 });
 
 Route::get('/catalog', [CatalogController::class, 'index'])->name('catalog.index');
