@@ -5,9 +5,11 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use App\Models\AuthLog;
 use App\Models\User;
+use App\Services\Notification\ScheduledEmailService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
@@ -30,7 +32,7 @@ class LoginController extends Controller
     /**
      * Handle submit form login
      */
-    public function store(Request $request): RedirectResponse
+    public function store(Request $request, ScheduledEmailService $emails): RedirectResponse
     {
         $request->merge([
             'email' => Str::lower(trim((string) $request->input('email'))),
@@ -90,11 +92,42 @@ class LoginController extends Controller
             ]);
         }
 
-        // ─── 4. Sukses Login ─────────────────────────
+        // ─── 4. Sukses login password ────────────────
         RateLimiter::clear($throttleKey);
 
         /** @var User $user */
         $user = Auth::user();
+
+        if ($user->isAdmin()) {
+            Auth::logout();
+            $otp = (string) random_int(100000, 999999);
+            $user->forceFill([
+                'admin_otp' => Hash::make($otp),
+                'admin_otp_expires_at' => now()->addMinutes(5),
+            ])->save();
+            $request->session()->regenerate();
+            $request->session()->put([
+                'pending_admin_otp_user_id' => $user->id,
+                'pending_admin_otp_remember' => $remember,
+            ]);
+
+            if (! $emails->send($user, 'admin_otp', 'Kode OTP Admin Mercatoria', [
+                'nama_user' => $user->name,
+                'otp' => $otp,
+            ])) {
+                $user->forceFill(['admin_otp' => null, 'admin_otp_expires_at' => null])->save();
+                $request->session()->forget(['pending_admin_otp_user_id', 'pending_admin_otp_remember']);
+
+                return redirect()->route('login')->withErrors([
+                    'email' => 'Kode OTP tidak dapat dikirim. Periksa konfigurasi email dan coba kembali.',
+                ]);
+            }
+
+            AuthLog::record('admin_otp_sent', $validated['email'], null, $user->id);
+
+            return redirect()->route('admin.otp.challenge');
+        }
+
         $user->update(['last_login' => now()]);
 
         AuthLog::create([

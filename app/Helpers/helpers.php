@@ -24,38 +24,8 @@ if (! function_exists('setting')) {
 }
 
 if (! function_exists('get_real_ip')) {
-    /**
-     * Deteksi IP asli user (XFF-based).
-     */
     function get_real_ip(): string
     {
-        $headers = [
-            'CF-Connecting-IP',
-            'True-Client-IP',
-            'Fastly-Client-IP',
-            'X-Real-IP',
-            'X-Forwarded-For',
-            'Forwarded',
-        ];
-
-        foreach ($headers as $header) {
-            $value = request()->header($header);
-            if (! $value) {
-                continue;
-            }
-
-            $ip = trim(explode(',', $value)[0]);
-
-            if (str_contains($ip, 'for=')) {
-                $ip = preg_replace('/.*for=([^;]+).*/i', '$1', $ip);
-                $ip = trim($ip, '"[]');
-            }
-
-            if (filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE)) {
-                return $ip;
-            }
-        }
-
         return request()->ip() ?? '0.0.0.0';
     }
 }

@@ -4,8 +4,11 @@ namespace Tests\Feature;
 
 use App\Models\ActivityLog;
 use App\Models\User;
+use App\Services\Notification\ScheduledEmailService;
+use App\Services\Security\TurnstileService;
 use Illuminate\Auth\Notifications\VerifyEmail;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\URL;
 use Spatie\Honeypot\Honeypot;
@@ -18,6 +21,14 @@ class AuthFlowTest extends TestCase
         parent::setUp();
 
         config()->set('honeypot.amount_of_seconds', 0);
+        config()->set('services.turnstile.site_key', 'test-site-key');
+        config()->set('services.turnstile.secret_key', 'test-secret-key');
+        Http::fake([
+            'challenges.cloudflare.com/*' => Http::response([
+                'success' => true,
+                'hostname' => parse_url(config('app.url'), PHP_URL_HOST),
+            ]),
+        ]);
         app()->forgetInstance(Honeypot::class);
     }
 
@@ -46,6 +57,29 @@ class AuthFlowTest extends TestCase
         ]);
 
         Notification::assertSentTo($user, VerifyEmail::class);
+    }
+
+    public function test_registration_attributes_a_valid_invitation_code_to_the_referrer(): void
+    {
+        Notification::fake();
+        $referrer = User::factory()->create(['role' => 'customer', 'referral_code' => 'INVITE123']);
+        $data = $this->validRegistrationData();
+        $data['referral_code'] = $referrer->referral_code;
+
+        $this->post(route('register'), [
+            ...$data,
+            ...$this->honeypotFields(),
+        ])->assertRedirect(route('dashboard'));
+
+        $referee = User::query()->where('email', 'collector@example.com')->firstOrFail();
+        $this->assertDatabaseHas('referrals', [
+            'referrer_id' => $referrer->id,
+            'referee_id' => $referee->id,
+        ]);
+        $this->assertDatabaseHas('user_notifications', [
+            'user_id' => $referrer->id,
+            'subtype' => 'referral_signup',
+        ]);
     }
 
     public function test_verification_updates_user_and_crush_verification_dates(): void
@@ -161,6 +195,62 @@ class AuthFlowTest extends TestCase
         ]);
     }
 
+    public function test_admin_login_requires_a_single_use_email_otp_before_authentication(): void
+    {
+        $otp = '';
+        $this->mock(ScheduledEmailService::class)
+            ->shouldReceive('send')
+            ->once()
+            ->andReturnUsing(function (User $user, string $template, string $subject, array $variables) use (&$otp): bool {
+                $otp = $variables['otp'];
+
+                return true;
+            });
+        $admin = User::factory()->create(['role' => 'admin']);
+
+        $response = $this->withHeader('referer', route('login'))->post(route('login'), [
+            'email' => $admin->email,
+            'password' => 'password',
+            ...$this->honeypotFields(),
+        ]);
+
+        $response->assertRedirect(route('admin.otp.challenge'));
+        $this->assertGuest();
+        $this->assertDatabaseHas('auth_logs', [
+            'user_id' => $admin->id,
+            'action' => 'admin_otp_sent',
+        ]);
+        $this->assertSame(6, strlen($otp));
+        $this->assertNotSame($otp, $admin->fresh()->admin_otp);
+        $this->assertTrue($admin->fresh()->admin_otp_expires_at->isFuture());
+
+        $this->post(route('admin.otp.verify'), ['otp' => $otp])
+            ->assertRedirect(route('dashboard'));
+        $this->assertAuthenticatedAs($admin);
+        $this->assertNull($admin->fresh()->admin_otp);
+
+        $this->post(route('logout'))->assertRedirect(route('home'));
+        $this->post(route('admin.otp.verify'), ['otp' => $otp])
+            ->assertRedirect(route('login'));
+    }
+
+    public function test_login_rejects_a_turnstile_token_that_cloudflare_does_not_verify(): void
+    {
+        $honeypotFields = $this->honeypotFields();
+        $this->mock(TurnstileService::class)
+            ->shouldReceive('shouldSkipForUnconfiguredDevelopment')->once()->andReturnFalse()
+            ->shouldReceive('verify')->once()->andReturnFalse();
+
+        $response = $this->withHeader('referer', route('login'))->post(route('login'), [
+            'email' => 'collector@example.com',
+            'password' => 'password',
+            ...$honeypotFields,
+        ]);
+
+        $response->assertRedirect(route('login'))->assertSessionHasErrors('cf-turnstile-response');
+        $this->assertDatabaseCount('auth_logs', 0);
+    }
+
     public function test_five_failed_login_attempts_trigger_a_fifteen_minute_lockout(): void
     {
         foreach (range(1, 5) as $attempt) {
@@ -228,6 +318,7 @@ class AuthFlowTest extends TestCase
         return [
             $nameField[1] => '',
             'valid_from' => $timestampField[1],
+            'cf-turnstile-response' => 'test-token',
         ];
     }
 }

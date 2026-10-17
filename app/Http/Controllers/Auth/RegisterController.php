@@ -8,6 +8,7 @@ use App\Models\Customer;
 use App\Models\Spammer;
 use App\Models\SpammerIp;
 use App\Models\User;
+use App\Services\User\ReferralRewardService;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
@@ -30,7 +31,7 @@ class RegisterController extends Controller
         return view('auth.register');
     }
 
-    public function store(Request $request): RedirectResponse
+    public function store(Request $request, ReferralRewardService $referrals): RedirectResponse
     {
         $request->merge([
             'email' => Str::lower(trim((string) $request->input('email'))),
@@ -50,7 +51,7 @@ class RegisterController extends Controller
             'password' => ['required', 'string', 'confirmed', Password::min(8)],
             'tnc' => ['accepted'],
             'privacy' => ['accepted'],
-            'referral_code' => ['nullable', 'string', 'max:16'],
+            'referral_code' => ['nullable', 'string', 'max:16', Rule::exists('users', 'referral_code')],
         ], [
             'name.required' => 'Nama lengkap wajib diisi.',
             'name.min' => 'Nama minimal 2 karakter.',
@@ -132,7 +133,7 @@ class RegisterController extends Controller
             ]);
         }
 
-        $user = DB::transaction(function () use ($validated, $noHp, $request): User {
+        $user = DB::transaction(function () use ($validated, $noHp, $request, $referrals): User {
             $user = User::create([
                 'name' => $validated['name'],
                 'email' => $validated['email'],
@@ -153,6 +154,7 @@ class RegisterController extends Controller
                 'verified_at' => null, // di-set setelah verifikasi email
                 'expires_at' => now()->addDays(30),
             ]);
+            $referrals->recordRegistration($user);
 
             ActivityLog::create([
                 'user_id' => $user->id,

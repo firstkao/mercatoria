@@ -9,6 +9,7 @@
     @csrf
 
     <x-honeypot />
+    <x-turnstile />
 
     {{-- Referral code (auto dari URL ?ref=XXX) --}}
     <input type="hidden" name="referral_code" value="{{ request('ref') }}">

@@ -40,14 +40,24 @@ class EmailTemplateSeeder extends Seeder
         ];
 
         foreach ($templates as [$code, $name, $from, $subject]) {
+            $body = match ($code) {
+                'admin_otp' => '<p>Halo {{nama_user}},</p><p>Kode OTP admin kamu: <strong>{{otp}}</strong>.</p><p>Kode ini berlaku selama 5 menit. Jangan bagikan kepada siapa pun.</p>',
+                'cart_reminder' => '<p>Halo {{nama_user}},</p><p>Masih ada item menunggu di keranjangmu. Lanjutkan belanja di <a href="{{link}}">keranjang Mercatoria</a>.</p>',
+                'coin_expiring' => '<p>Halo {{nama_user}},</p><p>{{jumlah_koin}} koinmu akan kedaluwarsa dalam {{masa}}. Gunakan sebelum hilang.</p><p><a href="{{link}}">Lihat akunmu</a>.</p>',
+                'birthday_reward' => '<p>Halo {{nama_user}},</p><p>Selamat ulang tahun! Kamu menerima {{jumlah_koin}} koin dan voucher {{voucher}} yang berlaku 30 hari dengan minimum belanja Rp100.000.</p><p><a href="{{link}}">Lihat hadiahmu</a>.</p>',
+                'coin_earned' => '<p>Halo {{nama_user}},</p><p>{{jumlah_koin}} koin telah ditambahkan ke wallet-mu.</p><p><a href="{{link}}">Lihat riwayat koin</a>.</p>',
+                'referral_reward' => '<p>Halo {{nama_user}},</p><p>Kamu menerima {{jumlah_koin}} koin karena teman undanganmu menyelesaikan order pertamanya.</p><p><a href="{{link}}">Lihat wallet</a>.</p>',
+                'referee_reward' => '<p>Halo {{nama_user}},</p><p>Kamu menerima {{jumlah_koin}} koin setelah pembayaran pertamamu diverifikasi.</p><p><a href="{{link}}">Lihat wallet</a>.</p>',
+                default => '<p>Halo {{nama_user}},</p><p>Ini adalah template '.$name.'. Silakan edit di admin panel.</p>',
+            };
             EmailTemplate::updateOrCreate(
                 ['code' => $code],
                 [
                     'name' => $name,
                     'from_email' => $from,
                     'subject' => $subject,
-                    'body' => '<p>Halo {{nama_user}},</p><p>Ini adalah template ' . $name . '. Silakan edit di admin panel.</p>',
-                    'variables' => ['nama_user', 'email', 'no_order', 'link', 'tanggal', 'nama_toko'],
+                    'body' => $body,
+                    'variables' => ['nama_user', 'email', 'no_order', 'link', 'tanggal', 'nama_toko', 'otp', 'jumlah_koin', 'masa', 'voucher'],
                     'is_active' => true,
                 ]
             );

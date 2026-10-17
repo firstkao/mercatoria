@@ -2,12 +2,17 @@
 
 namespace App\Services\Order;
 
+use App\Enums\CoinSource;
 use App\Enums\NotificationType;
 use App\Enums\OrderStatus;
 use App\Models\AdminNotification;
+use App\Models\Coin;
+use App\Models\CoinTransaction;
 use App\Models\Order;
 use App\Models\OrderStatusLog;
+use App\Models\UserVoucher;
 use App\Services\Notification\UserNotificationService;
+use App\Services\User\ReferralRewardService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
@@ -15,6 +20,8 @@ use RuntimeException;
 
 class OrderStatusService
 {
+    public function __construct(private readonly ReferralRewardService $referralRewards) {}
+
     public function changeStatus(
         Order $order,
         OrderStatus $newStatus,
@@ -37,6 +44,13 @@ class OrderStatusService
 
             if ($newStatus === OrderStatus::HANGUS) {
                 $order->hangus_at = now();
+            }
+
+            if (
+                $newStatus === OrderStatus::PEMBAYARAN_GAGAL
+                && ! $order->payments()->where('status', 'verified')->exists()
+            ) {
+                $this->releaseUnpaidCheckoutDiscounts($order);
             }
 
             $order->save();
@@ -89,7 +103,59 @@ class OrderStatusService
             $this->deletePaymentProofs($updatedOrder);
         }
 
+        if ($newStatus === OrderStatus::SELESAI) {
+            $this->referralRewards->onOrderCompleted($updatedOrder);
+        }
+
         return $updatedOrder;
+    }
+
+    private function releaseUnpaidCheckoutDiscounts(Order $order): void
+    {
+        $coinUsage = CoinTransaction::query()
+            ->where('order_id', $order->id)
+            ->where('source', CoinSource::USED_AT_CHECKOUT->value)
+            ->where('amount', '<', 0)
+            ->lockForUpdate()
+            ->first();
+
+        if ($coinUsage && ! CoinTransaction::query()
+            ->where('order_id', $order->id)
+            ->where('source', CoinSource::CHECKOUT_RELEASE->value)
+            ->exists()) {
+            $coin = Coin::query()->where('user_id', $order->user_id)->lockForUpdate()->first();
+            if (! $coin) {
+                throw new RuntimeException("Wallet untuk pesanan {$order->order_no} tidak ditemukan.");
+            }
+
+            $amount = abs((int) $coinUsage->amount);
+            $coin->increment('balance', $amount);
+            $coin->refresh();
+            CoinTransaction::create([
+                'user_id' => $order->user_id,
+                'order_id' => $order->id,
+                'amount' => $amount,
+                'source' => CoinSource::CHECKOUT_RELEASE->value,
+                'description' => "Koin dikembalikan dari pesanan {$order->order_no} yang gagal dibayar.",
+                'balance_after' => $coin->balance,
+                'expires_at' => now()->addYear(),
+                'status' => 'active',
+            ]);
+        }
+
+        if ($order->user_voucher_id) {
+            $userVoucher = UserVoucher::query()
+                ->whereKey($order->user_voucher_id)
+                ->lockForUpdate()
+                ->first();
+            if ($userVoucher?->status === 'used' && (int) $userVoucher->order_id === (int) $order->id) {
+                $userVoucher->update([
+                    'status' => 'active',
+                    'used_at' => null,
+                    'order_id' => null,
+                ]);
+            }
+        }
     }
 
     private function deletePaymentProofs(Order $order): void

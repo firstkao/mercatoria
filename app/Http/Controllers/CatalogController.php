@@ -7,6 +7,8 @@ use App\Models\Game;
 use App\Models\MerchCategory;
 use App\Models\Product;
 use App\Models\Tag;
+use App\Models\User;
+use App\Services\User\ShareClickService;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -67,19 +69,34 @@ class CatalogController extends Controller
         );
     }
 
-    public function showProduct(Product $product): View
+    public function showProduct(Request $request, Product $product, ShareClickService $shareClicks): View
     {
         abort_unless($product->is_active, 404);
+        $this->recordShareClick($request, $product, $shareClicks);
 
         return $this->productDetail($product, $product->games()->where('is_active', true)->first());
     }
 
-    public function showProductInGame(Game $game, Product $product): View
+    public function showProductInGame(Request $request, Game $game, Product $product, ShareClickService $shareClicks): View
     {
         abort_unless($game->is_active && $product->is_active, 404);
         abort_unless($game->products()->whereKey($product->id)->exists(), 404);
+        $this->recordShareClick($request, $product, $shareClicks);
 
         return $this->productDetail($product, $game);
+    }
+
+    private function recordShareClick(Request $request, Product $product, ShareClickService $shareClicks): void
+    {
+        $code = $request->query('ref');
+        if (! is_string($code) || ! preg_match('/^[A-Za-z0-9]{1,16}$/', $code)) {
+            return;
+        }
+
+        $referrer = User::query()->where('referral_code', $code)->first();
+        if ($referrer && ! $request->user()?->is($referrer)) {
+            $shareClicks->record($referrer, $product, (string) $request->ip());
+        }
     }
 
     private function listing(

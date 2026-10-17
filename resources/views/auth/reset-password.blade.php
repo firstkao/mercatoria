@@ -12,6 +12,7 @@
     <form method="POST" action="{{ route('password.update') }}" class="space-y-4">
         @csrf
         <x-honeypot />
+        <x-turnstile />
 
         <input type="hidden" name="token" value="{{ $token }}">
 

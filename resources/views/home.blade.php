@@ -8,6 +8,37 @@
         Akses dari alamat jaringan ini dibatasi. Halaman beranda tetap dapat diakses.
     </div>
 @endif
+@if ($heroSlides->isNotEmpty())
+    <section id="hero-carousel" class="relative w-full overflow-hidden bg-surface-2" aria-label="Promo pilihan Mercatoria">
+        <div class="relative aspect-[2/1] max-h-[560px] min-h-48 md:aspect-[3/1]">
+            @foreach ($heroSlides as $index => $slide)
+                <div data-hero-slide class="absolute inset-0 {{ $index === 0 ? '' : 'hidden' }}">
+                    @if ($slide->link_url)
+                        <a href="{{ $slide->link_url }}" class="block h-full">
+                            <img src="{{ Storage::disk('public')->url($slide->image_path) }}" alt="{{ $slide->title ?: 'Promo Mercatoria' }}"
+                                class="h-full w-full object-cover" @if ($index > 0) loading="lazy" @endif>
+                        </a>
+                    @else
+                        <img src="{{ Storage::disk('public')->url($slide->image_path) }}" alt="{{ $slide->title ?: 'Promo Mercatoria' }}"
+                            class="h-full w-full object-cover" @if ($index > 0) loading="lazy" @endif>
+                    @endif
+                </div>
+            @endforeach
+        </div>
+        @if ($heroSlides->count() > 1)
+            <button type="button" data-hero-prev aria-label="Slide sebelumnya"
+                class="absolute left-3 top-1/2 -translate-y-1/2 rounded-full bg-black/50 px-3 py-2 text-white hover:bg-black/70">‹</button>
+            <button type="button" data-hero-next aria-label="Slide berikutnya"
+                class="absolute right-3 top-1/2 -translate-y-1/2 rounded-full bg-black/50 px-3 py-2 text-white hover:bg-black/70">›</button>
+            <div class="absolute bottom-4 left-0 right-0 flex justify-center gap-2">
+                @foreach ($heroSlides as $index => $slide)
+                    <button type="button" data-hero-dot="{{ $index }}" aria-label="Ke slide {{ $index + 1 }}"
+                        @class(['h-2.5 w-2.5 rounded-full border border-white', 'bg-white' => $index === 0, 'bg-white/40' => $index !== 0])></button>
+                @endforeach
+            </div>
+        @endif
+    </section>
+@endif
 <section class="bg-surface-2">
     <div class="mx-auto grid max-w-7xl gap-10 px-4 py-16 md:grid-cols-2 md:items-center md:py-24">
         <div>
@@ -58,6 +89,38 @@
 
 @push('scripts')
     <script>
+        (() => {
+            const carousel = document.getElementById('hero-carousel');
+            if (!carousel) return;
+            const slides = [...carousel.querySelectorAll('[data-hero-slide]')];
+            const dots = [...carousel.querySelectorAll('[data-hero-dot]')];
+            let index = 0;
+            let interval;
+            const show = next => {
+                index = (next + slides.length) % slides.length;
+                slides.forEach((slide, position) => slide.classList.toggle('hidden', position !== index));
+                dots.forEach((dot, position) => {
+                    dot.classList.toggle('bg-white', position === index);
+                    dot.classList.toggle('bg-white/40', position !== index);
+                });
+            };
+            const start = () => {
+                window.clearInterval(interval);
+                interval = window.setInterval(() => show(index + 1), 5000);
+            };
+            carousel.querySelector('[data-hero-prev]')?.addEventListener('click', () => { show(index - 1); start(); });
+            carousel.querySelector('[data-hero-next]')?.addEventListener('click', () => { show(index + 1); start(); });
+            dots.forEach(dot => dot.addEventListener('click', () => { show(Number(dot.dataset.heroDot)); start(); }));
+            carousel.addEventListener('mouseenter', () => window.clearInterval(interval));
+            carousel.addEventListener('mouseleave', start);
+            let touchStart = 0;
+            carousel.addEventListener('touchstart', event => { touchStart = event.changedTouches[0].clientX; }, { passive: true });
+            carousel.addEventListener('touchend', event => {
+                const distance = event.changedTouches[0].clientX - touchStart;
+                if (Math.abs(distance) > 40) { show(index + (distance < 0 ? 1 : -1)); start(); }
+            }, { passive: true });
+            start();
+        })();
         if (typeof window.mercatoriaTrack === 'function') {
             window.mercatoriaTrack('view_home');
         }

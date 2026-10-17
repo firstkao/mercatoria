@@ -59,6 +59,15 @@
             @endforeach
         </ul>
         <dl class="space-y-2 border-t border-border p-4 text-sm">
+            @if ($order->coin_discount_amount > 0)
+                <div class="flex justify-between"><dt>Diskon koin</dt><dd>-{{ format_rupiah($order->coin_discount_amount) }}</dd></div>
+            @endif
+            @if ($order->voucher_discount_amount > 0)
+                <div class="flex justify-between"><dt>Diskon voucher</dt><dd>-{{ format_rupiah($order->voucher_discount_amount) }}</dd></div>
+            @endif
+            @if ($order->discount_amount > $order->coin_discount_amount + $order->voucher_discount_amount)
+                <div class="flex justify-between"><dt>Diskon produk</dt><dd>-{{ format_rupiah($order->discount_amount - $order->coin_discount_amount - $order->voucher_discount_amount) }}</dd></div>
+            @endif
             <div class="flex justify-between"><dt>Total pesanan</dt><dd class="font-bold">{{ format_rupiah($order->total) }}</dd></div>
             <div class="flex justify-between"><dt>Sudah dibayar</dt><dd>{{ format_rupiah($verifiedAmount) }}</dd></div>
             <div class="flex justify-between"><dt>Sisa tagihan</dt><dd class="font-semibold">{{ format_rupiah($balanceDue) }}</dd></div>

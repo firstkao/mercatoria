@@ -2,12 +2,17 @@
 
 namespace Tests\Feature;
 
+use App\Enums\OrderStatus;
 use App\Models\Cart;
+use App\Models\Coin;
 use App\Models\Game;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\ProductVariant;
 use App\Models\User;
+use App\Models\UserVoucher;
+use App\Models\Voucher;
+use App\Services\Order\OrderStatusService;
 use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
@@ -111,6 +116,99 @@ class SprintFourTest extends TestCase
         $this->assertGreaterThan(0, (float) $order->total);
         $this->assertDatabaseMissing('carts', ['id' => $cart->id]);
         Storage::disk('public')->assertExists($snapshot->product_image_path);
+    }
+
+    public function test_checkout_applies_coins_or_voucher_and_rejects_combining_them(): void
+    {
+        $user = $this->createCustomer();
+        $user->update(['tgl_lahir' => '1995-01-01']);
+        $product = $this->createProduct('discounted-checkout');
+        $coin = Coin::create(['user_id' => $user->id, 'balance' => 100_000]);
+        $coinCart = $user->carts()->create(['product_id' => $product->id, 'qty' => 1]);
+
+        $this->actingAs($user)->post(route('cart.place-order'), [
+            ...$this->checkoutPayload($coinCart),
+            'use_coins' => 1,
+        ])->assertRedirect();
+
+        $coinOrder = Order::query()->sole();
+        $this->assertGreaterThan(0, (float) $coinOrder->coin_discount_amount);
+        $this->assertLessThanOrEqual(
+            (float) $coinOrder->subtotal * 0.05,
+            (float) $coinOrder->coin_discount_amount,
+        );
+        $this->assertSame(100_000 - (int) $coinOrder->coin_discount_amount, (int) $coin->fresh()->balance);
+        $this->assertDatabaseHas('coin_transactions', [
+            'user_id' => $user->id,
+            'order_id' => $coinOrder->id,
+            'amount' => -(int) $coinOrder->coin_discount_amount,
+            'source' => 'used_at_checkout',
+        ]);
+
+        $voucher = Voucher::create([
+            'code' => 'CHECKOUT10',
+            'name' => 'Diskon checkout',
+            'type' => 'nominal',
+            'value' => 10_000,
+            'min_purchase' => 0,
+            'per_user_limit' => 1,
+            'is_active' => true,
+        ]);
+        $userVoucher = UserVoucher::create([
+            'user_id' => $user->id,
+            'voucher_id' => $voucher->id,
+            'status' => 'active',
+        ]);
+        $voucherCart = $user->carts()->create(['product_id' => $product->id, 'qty' => 1]);
+
+        $this->post(route('cart.place-order'), [
+            ...$this->checkoutPayload($voucherCart),
+            'user_voucher_id' => $userVoucher->id,
+        ])->assertRedirect();
+
+        $voucherOrder = Order::query()->latest('id')->firstOrFail();
+        $this->assertSame($userVoucher->id, $voucherOrder->user_voucher_id);
+        $this->assertSame(10_000.0, (float) $voucherOrder->voucher_discount_amount);
+        $this->assertDatabaseHas('user_vouchers', [
+            'id' => $userVoucher->id,
+            'status' => 'used',
+            'order_id' => $voucherOrder->id,
+        ]);
+
+        $secondUserVoucher = UserVoucher::create([
+            'user_id' => $user->id,
+            'voucher_id' => $voucher->id,
+            'status' => 'active',
+        ]);
+        $combinedCart = $user->carts()->create(['product_id' => $product->id, 'qty' => 1]);
+        $this->post(route('cart.place-order'), [
+            ...$this->checkoutPayload($combinedCart),
+            'use_coins' => 1,
+            'user_voucher_id' => $secondUserVoucher->id,
+        ])->assertSessionHasErrors('user_voucher_id');
+
+        $this->assertSame(2, Order::query()->count());
+        $this->assertDatabaseHas('user_vouchers', [
+            'id' => $secondUserVoucher->id,
+            'status' => 'active',
+            'order_id' => null,
+        ]);
+
+        app(OrderStatusService::class)->changeStatus($coinOrder, OrderStatus::PEMBAYARAN_GAGAL);
+        $this->assertSame(100_000, (int) $coin->fresh()->balance);
+        $this->assertDatabaseHas('coin_transactions', [
+            'user_id' => $user->id,
+            'order_id' => $coinOrder->id,
+            'amount' => (int) $coinOrder->coin_discount_amount,
+            'source' => 'checkout_release',
+        ]);
+
+        app(OrderStatusService::class)->changeStatus($voucherOrder, OrderStatus::PEMBAYARAN_GAGAL);
+        $this->assertDatabaseHas('user_vouchers', [
+            'id' => $userVoucher->id,
+            'status' => 'active',
+            'order_id' => null,
+        ]);
     }
 
     public function test_hard_delete_preserves_order_snapshot_and_removes_original_media(): void

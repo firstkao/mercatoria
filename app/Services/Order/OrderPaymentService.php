@@ -12,6 +12,7 @@ use App\Models\Order;
 use App\Models\OrderStatusLog;
 use App\Models\Payment;
 use App\Services\Notification\UserNotificationService;
+use App\Services\User\ReferralRewardService;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -22,6 +23,8 @@ use RuntimeException;
 
 class OrderPaymentService
 {
+    public function __construct(private readonly ReferralRewardService $referralRewards) {}
+
     public function uploadProof(Order $order, UploadedFile $proof): Payment
     {
         if (! in_array($order->status, [
@@ -119,7 +122,7 @@ class OrderPaymentService
 
     public function verify(Payment $payment, int $adminId): void
     {
-        DB::transaction(function () use ($payment, $adminId): void {
+        $userId = DB::transaction(function () use ($payment, $adminId): int {
             $payment = Payment::query()->lockForUpdate()->findOrFail($payment->id);
             $order = Order::query()->lockForUpdate()->findOrFail($payment->order_id);
             if (! $payment->isPending() || ! $payment->is_locked || ! $payment->proof_path) {
@@ -175,7 +178,11 @@ class OrderPaymentService
                 route('orders.show', $order),
                 meta: ['order_id' => $order->id, 'payment_id' => $payment->id],
             );
+
+            return $user->id;
         });
+
+        $this->referralRewards->onFirstPayment($userId);
     }
 
     public function reject(Payment $payment, int $adminId, string $reason): void

@@ -17,6 +17,10 @@ class CheckDeploymentReadiness extends Command
             'APP_KEY is configured' => filled(config('app.key')),
             'APP_DEBUG is disabled' => config('app.debug') === false,
             'APP_URL uses HTTPS' => parse_url((string) config('app.url'), PHP_URL_SCHEME) === 'https',
+            'Local GeoLite2 country database is readable' => is_string(config('services.geoip.database_path'))
+                && is_file(config('services.geoip.database_path'))
+                && is_readable(config('services.geoip.database_path')),
+            'Trusted proxy CIDRs are configured' => config('app.trusted_proxies') !== [],
             'Database uses MySQL' => config('database.default') === 'mysql',
             'Cache is not an in-memory array' => config('cache.default') !== 'array',
             'Session storage uses a durable driver' => config('session.driver') !== 'array',

@@ -3,8 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\Cart;
+use App\Models\Coin;
 use App\Models\Product;
 use App\Models\ProductVariant;
+use App\Models\UserVoucher;
 use App\Services\Cart\CartPricingService;
 use App\Services\Cart\CheckoutService;
 use Illuminate\Http\RedirectResponse;
@@ -130,18 +132,44 @@ class CartController extends Controller
             'platform' => ['nullable', 'in:shopee,toco'],
             'payment_scheme' => ['nullable', 'in:fp,dp'],
             'payment_method' => ['nullable', 'in:bca,qris,shopeepay'],
+            'use_coins' => ['nullable', 'boolean'],
+            'user_voucher_id' => ['nullable', 'integer'],
         ]);
         $cartIds = $this->checkout->validatedCartIds($validated);
         $lines = $this->checkout->linesFor($request->user(), $cartIds);
+        $useCoins = $request->boolean('use_coins');
+        $userVoucher = null;
+        if ($validated['user_voucher_id'] ?? null) {
+            $userVoucher = $request->user()->userVouchers()
+                ->where('status', 'active')
+                ->with('voucher')
+                ->find($validated['user_voucher_id']);
+            if (! $userVoucher) {
+                throw ValidationException::withMessages([
+                    'user_voucher_id' => 'Voucher tidak tersedia untuk akun ini.',
+                ]);
+            }
+        }
+        $coinBalance = (int) Coin::query()->where('user_id', $request->user()->id)->value('balance');
         $quote = $this->checkout->calculateTotals(
             $lines,
             $request->string('platform', 'toco')->toString(),
             $request->string('payment_scheme', 'fp')->toString(),
             $request->string('payment_method', 'bca')->toString(),
+            $coinBalance,
+            $useCoins,
+            $userVoucher,
         );
+        $userVouchers = $request->user()->userVouchers()
+            ->where('status', 'active')
+            ->with('voucher')
+            ->get()
+            ->filter(fn (UserVoucher $item): bool => $item->voucher
+                && $item->voucher->isValid()
+                && empty($item->voucher->scope));
         $profitPercent = (float) setting('profit_percent', 11);
 
-        return view('cart.checkout', compact('lines', 'cartIds', 'quote', 'profitPercent'));
+        return view('cart.checkout', compact('lines', 'cartIds', 'quote', 'profitPercent', 'userVouchers', 'coinBalance'));
     }
 
     public function placeOrder(Request $request): RedirectResponse
@@ -152,6 +180,8 @@ class CartController extends Controller
             'platform' => ['required', 'in:shopee,toco'],
             'payment_scheme' => ['required', 'in:fp,dp'],
             'payment_method' => ['required', 'in:bca,qris,shopeepay'],
+            'use_coins' => ['nullable', 'boolean'],
+            'user_voucher_id' => ['nullable', 'integer'],
         ]);
         $cartIds = $this->checkout->validatedCartIds($validated);
         $order = $this->checkout->placeOrder($request->user(), $cartIds, $validated);

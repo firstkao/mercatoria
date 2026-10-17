@@ -9,7 +9,9 @@ class UserTierService
 {
     public function updateTier(User $user): bool
     {
-        if (! $user->customer) return false;
+        if (! $user->customer) {
+            return false;
+        }
 
         $customer = $user->customer;
         $oldTier = $customer->tier;
@@ -17,12 +19,15 @@ class UserTierService
         $totalBelanja = $user->orders()
             ->where('status', 'selesai')
             ->sum('total');
+        $completedOrders = $user->orders()->where('status', 'selesai');
 
         $newTier = TierLevel::fromSpending((float) $totalBelanja)->value;
 
         $customer->update([
             'tier' => $newTier,
             'total_belanja' => $totalBelanja,
+            'total_orders' => (clone $completedOrders)->count(),
+            'last_order_at' => (clone $completedOrders)->latest('created_at')->value('created_at'),
         ]);
 
         $tierOrder = [
@@ -43,7 +48,9 @@ class UserTierService
             ->chunk(100, function ($users) use (&$result) {
                 foreach ($users as $user) {
                     $result['total']++;
-                    if ($this->updateTier($user)) $result['upgraded']++;
+                    if ($this->updateTier($user)) {
+                        $result['upgraded']++;
+                    }
                 }
             });
 

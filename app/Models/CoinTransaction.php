@@ -2,14 +2,14 @@
 
 namespace App\Models;
 
+use App\Enums\CoinSource;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use App\Enums\CoinSource;
 
 class CoinTransaction extends Model
 {
     protected $fillable = [
-        'user_id', 'amount', 'source', 'description',
+        'user_id', 'order_id', 'amount', 'source', 'description',
         'balance_after', 'expires_at', 'status',
     ];
 
@@ -18,10 +18,19 @@ class CoinTransaction extends Model
     ];
 
     public function user(): BelongsTo
-    { return $this->belongsTo(User::class); }
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    public function order(): BelongsTo
+    {
+        return $this->belongsTo(Order::class);
+    }
 
     public function getSourceEnumAttribute(): CoinSource
-    { return CoinSource::from($this->source); }
+    {
+        return CoinSource::from($this->source);
+    }
 
     public function isExpired(): bool
     {
