@@ -68,7 +68,7 @@ class ProductController extends Controller
     public function edit(Product $product): View
     {
         return view('admin.products.form', [
-            'product' => $product->load('games'),
+            'product' => $product->load(['games.defaultStore', 'variants']),
             'stores' => Store::query()->orderBy('name')->get(),
             'games' => Game::query()->with('defaultStore')->orderBy('name')->get(),
             'isEditing' => true,
@@ -87,7 +87,7 @@ class ProductController extends Controller
     }
 
     /**
-     * @return array{name: string, slug: string, sku: string, store_id: int|null, description: string|null, type: string, availability: string, is_active: bool, price_rmb: numeric-string, game_ids: list<int>}
+     * @return array{name: string, slug: string, sku: string, store_id: int|null, description: string|null, type: string, availability: string, weight_gram: int, is_active: bool, price_rmb: numeric-string, game_ids: list<int>}
      */
     private function validateProduct(Request $request, ?Product $product = null): array
     {
@@ -99,6 +99,7 @@ class ProductController extends Controller
             'description' => ['nullable', 'string'],
             'type' => ['required', Rule::in(['single', 'variant'])],
             'availability' => ['required', Rule::in(['tersedia', 'kosong'])],
+            'weight_gram' => ['required', 'integer', 'min:1', 'max:1000000'],
             'is_active' => ['required', 'boolean'],
             'price_rmb' => ['required', 'numeric', 'min:0', 'max:99999999.99'],
             'game_ids' => ['required', 'array', 'min:1'],

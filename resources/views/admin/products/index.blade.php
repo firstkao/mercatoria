@@ -39,6 +39,7 @@
                     <th scope="col" class="px-4 py-3">Game</th>
                     <th scope="col" class="px-4 py-3">Store</th>
                     <th scope="col" class="px-4 py-3">Harga RMB</th>
+                    <th scope="col" class="px-4 py-3">Berat</th>
                     <th scope="col" class="px-4 py-3">Status</th>
                     <th scope="col" class="px-4 py-3">Aksi</th>
                 </tr>
@@ -53,6 +54,7 @@
                         <td class="px-4 py-4">{{ $product->games->pluck('name')->join(', ') ?: '—' }}</td>
                         <td class="px-4 py-4">{{ $product->store?->name ?? 'Default dari game' }}</td>
                         <td class="px-4 py-4">{{ number_format((float) $product->price_rmb, 2, ',', '.') }}</td>
+                        <td class="px-4 py-4">{{ $product->weight_gram ? $product->weight_gram.'g' : '—' }}</td>
                         <td class="px-4 py-4">{{ $product->is_active ? 'Aktif' : 'Nonaktif' }}</td>
                         <td class="px-4 py-4"><a href="{{ route('office.products.edit', $product) }}" class="font-medium text-navy-500 hover:underline">Edit</a></td>
                     </tr>
