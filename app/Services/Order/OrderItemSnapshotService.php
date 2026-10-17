@@ -4,27 +4,26 @@ namespace App\Services\Order;
 
 use App\Models\OrderItem;
 use App\Models\OrderItemSnapshot;
-use Illuminate\Support\Facades\Storage;
+use App\Services\Cart\CartPricingService;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 
 class OrderItemSnapshotService
 {
     public function __construct(
-        protected ShippingCalculatorService $shippingCalc
+        protected CartPricingService $cartPricing,
     ) {}
 
     public function createForOrderItem(OrderItem $item, string $orderNo): OrderItemSnapshot
     {
-        if (! $item->product || ! $item->variant) {
-            throw new \RuntimeException(
-                "Produk atau varian tidak ditemukan untuk order item #{$item->id}"
-            );
+        if (! $item->product) {
+            throw new \RuntimeException("Produk tidak ditemukan untuk order item #{$item->id}");
         }
 
         $product = $item->product;
         $variant = $item->variant;
-
-        $shipping = $this->shippingCalc->calculateItemShipping($product, $variant);
+        $pricing = $this->cartPricing->calculate($product, $variant);
+        $shipping = $pricing['shipping'];
 
         $game = $product->games->first();
         $developerName = $game?->developers->first()?->name;
@@ -35,25 +34,17 @@ class OrderItemSnapshotService
         );
 
         $variantImagePath = null;
-        if ($variant->image_path) {
+        if ($variant?->image_path) {
             $variantImagePath = $this->copyImage(
                 $variant->image_path,
                 "order-snapshots/{$orderNo}/v-{$item->id}.jpg"
             );
         }
 
-        $basePrice = $variant->price > 0
-            ? (float) $variant->price
-            : $product->hargaJual();
-
-        $finalPrice = $variant->price > 0
-            ? (float) $variant->price
-            : $product->hargaSetelahDiskon();
-
         return OrderItemSnapshot::create([
             'order_item_id' => $item->id,
             'product_id_audit' => $product->id,
-            'variant_id_audit' => $variant->id,
+            'variant_id_audit' => $variant?->id,
 
             'product_name' => $product->name,
             'product_slug' => $product->slug,
@@ -63,15 +54,15 @@ class OrderItemSnapshotService
             'store_name' => $shipping['store_name'],
             'tag' => $product->tags->first()?->name,
 
-            'variant_name' => $variant->name,
-            'variant_sku' => $variant->sku,
-            'variant_attributes' => $variant->attributesArray(),
+            'variant_name' => $variant?->name,
+            'variant_sku' => $variant?->sku,
+            'variant_attributes' => $variant?->attributesArray(),
 
-            'base_price' => $basePrice,
-            'discount_amount' => $product->hasActiveDiscount() ? (float) $product->discount_amount : 0,
-            'final_price' => $finalPrice,
+            'base_price' => $pricing['base_price'],
+            'discount_amount' => $pricing['discount_amount'],
+            'final_price' => $pricing['final_price'],
             'qty' => $item->qty,
-            'subtotal' => $finalPrice * $item->qty,
+            'subtotal' => $pricing['final_price'] * $item->qty,
 
             'weight_gram' => $shipping['weight_gram'],
             'ongkir_lokal_cn_idr' => $shipping['ongkir_lokal_cn_idr'],
@@ -88,23 +79,27 @@ class OrderItemSnapshotService
 
     protected function copyImage(?string $sourcePath, string $destPath): ?string
     {
-        if (empty($sourcePath)) return null;
+        if (empty($sourcePath)) {
+            return null;
+        }
 
         $disk = Storage::disk('public');
 
         if (! $disk->exists($sourcePath)) {
-            Log::warning("Snapshot copy: source not found", [
+            Log::warning('Snapshot copy: source not found', [
                 'source' => $sourcePath,
                 'dest' => $destPath,
             ]);
+
             return null;
         }
 
         try {
             $disk->copy($sourcePath, $destPath);
+
             return $destPath;
         } catch (\Throwable $e) {
-            Log::error("Snapshot copy failed", [
+            Log::error('Snapshot copy failed', [
                 'source' => $sourcePath,
                 'dest' => $destPath,
                 'error' => $e->getMessage(),

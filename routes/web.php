@@ -12,6 +12,7 @@ use App\Http\Controllers\Auth\LogoutController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Auth\ResetPasswordController;
 use App\Http\Controllers\Auth\VerifyEmailController;
+use App\Http\Controllers\CartController;
 use App\Http\Controllers\CatalogController;
 use App\Http\Controllers\ProfileCompleteController;
 use Illuminate\Support\Facades\Route;
@@ -46,6 +47,17 @@ Route::middleware('guest')->group(function () {
 
 // ─── Auth Routes (udah login) ───────────────────
 Route::middleware('auth')->group(function () {
+    Route::get('/cart', [CartController::class, 'index'])->name('cart.index');
+    Route::post('/cart', [CartController::class, 'add'])->name('cart.add');
+    Route::patch('/cart/{cart}', [CartController::class, 'update'])->name('cart.update');
+    Route::delete('/cart/{cart}', [CartController::class, 'remove'])->name('cart.remove');
+    Route::get('/checkout', [CartController::class, 'checkout'])->name('cart.checkout');
+    Route::get('/orders/{order}', [CartController::class, 'showOrder'])->name('orders.show');
+    Route::middleware(['ensure.verified', 'ensure.profile'])->post(
+        '/checkout',
+        [CartController::class, 'placeOrder'],
+    )->name('cart.place-order');
+
     Route::post('/logout', [LogoutController::class, 'destroy'])->name('logout');
 
     Route::get('/dashboard', function () {
@@ -71,6 +83,8 @@ Route::middleware('auth')->group(function () {
 Route::prefix('office')->name('office.')->middleware(['auth', 'admin'])->group(function () {
     Route::resource('games', GameController::class)->except(['show', 'destroy']);
     Route::resource('products', ProductController::class)->except(['show', 'destroy']);
+    Route::delete('products/bulk', [ProductController::class, 'bulkDestroy'])->name('products.bulk-destroy');
+    Route::delete('products/{product}', [ProductController::class, 'destroy'])->name('products.destroy');
     Route::post('products/{product}/variants', [ProductVariantController::class, 'store'])->name('products.variants.store');
     Route::patch('products/{product}/variants/{variant}/weight', [ProductVariantController::class, 'updateWeight'])->name('products.variants.weight.update');
     Route::patch('products/{product}/variants/weight', [ProductVariantController::class, 'bulkUpdateWeight'])->name('products.variants.weight.bulk');

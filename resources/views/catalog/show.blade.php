@@ -39,6 +39,9 @@
                 <p class="mt-2 text-sm text-text-muted">{{ $game->name }}</p>
             @endif
             <p class="mt-5 text-2xl font-bold text-text">{{ $product->display_price }}</p>
+            @if ($errors->any())
+                <p role="alert" class="mt-3 rounded-lg bg-red-50 p-3 text-sm text-red-800">{{ $errors->first() }}</p>
+            @endif
             <p class="mt-2 text-sm {{ $product->availability === 'tersedia' ? 'text-success-700' : 'text-text-muted' }}">
                 {{ $product->availability === 'tersedia' ? 'Tersedia' : 'Stok kosong' }}
             </p>
@@ -57,6 +60,35 @@
                         @endforeach
                     </ul>
                 </section>
+            @endif
+
+            @if ($product->isPurchasable)
+                @auth
+                    <form method="POST" action="{{ route('cart.add') }}" class="mt-6 space-y-3 rounded-xl border border-border bg-white p-4">
+                        @csrf
+                        <input type="hidden" name="product_id" value="{{ $product->id }}">
+                        @if ($product->type === 'variant')
+                            <label for="variant_id" class="block text-sm font-medium">Pilih varian</label>
+                            <select id="variant_id" name="variant_id" required class="w-full rounded-lg border-border">
+                                <option value="">Pilih varian</option>
+                                @foreach ($product->variants->where('availability', 'tersedia') as $variant)
+                                    <option value="{{ $variant->id }}" @selected(old('variant_id') == $variant->id)>
+                                        {{ $variant->name }}{{ $variant->price > 0 ? ' · '.format_rupiah($variant->price) : '' }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        @endif
+                        <div class="flex gap-3">
+                            <label class="sr-only" for="product-qty">Jumlah</label>
+                            <input id="product-qty" name="qty" type="number" min="1" max="99" value="{{ old('qty', 1) }}" required class="w-24 rounded-lg border-border">
+                            <button type="submit" @disabled($product->type === 'variant' && $product->variants->where('availability', 'tersedia')->isEmpty()) class="flex-1 rounded-lg bg-primary-600 px-4 py-3 font-semibold text-white hover:bg-primary-700 disabled:cursor-not-allowed disabled:opacity-50">
+                                Tambah ke Keranjang
+                            </button>
+                        </div>
+                    </form>
+                @else
+                    <a href="{{ route('login') }}" class="mt-6 inline-flex rounded-lg bg-primary-600 px-5 py-3 font-semibold text-white hover:bg-primary-700">Masuk untuk membeli</a>
+                @endauth
             @endif
 
             @if ($product->description)
