@@ -52,12 +52,40 @@
                    @class(['block rounded-lg px-3 py-2 text-sm', 'bg-info-50 font-semibold text-navy-500' => request()->routeIs('office.users.*'), 'text-text-muted hover:bg-surface-2' => ! request()->routeIs('office.users.*')])>
                     Customer &amp; Migrasi
                 </a>
+                <a href="{{ route('office.spammers.index') }}"
+                   @class(['block rounded-lg px-3 py-2 text-sm', 'bg-info-50 font-semibold text-navy-500' => request()->routeIs('office.spammers.*'), 'text-text-muted hover:bg-surface-2' => ! request()->routeIs('office.spammers.*')])>
+                    Spammer
+                </a>
+                <p class="mb-2 mt-5 text-xs font-semibold uppercase tracking-wide text-text-light">Konten &amp; laporan</p>
+                <a href="{{ route('office.pages.index') }}"
+                   @class(['block rounded-lg px-3 py-2 text-sm', 'bg-info-50 font-semibold text-navy-500' => request()->routeIs('office.pages.*'), 'text-text-muted hover:bg-surface-2' => ! request()->routeIs('office.pages.*')])>
+                    Halaman
+                </a>
+                <a href="{{ route('office.preorder-pages.index') }}"
+                   @class(['block rounded-lg px-3 py-2 text-sm', 'bg-info-50 font-semibold text-navy-500' => request()->routeIs('office.preorder-pages.*'), 'text-text-muted hover:bg-surface-2' => ! request()->routeIs('office.preorder-pages.*')])>
+                    Preorder
+                </a>
+                <a href="{{ route('office.email-templates.index') }}"
+                   @class(['block rounded-lg px-3 py-2 text-sm', 'bg-info-50 font-semibold text-navy-500' => request()->routeIs('office.email-templates.*'), 'text-text-muted hover:bg-surface-2' => ! request()->routeIs('office.email-templates.*')])>
+                    Template Email
+                </a>
+                <a href="{{ route('office.reports.index') }}"
+                   @class(['block rounded-lg px-3 py-2 text-sm', 'bg-info-50 font-semibold text-navy-500' => request()->routeIs('office.reports.*'), 'text-text-muted hover:bg-surface-2' => ! request()->routeIs('office.reports.*')])>
+                    Laporan &amp; Rank
+                </a>
+                <a href="{{ route('office.seo.edit') }}"
+                   @class(['block rounded-lg px-3 py-2 text-sm', 'bg-info-50 font-semibold text-navy-500' => request()->routeIs('office.seo.*'), 'text-text-muted hover:bg-surface-2' => ! request()->routeIs('office.seo.*')])>
+                    SEO
+                </a>
             </nav>
         </aside>
 
         <main class="min-w-0">
             @if (session('success'))
                 <x-alert type="success" class="mb-4">{{ session('success') }}</x-alert>
+            @endif
+            @if (session('warning'))
+                <x-alert type="warning" class="mb-4">{{ session('warning') }}</x-alert>
             @endif
             @yield('content')
         </main>

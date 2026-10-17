@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\ActivityLog;
 use App\Models\Customer;
 use App\Models\Spammer;
+use App\Models\SpammerIp;
 use App\Models\User;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Database\Eloquent\Builder;
@@ -85,15 +86,32 @@ class RegisterController extends Controller
             ]);
         }
 
-        $isSpammer = Spammer::query()
-            ->where('status', 'blocked')
+        $matchingSpammers = fn () => Spammer::query()
             ->where(function (Builder $query) use ($validated, $noHp): void {
                 $query->where('email', $validated['email'])
                     ->orWhere('no_hp', $noHp);
-            })
+            });
+        $expiredWatchlist = $matchingSpammers()
+            ->where('status', 'watchlist')
+            ->whereNotNull('unblocked_until')
+            ->where('unblocked_until', '<=', now())
+            ->get();
+        foreach ($expiredWatchlist as $spammer) {
+            $spammer->update(['status' => 'blocked', 'unblocked_until' => null]);
+            $spammer->logs()->create([
+                'action' => 'grace_expired',
+                'ip_address' => $request->ip(),
+                'note' => 'Masa grace period berakhir sebelum pendaftaran customer.',
+            ]);
+        }
+
+        $identityBlocked = $matchingSpammers()->where('status', 'blocked')->exists();
+        $ipBlocked = $request->ip() && SpammerIp::query()
+            ->where('ip_address', $request->ip())
+            ->whereHas('spammer', fn (Builder $query) => $query->where('status', 'blocked'))
             ->exists();
 
-        if ($isSpammer) {
+        if ($identityBlocked || $ipBlocked) {
             $this->recordSpammerAttempt($validated['email'], $noHp);
 
             return back()->withInput()->withErrors([
@@ -101,8 +119,12 @@ class RegisterController extends Controller
             ]);
         }
 
+        $inGracePeriod = $matchingSpammers()
+            ->where('status', 'watchlist')
+            ->where('unblocked_until', '>', now())
+            ->exists();
         $attemptCount = $this->getRegisterAttemptCount($validated['email'], $noHp);
-        if ($attemptCount >= 3) {
+        if (! $inGracePeriod && $attemptCount >= 3) {
             $this->addToSpammer($validated['email'], $noHp, 'no_purchase_3x');
 
             return back()->withInput()->withErrors([
@@ -194,23 +216,69 @@ class RegisterController extends Controller
 
     protected function recordSpammerAttempt(string $email, string $phone): void
     {
+        $ip = request()->ip();
         ActivityLog::create([
             'user_id' => null,
             'action' => 'register_attempt',
             'description' => 'Attempt register by blocked email/phone',
-            'ip_address' => function_exists('get_real_ip') ? get_real_ip() : request()->ip(),
+            'ip_address' => $ip,
             'user_agent' => request()->userAgent(),
             'metadata' => ['email' => $email, 'no_hp' => $phone],
         ]);
+
+        $spammers = Spammer::query()
+            ->where('status', 'blocked')
+            ->where(function (Builder $query) use ($email, $phone, $ip): void {
+                $query->where('email', $email)->orWhere('no_hp', $phone);
+                if ($ip) {
+                    $query->orWhereHas('ips', fn (Builder $ipQuery) => $ipQuery->where('ip_address', $ip));
+                }
+            })
+            ->get();
+
+        foreach ($spammers as $spammer) {
+            if (! $ip || ! filter_var($ip, FILTER_VALIDATE_IP)) {
+                continue;
+            }
+
+            $ipRecord = SpammerIp::query()->firstOrNew([
+                'spammer_id' => $spammer->id,
+                'ip_address' => $ip,
+            ]);
+            $ipRecord->attempt_count = $ipRecord->exists ? $ipRecord->attempt_count + 1 : 1;
+            $ipRecord->last_attempt_at = now();
+            $ipRecord->save();
+        }
     }
 
     protected function addToSpammer(string $email, string $phone, string $reason): void
     {
-        Spammer::create([
-            'email' => $email,
-            'no_hp' => $phone,
-            'reason' => $reason,
-            'status' => 'blocked',
+        $spammer = Spammer::query()
+            ->where(fn (Builder $query) => $query->where('email', $email)->orWhere('no_hp', $phone))
+            ->first();
+
+        if ($spammer) {
+            $spammer->update(['reason' => $reason, 'status' => 'blocked', 'unblocked_until' => null]);
+        } else {
+            $spammer = Spammer::create([
+                'email' => $email,
+                'no_hp' => $phone,
+                'reason' => $reason,
+                'status' => 'blocked',
+            ]);
+        }
+
+        $spammer->logs()->create([
+            'action' => 'automatically_blocked',
+            'ip_address' => request()->ip(),
+            'note' => 'Pendaftaran ketiga tanpa transaksi.',
         ]);
+        $ip = request()->ip();
+        if ($ip && filter_var($ip, FILTER_VALIDATE_IP)) {
+            $spammer->ips()->updateOrCreate(
+                ['ip_address' => $ip],
+                ['attempt_count' => 1, 'last_attempt_at' => now()],
+            );
+        }
     }
 }
