@@ -1,0 +1,962 @@
+<!DOCTYPE html>
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+      xmlns:w="urn:schemas-microsoft-com:office:word"
+      xmlns="http://www.w3.org/TR/REC-html40">
+<head>
+<meta charset="UTF-8">
+<title>Skema Database Laravel Mercatoria v1.3</title>
+<!--[if gte mso 9]>
+<xml>
+  <w:WordDocument>
+    <w:View>Print</w:View>
+    <w:Zoom>100</w:Zoom>
+    <w:DoNotOptimizeForBrowser/>
+  </w:WordDocument>
+</xml>
+<![endif]-->
+<style>
+  @page { size: A4; margin: 2cm; }
+  body { font-family: 'Calibri', 'Segoe UI', Arial, sans-serif; font-size: 11pt; line-height: 1.5; color: #222; max-width: 900px; margin: 0 auto; padding: 20px; }
+  h1 { font-size: 22pt; color: #1a4d8f; border-bottom: 3px solid #1a4d8f; padding-bottom: 8px; margin-top: 30px; margin-bottom: 15px; page-break-after: avoid; }
+  h2 { font-size: 16pt; color: #1a4d8f; border-bottom: 1px solid #ccc; padding-bottom: 5px; margin-top: 22px; margin-bottom: 12px; page-break-after: avoid; }
+  h3 { font-size: 13pt; color: #2c5fa8; margin-top: 18px; margin-bottom: 8px; page-break-after: avoid; }
+  h4 { font-size: 11.5pt; color: #333; margin-top: 12px; margin-bottom: 6px; }
+  p { margin: 6px 0; text-align: justify; }
+  ul, ol { margin: 6px 0 6px 22px; padding-left: 0; }
+  li { margin: 3px 0; }
+  table { border-collapse: collapse; width: 100%; margin: 10px 0; font-size: 10pt; page-break-inside: avoid; }
+  th { background: #1a4d8f; color: #fff; border: 1px solid #1a4d8f; padding: 6px 8px; text-align: left; }
+  td { border: 1px solid #ccc; padding: 6px 8px; vertical-align: top; }
+  tr:nth-child(even) td { background: #f5f7fa; }
+  code { background: #f0f2f5; padding: 2px 5px; border-radius: 3px; font-family: 'Consolas', monospace; font-size: 9.5pt; color: #c0392b; }
+  pre { background: #1e1e1e; color: #d4d4d4; border-left: 4px solid #4FC3F7; padding: 12px 16px; font-family: 'Consolas', 'Monaco', monospace; font-size: 9pt; line-height: 1.45; white-space: pre; page-break-inside: avoid; overflow-x: auto; border-radius: 4px; }
+  pre .cmt { color: #6A9955; }
+  pre .kw { color: #569CD6; }
+  pre .str { color: #CE9178; }
+  pre .fn { color: #DCDCAA; }
+  pre .cls { color: #4EC9B0; }
+  .cover { text-align: center; padding: 100px 20px; page-break-after: always; }
+  .cover h1 { font-size: 40pt; border: none; color: #1a4d8f; margin-bottom: 10px; }
+  .cover .subtitle { font-size: 18pt; color: #666; margin-bottom: 80px; }
+  .cover .meta { font-size: 12pt; color: #444; line-height: 2; text-align: left; display: inline-block; margin-top: 40px; }
+  .cover .meta strong { color: #1a4d8f; }
+  .toc { background: #f5f7fa; border: 1px solid #ccc; padding: 15px 25px; margin: 20px 0; page-break-after: always; }
+  .toc h2 { margin-top: 0; border: none; }
+  .toc ol { margin-left: 20px; }
+  .toc li { margin: 3px 0; font-size: 10.5pt; }
+  hr { border: none; border-top: 1px solid #ccc; margin: 18px 0; }
+  .note { background: #fff8e1; border-left: 4px solid #ffc107; padding: 10px 14px; margin: 12px 0; font-size: 10.5pt; page-break-inside: avoid; }
+  .note-info { background: #e3f2fd; border-left: 4px solid #1e88e5; padding: 10px 14px; margin: 12px 0; font-size: 10.5pt; page-break-inside: avoid; }
+  .note-danger { background: #ffebee; border-left: 4px solid #e53935; padding: 10px 14px; margin: 12px 0; font-size: 10.5pt; page-break-inside: avoid; }
+  .note-success { background: #e8f5e9; border-left: 4px solid #43a047; padding: 10px 14px; margin: 12px 0; font-size: 10.5pt; page-break-inside: avoid; }
+  .file-header { background: #2d2d2d; color: #fff; padding: 8px 14px; font-family: 'Consolas', monospace; font-size: 10pt; border-radius: 4px 4px 0 0; margin-top: 12px; margin-bottom: 0; }
+  .file-header::before { content: '📄 '; }
+  .file-header + pre { margin-top: 0; border-radius: 0 0 4px 4px; }
+  .badge-new { background: #43A047; color: #fff; font-size: 8.5pt; font-weight: bold; padding: 2px 6px; border-radius: 4px; margin-left: 4px; }
+  .badge-add { background: #1E88E5; color: #fff; font-size: 8.5pt; font-weight: bold; padding: 2px 6px; border-radius: 4px; margin-left: 4px; }
+  .badge-upd { background: #FB8C00; color: #fff; font-size: 8.5pt; font-weight: bold; padding: 2px 6px; border-radius: 4px; margin-left: 4px; }
+</style>
+</head>
+<body>
+
+<div class="cover">
+  <h1>SKEMA DATABASE v1.3</h1>
+  <div class="meta">
+    <p><strong>Versi:</strong> 1.3 (FINAL)</p>
+    <p><strong>Tanggal:</strong> 16 Oktober 2026</p>
+    <p><strong>Referensi:</strong> PRD v4.3 · Struktur Folder v1.2 · Skema DB v1.3</p>
+    <p><strong>Status:</strong> Fondasi 100% Siap Coding</p>
+  </div>
+</div>
+
+<div class="toc">
+  <h2>Daftar Isi</h2>
+  <ol>
+    <li>Ringkasan Perubahan v1.1 → v1.3</li>
+    <li>Migration BARU: Tabel <code>stores</code> <span class="badge-new">NEW</span></li>
+    <li>Migration ALTER: <code>games</code> <span class="badge-add">ADD</span></li>
+    <li>Migration ALTER: <code>products</code> <span class="badge-add">ADD</span></li>
+    <li>Migration ALTER: <code>product_variants</code> <span class="badge-add">ADD</span></li>
+    <li>Migration ALTER: <code>order_item_snapshots</code> <span class="badge-add">ADD</span></li>
+    <li>Model BARU: <code>Store</code> <span class="badge-new">NEW</span></li>
+    <li>Model UPDATE: <code>Game</code>, <code>Product</code>, <code>ProductVariant</code>, <code>OrderItemSnapshot</code> <span class="badge-upd">UPD</span></li>
+    <li>Service BARU: <code>StoreService</code> <span class="badge-new">NEW</span></li>
+    <li>Service BARU: <code>ShippingCalculatorService</code> <span class="badge-new">NEW</span></li>
+    <li>Service UPDATE: <code>OrderItemSnapshotService</code> <span class="badge-upd">UPD</span></li>
+    <li>Seeder BARU: <code>StoreSeeder</code> <span class="badge-new">NEW</span></li>
+    <li>Config UPDATE: <code>config/mercatoria.php</code> <span class="badge-upd">UPD</span></li>
+    <li>Update Settings Seeder</li>
+    <li>Testing Checklist</li>
+    <li>Migrasi User Lama — Kolom Tambahan <span class="badge-new">NEW v1.3</span></li>
+  </ol>
+</div>
+
+<h1>1. Ringkasan Perubahan v1.1 → v1.3</h1>
+
+<div class="note-success">
+<strong>Skema DB v1.2</strong> melengkapi v1.1 dengan <strong>Store Concept</strong> (tier ongkir lokal CN) dan <strong>Berat Produk</strong> (untuk ongkir internasional per kg).
+<br><br>
+<strong>Skema DB v1.3</strong> menambahkan kolom <code>users.is_migrated</code> untuk flow migrasi user lama. Sisanya reuse infrastruktur yang sudah ada (<code>password_reset_tokens</code>, <code>email_verified_at</code>, <code>admin_logs</code>). Setelah v1.3, fondasi data 100% siap coding.
+</div>
+
+<h3>1.1 Perubahan v1.1 → v1.2</h3>
+<table>
+  <tr><th>#</th><th>Komponen</th><th>v1.1</th><th>v1.2</th></tr>
+  <tr><td>1</td><td>Tabel <code>stores</code></td><td>❌</td><td>✅ <strong>NEW</strong></td></tr>
+  <tr><td>2</td><td>Kolom <code>games.default_store_id</code></td><td>❌</td><td>✅ <strong>ADD</strong></td></tr>
+  <tr><td>3</td><td>Kolom <code>products.store_id</code></td><td>❌</td><td>✅ <strong>ADD</strong></td></tr>
+  <tr><td>4</td><td>Kolom <code>products.weight_gram</code></td><td>❌</td><td>✅ <strong>ADD</strong></td></tr>
+  <tr><td>5</td><td>Kolom <code>product_variants.weight_gram</code></td><td>❌</td><td>✅ <strong>ADD</strong></td></tr>
+  <tr><td>6</td><td>Kolom <code>order_item_snapshots.weight_gram</code></td><td>❌</td><td>✅ <strong>ADD</strong></td></tr>
+  <tr><td>7</td><td>Kolom <code>order_item_snapshots.store_name</code></td><td>❌</td><td>✅ <strong>ADD</strong></td></tr>
+  <tr><td>8</td><td>Kolom ongkir breakdown di snapshot</td><td>❌</td><td>✅ <strong>ADD (4 kolom)</strong></td></tr>
+  <tr><td>9</td><td>Model <code>Store</code></td><td>❌</td><td>✅ <strong>NEW</strong></td></tr>
+  <tr><td>10</td><td>Service <code>StoreService</code></td><td>❌</td><td>✅ <strong>NEW</strong></td></tr>
+  <tr><td>11</td><td>Service <code>ShippingCalculatorService</code></td><td>❌</td><td>✅ <strong>NEW</strong></td></tr>
+  <tr><td>12</td><td>Seeder <code>StoreSeeder</code></td><td>❌</td><td>✅ <strong>NEW</strong></td></tr>
+</table>
+
+<h3>1.2 Perubahan v1.2 → v1.3</h3>
+<table>
+  <tr><th>#</th><th>Komponen</th><th>v1.2</th><th>v1.3</th></tr>
+  <tr><td>1</td><td>Kolom <code>users.is_migrated</code></td><td>❌</td><td>✅ <strong>ADD</strong></td></tr>
+  <tr><td>2</td><td>Helper <code>User::isMigrated()</code></td><td>❌</td><td>✅ <strong>NEW</strong></td></tr>
+  <tr><td>3</td><td>Helper <code>User::hasCompletedProfile()</code></td><td>❌</td><td>✅ <strong>NEW</strong></td></tr>
+</table>
+
+<h1>2. Migration BARU: Tabel <code>stores</code> <span class="badge-new">NEW</span></h1>
+
+<div class="file-header">database/migrations/2026_10_15_000001_create_stores_table.php</div>
+<pre><span class="kw">&lt;?php</span>
+
+<span class="kw">use</span> <span class="cls">Illuminate\Database\Migrations\Migration</span>;
+<span class="kw">use</span> <span class="cls">Illuminate\Database\Schema\Blueprint</span>;
+<span class="kw">use</span> <span class="cls">Illuminate\Support\Facades\Schema</span>;
+
+<span class="kw">return new class extends</span> <span class="cls">Migration</span> {
+    <span class="kw">public function</span> <span class="fn">up</span>(): <span class="kw">void</span>
+    {
+        <span class="cls">Schema</span>::<span class="fn">create</span>(<span class="str">'stores'</span>, <span class="kw">function</span> (<span class="cls">Blueprint</span> $table) {
+            $table-&gt;<span class="fn">id</span>();
+            $table-&gt;<span class="fn">string</span>(<span class="str">'name'</span>, <span class="str">100</span>);                <span class="cmt">// "Official HoYoverse", dll</span>
+            $table-&gt;<span class="fn">decimal</span>(<span class="str">'min_belanja_rmb'</span>, <span class="str">10</span>, <span class="str">2</span>)
+                  -&gt;<span class="fn">default</span>(<span class="str">0</span>);                     <span class="cmt">// 100 (RMB). 0 = gak ada min</span>
+            $table-&gt;<span class="fn">decimal</span>(<span class="str">'ongkir_rmb'</span>, <span class="str">10</span>, <span class="str">2</span>)
+                  -&gt;<span class="fn">default</span>(<span class="str">0</span>);                     <span class="cmt">// 7 (RMB). 0 = gratis selalu</span>
+            $table-&gt;<span class="fn">timestamps</span>();
+
+            <span class="cmt">// Index untuk search di admin</span>
+            $table-&gt;<span class="fn">index</span>([<span class="str">'name'</span>]);
+        });
+    }
+
+    <span class="kw">public function</span> <span class="fn">down</span>(): <span class="kw">void</span>
+    {
+        <span class="cls">Schema</span>::<span class="fn">dropIfExists</span>(<span class="str">'stores'</span>);
+    }
+};</pre>
+
+<div class="note-info">
+<strong>Field:</strong>
+<ul>
+  <li><code>name</code> — nama toko/tier (bebas, gak unique)</li>
+  <li><code>min_belanja_rmb</code> — min belanja dalam RMB. Set 0 = gak ada min (langsung gratis)</li>
+  <li><code>ongkir_rmb</code> — ongkir lokal CN dalam RMB. Set 0 = gratis selalu</li>
+</ul>
+</div>
+
+<h1>3. Migration ALTER: <code>games</code> <span class="badge-add">ADD</span></h1>
+
+<div class="file-header">database/migrations/2026_10_15_000002_add_default_store_to_games_table.php</div>
+<pre><span class="kw">&lt;?php</span>
+
+<span class="kw">use</span> <span class="cls">Illuminate\Database\Migrations\Migration</span>;
+<span class="kw">use</span> <span class="cls">Illuminate\Database\Schema\Blueprint</span>;
+<span class="kw">use</span> <span class="cls">Illuminate\Support\Facades\Schema</span>;
+
+<span class="kw">return new class extends</span> <span class="cls">Migration</span> {
+    <span class="kw">public function</span> <span class="fn">up</span>(): <span class="kw">void</span>
+    {
+        <span class="cls">Schema</span>::<span class="fn">table</span>(<span class="str">'games'</span>, <span class="kw">function</span> (<span class="cls">Blueprint</span> $table) {
+            $table-&gt;<span class="fn">foreignId</span>(<span class="str">'default_store_id'</span>)
+                  -&gt;<span class="fn">nullable</span>()
+                  -&gt;<span class="fn">after</span>(<span class="str">'slug'</span>)
+                  -&gt;<span class="fn">constrained</span>(<span class="str">'stores'</span>)
+                  -&gt;<span class="fn">nullOnDelete</span>();             <span class="cmt">// store dihapus → NULL</span>
+        });
+    }
+
+    <span class="kw">public function</span> <span class="fn">down</span>(): <span class="kw">void</span>
+    {
+        <span class="cls">Schema</span>::<span class="fn">table</span>(<span class="str">'games'</span>, <span class="kw">function</span> (<span class="cls">Blueprint</span> $table) {
+            $table-&gt;<span class="fn">dropForeign</span>([<span class="str">'default_store_id'</span>]);
+            $table-&gt;<span class="fn">dropColumn</span>(<span class="str">'default_store_id'</span>);
+        });
+    }
+};</pre>
+
+<h1>4. Migration ALTER: <code>products</code> <span class="badge-add">ADD</span></h1>
+
+<div class="file-header">database/migrations/2026_10_15_000003_add_store_and_weight_to_products_table.php</div>
+<pre><span class="kw">&lt;?php</span>
+
+<span class="kw">use</span> <span class="cls">Illuminate\Database\Migrations\Migration</span>;
+<span class="kw">use</span> <span class="cls">Illuminate\Database\Schema\Blueprint</span>;
+<span class="kw">use</span> <span class="cls">Illuminate\Support\Facades\Schema</span>;
+
+<span class="kw">return new class extends</span> <span class="cls">Migration</span> {
+    <span class="kw">public function</span> <span class="fn">up</span>(): <span class="kw">void</span>
+    {
+        <span class="cls">Schema</span>::<span class="fn">table</span>(<span class="str">'products'</span>, <span class="kw">function</span> (<span class="cls">Blueprint</span> $table) {
+            <span class="cmt">// Store override (nullable, fallback ke game.default_store)</span>
+            $table-&gt;<span class="fn">foreignId</span>(<span class="str">'store_id'</span>)
+                  -&gt;<span class="fn">nullable</span>()
+                  -&gt;<span class="fn">after</span>(<span class="str">'sku'</span>)
+                  -&gt;<span class="fn">constrained</span>(<span class="str">'stores'</span>)
+                  -&gt;<span class="fn">nullOnDelete</span>();
+
+            <span class="cmt">// Berat produk dalam gram</span>
+            $table-&gt;<span class="fn">integer</span>(<span class="str">'weight_gram'</span>)
+                  -&gt;<span class="fn">nullable</span>()
+                  -&gt;<span class="fn">after</span>(<span class="str">'availability'</span>);
+
+            <span class="cmt">// Index untuk filter produk by store (admin)</span>
+            $table-&gt;<span class="fn">index</span>([<span class="str">'store_id'</span>]);
+        });
+    }
+
+    <span class="kw">public function</span> <span class="fn">down</span>(): <span class="kw">void</span>
+    {
+        <span class="cls">Schema</span>::<span class="fn">table</span>(<span class="str">'products'</span>, <span class="kw">function</span> (<span class="cls">Blueprint</span> $table) {
+            $table-&gt;<span class="fn">dropForeign</span>([<span class="str">'store_id'</span>]);
+            $table-&gt;<span class="fn">dropIndex</span>([<span class="str">'products_store_id_index'</span>]);
+            $table-&gt;<span class="fn">dropColumn</span>([<span class="str">'store_id'</span>, <span class="str">'weight_gram'</span>]);
+        });
+    }
+};</pre>
+
+<h1>5. Migration ALTER: <code>product_variants</code> <span class="badge-add">ADD</span></h1>
+
+<div class="file-header">database/migrations/2026_10_15_000004_add_weight_to_product_variants_table.php</div>
+<pre><span class="kw">&lt;?php</span>
+
+<span class="kw">use</span> <span class="cls">Illuminate\Database\Migrations\Migration</span>;
+<span class="kw">use</span> <span class="cls">Illuminate\Database\Schema\Blueprint</span>;
+<span class="kw">use</span> <span class="cls">Illuminate\Support\Facades\Schema</span>;
+
+<span class="kw">return new class extends</span> <span class="cls">Migration</span> {
+    <span class="kw">public function</span> <span class="fn">up</span>(): <span class="kw">void</span>
+    {
+        <span class="cls">Schema</span>::<span class="fn">table</span>(<span class="str">'product_variants'</span>, <span class="kw">function</span> (<span class="cls">Blueprint</span> $table) {
+            <span class="cmt">// Berat varian (override produk). Null = pakai produk</span>
+            $table-&gt;<span class="fn">integer</span>(<span class="str">'weight_gram'</span>)
+                  -&gt;<span class="fn">nullable</span>()
+                  -&gt;<span class="fn">after</span>(<span class="str">'availability'</span>);
+        });
+    }
+
+    <span class="kw">public function</span> <span class="fn">down</span>(): <span class="kw">void</span>
+    {
+        <span class="cls">Schema</span>::<span class="fn">table</span>(<span class="str">'product_variants'</span>, <span class="kw">function</span> (<span class="cls">Blueprint</span> $table) {
+            $table-&gt;<span class="fn">dropColumn</span>(<span class="str">'weight_gram'</span>);
+        });
+    }
+};</pre>
+
+<h1>6. Migration ALTER: <code>order_item_snapshots</code> <span class="badge-add">ADD</span></h1>
+
+<div class="file-header">database/migrations/2026_10_15_000005_add_shipping_breakdown_to_snapshots_table.php</div>
+<pre><span class="kw">&lt;?php</span>
+
+<span class="kw">use</span> <span class="cls">Illuminate\Database\Migrations\Migration</span>;
+<span class="kw">use</span> <span class="cls">Illuminate\Database\Schema\Blueprint</span>;
+<span class="kw">use</span> <span class="cls">Illuminate\Support\Facades\Schema</span>;
+
+<span class="kw">return new class extends</span> <span class="cls">Migration</span> {
+    <span class="kw">public function</span> <span class="fn">up</span>(): <span class="kw">void</span>
+    {
+        <span class="cls">Schema</span>::<span class="fn">table</span>(<span class="str">'order_item_snapshots'</span>, <span class="kw">function</span> (<span class="cls">Blueprint</span> $table) {
+            <span class="cmt">// Berat saat order (audit)</span>
+            $table-&gt;<span class="fn">integer</span>(<span class="str">'weight_gram'</span>)
+                  -&gt;<span class="fn">nullable</span>()
+                  -&gt;<span class="fn">after</span>(<span class="str">'qty'</span>);
+
+            <span class="cmt">// Nama toko saat order (biar tetap ada walau store dihapus)</span>
+            $table-&gt;<span class="fn">string</span>(<span class="str">'store_name'</span>, <span class="str">100</span>)
+                  -&gt;<span class="fn">nullable</span>()
+                  -&gt;<span class="fn">after</span>(<span class="str">'developer_name'</span>);
+
+            <span class="cmt">// Breakdown ongkir (Rp) — internal, gak ditampil ke customer</span>
+            $table-&gt;<span class="fn">decimal</span>(<span class="str">'ongkir_lokal_cn_idr'</span>, <span class="str">14</span>, <span class="str">2</span>)
+                  -&gt;<span class="fn">default</span>(<span class="str">0</span>)
+                  -&gt;<span class="fn">after</span>(<span class="str">'subtotal'</span>);
+            $table-&gt;<span class="fn">decimal</span>(<span class="str">'ongkir_cn_btm_idr'</span>, <span class="str">14</span>, <span class="str">2</span>)
+                  -&gt;<span class="fn">default</span>(<span class="str">0</span>)
+                  -&gt;<span class="fn">after</span>(<span class="str">'ongkir_lokal_cn_idr'</span>);
+            $table-&gt;<span class="fn">decimal</span>(<span class="str">'ongkir_btm_jkt_idr'</span>, <span class="str">14</span>, <span class="str">2</span>)
+                  -&gt;<span class="fn">default</span>(<span class="str">0</span>)
+                  -&gt;<span class="fn">after</span>(<span class="str">'ongkir_cn_btm_idr'</span>);
+            $table-&gt;<span class="fn">decimal</span>(<span class="str">'ongkir_total_idr'</span>, <span class="str">14</span>, <span class="str">2</span>)
+                  -&gt;<span class="fn">default</span>(<span class="str">0</span>)
+                  -&gt;<span class="fn">after</span>(<span class="str">'ongkir_btm_jkt_idr'</span>);
+        });
+    }
+
+    <span class="kw">public function</span> <span class="fn">down</span>(): <span class="kw">void</span>
+    {
+        <span class="cls">Schema</span>::<span class="fn">table</span>(<span class="str">'order_item_snapshots'</span>, <span class="kw">function</span> (<span class="cls">Blueprint</span> $table) {
+            $table-&gt;<span class="fn">dropColumn</span>([
+                <span class="str">'weight_gram'</span>,
+                <span class="str">'store_name'</span>,
+                <span class="str">'ongkir_lokal_cn_idr'</span>,
+                <span class="str">'ongkir_cn_btm_idr'</span>,
+                <span class="str">'ongkir_btm_jkt_idr'</span>,
+                <span class="str">'ongkir_total_idr'</span>,
+            ]);
+        });
+    }
+};</pre>
+
+<div class="note-info">
+<strong>Kenapa snapshot simpan breakdown ongkir?</strong> Untuk audit trail. Kalau customer komplain "kenapa ongkir gede?", admin bisa lihat breakdown: berapa lokal CN, berapa CN-BTM, berapa BTM-JKT. Gak perlu hitung ulang dari berat.
+</div>
+
+<h1>7. Model BARU: <code>Store</code> <span class="badge-new">NEW</span></h1>
+
+<div class="file-header">app/Models/Store.php</div>
+<pre><span class="kw">&lt;?php</span>
+
+<span class="kw">namespace</span> <span class="cls">App\Models</span>;
+
+<span class="kw">use</span> <span class="cls">Illuminate\Database\Eloquent\Model</span>;
+<span class="kw">use</span> <span class="cls">Illuminate\Database\Eloquent\Relations\HasMany</span>;
+
+<span class="kw">class</span> <span class="cls">Store</span> <span class="kw">extends</span> <span class="cls">Model</span>
+{
+    <span class="kw">protected</span> $fillable = [
+        <span class="str">'name'</span>,
+        <span class="str">'min_belanja_rmb'</span>,
+        <span class="str">'ongkir_rmb'</span>,
+    ];
+
+    <span class="kw">protected</span> $casts = [
+        <span class="str">'min_belanja_rmb'</span> =&gt; <span class="str">'decimal:2'</span>,
+        <span class="str">'ongkir_rmb'</span> =&gt; <span class="str">'decimal:2'</span>,
+    ];
+
+    <span class="cmt">// ─── Relationships ───────────────────────────────────</span>
+
+    <span class="kw">public function</span> <span class="fn">games</span>(): <span class="cls">HasMany</span>
+    {
+        <span class="kw">return</span> $this-&gt;<span class="fn">hasMany</span>(<span class="cls">Game</span>::<span class="kw">class</span>, <span class="str">'default_store_id'</span>);
+    }
+
+    <span class="kw">public function</span> <span class="fn">products</span>(): <span class="cls">HasMany</span>
+    {
+        <span class="kw">return</span> $this-&gt;<span class="fn">hasMany</span>(<span class="cls">Product</span>::<span class="kw">class</span>);
+    }
+
+    <span class="cmt">// ─── Helpers ─────────────────────────────────────────</span>
+
+    <span class="cmt">/**
+     * Cek apakah store gratis selalu (ongkir = 0)
+     */</span>
+    <span class="kw">public function</span> <span class="fn">isFreeShipping</span>(): <span class="kw">bool</span>
+    {
+        <span class="kw">return</span> $this-&gt;ongkir_rmb == <span class="str">0</span>;
+    }
+
+    <span class="cmt">/**
+     * Cek apakah min_belanja aktif (bukan 0)
+     */</span>
+    <span class="kw">public function</span> <span class="fn">hasMinBelanja</span>(): <span class="kw">bool</span>
+    {
+        <span class="kw">return</span> $this-&gt;min_belanja_rmb &gt; <span class="str">0</span>;
+    }
+}</pre>
+
+<h1>8. Model UPDATE: Game, Product, ProductVariant, OrderItemSnapshot <span class="badge-upd">UPD</span></h1>
+
+<div class="file-header">app/Models/Game.php (UPDATE)</div>
+<pre><span class="cmt">// Tambahkan di fillable:</span>
+<span class="kw">protected</span> $fillable = [
+    <span class="str">'name'</span>, <span class="str">'slug'</span>, <span class="str">'description'</span>, <span class="str">'logo_path'</span>, <span class="str">'is_active'</span>,
+    <span class="str">'default_store_id'</span>,  <span class="cmt">// ⭐ BARU v1.2</span>
+];
+
+<span class="cmt">// Tambahkan relationship:</span>
+<span class="kw">public function</span> <span class="fn">defaultStore</span>(): <span class="cls">BelongsTo</span>
+{
+    <span class="kw">return</span> $this-&gt;<span class="fn">belongsTo</span>(<span class="cls">Store</span>::<span class="kw">class</span>, <span class="str">'default_store_id'</span>);
+}</pre>
+
+<div class="file-header">app/Models/Product.php (UPDATE)</div>
+<pre><span class="cmt">// Tambahkan di fillable:</span>
+<span class="kw">protected</span> $fillable = [
+    <span class="cmt">// ... existing ...</span>
+    <span class="str">'store_id'</span>,       <span class="cmt">// ⭐ BARU v1.2</span>
+    <span class="str">'weight_gram'</span>,    <span class="cmt">// ⭐ BARU v1.2</span>
+];
+
+<span class="cmt">// Tambahkan di casts:</span>
+<span class="kw">protected</span> $casts = [
+    <span class="cmt">// ... existing ...</span>
+    <span class="str">'weight_gram'</span> =&gt; <span class="str">'integer'</span>,  <span class="cmt">// ⭐ BARU v1.2</span>
+];
+
+<span class="cmt">// Tambahkan relationship:</span>
+<span class="kw">public function</span> <span class="fn">store</span>(): <span class="cls">BelongsTo</span>
+{
+    <span class="kw">return</span> $this-&gt;<span class="fn">belongsTo</span>(<span class="cls">Store</span>::<span class="kw">class</span>);
+}
+
+<span class="cmt">// Helper: ambil store efektif (produk.store_id, fallback game.default_store_id)</span>
+<span class="kw">public function</span> <span class="fn">effectiveStore</span>(): ?<span class="cls">Store</span>
+{
+    <span class="cmt">// 1. Cek store_id di produk</span>
+    <span class="kw">if</span> ($this-&gt;store_id &amp;&amp; $this-&gt;store) {
+        <span class="kw">return</span> $this-&gt;store;
+    }
+
+    <span class="cmt">// 2. Fallback: game default store</span>
+    $game = $this-&gt;games-&gt;<span class="fn">first</span>();
+    <span class="kw">if</span> ($game &amp;&amp; $game-&gt;default_store_id) {
+        <span class="kw">return</span> $game-&gt;defaultStore;
+    }
+
+    <span class="kw">return null</span>;
+}
+
+<span class="cmt">// Helper: berat efektif (produk.weight_gram atau 0)</span>
+<span class="kw">public function</span> <span class="fn">effectiveWeight</span>(): <span class="kw">int</span>
+{
+    <span class="kw">return</span> $this-&gt;weight_gram ?? <span class="str">0</span>;
+}</pre>
+
+<div class="file-header">app/Models/ProductVariant.php (UPDATE)</div>
+<pre><span class="cmt">// Tambahkan di fillable:</span>
+<span class="kw">protected</span> $fillable = [
+    <span class="cmt">// ... existing ...</span>
+    <span class="str">'weight_gram'</span>,    <span class="cmt">// ⭐ BARU v1.2</span>
+];
+
+<span class="cmt">// Tambahkan di casts:</span>
+<span class="kw">protected</span> $casts = [
+    <span class="cmt">// ... existing ...</span>
+    <span class="str">'weight_gram'</span> =&gt; <span class="str">'integer'</span>,
+];
+
+<span class="cmt">// Helper: berat efektif (varian.weight_gram, fallback produk.weight_gram)</span>
+<span class="kw">public function</span> <span class="fn">effectiveWeight</span>(): <span class="kw">int</span>
+{
+    <span class="kw">return</span> $this-&gt;weight_gram ?? $this-&gt;product?-&gt;weight_gram ?? <span class="str">0</span>;
+}</pre>
+
+<div class="file-header">app/Models/OrderItemSnapshot.php (UPDATE)</div>
+<pre><span class="cmt">// Tambahkan di fillable:</span>
+<span class="kw">protected</span> $fillable = [
+    <span class="cmt">// ... existing ...</span>
+    <span class="str">'weight_gram'</span>,            <span class="cmt">// ⭐ BARU v1.2</span>
+    <span class="str">'store_name'</span>,             <span class="cmt">// ⭐ BARU v1.2</span>
+    <span class="str">'ongkir_lokal_cn_idr'</span>,    <span class="cmt">// ⭐ BARU v1.2</span>
+    <span class="str">'ongkir_cn_btm_idr'</span>,      <span class="cmt">// ⭐ BARU v1.2</span>
+    <span class="str">'ongkir_btm_jkt_idr'</span>,     <span class="cmt">// ⭐ BARU v1.2</span>
+    <span class="str">'ongkir_total_idr'</span>,       <span class="cmt">// ⭐ BARU v1.2</span>
+];
+
+<span class="cmt">// Tambahkan di casts:</span>
+<span class="kw">protected</span> $casts = [
+    <span class="cmt">// ... existing ...</span>
+    <span class="str">'weight_gram'</span> =&gt; <span class="str">'integer'</span>,
+    <span class="str">'ongkir_lokal_cn_idr'</span> =&gt; <span class="str">'decimal:2'</span>,
+    <span class="str">'ongkir_cn_btm_idr'</span> =&gt; <span class="str">'decimal:2'</span>,
+    <span class="str">'ongkir_btm_jkt_idr'</span> =&gt; <span class="str">'decimal:2'</span>,
+    <span class="str">'ongkir_total_idr'</span> =&gt; <span class="str">'decimal:2'</span>,
+];</pre>
+
+<h1>9. Service BARU: <code>StoreService</code> <span class="badge-new">NEW</span></h1>
+
+<div class="file-header">app/Services/Product/StoreService.php</div>
+<pre><span class="kw">&lt;?php</span>
+
+<span class="kw">namespace</span> <span class="cls">App\Services\Product</span>;
+
+<span class="kw">use</span> <span class="cls">App\Models\Store</span>;
+<span class="kw">use</span> <span class="cls">Illuminate\Support\Collection</span>;
+
+<span class="kw">class</span> <span class="cls">StoreService</span>
+{
+    <span class="cmt">/**
+     * Get all stores untuk dropdown admin
+     */</span>
+    <span class="kw">public function</span> <span class="fn">getAllForDropdown</span>(): <span class="cls">Collection</span>
+    {
+        <span class="kw">return</span> <span class="cls">Store</span>::<span class="fn">orderBy</span>(<span class="str">'name'</span>)
+            -&gt;<span class="fn">get</span>([<span class="str">'id'</span>, <span class="str">'name'</span>, <span class="str">'min_belanja_rmb'</span>, <span class="str">'ongkir_rmb'</span>]);
+    }
+
+    <span class="cmt">/**
+     * Create store baru
+     */</span>
+    <span class="kw">public function</span> <span class="fn">create</span>(<span class="kw">array</span> $data): <span class="cls">Store</span>
+    {
+        <span class="kw">return</span> <span class="cls">Store</span>::<span class="fn">create</span>([
+            <span class="str">'name'</span> =&gt; $data[<span class="str">'name'</span>],
+            <span class="str">'min_belanja_rmb'</span> =&gt; $data[<span class="str">'min_belanja_rmb'</span>] ?? <span class="str">0</span>,
+            <span class="str">'ongkir_rmb'</span> =&gt; $data[<span class="str">'ongkir_rmb'</span>] ?? <span class="str">0</span>,
+        ]);
+    }
+
+    <span class="cmt">/**
+     * Update store
+     */</span>
+    <span class="kw">public function</span> <span class="fn">update</span>(<span class="cls">Store</span> $store, <span class="kw">array</span> $data): <span class="cls">Store</span>
+    {
+        $store-&gt;<span class="fn">update</span>([
+            <span class="str">'name'</span> =&gt; $data[<span class="str">'name'</span>] ?? $store-&gt;name,
+            <span class="str">'min_belanja_rmb'</span> =&gt; $data[<span class="str">'min_belanja_rmb'</span>] ?? $store-&gt;min_belanja_rmb,
+            <span class="str">'ongkir_rmb'</span> =&gt; $data[<span class="str">'ongkir_rmb'</span>] ?? $store-&gt;ongkir_rmb,
+        ]);
+
+        <span class="kw">return</span> $store-&gt;<span class="fn">fresh</span>();
+    }
+
+    <span class="cmt">/**
+     * Hapus store. Produk & game yang pakai jadi NULL.
+     */</span>
+    <span class="kw">public function</span> <span class="fn">delete</span>(<span class="cls">Store</span> $store): <span class="kw">void</span>
+    {
+        $store-&gt;<span class="fn">delete</span>();
+        <span class="cmt">// FK nullOnDelete → otomatis products.store_id, games.default_store_id jadi NULL</span>
+    }
+
+    <span class="cmt">/**
+     * Count produk & game yang pakai store ini
+     */</span>
+    <span class="kw">public function</span> <span class="fn">getUsageCount</span>(<span class="cls">Store</span> $store): <span class="kw">array</span>
+    {
+        <span class="kw">return</span> [
+            <span class="str">'products'</span> =&gt; $store-&gt;<span class="fn">products</span>()-&gt;<span class="fn">count</span>(),
+            <span class="str">'games'</span> =&gt; $store-&gt;<span class="fn">games</span>()-&gt;<span class="fn">count</span>(),
+        ];
+    }
+}</pre>
+
+<h1>10. Service BARU: <code>ShippingCalculatorService</code> <span class="badge-new">NEW</span></h1>
+
+<div class="file-header">app/Services/Order/ShippingCalculatorService.php</div>
+<pre><span class="kw">&lt;?php</span>
+
+<span class="kw">namespace</span> <span class="cls">App\Services\Order</span>;
+
+<span class="kw">use</span> <span class="cls">App\Models\Product</span>;
+<span class="kw">use</span> <span class="cls">App\Models\ProductVariant</span>;
+
+<span class="kw">class</span> <span class="cls">ShippingCalculatorService</span>
+{
+    <span class="cmt">/**
+     * Hitung ongkir lokal CN (per produk) dalam IDR
+     */</span>
+    <span class="kw">public function</span> <span class="fn">calculateLocalCn</span>(<span class="cls">Product</span> $product): <span class="kw">float</span>
+    {
+        $store = $product-&gt;<span class="fn">effectiveStore</span>();
+
+        <span class="cmt">// Kalau gak ada store → gratis</span>
+        <span class="kw">if</span> (! $store) {
+            <span class="kw">return</span> <span class="str">0</span>;
+        }
+
+        <span class="cmt">// Kalau ongkir = 0 → gratis selalu</span>
+        <span class="kw">if</span> ($store-&gt;<span class="fn">isFreeShipping</span>()) {
+            <span class="kw">return</span> <span class="str">0</span>;
+        }
+
+        <span class="cmt">// Kalau min_belanja = 0 → gratis (biar gak divide by zero)</span>
+        <span class="kw">if</span> (! $store-&gt;<span class="fn">hasMinBelanja</span>()) {
+            <span class="kw">return</span> <span class="str">0</span>;
+        }
+
+        $hargaRmb = (<span class="kw">float</span>) $product-&gt;price_rmb;
+        $minBelanja = (<span class="kw">float</span>) $store-&gt;min_belanja_rmb;
+        $ongkirRmb = (<span class="kw">float</span>) $store-&gt;ongkir_rmb;
+
+        <span class="cmt">// Kalau harga ≥ min belanja → gratis</span>
+        <span class="kw">if</span> ($hargaRmb &gt;= $minBelanja) {
+            <span class="kw">return</span> <span class="str">0</span>;
+        }
+
+        <span class="cmt">// Hitung: (harga × ongkir) / min_belanja</span>
+        $ongkirLokalRmb = ($hargaRmb * $ongkirRmb) / $minBelanja;
+        $rate = (<span class="kw">float</span>) <span class="fn">setting</span>(<span class="str">'rate_rmb_idr'</span>, <span class="str">2200</span>);
+
+        <span class="kw">return</span> $ongkirLokalRmb * $rate;
+    }
+
+    <span class="cmt">/**
+     * Hitung ongkir CN-BTM dalam IDR berdasarkan berat
+     */</span>
+    <span class="kw">public function</span> <span class="fn">calculateCnBtm</span>(<span class="kw">int</span> $weightGram): <span class="kw">float</span>
+    {
+        $rate = (<span class="kw">float</span>) <span class="fn">setting</span>(<span class="str">'ongkir_cn_btm_per_kg'</span>, <span class="str">25000</span>);
+        $beratKg = $weightGram / <span class="str">1000</span>;
+
+        <span class="kw">return</span> $beratKg * $rate;
+    }
+
+    <span class="cmt">/**
+     * Hitung ongkir BTM-JKT dalam IDR berdasarkan berat
+     */</span>
+    <span class="kw">public function</span> <span class="fn">calculateBtmJkt</span>(<span class="kw">int</span> $weightGram): <span class="kw">float</span>
+    {
+        $rate = (<span class="kw">float</span>) <span class="fn">setting</span>(<span class="str">'ongkir_btm_jkt_per_kg'</span>, <span class="str">60000</span>);
+        $beratKg = $weightGram / <span class="str">1000</span>;
+
+        <span class="kw">return</span> $beratKg * $rate;
+    }
+
+    <span class="cmt">/**
+     * Hitung SEMUA ongkir untuk 1 item
+     * Return: array breakdown + total
+     */</span>
+    <span class="kw">public function</span> <span class="fn">calculateItemShipping</span>(
+        <span class="cls">Product</span> $product,
+        ?<span class="cls">ProductVariant</span> $variant = <span class="kw">null</span>
+    ): <span class="kw">array</span> {
+        <span class="cmt">// Berat efektif: varian dulu, fallback produk</span>
+        $weightGram = $variant?-&gt;<span class="fn">effectiveWeight</span>() ?? $product-&gt;<span class="fn">effectiveWeight</span>();
+
+        $lokalCn = $this-&gt;<span class="fn">calculateLocalCn</span>($product);
+        $cnBtm = $this-&gt;<span class="fn">calculateCnBtm</span>($weightGram);
+        $btmJkt = $this-&gt;<span class="fn">calculateBtmJkt</span>($weightGram);
+
+        <span class="kw">return</span> [
+            <span class="str">'weight_gram'</span> =&gt; $weightGram,
+            <span class="str">'store_name'</span> =&gt; $product-&gt;<span class="fn">effectiveStore</span>()?-&gt;name,
+            <span class="str">'ongkir_lokal_cn_idr'</span> =&gt; <span class="fn">round</span>($lokalCn, <span class="str">2</span>),
+            <span class="str">'ongkir_cn_btm_idr'</span> =&gt; <span class="fn">round</span>($cnBtm, <span class="str">2</span>),
+            <span class="str">'ongkir_btm_jkt_idr'</span> =&gt; <span class="fn">round</span>($btmJkt, <span class="str">2</span>),
+            <span class="str">'ongkir_total_idr'</span> =&gt; <span class="fn">round</span>($lokalCn + $cnBtm + $btmJkt, <span class="str">2</span>),
+        ];
+    }
+}</pre>
+
+<h1>11. Service UPDATE: <code>OrderItemSnapshotService</code> <span class="badge-upd">UPD</span></h1>
+
+<div class="file-header">app/Services/Order/OrderItemSnapshotService.php (REVISI — tambah shipping breakdown)</div>
+<pre><span class="kw">class</span> <span class="cls">OrderItemSnapshotService</span>
+{
+    <span class="kw">public function</span> <span class="fn">__construct</span>(
+        <span class="kw">protected</span> <span class="cls">ShippingCalculatorService</span> $shippingCalc
+    ) {}
+
+    <span class="kw">public function</span> <span class="fn">createForOrderItem</span>(<span class="cls">OrderItem</span> $item, <span class="kw">string</span> $orderNo): <span class="cls">OrderItemSnapshot</span>
+    {
+        <span class="kw">if</span> (! $item-&gt;product || ! $item-&gt;variant) {
+            <span class="kw">throw new</span> \<span class="cls">RuntimeException</span>(
+                <span class="str">"Produk atau varian tidak ditemukan untuk order item #{$item-&gt;id}"</span>
+            );
+        }
+
+        $product = $item-&gt;product;
+        $variant = $item-&gt;variant;
+
+        <span class="cmt">// Hitung ongkir breakdown via service</span>
+        $shipping = $this-&gt;shippingCalc-&gt;<span class="fn">calculateItemShipping</span>($product, $variant);
+
+        <span class="cmt">// Developer dari relasi</span>
+        $game = $product-&gt;games-&gt;<span class="fn">first</span>();
+        $developerName = $game?-&gt;developers-&gt;<span class="fn">first</span>()?-&gt;name;
+
+        <span class="cmt">// Copy gambar</span>
+        $productImagePath = $this-&gt;<span class="fn">copyImage</span>(
+            $product-&gt;main_image_path,
+            <span class="str">"order-snapshots/{$orderNo}/p-{$item-&gt;id}.jpg"</span>
+        );
+
+        $variantImagePath = <span class="kw">null</span>;
+        <span class="kw">if</span> ($variant-&gt;image_path) {
+            $variantImagePath = $this-&gt;<span class="fn">copyImage</span>(
+                $variant-&gt;image_path,
+                <span class="str">"order-snapshots/{$orderNo}/v-{$item-&gt;id}.jpg"</span>
+            );
+        }
+
+        <span class="cmt">// Harga</span>
+        $basePrice = $variant-&gt;price &gt; <span class="str">0</span>
+            ? $variant-&gt;price
+            : $product-&gt;<span class="fn">hargaJual</span>();
+
+        $finalPrice = $variant-&gt;price &gt; <span class="str">0</span>
+            ? $variant-&gt;price
+            : $product-&gt;<span class="fn">hargaSetelahDiskon</span>();
+
+        <span class="kw">return</span> <span class="cls">OrderItemSnapshot</span>::<span class="fn">create</span>([
+            <span class="str">'order_item_id'</span> =&gt; $item-&gt;id,
+            <span class="str">'product_id_audit'</span> =&gt; $product-&gt;id,
+            <span class="str">'variant_id_audit'</span> =&gt; $variant-&gt;id,
+
+            <span class="cmt">// Produk</span>
+            <span class="str">'product_name'</span> =&gt; $product-&gt;name,
+            <span class="str">'product_slug'</span> =&gt; $product-&gt;slug,
+            <span class="str">'product_sku'</span> =&gt; $product-&gt;sku,
+            <span class="str">'game_name'</span> =&gt; $game?-&gt;name,
+            <span class="str">'developer_name'</span> =&gt; $developerName,
+            <span class="str">'store_name'</span> =&gt; $shipping[<span class="str">'store_name'</span>],  <span class="cmt">// ⭐ BARU</span>
+            <span class="str">'tag'</span> =&gt; $product-&gt;tags-&gt;<span class="fn">first</span>()?-&gt;name,
+
+            <span class="cmt">// Varian</span>
+            <span class="str">'variant_name'</span> =&gt; $variant-&gt;name,
+            <span class="str">'variant_sku'</span> =&gt; $variant-&gt;sku,
+            <span class="str">'variant_attributes'</span> =&gt; $variant-&gt;<span class="fn">attributesArray</span>(),
+
+            <span class="cmt">// Harga</span>
+            <span class="str">'base_price'</span> =&gt; $basePrice,
+            <span class="str">'discount_amount'</span> =&gt; $product-&gt;<span class="fn">hasActiveDiscount</span>()
+                ? $product-&gt;discount_amount
+                : <span class="str">0</span>,
+            <span class="str">'final_price'</span> =&gt; $finalPrice,
+            <span class="str">'qty'</span> =&gt; $item-&gt;qty,
+            <span class="str">'subtotal'</span> =&gt; $finalPrice * $item-&gt;qty,
+
+            <span class="cmt">// Berat & ongkir breakdown (v1.2)</span>
+            <span class="str">'weight_gram'</span> =&gt; $shipping[<span class="str">'weight_gram'</span>],
+            <span class="str">'ongkir_lokal_cn_idr'</span> =&gt; $shipping[<span class="str">'ongkir_lokal_cn_idr'</span>],
+            <span class="str">'ongkir_cn_btm_idr'</span> =&gt; $shipping[<span class="str">'ongkir_cn_btm_idr'</span>],
+            <span class="str">'ongkir_btm_jkt_idr'</span> =&gt; $shipping[<span class="str">'ongkir_btm_jkt_idr'</span>],
+            <span class="str">'ongkir_total_idr'</span> =&gt; $shipping[<span class="str">'ongkir_total_idr'</span>],
+
+            <span class="cmt">// Gambar</span>
+            <span class="str">'product_image_path'</span> =&gt; $productImagePath,
+            <span class="str">'variant_image_path'</span> =&gt; $variantImagePath,
+
+            <span class="str">'snapshot_at'</span> =&gt; <span class="fn">now</span>(),
+        ]);
+    }
+
+    <span class="cmt">// ... copyImage() tetap sama seperti v1.1 ...</span>
+}</pre>
+
+<h1>12. Seeder BARU: <code>StoreSeeder</code> <span class="badge-new">NEW</span></h1>
+
+<div class="file-header">database/seeders/StoreSeeder.php</div>
+<pre><span class="kw">&lt;?php</span>
+
+<span class="kw">namespace</span> <span class="cls">Database\Seeders</span>;
+
+<span class="kw">use</span> <span class="cls">App\Models\Store</span>;
+<span class="kw">use</span> <span class="cls">Illuminate\Database\Seeder</span>;
+
+<span class="kw">class</span> <span class="cls">StoreSeeder</span> <span class="kw">extends</span> <span class="cls">Seeder</span>
+{
+    <span class="kw">public function</span> <span class="fn">run</span>(): <span class="kw">void</span>
+    {
+        $stores = [
+            [
+                <span class="str">'name'</span> =&gt; <span class="str">'Official Store'</span>,
+                <span class="str">'min_belanja_rmb'</span> =&gt; <span class="str">100</span>,
+                <span class="str">'ongkir_rmb'</span> =&gt; <span class="str">7</span>,
+            ],
+            [
+                <span class="str">'name'</span> =&gt; <span class="str">'Fanmade Studio'</span>,
+                <span class="str">'min_belanja_rmb'</span> =&gt; <span class="str">0</span>,
+                <span class="str">'ongkir_rmb'</span> =&gt; <span class="str">0</span>,       <span class="cmt">// gratis selalu</span>
+            ],
+            [
+                <span class="str">'name'</span> =&gt; <span class="str">'Toko Baju Collab'</span>,
+                <span class="str">'min_belanja_rmb'</span> =&gt; <span class="str">150</span>,
+                <span class="str">'ongkir_rmb'</span> =&gt; <span class="str">10</span>,
+            ],
+        ];
+
+        <span class="kw">foreach</span> ($stores <span class="kw">as</span> $store) {
+            <span class="cls">Store</span>::<span class="fn">updateOrCreate</span>(
+                [<span class="str">'name'</span> =&gt; $store[<span class="str">'name'</span>]],
+                $store
+            );
+        }
+    }
+}</pre>
+
+<div class="note-info">
+<strong>Catatan:</strong> Nama store di seeder cuma contoh. Admin bisa rename / CRUD via <code>/office/stores</code>. Seeder cuma untuk initial data.
+</div>
+
+<h1>13. Config UPDATE: <code>config/mercatoria.php</code> <span class="badge-upd">UPD</span></h1>
+
+<div class="file-header">config/mercatoria.php (TAMBAHAN)</div>
+<pre><span class="cmt">// Tambahkan section baru di config/mercatoria.php</span>
+
+<span class="str">'shipping'</span> =&gt; [
+    <span class="cmt">// Ongkir internasional per kg (IDR)</span>
+    <span class="str">'cn_btm_per_kg'</span> =&gt; <span class="fn">env</span>(<span class="str">'SHIPPING_CN_BTM_PER_KG'</span>, <span class="str">25000</span>),
+    <span class="str">'btm_jkt_per_kg'</span> =&gt; <span class="fn">env</span>(<span class="str">'SHIPPING_BTM_JKT_PER_KG'</span>, <span class="str">60000</span>),
+
+    <span class="cmt">// Default berat produk (gram) — kalau admin gak input</span>
+    <span class="str">'default_weight_gram'</span> =&gt; <span class="fn">env</span>(<span class="str">'SHIPPING_DEFAULT_WEIGHT'</span>, <span class="str">0</span>),
+
+    <span class="cmt">// Rumus lokal CN: customer bayar langsung (bukan disubsidi toko)</span>
+    <span class="str">'local_cn_mode'</span> =&gt; <span class="str">'customer_pays_directly'</span>,
+],</pre>
+
+<h1>14. Update Settings Seeder</h1>
+
+<div class="file-header">database/seeders/SettingsSeeder.php (TAMBAHAN)</div>
+<pre><span class="cmt">// Tambahkan setting baru ke array $settings</span>
+
+[
+    <span class="str">'key'</span> =&gt; <span class="str">'ongkir_cn_btm_per_kg'</span>,
+    <span class="str">'value'</span> =&gt; <span class="str">'25000'</span>,
+    <span class="str">'type'</span> =&gt; <span class="str">'int'</span>,
+    <span class="str">'group'</span> =&gt; <span class="str">'pricing'</span>,
+    <span class="str">'description'</span> =&gt; <span class="str">'Ongkir CN → Batam per kg (IDR)'</span>,
+],
+[
+    <span class="str">'key'</span> =&gt; <span class="str">'ongkir_btm_jkt_per_kg'</span>,
+    <span class="str">'value'</span> =&gt; <span class="str">'60000'</span>,
+    <span class="str">'type'</span> =&gt; <span class="str">'int'</span>,
+    <span class="str">'group'</span> =&gt; <span class="str">'pricing'</span>,
+    <span class="str">'description'</span> =&gt; <span class="str">'Ongkir Batam → Jakarta per kg (IDR)'</span>,
+],
+[
+    <span class="str">'key'</span> =&gt; <span class="str">'default_weight_gram'</span>,
+    <span class="str">'value'</span> =&gt; <span class="str">'0'</span>,
+    <span class="str">'type'</span> =&gt; <span class="str">'int'</span>,
+    <span class="str">'group'</span> =&gt; <span class="str">'pricing'</span>,
+    <span class="str">'description'</span> =&gt; <span class="str">'Default berat produk (gram). 0 = admin wajib input.'</span>,
+],</pre>
+
+<h1>15. Testing Checklist</h1>
+
+<h3>15.1 Migration Test</h3>
+<ul>
+  <li>✅ <code>php artisan migrate</code> jalan tanpa error</li>
+  <li>✅ Tabel <code>stores</code> kebentuk</li>
+  <li>✅ Kolom <code>games.default_store_id</code> ada</li>
+  <li>✅ Kolom <code>products.store_id</code> + <code>weight_gram</code> ada</li>
+  <li>✅ Kolom <code>product_variants.weight_gram</code> ada</li>
+  <li>✅ Kolom snapshot 6 field baru ada</li>
+  <li>✅ <code>php artisan migrate:rollback</code> jalan (test rollback)</li>
+</ul>
+
+<h3>15.2 Seeder Test</h3>
+<ul>
+  <li>✅ <code>php artisan db:seed --class=StoreSeeder</code> jalan</li>
+  <li>✅ 3 store default kebentuk</li>
+  <li>✅ <code>php artisan db:seed --class=SettingsSeeder</code> update 3 setting baru</li>
+</ul>
+
+<h3>15.3 Model Test (tinker)</h3>
+<pre>php artisan tinker
+
+<span class="cmt">// Test Store model</span>
+&gt;&gt;&gt; <span class="cls">App\Models\Store</span>::<span class="fn">count</span>();  <span class="cmt">// 3</span>
+&gt;&gt;&gt; $store = <span class="cls">App\Models\Store</span>::<span class="fn">first</span>();
+&gt;&gt;&gt; $store-&gt;<span class="fn">isFreeShipping</span>();  <span class="cmt">// false</span>
+&gt;&gt;&gt; $store-&gt;<span class="fn">hasMinBelanja</span>();  <span class="cmt">// true</span>
+
+<span class="cmt">// Test effective store di product</span>
+&gt;&gt;&gt; $product = <span class="cls">App\Models\Product</span>::<span class="fn">first</span>();
+&gt;&gt;&gt; $product-&gt;<span class="fn">effectiveStore</span>();  <span class="cmt">// return Store atau null</span></pre>
+
+<h3>15.4 Service Test (tinker)</h3>
+<pre><span class="cmt">// Test shipping calculator</span>
+&gt;&gt;&gt; $calc = <span class="fn">app</span>(<span class="cls">App\Services\Order\ShippingCalculatorService</span>::<span class="kw">class</span>);
+
+<span class="cmt">// Case 1: harga 58 RMB, store min 100, ongkir 7, rate 2200</span>
+&gt;&gt;&gt; $product = <span class="cls">App\Models\Product</span>::<span class="fn">where</span>(<span class="str">'price_rmb'</span>, <span class="str">58</span>)-&gt;<span class="fn">first</span>();
+&gt;&gt;&gt; $calc-&gt;<span class="fn">calculateLocalCn</span>($product);
+<span class="cmt">// Expected: 8932.00</span>
+
+<span class="cmt">// Case 2: berat 500g</span>
+&gt;&gt;&gt; $calc-&gt;<span class="fn">calculateCnBtm</span>(<span class="str">500</span>);  <span class="cmt">// 12500.00</span>
+&gt;&gt;&gt; $calc-&gt;<span class="fn">calculateBtmJkt</span>(<span class="str">500</span>);  <span class="cmt">// 30000.00</span>
+
+<span class="cmt">// Case 3: breakdown lengkap</span>
+&gt;&gt;&gt; $calc-&gt;<span class="fn">calculateItemShipping</span>($product);
+<span class="cmt">// Return: [weight_gram, store_name, ongkir_lokal_cn_idr, ...]</span></pre>
+
+<h1>16. Migrasi User Lama — Kolom Tambahan <span class="badge-new">NEW v1.3</span></h1>
+
+<div class="note-success">
+<strong>Update v1.3:</strong> Tambah 1 kolom di tabel <code>users</code> untuk tracking user migrasi. Sisanya reuse kolom yang sudah ada.
+</div>
+
+<h3>16.1 Migration ALTER</h3>
+
+<div class="file-header">database/migrations/2026_10_16_000001_add_is_migrated_to_users_table.php</div>
+<pre><span class="kw">&lt;?php</span>
+
+<span class="kw">use</span> <span class="cls">Illuminate\Database\Migrations\Migration</span>;
+<span class="kw">use</span> <span class="cls">Illuminate\Database\Schema\Blueprint</span>;
+<span class="kw">use</span> <span class="cls">Illuminate\Support\Facades\Schema</span>;
+
+<span class="kw">return new class extends</span> <span class="cls">Migration</span> {
+    <span class="kw">public function</span> <span class="fn">up</span>(): <span class="kw">void</span>
+    {
+        <span class="cls">Schema</span>::<span class="fn">table</span>(<span class="str">'users'</span>, <span class="kw">function</span> (<span class="cls">Blueprint</span> $table) {
+            $table-&gt;<span class="fn">boolean</span>(<span class="str">'is_migrated'</span>)
+                  -&gt;<span class="fn">default</span>(<span class="kw">false</span>)
+                  -&gt;<span class="fn">after</span>(<span class="str">'has_seen_tour'</span>);
+        });
+    }
+
+    <span class="kw">public function</span> <span class="fn">down</span>(): <span class="kw">void</span>
+    {
+        <span class="cls">Schema</span>::<span class="fn">table</span>(<span class="str">'users'</span>, <span class="kw">function</span> (<span class="cls">Blueprint</span> $table) {
+            $table-&gt;<span class="fn">dropColumn</span>(<span class="str">'is_migrated'</span>);
+        });
+    }
+};</pre>
+
+<h3>16.2 Update Model User</h3>
+
+<div class="file-header">app/Models/User.php (TAMBAHAN)</div>
+<pre><span class="cmt">// Tambah di fillable:</span>
+<span class="kw">protected</span> $fillable = [
+    <span class="cmt">// ... existing ...</span>
+    <span class="str">'is_migrated'</span>,  <span class="cmt">// ⭐ BARU v1.3</span>
+];
+
+<span class="cmt">// Tambah di casts:</span>
+<span class="kw">protected</span> $casts = [
+    <span class="cmt">// ... existing ...</span>
+    <span class="str">'is_migrated'</span> =&gt; <span class="str">'boolean'</span>,  <span class="cmt">// ⭐ BARU v1.3</span>
+];
+
+<span class="cmt">// Tambah helper method:</span>
+<span class="kw">public function</span> <span class="fn">isMigrated</span>(): <span class="kw">bool</span>
+{
+    <span class="kw">return</span> $this-&gt;is_migrated === <span class="kw">true</span>;
+}
+
+<span class="kw">public function</span> <span class="fn">hasCompletedProfile</span>(): <span class="kw">bool</span>
+{
+    <span class="kw">return</span> $this-&gt;tgl_lahir !== <span class="kw">null</span>;
+}</pre>
+
+<h3>16.3 Tidak Ada Kolom/Tabel Baru Lain</h3>
+<p>Flow migrasi user lama <strong>reuse</strong> infrastruktur yang sudah ada:</p>
+<ul>
+  <li>✅ Reset password → pakai <code>password_reset_tokens</code> (default Laravel)</li>
+  <li>✅ Verifikasi email → pakai kolom <code>email_verified_at</code> di users</li>
+  <li>✅ Template email → pakai <code>reset_password</code> &amp; <code>verify_email</code></li>
+  <li>✅ Log admin action → pakai <code>admin_logs</code></li>
+</ul>
+
+<h3>16.4 Testing Checklist</h3>
+<ul>
+  <li>✅ Migration jalan tanpa error</li>
+  <li>✅ Kolom <code>is_migrated</code> kebentuk di tabel <code>users</code></li>
+  <li>✅ User baru daftar sendiri → <code>is_migrated = false</code></li>
+  <li>✅ User inject admin → <code>is_migrated = true</code></li>
+</ul>
+
+<hr>
+<p style="text-align: center; color: #666; margin-top: 40px;">
+<strong>— End of Document —</strong><br>
+Skema Database Laravel Mercatoria v1.3 · 16 Oktober 2026<br>
+<strong>Fondasi 100% Siap Coding — Store Concept + Berat Produk + User Migration</strong>
+</p>
+
+</body>
+</html>

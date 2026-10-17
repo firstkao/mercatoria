@@ -1,0 +1,131 @@
+@import 'tailwindcss';
+
+@plugin '@tailwindcss/forms';
+@plugin '@tailwindcss/typography';
+
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+@source '../../storage/framework/views/*.php';
+
+/* ═══════════════════════════════════════════════
+   DESIGN SYSTEM MERCATORIA
+   ═══════════════════════════════════════════════ */
+
+@theme {
+    /* ─── Font ─────────────────────────────── */
+    --font-sans: ui-sans-serif, system-ui, sans-serif,
+        'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+    --font-mono: 'Consolas', 'Monaco', ui-monospace, monospace;
+
+    /* ─── Colors: Primary (Design Spec = primary-300) ── */
+    --color-primary-50:  #E1F5FE;
+    --color-primary-100: #B3E5FC;
+    --color-primary-200: #81D4FA;
+    --color-primary-300: #4FC3F7;   /* ← warna utama tombol */
+    --color-primary-400: #29B6F6;   /* ← hover */
+    --color-primary-500: #03A9F4;
+    --color-primary-600: #0288D1;
+    --color-primary-700: #01579B;
+
+    /* ─── Colors: Navy (judul, link) ───────── */
+    --color-navy-400: #2c5fa8;
+    --color-navy-500: #1a4d8f;
+
+    /* ─── Colors: Danger ───────────────────── */
+    --color-danger-50:  #FFEBEE;
+    --color-danger-100: #FFCDD2;
+    --color-danger-500: #E53935;
+    --color-danger-700: #C62828;
+
+    /* ─── Colors: Success ──────────────────── */
+    --color-success-50:  #E8F5E9;
+    --color-success-100: #C8E6C9;
+    --color-success-500: #43A047;
+    --color-success-700: #2E7D32;
+
+    /* ─── Colors: Warning (Design Spec = #FB8C00) ── */
+    --color-warning-50:  #FFF8E1;
+    --color-warning-100: #FFECB3;
+    --color-warning-500: #FB8C00;
+    --color-warning-700: #E65100;
+
+    /* ─── Colors: Info ─────────────────────── */
+    --color-info-50:  #E3F2FD;
+    --color-info-100: #BBDEFB;
+    --color-info-500: #1E88E5;
+    --color-info-700: #1565C0;
+
+    /* ─── Colors: Neutral ──────────────────── */
+    --color-surface:    #F8F9FA;
+    --color-surface-2:  #F5F7FA;
+    --color-border:     #E0E0E0;
+    --color-border-2:   #EEEEEE;
+    --color-text:       #212121;
+    --color-text-muted: #666666;
+    --color-text-light: #999999;
+
+    /* ─── Colors: State Badge ──────────────── */
+    --color-crush:    #F48FB1;
+    --color-mvp:      #43A047;
+    --color-ex:       #64B5F6;
+    --color-ons:      #FFB74D;
+    --color-blocked:  #E53935;
+
+    /* ─── Colors: Tier Badge ───────────────── */
+    --color-silver:   #B0BEC5;
+    --color-gold:     #FFC107;
+    --color-platinum: #4FC3F7;
+}
+
+/* ═══════════════════════════════════════════════
+   BASE STYLES
+   ═══════════════════════════════════════════════ */
+
+@layer base {
+    body {
+        @apply bg-white text-text antialiased;
+        font-family: var(--font-sans);
+        font-size: 11pt;
+        line-height: 1.5;
+    }
+
+    /* Alpine: sembunyikan elemen sebelum Alpine siap */
+    [x-cloak] {
+        display: none !important;
+    }
+
+    /* ─── Scrollbar ────────────────────────── */
+    ::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+    }
+    ::-webkit-scrollbar-track {
+        background: #F1F1F1;
+    }
+    ::-webkit-scrollbar-thumb {
+        background: #BDBDBD;
+        border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+        background: #9E9E9E;
+    }
+
+    /* ─── Headings ─────────────────────────── */
+    h1, h2, h3, h4, h5, h6 {
+        font-weight: 600;
+        line-height: 1.3;
+    }
+}
+
+/* ═══════════════════════════════════════════════
+   UTILITIES (sintaks Tailwind v4)
+   ═══════════════════════════════════════════════ */
+
+/* Sembunyikan scrollbar (untuk horizontal scroll) */
+@utility no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+
+    &::-webkit-scrollbar {
+        display: none;
+    }
+}

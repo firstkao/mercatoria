@@ -1,0 +1,115 @@
+<?php
+
+use App\Models\Setting;
+
+if (! function_exists('setting')) {
+    /**
+     * Ambil value dari tabel settings (dengan cache).
+     */
+    function setting(string $key, $default = null)
+    {
+        static $cache = [];
+
+        if (array_key_exists($key, $cache)) {
+            return $cache[$key];
+        }
+
+        try {
+            $setting = Setting::where('key', $key)->first();
+            $value = $setting?->value ?? $default;
+        } catch (\Throwable $e) {
+            $value = $default;
+        }
+
+        $cache[$key] = $value;
+        return $value;
+    }
+}
+
+if (! function_exists('get_real_ip')) {
+    /**
+     * Deteksi IP asli user (XFF-based).
+     */
+    function get_real_ip(): string
+    {
+        $headers = [
+            'CF-Connecting-IP',
+            'True-Client-IP',
+            'Fastly-Client-IP',
+            'X-Real-IP',
+            'X-Forwarded-For',
+            'Forwarded',
+        ];
+
+        foreach ($headers as $header) {
+            $value = request()->header($header);
+            if (! $value) continue;
+
+            $ip = trim(explode(',', $value)[0]);
+
+            if (str_contains($ip, 'for=')) {
+                $ip = preg_replace('/.*for=([^;]+).*/i', '$1', $ip);
+                $ip = trim($ip, '"[]');
+            }
+
+            if (filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE)) {
+                return $ip;
+            }
+        }
+
+        return request()->ip() ?? '0.0.0.0';
+    }
+}
+
+if (! function_exists('ip_in_cidr')) {
+    function ip_in_cidr(string $ip, string $cidr): bool
+    {
+        if (! str_contains($cidr, '/')) {
+            return $ip === $cidr;
+        }
+
+        [$subnet, $mask] = explode('/', $cidr);
+        $mask = (int) $mask;
+
+        if (filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4)) {
+            $ipLong = ip2long($ip);
+            $subnetLong = ip2long($subnet);
+            $maskLong = ~((1 << (32 - $mask)) - 1);
+            return ($ipLong & $maskLong) === ($subnetLong & $maskLong);
+        }
+
+        if (filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6)) {
+            $ipBin = inet_pton($ip);
+            $subnetBin = inet_pton($subnet);
+            $maskBin = str_repeat("\xff", $mask >> 3);
+            if ($mask % 8) {
+                $maskBin .= chr((0xff << (8 - ($mask % 8))) & 0xff);
+            }
+            $maskBin = str_pad($maskBin, 16, "\0");
+            return ($ipBin & $maskBin) === ($subnetBin & $maskBin);
+        }
+
+        return false;
+    }
+}
+
+if (! function_exists('generate_order_number')) {
+    function generate_order_number(): string
+    {
+        do {
+            $random = strtoupper(\Illuminate\Support\Str::random(4));
+            $random = preg_replace('/[^A-Z]/', 'X', $random);
+            $number = str_pad(\App\Models\Order::count() + 1, 4, '0', STR_PAD_LEFT);
+            $orderNo = "MER-{$random}-{$number}";
+        } while (\App\Models\Order::where('order_no', $orderNo)->exists());
+
+        return $orderNo;
+    }
+}
+
+if (! function_exists('format_rupiah')) {
+    function format_rupiah($value): string
+    {
+        return 'Rp ' . number_format((float) $value, 0, ',', '.');
+    }
+}
