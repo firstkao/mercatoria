@@ -5,17 +5,20 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use App\Models\AuthLog;
 use App\Models\User;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
+use Illuminate\View\View;
 
 class LoginController extends Controller
 {
     /**
      * Tampilkan form login
      */
-    public function showForm()
+    public function showForm(): View|RedirectResponse
     {
         if (Auth::check()) {
             return redirect()->route('dashboard');
@@ -27,9 +30,12 @@ class LoginController extends Controller
     /**
      * Handle submit form login
      */
-    public function store(Request $request)
+    public function store(Request $request): RedirectResponse
     {
-        // ─── 1. Validasi ─────────────────────────────
+        $request->merge([
+            'email' => Str::lower(trim((string) $request->input('email'))),
+        ]);
+
         $validated = $request->validate([
             'email' => ['required', 'string', 'email'],
             'password' => ['required', 'string'],
@@ -40,7 +46,7 @@ class LoginController extends Controller
         ]);
 
         // ─── 2. Rate Limit (5x/menit per IP+email) ───
-        $throttleKey = strtolower($validated['email']) . '|' . $request->ip();
+        $throttleKey = strtolower($validated['email']).'|'.$request->ip();
 
         if (RateLimiter::tooManyAttempts($throttleKey, 5)) {
             $seconds = RateLimiter::availableIn($throttleKey);
@@ -68,7 +74,7 @@ class LoginController extends Controller
 
         if (! Auth::attempt($credentials, $remember)) {
             // Gagal login → hit rate limit + log
-            RateLimiter::hit($throttleKey, 60);
+            RateLimiter::hit($throttleKey, 15 * 60);
 
             AuthLog::create([
                 'user_id' => null,
@@ -87,6 +93,7 @@ class LoginController extends Controller
         // ─── 4. Sukses Login ─────────────────────────
         RateLimiter::clear($throttleKey);
 
+        /** @var User $user */
         $user = Auth::user();
         $user->update(['last_login' => now()]);
 

@@ -1,36 +1,40 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\ProfileCompleteController;
 use App\Http\Controllers\Auth\ForgotPasswordController;
-use App\Http\Controllers\Auth\ResetPasswordController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\LogoutController;
 use App\Http\Controllers\Auth\RegisterController;
-use App\Http\Controllers\Auth\VerifyEmailController;   // ← tambah
+use App\Http\Controllers\Auth\ResetPasswordController;
+use App\Http\Controllers\Auth\VerifyEmailController;
+use App\Http\Controllers\ProfileCompleteController;
+use Illuminate\Support\Facades\Route;   // ← tambah
+use Spatie\Honeypot\ProtectAgainstSpam;
 
 // ─── Public Routes ──────────────────────────────
 Route::get('/', function () {
-    return view('test.home');
+    return view('home');
 })->name('home');
 
 // ─── Guest Routes (belum login) ─────────────────
 Route::middleware('guest')->group(function () {
     // Register
     Route::get('/register', [RegisterController::class, 'showForm'])->name('register');
-    Route::post('/register', [RegisterController::class, 'store'])->middleware('throttle:3,1');
+    Route::post('/register', [RegisterController::class, 'store'])
+        ->middleware(['throttle:3,1', ProtectAgainstSpam::class]);
 
     // Login
     Route::get('/login', [LoginController::class, 'showForm'])->name('login');
-    Route::post('/login', [LoginController::class, 'store'])->middleware('throttle:5,1');
+    Route::post('/login', [LoginController::class, 'store'])
+        ->middleware(['throttle:5,1', ProtectAgainstSpam::class]);
 
     // Forgot Password
     Route::get('/forgot-password', [ForgotPasswordController::class, 'create'])->name('password.request');
     Route::post('/forgot-password', [ForgotPasswordController::class, 'store'])
-        ->middleware('throttle:5,1')->name('password.email');
+        ->middleware(['throttle:5,1', ProtectAgainstSpam::class])->name('password.email');
 
     Route::get('/reset-password/{token}', [ResetPasswordController::class, 'create'])->name('password.reset');
-    Route::post('/reset-password', [ResetPasswordController::class, 'store'])->name('password.update');
+    Route::post('/reset-password', [ResetPasswordController::class, 'store'])
+        ->middleware(['throttle:5,1', ProtectAgainstSpam::class])->name('password.update');
 });
 
 // ─── Auth Routes (udah login) ───────────────────
