@@ -1,0 +1,83 @@
+<?php
+
+namespace App\Http\Controllers\Admin;
+
+use App\Http\Controllers\Controller;
+use App\Models\Developer;
+use App\Models\Game;
+use App\Models\Store;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
+use Illuminate\View\View;
+
+class GameController extends Controller
+{
+    public function index(): View
+    {
+        return view('admin.games.index', [
+            'games' => Game::query()->with('defaultStore')->withCount('products')->orderBy('name')->paginate(20),
+        ]);
+    }
+
+    public function create(): View
+    {
+        return view('admin.games.form', [
+            'game' => new Game,
+            'stores' => Store::query()->orderBy('name')->get(),
+            'developers' => Developer::query()->orderBy('name')->get(),
+            'isEditing' => false,
+        ]);
+    }
+
+    public function store(Request $request): RedirectResponse
+    {
+        $validated = $this->validateGame($request);
+        $game = DB::transaction(function () use ($validated): Game {
+            $game = Game::create(collect($validated)->except('developer_ids')->all());
+            $game->developers()->sync($validated['developer_ids'] ?? []);
+
+            return $game;
+        });
+
+        return redirect()->route('office.games.edit', $game)->with('success', 'Game berhasil dibuat.');
+    }
+
+    public function edit(Game $game): View
+    {
+        return view('admin.games.form', [
+            'game' => $game->load('developers'),
+            'stores' => Store::query()->orderBy('name')->get(),
+            'developers' => Developer::query()->orderBy('name')->get(),
+            'isEditing' => true,
+        ]);
+    }
+
+    public function update(Request $request, Game $game): RedirectResponse
+    {
+        $validated = $this->validateGame($request, $game);
+        DB::transaction(function () use ($validated, $game): void {
+            $game->update(collect($validated)->except('developer_ids')->all());
+            $game->developers()->sync($validated['developer_ids'] ?? []);
+        });
+
+        return redirect()->route('office.games.edit', $game)->with('success', 'Perubahan game berhasil disimpan.');
+    }
+
+    /**
+     * @return array{name: string, slug: string, default_store_id: int|null, description: string|null, is_active: bool, developer_ids?: list<int>}
+     */
+    private function validateGame(Request $request, ?Game $game = null): array
+    {
+        return $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'slug' => ['required', 'string', 'max:255', Rule::unique('games', 'slug')->ignore($game)],
+            'default_store_id' => ['nullable', 'integer', 'exists:stores,id'],
+            'description' => ['nullable', 'string'],
+            'is_active' => ['required', 'boolean'],
+            'developer_ids' => ['nullable', 'array'],
+            'developer_ids.*' => ['integer', 'distinct', 'exists:developers,id'],
+        ]);
+    }
+}

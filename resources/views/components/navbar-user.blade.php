@@ -9,6 +9,9 @@
 
         {{-- Aksi kanan (desktop) --}}
         <div class="hidden items-center gap-1 md:flex">
+            @if (auth()->user()->isAdmin())
+                <a href="{{ route('office.games.index') }}" class="px-3 py-2 text-sm text-navy-500 hover:underline">Office Admin</a>
+            @endif
             <a href="{{ route('dashboard') }}"
                class="px-3 py-2 text-sm {{ request()->routeIs('dashboard') ? 'font-semibold text-navy-500' : 'text-text-muted hover:text-text' }}">
                 Dashboard
@@ -47,6 +50,9 @@
             <p class="mb-2 truncate px-3 text-sm font-semibold">{{ auth()->user()->name }}</p>
             <div class="flex flex-col gap-1">
                 <x-nav-links mobile />
+                @if (auth()->user()->isAdmin())
+                    <a href="{{ route('office.games.index') }}" class="block px-3 py-2 text-sm text-navy-500">Office Admin</a>
+                @endif
                 <a href="{{ route('dashboard') }}" class="block px-3 py-2 text-sm text-text-muted">Dashboard</a>
                 <form method="POST" action="{{ route('logout') }}">
                     @csrf
