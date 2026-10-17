@@ -126,3 +126,13 @@
     @endif
 </div>
 @endsection
+
+@push('scripts')
+    <script>
+        if (typeof window.mercatoriaTrack === 'function') {
+            @foreach ($ga4Events as $event)
+                window.mercatoriaTrack(@js($event['name']), @js($event['params']));
+            @endforeach
+        }
+    </script>
+@endpush

@@ -57,3 +57,21 @@
     @endif
 </div>
 @endsection
+
+@push('scripts')
+    <script>
+        if (typeof window.mercatoriaTrack === 'function') {
+            window.mercatoriaTrack('view_cart', {
+                currency: 'IDR',
+                value: @js((float) $lines->sum(fn ($line) => $line['pricing']['final_price'] * $line['cart']->qty)),
+                items: @js($lines->map(fn ($line) => [
+                    'item_id' => $line['cart']->product->sku,
+                    'item_name' => $line['cart']->product->name,
+                    'item_variant' => $line['cart']->variant?->name,
+                    'price' => (float) $line['pricing']['final_price'],
+                    'quantity' => $line['cart']->qty,
+                ])->values())
+            });
+        }
+    </script>
+@endpush

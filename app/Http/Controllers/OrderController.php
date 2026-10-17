@@ -32,8 +32,35 @@ class OrderController extends Controller
         $order = $request->user()->orders()
             ->with(['items.snapshot', 'payments', 'refunds', 'statusLogs.changedBy'])
             ->findOrFail($order);
+        $ga4Events = [[
+            'name' => 'view_order_detail',
+            'params' => ['order_id' => $order->order_no],
+        ]];
+        $purchaseKey = "ga4_purchase_sent_{$order->id}";
+        if (
+            $order->paidAmount() >= (float) $order->total
+            && ! (bool) $request->session()->get($purchaseKey, false)
+        ) {
+            $ga4Events[] = [
+                'name' => 'purchase',
+                'params' => [
+                    'transaction_id' => $order->order_no,
+                    'value' => (float) $order->total,
+                    'currency' => 'IDR',
+                    'shipping' => (float) $order->shipping_cost,
+                    'items' => $order->items->map(fn ($item): array => [
+                        'item_id' => $item->snapshot->product_sku,
+                        'item_name' => $item->snapshot->product_name,
+                        'item_variant' => $item->snapshot->variant_name,
+                        'price' => (float) $item->snapshot->final_price,
+                        'quantity' => $item->snapshot->qty,
+                    ])->values()->all(),
+                ],
+            ];
+            $request->session()->put($purchaseKey, true);
+        }
 
-        return view('orders.show', compact('order'));
+        return view('orders.show', compact('order', 'ga4Events'));
     }
 
     public function uploadProof(Request $request, int $order): RedirectResponse

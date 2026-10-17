@@ -115,3 +115,21 @@
     @endif
 </div>
 @endsection
+
+@push('scripts')
+    <script>
+        if (typeof window.mercatoriaTrack === 'function') {
+            window.mercatoriaTrack('view_product', {
+                currency: 'IDR',
+                value: @js((float) $product->final_price),
+                items: [{
+                    item_id: @js($product->sku),
+                    item_name: @js($product->name),
+                    item_category: @js($game?->name),
+                    price: @js((float) $product->final_price),
+                    quantity: 1
+                }]
+            });
+        }
+    </script>
+@endpush

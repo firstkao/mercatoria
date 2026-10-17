@@ -28,6 +28,8 @@
 
     <x-toast />
 
+    <x-ga4-tracking />
+
     @stack('scripts')
 </body>
 </html>

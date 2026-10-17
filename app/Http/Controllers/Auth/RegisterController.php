@@ -151,7 +151,11 @@ class RegisterController extends Controller
         $request->session()->regenerate();
 
         return redirect()->route('dashboard')
-            ->with('success', 'Akun berhasil dibuat! Cek email untuk verifikasi.');
+            ->with('success', 'Akun berhasil dibuat! Cek email untuk verifikasi.')
+            ->with('ga4_events', [[
+                'name' => 'sign_up',
+                'params' => ['method' => 'email'],
+            ]]);
     }
 
     protected function normalizePhone(string $phone): string

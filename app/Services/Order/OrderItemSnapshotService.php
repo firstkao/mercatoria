@@ -5,6 +5,7 @@ namespace App\Services\Order;
 use App\Models\OrderItem;
 use App\Models\OrderItemSnapshot;
 use App\Services\Cart\CartPricingService;
+use Carbon\CarbonInterface;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 
@@ -77,6 +78,55 @@ class OrderItemSnapshotService
         ]);
     }
 
+    public function createForLegacyOrderItem(
+        OrderItem $item,
+        string $orderNo,
+        float $unitPrice,
+        CarbonInterface $snapshotAt,
+    ): OrderItemSnapshot {
+        if (! $item->product) {
+            throw new \RuntimeException("Produk tidak ditemukan untuk order item #{$item->id}");
+        }
+
+        $product = $item->product;
+        $variant = $item->variant;
+        $game = $product->games->first();
+
+        return OrderItemSnapshot::create([
+            'order_item_id' => $item->id,
+            'product_id_audit' => $product->id,
+            'variant_id_audit' => $variant?->id,
+            'product_name' => $product->name,
+            'product_slug' => $product->slug,
+            'product_sku' => $product->sku,
+            'game_name' => $game?->name,
+            'developer_name' => $game?->developers->first()?->name,
+            'store_name' => $product->effectiveStore()?->name,
+            'tag' => $product->tags->first()?->name,
+            'variant_name' => $variant?->name,
+            'variant_sku' => $variant?->sku,
+            'variant_attributes' => $variant?->attributesArray() ?? [],
+            'base_price' => $unitPrice,
+            'discount_amount' => 0,
+            'final_price' => $unitPrice,
+            'qty' => $item->qty,
+            'subtotal' => $unitPrice * $item->qty,
+            'weight_gram' => $variant?->effectiveWeight() ?? $product->effectiveWeight(),
+            'ongkir_lokal_cn_idr' => 0,
+            'ongkir_cn_btm_idr' => 0,
+            'ongkir_btm_jkt_idr' => 0,
+            'ongkir_total_idr' => 0,
+            'product_image_path' => $this->copyImage(
+                $product->main_image_path,
+                "order-snapshots/{$orderNo}/p-{$item->id}.jpg",
+            ),
+            'variant_image_path' => $variant?->image_path
+                ? $this->copyImage($variant->image_path, "order-snapshots/{$orderNo}/v-{$item->id}.jpg")
+                : null,
+            'snapshot_at' => $snapshotAt,
+        ]);
+    }
+
     protected function copyImage(?string $sourcePath, string $destPath): ?string
     {
         if (empty($sourcePath)) {
@@ -93,6 +143,9 @@ class OrderItemSnapshotService
 
             return null;
         }
+
+        $extension = strtolower(pathinfo($sourcePath, PATHINFO_EXTENSION)) ?: 'jpg';
+        $destPath = pathinfo($destPath, PATHINFO_DIRNAME).'/'.pathinfo($destPath, PATHINFO_FILENAME).".{$extension}";
 
         try {
             $disk->copy($sourcePath, $destPath);

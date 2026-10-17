@@ -1,6 +1,9 @@
 <?php
 
+use App\Models\Order;
 use App\Models\Setting;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Str;
 
 if (! function_exists('setting')) {
     /**
@@ -8,21 +11,15 @@ if (! function_exists('setting')) {
      */
     function setting(string $key, $default = null)
     {
-        static $cache = [];
+        return Cache::remember("setting.{$key}", 3600, function () use ($key, $default) {
+            try {
+                $setting = Setting::where('key', $key)->first();
 
-        if (array_key_exists($key, $cache)) {
-            return $cache[$key];
-        }
-
-        try {
-            $setting = Setting::where('key', $key)->first();
-            $value = $setting?->value ?? $default;
-        } catch (\Throwable $e) {
-            $value = $default;
-        }
-
-        $cache[$key] = $value;
-        return $value;
+                return $setting?->value ?? $default;
+            } catch (Throwable $e) {
+                return $default;
+            }
+        });
     }
 }
 
@@ -43,7 +40,9 @@ if (! function_exists('get_real_ip')) {
 
         foreach ($headers as $header) {
             $value = request()->header($header);
-            if (! $value) continue;
+            if (! $value) {
+                continue;
+            }
 
             $ip = trim(explode(',', $value)[0]);
 
@@ -75,6 +74,7 @@ if (! function_exists('ip_in_cidr')) {
             $ipLong = ip2long($ip);
             $subnetLong = ip2long($subnet);
             $maskLong = ~((1 << (32 - $mask)) - 1);
+
             return ($ipLong & $maskLong) === ($subnetLong & $maskLong);
         }
 
@@ -83,9 +83,10 @@ if (! function_exists('ip_in_cidr')) {
             $subnetBin = inet_pton($subnet);
             $maskBin = str_repeat("\xff", $mask >> 3);
             if ($mask % 8) {
-                $maskBin .= chr((0xff << (8 - ($mask % 8))) & 0xff);
+                $maskBin .= chr((0xFF << (8 - ($mask % 8))) & 0xFF);
             }
             $maskBin = str_pad($maskBin, 16, "\0");
+
             return ($ipBin & $maskBin) === ($subnetBin & $maskBin);
         }
 
@@ -97,11 +98,11 @@ if (! function_exists('generate_order_number')) {
     function generate_order_number(): string
     {
         do {
-            $random = strtoupper(\Illuminate\Support\Str::random(4));
+            $random = strtoupper(Str::random(4));
             $random = preg_replace('/[^A-Z]/', 'X', $random);
-            $number = str_pad(\App\Models\Order::count() + 1, 4, '0', STR_PAD_LEFT);
+            $number = str_pad(Order::count() + 1, 4, '0', STR_PAD_LEFT);
             $orderNo = "MER-{$random}-{$number}";
-        } while (\App\Models\Order::where('order_no', $orderNo)->exists());
+        } while (Order::where('order_no', $orderNo)->exists());
 
         return $orderNo;
     }
@@ -110,6 +111,6 @@ if (! function_exists('generate_order_number')) {
 if (! function_exists('format_rupiah')) {
     function format_rupiah($value): string
     {
-        return 'Rp ' . number_format((float) $value, 0, ',', '.');
+        return 'Rp '.number_format((float) $value, 0, ',', '.');
     }
 }

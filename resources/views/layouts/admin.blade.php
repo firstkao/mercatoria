@@ -43,6 +43,10 @@
                    @class(['block rounded-lg px-3 py-2 text-sm', 'bg-info-50 font-semibold text-navy-500' => request()->routeIs('office.stores.*'), 'text-text-muted hover:bg-surface-2' => ! request()->routeIs('office.stores.*')])>
                     Stores (Tier Ongkir)
                 </a>
+                <a href="{{ route('office.settings.edit') }}"
+                   @class(['block rounded-lg px-3 py-2 text-sm', 'bg-info-50 font-semibold text-navy-500' => request()->routeIs('office.settings.*'), 'text-text-muted hover:bg-surface-2' => ! request()->routeIs('office.settings.*')])>
+                    Pengaturan
+                </a>
                 <p class="mb-2 mt-5 text-xs font-semibold uppercase tracking-wide text-text-light">Customer</p>
                 <a href="{{ route('office.users.index') }}"
                    @class(['block rounded-lg px-3 py-2 text-sm', 'bg-info-50 font-semibold text-navy-500' => request()->routeIs('office.users.*'), 'text-text-muted hover:bg-surface-2' => ! request()->routeIs('office.users.*')])>

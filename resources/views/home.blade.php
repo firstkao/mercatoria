@@ -50,3 +50,11 @@
     <x-button href="{{ route('register') }}" class="mt-6">Buat akun Mercatoria</x-button>
 </section>
 @endsection
+
+@push('scripts')
+    <script>
+        if (typeof window.mercatoriaTrack === 'function') {
+            window.mercatoriaTrack('view_home');
+        }
+    </script>
+@endpush
