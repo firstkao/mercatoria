@@ -110,14 +110,21 @@ class CartController extends Controller
         $validated = $request->validate([
             'cart_ids' => ['required', 'array', 'min:1'],
             'cart_ids.*' => ['required', 'integer', 'distinct'],
+            'platform' => ['nullable', 'in:shopee,toco'],
+            'payment_scheme' => ['nullable', 'in:fp,dp'],
+            'payment_method' => ['nullable', 'in:bca,qris,shopeepay'],
         ]);
         $cartIds = $this->checkout->validatedCartIds($validated);
         $lines = $this->checkout->linesFor($request->user(), $cartIds);
-        $subtotal = round($lines->sum('subtotal'), 2);
+        $quote = $this->checkout->calculateTotals(
+            $lines,
+            $request->string('platform', 'toco')->toString(),
+            $request->string('payment_scheme', 'fp')->toString(),
+            $request->string('payment_method', 'bca')->toString(),
+        );
         $profitPercent = (float) setting('profit_percent', 11);
-        $total = (int) (ceil(($subtotal * (1 + $profitPercent / 100)) / 5000) * 5000);
 
-        return view('cart.checkout', compact('lines', 'cartIds', 'subtotal', 'profitPercent', 'total'));
+        return view('cart.checkout', compact('lines', 'cartIds', 'quote', 'profitPercent'));
     }
 
     public function placeOrder(Request $request): RedirectResponse

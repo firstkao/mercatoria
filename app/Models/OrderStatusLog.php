@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\OrderStatus;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -11,9 +12,18 @@ class OrderStatusLog extends Model
 
     protected $casts = ['meta' => 'array'];
 
+    public function getStatusEnumAttribute(): OrderStatus
+    {
+        return OrderStatus::from($this->status);
+    }
+
     public function order(): BelongsTo
-    { return $this->belongsTo(Order::class); }
+    {
+        return $this->belongsTo(Order::class);
+    }
 
     public function changedBy(): BelongsTo
-    { return $this->belongsTo(User::class, 'changed_by'); }
+    {
+        return $this->belongsTo(User::class, 'changed_by');
+    }
 }

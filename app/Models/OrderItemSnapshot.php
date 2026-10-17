@@ -35,10 +35,17 @@ class OrderItemSnapshot extends Model
     ];
 
     public function orderItem(): BelongsTo
-    { return $this->belongsTo(OrderItem::class); }
+    {
+        return $this->belongsTo(OrderItem::class);
+    }
 
     public function productStillExists(): bool
     {
         return Product::where('id', $this->product_id_audit)->exists();
+    }
+
+    public function getProductDeletedAttribute(): bool
+    {
+        return ! $this->productStillExists();
     }
 }

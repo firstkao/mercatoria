@@ -12,6 +12,7 @@
         <div class="mx-auto flex max-w-7xl items-center justify-between px-4 py-3">
             <a href="{{ route('office.stores.index') }}" class="text-xl font-bold text-navy-500">Mercatoria Admin</a>
             <div class="flex items-center gap-4 text-sm">
+                <x-admin-notification-bell />
                 <span class="hidden text-text-muted sm:inline">{{ auth()->user()->name }}</span>
                 <a href="{{ route('home') }}" class="text-navy-500 hover:underline">Lihat toko</a>
                 <form method="POST" action="{{ route('logout') }}">
@@ -33,6 +34,10 @@
                 <a href="{{ route('office.products.index') }}"
                    @class(['block rounded-lg px-3 py-2 text-sm', 'bg-info-50 font-semibold text-navy-500' => request()->routeIs('office.products.*'), 'text-text-muted hover:bg-surface-2' => ! request()->routeIs('office.products.*')])>
                     Produk
+                </a>
+                <a href="{{ route('office.orders.index') }}"
+                   @class(['block rounded-lg px-3 py-2 text-sm', 'bg-info-50 font-semibold text-navy-500' => request()->routeIs('office.orders.*', 'office.payments.*', 'office.refunds.*'), 'text-text-muted hover:bg-surface-2' => ! request()->routeIs('office.orders.*', 'office.payments.*', 'office.refunds.*')])>
+                    Pesanan &amp; Pembayaran
                 </a>
                 <a href="{{ route('office.stores.index') }}"
                    @class(['block rounded-lg px-3 py-2 text-sm', 'bg-info-50 font-semibold text-navy-500' => request()->routeIs('office.stores.*'), 'text-text-muted hover:bg-surface-2' => ! request()->routeIs('office.stores.*')])>
