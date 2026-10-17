@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Game;
 use App\Models\Product;
 use App\Models\Store;
+use App\Services\Product\ProductDeletionService;
 use App\Services\Product\StoreService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -15,7 +16,10 @@ use Illuminate\View\View;
 
 class ProductController extends Controller
 {
-    public function __construct(private readonly StoreService $storeService) {}
+    public function __construct(
+        private readonly StoreService $storeService,
+        private readonly ProductDeletionService $deletionService,
+    ) {}
 
     public function index(Request $request): View
     {
@@ -26,6 +30,7 @@ class ProductController extends Controller
 
         $products = Product::query()
             ->with(['store', 'games'])
+            ->withCount('orderItems')
             ->when($filters['q'] ?? null, fn ($query, $search) => $query->search($search))
             ->when($filters['store_id'] ?? null, fn ($query, $storeId) => $query->whereIn(
                 'products.id',
@@ -84,6 +89,28 @@ class ProductController extends Controller
         });
 
         return redirect()->route('office.products.edit', $product)->with('success', 'Perubahan produk berhasil disimpan.');
+    }
+
+    public function destroy(Product $product): RedirectResponse
+    {
+        $ordersCount = $product->orderItems()->count();
+        $this->deletionService->deleteMany([$product->id]);
+
+        return redirect()->route('office.products.index')->with(
+            'success',
+            "Produk dihapus permanen. {$ordersCount} item order terdahulu tetap tersimpan sebagai snapshot.",
+        );
+    }
+
+    public function bulkDestroy(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'product_ids' => ['required', 'array', 'min:1'],
+            'product_ids.*' => ['required', 'integer', 'distinct', 'exists:products,id'],
+        ]);
+        $count = $this->deletionService->deleteMany(array_map('intval', $validated['product_ids']));
+
+        return redirect()->route('office.products.index')->with('success', "{$count} produk dihapus permanen.");
     }
 
     /**
