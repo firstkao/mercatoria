@@ -3,6 +3,11 @@
 @section('title', 'Beranda')
 
 @section('content')
+@if (session('blocked_spammer_ip'))
+    <div role="alert" class="mx-auto mt-4 max-w-7xl rounded-lg bg-danger-50 px-4 py-3 text-sm text-danger-700">
+        Akses dari alamat jaringan ini dibatasi. Halaman beranda tetap dapat diakses.
+    </div>
+@endif
 <section class="bg-surface-2">
     <div class="mx-auto grid max-w-7xl gap-10 px-4 py-16 md:grid-cols-2 md:items-center md:py-24">
         <div>
@@ -56,5 +61,19 @@
         if (typeof window.mercatoriaTrack === 'function') {
             window.mercatoriaTrack('view_home');
         }
+    </script>
+@endpush
+
+@push('structured-data')
+    <script type="application/ld+json">
+        {!! json_encode([
+            chr(64).'context' => 'https://schema.org',
+            '@type' => 'Organization',
+            'name' => 'Mercatoria',
+            'url' => route('home'),
+            'logo' => setting('seo_default_og_image')
+                ? url(setting('seo_default_og_image'))
+                : null,
+        ], JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT) !!}
     </script>
 @endpush

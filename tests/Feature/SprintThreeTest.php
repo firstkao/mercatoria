@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\Customer;
 use App\Models\Game;
 use App\Models\Order;
 use App\Models\OrderItemSnapshot;
@@ -26,6 +27,7 @@ class SprintThreeTest extends TestCase
         $response->assertRedirect("/office/orders/create?user_id={$user->id}");
         $this->assertSame('customer', $user->role);
         $this->assertTrue($user->isMigrated());
+        $this->assertSame('mvp', Customer::query()->where('user_id', $user->id)->value('current_state'));
         $this->assertNull($user->email_verified_at);
         $this->assertNull($user->tgl_lahir);
         $this->assertSame('628123456789', $user->no_hp);

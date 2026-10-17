@@ -2,6 +2,9 @@
 
 @section('title', $product->name)
 @section('meta_description', \Illuminate\Support\Str::limit(strip_tags($product->description ?? $product->name), 155))
+@section('meta_type', 'product')
+@section('meta_image', $product->main_image_path ? \Illuminate\Support\Facades\Storage::url($product->main_image_path) : '')
+@section('canonical_url', route('products.direct', $product->slug))
 
 @section('content')
 <div class="mx-auto max-w-7xl px-4 py-8">
@@ -131,5 +134,37 @@
                 }]
             });
         }
+    </script>
+@endpush
+
+@push('structured-data')
+    <script type="application/ld+json">
+        {!! json_encode([
+            chr(64).'context' => 'https://schema.org',
+            '@type' => 'Product',
+            'name' => $product->name,
+            'description' => \Illuminate\Support\Str::limit(trim(strip_tags($product->description ?? '')), 500),
+            'image' => $product->main_image_path ? url(\Illuminate\Support\Facades\Storage::url($product->main_image_path)) : null,
+            'sku' => $product->sku,
+            'url' => url()->current(),
+            'offers' => [
+                '@type' => 'Offer',
+                'priceCurrency' => 'IDR',
+                'price' => number_format((float) $product->final_price, 2, '.', ''),
+                'availability' => $product->isPurchasable ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
+                'url' => url()->current(),
+            ],
+        ], JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT) !!}
+    </script>
+    <script type="application/ld+json">
+        {!! json_encode([
+            chr(64).'context' => 'https://schema.org',
+            '@type' => 'BreadcrumbList',
+            'itemListElement' => [
+                ['@type' => 'ListItem', 'position' => 1, 'name' => 'Beranda', 'item' => route('home')],
+                ['@type' => 'ListItem', 'position' => 2, 'name' => $game?->name ?? 'Katalog', 'item' => $game ? route('games.show', $game) : route('catalog.index')],
+                ['@type' => 'ListItem', 'position' => 3, 'name' => $product->name, 'item' => url()->current()],
+            ],
+        ], JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT) !!}
     </script>
 @endpush

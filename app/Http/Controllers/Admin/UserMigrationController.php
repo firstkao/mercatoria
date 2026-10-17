@@ -2,11 +2,16 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Enums\UserState;
 use App\Http\Controllers\Controller;
 use App\Models\AdminLog;
+use App\Models\Customer;
+use App\Models\Spammer;
 use App\Models\User;
+use App\Models\Voucher;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
@@ -29,6 +34,32 @@ class UserMigrationController extends Controller
             ->latest()
             ->paginate(20)
             ->withQueryString();
+
+        $pageUsers = $users->getCollection();
+        $emails = $pageUsers->pluck('email')->filter()->all();
+        $phoneNumbers = $pageUsers->pluck('no_hp')->filter()->all();
+        $blockedSpammers = collect();
+        if ($emails || $phoneNumbers) {
+            $blockedSpammers = Spammer::query()
+                ->where('status', 'blocked')
+                ->where(function ($query) use ($emails, $phoneNumbers): void {
+                    if ($emails) {
+                        $query->whereIn('email', $emails);
+                    }
+                    if ($phoneNumbers) {
+                        $query->{$emails ? 'orWhereIn' : 'whereIn'}('no_hp', $phoneNumbers);
+                    }
+                })
+                ->get(['email', 'no_hp']);
+        }
+        $blockedEmails = $blockedSpammers->pluck('email')->filter()->all();
+        $blockedPhoneNumbers = $blockedSpammers->pluck('no_hp')->filter()->all();
+        $pageUsers->each(function (User $user) use ($blockedEmails, $blockedPhoneNumbers): void {
+            $user->setAttribute(
+                'blocked_spammer',
+                in_array($user->email, $blockedEmails, true) || in_array($user->no_hp, $blockedPhoneNumbers, true),
+            );
+        });
 
         return view('admin.users.index', compact('users', 'filters'));
     }
@@ -57,12 +88,21 @@ class UserMigrationController extends Controller
             'kode_pos' => ['required', 'string', 'max:10'],
         ]);
 
-        $user = User::create([
-            ...$validated,
-            'password' => Str::random(64),
-            'role' => 'customer',
-            'is_migrated' => true,
-        ]);
+        $user = DB::transaction(function () use ($validated): User {
+            $user = User::create([
+                ...$validated,
+                'password' => Str::random(64),
+                'role' => 'customer',
+                'is_migrated' => true,
+            ]);
+            Customer::create([
+                'user_id' => $user->id,
+                'current_state' => UserState::MVP->value,
+                'state_updated_at' => now(),
+            ]);
+
+            return $user;
+        });
 
         return redirect()->to("/office/orders/create?user_id={$user->id}")
             ->with('success', 'Customer lama berhasil dimigrasikan. Lanjutkan dengan memasukkan order lamanya.');
@@ -71,8 +111,19 @@ class UserMigrationController extends Controller
     public function show(User $user): View
     {
         abort_unless($user->role === 'customer', 404);
+        $blockedSpammer = Spammer::query()
+            ->where('status', 'blocked')
+            ->where(fn ($query) => $query->where('email', $user->email)->orWhere('no_hp', $user->no_hp))
+            ->exists();
 
-        return view('admin.users.show', compact('user'));
+        $vouchers = Voucher::query()
+            ->where('is_active', true)
+            ->where(fn ($query) => $query->whereNull('valid_from')->orWhere('valid_from', '<=', now()))
+            ->where(fn ($query) => $query->whereNull('valid_until')->orWhere('valid_until', '>=', now()))
+            ->orderBy('code')
+            ->get();
+
+        return view('admin.users.show', compact('user', 'blockedSpammer', 'vouchers'));
     }
 
     public function forceResetPassword(User $user): RedirectResponse
@@ -116,5 +167,32 @@ class UserMigrationController extends Controller
         );
 
         return back()->with('success', 'Email customer berhasil diverifikasi.');
+    }
+
+    public function foreverDelete(User $user): RedirectResponse
+    {
+        abort_unless(
+            $user->role === 'customer' && Spammer::query()
+                ->where('status', 'blocked')
+                ->where(fn ($query) => $query->where('email', $user->email)
+                    ->orWhere('no_hp', $user->no_hp))
+                ->exists(),
+            404,
+        );
+
+        DB::transaction(function () use ($user): void {
+            $user->delete();
+
+            AdminLog::record(
+                'forever_delete_spammer_user',
+                User::class,
+                $user->id,
+                old: ['email' => $user->email, 'no_hp' => $user->no_hp],
+                description: 'Admin menghapus akun user yang cocok dengan daftar spammer; identitas spammer tetap tersimpan.',
+            );
+        });
+
+        return redirect()->route('office.users.index')
+            ->with('success', 'Akun spammer berhasil dihapus permanen; identitas blokir tetap tersimpan.');
     }
 }

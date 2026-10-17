@@ -1,6 +1,20 @@
 @extends('layouts.app')
 
 @section('title', $title)
+@section('meta_description', \Illuminate\Support\Str::limit(trim(strip_tags($game?->description ?? $developer?->description ?? $title)), 155))
+
+@push('structured-data')
+    <script type="application/ld+json">
+        {!! json_encode([
+            chr(64).'context' => 'https://schema.org',
+            '@type' => 'BreadcrumbList',
+            'itemListElement' => [
+                ['@type' => 'ListItem', 'position' => 1, 'name' => 'Beranda', 'item' => route('home')],
+                ['@type' => 'ListItem', 'position' => 2, 'name' => $title, 'item' => url()->current()],
+            ],
+        ], JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT) !!}
+    </script>
+@endpush
 
 @section('content')
 <section class="bg-surface-2">

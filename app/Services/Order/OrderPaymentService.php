@@ -5,7 +5,9 @@ namespace App\Services\Order;
 use App\Enums\NotificationType;
 use App\Enums\OrderStatus;
 use App\Enums\RefundStatus;
+use App\Enums\UserState;
 use App\Models\AdminNotification;
+use App\Models\Customer;
 use App\Models\Order;
 use App\Models\OrderStatusLog;
 use App\Models\Payment;
@@ -134,6 +136,22 @@ class OrderPaymentService
                 'verified_by' => $adminId,
                 'rejection_reason' => null,
             ]);
+            $user = $order->user()->lockForUpdate()->firstOrFail();
+            $customer = Customer::query()->lockForUpdate()->firstOrNew(['user_id' => $user->id]);
+            $stateChanged = ! $customer->exists || $customer->current_state !== UserState::MVP->value;
+            if ($stateChanged) {
+                $customer->current_state = UserState::MVP->value;
+                $customer->state_updated_at = now();
+            }
+            if (! $customer->last_order_at || $order->created_at?->gt($customer->last_order_at)) {
+                $customer->last_order_at = $order->created_at ?? now();
+            }
+            if ($customer->unblocked_until) {
+                $customer->unblocked_until = null;
+            }
+            $customer->save();
+            $user->crush()->delete();
+
             $paid = (float) $order->payments()->where('status', 'verified')->sum('amount');
             $target = $paid >= (float) $order->total
                 && $payment->type === 'settlement'

@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\BlockSpammerIps;
 use App\Http\Middleware\EnsureAdmin;
 use App\Http\Middleware\EnsureEmailVerified;
 use App\Http\Middleware\EnsureProfileComplete;
@@ -15,6 +16,7 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        $middleware->appendToGroup('web', BlockSpammerIps::class);
         $middleware->alias([
             'admin' => EnsureAdmin::class,
             'ensure.verified' => EnsureEmailVerified::class,

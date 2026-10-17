@@ -27,6 +27,40 @@
     </dl>
 </section>
 
+@if ($user->role === 'customer' && (! $user->isCrush() || $user->customer()->exists()))
+    <section class="mt-5 rounded-xl border border-border bg-white p-5">
+        <h2 class="font-semibold">Kirim gift</h2>
+        <form method="POST" action="{{ route('office.users.gifts.store', $user) }}" class="mt-4 grid gap-4 sm:grid-cols-2">
+            @csrf
+            <label class="text-sm font-medium">Jenis gift
+                <select name="type" required class="mt-1 w-full rounded-lg border border-border px-3 py-2">
+                    <option value="coin">Koin</option>
+                    <option value="voucher">Voucher</option>
+                    <option value="gift_box">Gift Box Special</option>
+                </select>
+            </label>
+            <label class="text-sm font-medium">Nominal koin (untuk gift koin)
+                <input type="number" name="coin_amount" min="1" max="1000000"
+                       class="mt-1 w-full rounded-lg border border-border px-3 py-2">
+            </label>
+            <label class="text-sm font-medium">Voucher (untuk gift voucher)
+                <select name="voucher_id" class="mt-1 w-full rounded-lg border border-border px-3 py-2">
+                    <option value="">Pilih voucher</option>
+                    @foreach ($vouchers as $voucher)
+                        <option value="{{ $voucher->id }}">{{ $voucher->code }} — {{ $voucher->name }}</option>
+                    @endforeach
+                </select>
+            </label>
+            <label class="text-sm font-medium">Catatan
+                <input name="note" maxlength="1000" class="mt-1 w-full rounded-lg border border-border px-3 py-2">
+            </label>
+            <div class="sm:col-span-2">
+                <x-button type="submit">Kirim Gift</x-button>
+            </div>
+        </form>
+    </section>
+@endif
+
 <section class="mt-5 rounded-xl border border-border bg-white p-5">
     <h2 class="font-semibold">Bantuan aktivasi</h2>
     <p class="mt-1 text-sm text-text-muted">Aksi admin dicatat pada log. Konfirmasi akan diminta sebelum dijalankan.</p>
@@ -35,8 +69,26 @@
         @unless ($user->hasVerifiedEmail())
             <x-button variant="ghost" @click="$dispatch('open-modal', 'force-verify-email')">Force Verify Email</x-button>
         @endunless
+        @if ($blockedSpammer)
+            <x-button variant="danger" @click="$dispatch('open-modal', 'forever-delete-spammer')">Forever Delete</x-button>
+        @endif
     </div>
 </section>
+
+@if ($blockedSpammer)
+    <x-modal name="forever-delete-spammer">
+        <h2 class="text-lg font-bold">Hapus akun spammer permanen?</h2>
+        <p class="mt-2 text-sm text-text-muted">Akun dan data turunannya akan dihapus. Identitas di daftar spammer tetap aktif untuk mencegah pendaftaran ulang.</p>
+        <div class="mt-5 flex justify-end gap-2">
+            <x-button variant="ghost" @click="$dispatch('close-modal', 'forever-delete-spammer')">Batal</x-button>
+            <form method="POST" action="{{ route('office.users.forever-delete', $user) }}">
+                @csrf
+                @method('DELETE')
+                <x-button type="submit" variant="danger">Hapus Permanen</x-button>
+            </form>
+        </div>
+    </x-modal>
+@endif
 
 <x-modal name="force-reset-password">
     <h2 class="text-lg font-bold">Kirim link reset password?</h2>

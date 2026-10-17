@@ -10,3 +10,5 @@ Artisan::command('inspire', function () {
 
 Schedule::command('orders:send-pickup-reminders')->hourly();
 Schedule::command('orders:hangus-expired')->hourly();
+Schedule::command('spammers:recheck-grace')->dailyAt('04:30');
+Schedule::command('sitemap:generate')->dailyAt('05:00');
