@@ -15,6 +15,10 @@
         'minimum' => (float) $store->min_belanja_rmb,
         'shipping' => (float) $store->ongkir_rmb,
     ]])->all();
+    $storeOptions = $stores->map(fn ($store) => [
+        'id' => (string) $store->id,
+        'label' => $store->name.' ('.($store->hasMinBelanja() ? number_format((float) $store->min_belanja_rmb, 2, ',', '.').' RMB' : 'tanpa minimum').' · '.($store->isFreeShipping() ? 'Gratis' : number_format((float) $store->ongkir_rmb, 2, ',', '.').' RMB').')',
+    ])->values();
     $variantData = $product->variants->map(fn ($variant) => [
         'id' => $variant->id,
         'name' => $variant->name ?: $variant->sku,
@@ -56,7 +60,8 @@
               const price = this.priceRmb * this.rate;
               const subtotal = price + local + cnBtm + btmJkt;
               const profit = subtotal * this.profitPercent / 100;
-              return { local, cnBtm, btmJkt, price, profit, total: subtotal + profit };
+              const total = subtotal + profit;
+              return { local, cnBtm, btmJkt, price, subtotal, profit, total, roundedTotal: Math.ceil(total / 5000) * 5000 };
           },
           rupiah(value) { return 'Rp ' + new Intl.NumberFormat('id-ID', { maximumFractionDigits: 0 }).format(value) }
       }">
@@ -65,6 +70,7 @@
         @method('PUT')
     @endif
 
+    <div class="grid gap-5 lg:grid-cols-[minmax(0,1fr)_20rem]">
     <section class="grid gap-5 rounded-xl border border-border bg-white p-5 md:grid-cols-2 md:p-6">
         <div class="md:col-span-2">
             <label for="name" class="mb-1 block text-sm font-medium">Nama Produk *</label>
@@ -133,39 +139,10 @@
             @error('game_ids.*')<p class="mt-1 text-sm text-danger-500">{{ $message }}</p>@enderror
         </div>
         <div class="md:col-span-2">
-            <label for="store_id" class="mb-1 block text-sm font-medium">Store</label>
-            <select id="store_id" name="store_id" class="w-full rounded-lg border-border focus:border-primary-400 focus:ring-primary-400">
-                <option value="">— Pakai default game —</option>
-                @foreach ($stores as $store)
-                    <option value="{{ $store->id }}" @selected((string) old('store_id', $product->store_id) === (string) $store->id)>
-                        {{ $store->name }} ({{ $store->hasMinBelanja() ? number_format((float) $store->min_belanja_rmb, 2, ',', '.').' RMB' : 'tanpa minimum' }} · {{ $store->isFreeShipping() ? 'Gratis' : number_format((float) $store->ongkir_rmb, 2, ',', '.').' RMB' }})
-                    </option>
-                @endforeach
-            </select>
-            <p class="mt-1 text-xs text-text-muted">
-                <span x-show="defaultGameStore" x-text="'Default game: ' + defaultGameStore"></span>
-                <span x-show="!defaultGameStore">Game tidak memiliki default store. Tanpa override, ongkir lokal CN menjadi Rp 0.</span>
-            </p>
-            @error('store_id')<p class="mt-1 text-sm text-danger-500">{{ $message }}</p>@enderror
-            <a href="{{ route('office.stores.create') }}" class="mt-2 inline-block text-sm text-navy-500 hover:underline">+ Store Baru</a>
-        </div>
-        <div class="md:col-span-2">
             <label for="description" class="mb-1 block text-sm font-medium">Deskripsi</label>
             <textarea id="description" name="description" rows="5" class="w-full rounded-lg border-border focus:border-primary-400 focus:ring-primary-400">{{ old('description', $product->description) }}</textarea>
             @error('description')<p class="mt-1 text-sm text-danger-500">{{ $message }}</p>@enderror
         </div>
-        <section class="md:col-span-2 rounded-lg border border-info-200 bg-info-50 p-4" aria-live="polite">
-            <h2 class="font-semibold text-navy-500">Preview Perhitungan (khusus admin)</h2>
-            <p class="mt-1 text-xs text-text-muted">Preview diperbarui saat harga, berat, atau Store berubah. Customer hanya melihat harga jual.</p>
-            <dl class="mt-3 grid gap-x-6 gap-y-2 text-sm sm:grid-cols-2">
-                <div class="flex justify-between gap-3"><dt>Harga produk</dt><dd x-text="rupiah(preview.price)"></dd></div>
-                <div class="flex justify-between gap-3"><dt>Ongkir lokal CN</dt><dd x-text="rupiah(preview.local)"></dd></div>
-                <div class="flex justify-between gap-3"><dt>Ongkir CN–BTM</dt><dd x-text="rupiah(preview.cnBtm)"></dd></div>
-                <div class="flex justify-between gap-3"><dt>Ongkir BTM–JKT</dt><dd x-text="rupiah(preview.btmJkt)"></dd></div>
-                <div class="flex justify-between gap-3"><dt>Profit ({{ rtrim(rtrim(number_format((float) setting('profit_percent', 11), 2, '.', ''), '0'), '.') }}%)</dt><dd x-text="rupiah(preview.profit)"></dd></div>
-                <div class="flex justify-between gap-3 border-t border-info-200 pt-2 font-bold"><dt>Total estimasi</dt><dd x-text="rupiah(preview.total)"></dd></div>
-            </dl>
-        </section>
         <div class="md:col-span-2">
             <input type="hidden" name="is_active" value="0">
             <label class="inline-flex items-center gap-2 text-sm">
@@ -174,6 +151,46 @@
             </label>
         </div>
     </section>
+    <aside class="space-y-5 lg:sticky lg:top-4 lg:self-start">
+        <section class="rounded-xl border border-border bg-white p-5">
+            <h2 class="text-xs font-bold uppercase tracking-wide text-text-muted">Store</h2>
+            <div class="mt-3" x-data="{ search: '', stores: @js($storeOptions) }">
+                <label for="store_id" class="mb-1 block text-sm font-medium">Store produk</label>
+                <label for="product-store-search" class="sr-only">Cari opsi store</label>
+                <input id="product-store-search" type="search" x-model="search" autocomplete="off"
+                       placeholder="Cari store..."
+                       class="mb-2 w-full rounded-lg border-border text-sm focus:border-primary-400 focus:ring-primary-400">
+                <select id="store_id" name="store_id" x-model="storeId"
+                        class="w-full rounded-lg border-border focus:border-primary-400 focus:ring-primary-400">
+                    <option value="" class="italic text-text-muted">— Pakai default game —</option>
+                    <template x-for="store in stores.filter(store => store.id === String(storeId ?? '') || store.label.toLocaleLowerCase('id').includes(search.toLocaleLowerCase('id')))" :key="store.id">
+                        <option :value="store.id" x-text="store.label"></option>
+                    </template>
+                </select>
+                <p class="mt-2 text-xs text-text-muted">
+                    <span x-show="defaultGameStore" x-text="'Default game: ' + defaultGameStore"></span>
+                    <span x-show="!defaultGameStore">Game tidak memiliki default store. Tanpa override, ongkir lokal CN menjadi Rp 0.</span>
+                </p>
+                @error('store_id')<p class="mt-1 text-sm text-danger-500">{{ $message }}</p>@enderror
+                <a href="{{ route('office.stores.create') }}" class="mt-3 inline-block text-sm text-navy-500 hover:underline">+ Store Baru</a>
+            </div>
+        </section>
+        <section class="rounded-lg border border-border border-l-4 border-l-navy-500 bg-surface-2 p-4" aria-live="polite">
+            <h2 class="text-xs font-bold uppercase tracking-wide text-text-muted">Preview Perhitungan Harga</h2>
+            <p class="mt-1 text-xs text-text-muted">Preview diperbarui saat harga, berat, atau Store berubah. Preview ini khusus admin; customer hanya melihat harga jual.</p>
+            <dl class="mt-3 space-y-2 font-mono text-sm">
+                <div class="flex justify-between gap-3"><dt>Harga produk</dt><dd x-text="rupiah(preview.price)"></dd></div>
+                <div class="flex justify-between gap-3"><dt>Ongkir lokal CN</dt><dd x-text="rupiah(preview.local)"></dd></div>
+                <div class="flex justify-between gap-3"><dt>Ongkir CN–BTM</dt><dd x-text="rupiah(preview.cnBtm)"></dd></div>
+                <div class="flex justify-between gap-3"><dt>Ongkir BTM–JKT</dt><dd x-text="rupiah(preview.btmJkt)"></dd></div>
+                <div class="flex justify-between gap-3 border-t border-border pt-2"><dt>Subtotal</dt><dd x-text="rupiah(preview.subtotal)"></dd></div>
+                <div class="flex justify-between gap-3"><dt>Profit ({{ rtrim(rtrim(number_format((float) setting('profit_percent', 11), 2, '.', ''), '0'), '.') }}%)</dt><dd x-text="rupiah(preview.profit)"></dd></div>
+                <div class="flex justify-between gap-3"><dt>Total sebelum pembulatan</dt><dd x-text="rupiah(preview.total)"></dd></div>
+                <div class="flex justify-between gap-3 border-t border-border pt-2 font-bold text-navy-500"><dt>Total setelah pembulatan</dt><dd class="text-lg" x-text="rupiah(preview.roundedTotal)"></dd></div>
+            </dl>
+        </section>
+    </aside>
+    </div>
 
     <div class="flex justify-end gap-3">
         <x-button variant="ghost" href="{{ route('office.products.index') }}">Batal</x-button>
@@ -212,7 +229,13 @@
                 <table class="w-full min-w-[640px] text-left text-sm">
                     <thead class="bg-surface-2 text-text-muted">
                         <tr>
-                            <th class="w-12 px-3 py-2"><span class="sr-only">Pilih</span></th>
+                            <th class="w-12 px-3 py-2">
+                                <input type="checkbox"
+                                       :checked="variants.length > 0 && selected.length === variants.length"
+                                       x-on:change="selected = $event.target.checked ? variants.map(item => item.id) : []"
+                                       aria-label="Pilih semua varian"
+                                       class="rounded border-border text-primary-500 focus:ring-primary-400">
+                            </th>
                             <th class="px-3 py-2">Varian</th>
                             <th class="px-3 py-2">SKU</th>
                             <th class="px-3 py-2">Harga</th>
@@ -225,6 +248,7 @@
                                 <td class="px-3 py-3">
                                     <input type="checkbox" value="{{ $variant->id }}" x-model.number="selected"
                                            aria-label="Pilih {{ $variant->name ?: $variant->sku }}"
+                                           :aria-checked="selected.includes({{ $variant->id }})"
                                            class="rounded border-border text-primary-500 focus:ring-primary-400">
                                 </td>
                                 <td class="px-3 py-3 font-medium">{{ $variant->name ?: '—' }}</td>
@@ -290,7 +314,7 @@
              x-on:keydown.escape.window="open = false"
              x-show="open" x-cloak x-on:click.self="open = false"
              class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
-            <div class="w-full max-w-lg rounded-xl bg-white p-6" role="dialog" aria-modal="true" aria-labelledby="bulk-weight-title">
+            <div class="w-full max-w-lg rounded-xl bg-white p-6" role="dialog" aria-modal="true" aria-labelledby="bulk-weight-title" x-trap.noscroll="open">
                 <h3 id="bulk-weight-title" class="text-lg font-bold">Bulk Edit Berat — Set Same</h3>
                 <p class="mt-1 text-sm text-text-muted">Berat baru akan diterapkan ke semua varian terpilih.</p>
                 <ul class="mt-4 max-h-40 space-y-2 overflow-y-auto text-sm">

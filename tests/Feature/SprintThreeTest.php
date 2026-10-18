@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\Cart;
 use App\Models\Customer;
 use App\Models\Game;
 use App\Models\Order;
@@ -16,6 +17,19 @@ use Tests\TestCase;
 
 class SprintThreeTest extends TestCase
 {
+    public function test_legacy_user_form_uses_the_migration_notice_and_warning_layout(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+
+        $this->actingAs($admin)->get(route('office.users.create'))
+            ->assertOk()
+            ->assertSee('Tambah User Baru')
+            ->assertSee('Data Dasar')
+            ->assertSee('Alamat Pengiriman')
+            ->assertSee('Setelah simpan')
+            ->assertSee('Simpan &amp; Lanjut Order', false);
+    }
+
     public function test_admin_can_inject_a_legacy_customer_and_continue_to_order_import(): void
     {
         $admin = User::factory()->create(['role' => 'admin']);
@@ -191,6 +205,53 @@ class SprintThreeTest extends TestCase
         $this->actingAs($user)->get(route('dashboard'))
             ->assertOk()
             ->assertSee('Verifikasi email dulu biar bisa order');
+    }
+
+    public function test_incomplete_verified_profile_shows_order_gate_on_product_cart_and_checkout(): void
+    {
+        $user = User::factory()->create([
+            'email_verified_at' => now(),
+            'tgl_lahir' => null,
+        ]);
+        $product = $this->createProduct();
+        $product->update(['type' => 'single']);
+        $cart = Cart::create([
+            'user_id' => $user->id,
+            'product_id' => $product->id,
+            'qty' => 1,
+        ]);
+
+        $productResponse = $this->actingAs($user)->get(route('products.direct', $product->slug));
+        $productResponse->assertOk()->assertSee('Lengkapi profil dulu');
+        $this->assertMatchesRegularExpression(
+            '/<button\b(?=[^>]*class="flex-1 rounded-lg bg-primary-600)(?=[^>]*\sdisabled(?:\s|=|>))[^>]*>/s',
+            $productResponse->getContent(),
+        );
+
+        $cartResponse = $this->get(route('cart.index'));
+        $cartResponse->assertOk()->assertSee('Lengkapi Profil →');
+        $this->assertMatchesRegularExpression(
+            '/<button\b(?=[^>]*class="rounded-lg bg-primary-600)(?=[^>]*\sdisabled(?:\s|=|>))[^>]*>/s',
+            $cartResponse->getContent(),
+        );
+
+        $checkoutResponse = $this->get(route('cart.checkout', ['cart_ids' => [$cart->id]]));
+        $checkoutResponse->assertOk()
+            ->assertSee('Buat Pesanan')
+            ->assertSee('Lengkapi Profil →');
+        $this->assertMatchesRegularExpression(
+            '/<button\b(?=[^>]*class="w-full rounded-lg bg-primary-600)(?=[^>]*\sdisabled(?:\s|=|>))[^>]*>/s',
+            $checkoutResponse->getContent(),
+        );
+
+        $user->update(['tgl_lahir' => '1990-01-01']);
+
+        $response = $this->get(route('products.direct', $product->slug));
+        $response->assertOk()->assertDontSee('Lengkapi Profil →');
+        $this->assertDoesNotMatchRegularExpression(
+            '/<button\b(?=[^>]*class="flex-1 rounded-lg bg-primary-600)(?=[^>]*\sdisabled(?:\s|=|>))[^>]*>/s',
+            $response->getContent(),
+        );
     }
 
     public function test_admin_product_form_previews_weight_based_shipping_and_requires_a_weight(): void

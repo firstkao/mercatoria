@@ -46,6 +46,10 @@ class StoreAndCatalogTest extends TestCase
             ->assertSee('Official Example')
             ->assertSee('2 produk')
             ->assertSee('2 game')
+            ->assertSee('Lihat Produk')
+            ->assertSee('Hapus')
+            ->assertSee('delete-store-'.$store->id)
+            ->assertSee('Total: 1 store')
             ->assertDontSee('Other Store');
     }
 
@@ -94,6 +98,32 @@ class StoreAndCatalogTest extends TestCase
 
         $response->assertSessionHasErrors(['name', 'min_belanja_rmb', 'ongkir_rmb']);
         $this->assertDatabaseCount('stores', 0);
+    }
+
+    public function test_store_names_must_be_unique_but_the_current_name_can_be_kept_on_update(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        $store = Store::create([
+            'name' => 'Existing Store',
+            'min_belanja_rmb' => 100,
+            'ongkir_rmb' => 7,
+        ]);
+
+        $this->actingAs($admin)->post(route('office.stores.store'), [
+            'name' => ' Existing Store ',
+            'min_belanja_rmb' => 100,
+            'ongkir_rmb' => 7,
+        ])->assertSessionHasErrors(['name']);
+
+        $this->put(route('office.stores.update', $store), [
+            'name' => 'Existing Store',
+            'min_belanja_rmb' => 120,
+            'ongkir_rmb' => 8,
+        ])->assertRedirect(route('office.stores.edit', $store))
+            ->assertSessionHasNoErrors();
+
+        $this->assertDatabaseCount('stores', 1);
+        $this->assertDatabaseHas('stores', ['id' => $store->id, 'min_belanja_rmb' => 120]);
     }
 
     public function test_admin_can_update_a_store(): void
@@ -150,6 +180,7 @@ class StoreAndCatalogTest extends TestCase
             ->get(route('office.games.create'))
             ->assertOk()
             ->assertSee('Default Store')
+            ->assertSee('default-store-search')
             ->assertSee('Game Form Store')
             ->assertSee('+ Store Baru');
     }
@@ -186,13 +217,30 @@ class StoreAndCatalogTest extends TestCase
         $store = Store::create(['name' => 'Product Form Store', 'min_belanja_rmb' => 100, 'ongkir_rmb' => 7]);
         $this->createGame('Product Form Game', 'product-form-game', $store);
 
-        $this->actingAs($admin)
+        $response = $this->actingAs($admin)
             ->get(route('office.products.create'))
             ->assertOk()
             ->assertSee('— Pakai default game —')
             ->assertSee('Product Form Store')
+            ->assertSee('product-store-search')
             ->assertSee('Default game:')
+            ->assertSee('Total setelah pembulatan')
             ->assertSee('+ Store Baru');
+        $this->assertMatchesRegularExpression(
+            '/<aside[^>]*>.*<h2[^>]*>Store<\/h2>.*<h2[^>]*>Preview Perhitungan Harga<\/h2>.*<\/aside>/s',
+            $response->getContent(),
+        );
+    }
+
+    public function test_admin_sidebar_can_collapse_and_highlights_the_current_section(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+
+        $this->actingAs($admin)->get(route('office.stores.index'))
+            ->assertOk()
+            ->assertSee('Ciutkan navigasi admin')
+            ->assertSee('Stores (Tier Ongkir)')
+            ->assertSee('bg-primary-600');
     }
 
     public function test_store_product_filter_includes_direct_and_game_default_products(): void

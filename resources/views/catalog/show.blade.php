@@ -84,6 +84,9 @@
 
             @if ($product->isPurchasable)
                 @auth
+                    @if (auth()->user()->hasVerifiedEmail() && ! auth()->user()->hasCompletedProfile())
+                        <x-profile-banner />
+                    @endif
                     <form method="POST" action="{{ route('cart.add') }}" class="mt-6 space-y-3 rounded-xl border border-border bg-white p-4">
                         @csrf
                         <input type="hidden" name="product_id" value="{{ $product->id }}">
@@ -101,7 +104,9 @@
                         <div class="flex gap-3">
                             <label class="sr-only" for="product-qty">Jumlah</label>
                             <input id="product-qty" name="qty" type="number" min="1" max="99" value="{{ old('qty', 1) }}" required class="w-24 rounded-lg border-border">
-                            <button type="submit" @disabled($product->type === 'variant' && $product->variants->where('availability', 'tersedia')->isEmpty()) class="flex-1 rounded-lg bg-primary-600 px-4 py-3 font-semibold text-white hover:bg-primary-700 disabled:cursor-not-allowed disabled:opacity-50">
+                            <button type="submit"
+                                    @disabled(($product->type === 'variant' && $product->variants->where('availability', 'tersedia')->isEmpty()) || (auth()->user()->hasVerifiedEmail() && ! auth()->user()->hasCompletedProfile()))
+                                    class="flex-1 rounded-lg bg-primary-600 px-4 py-3 font-semibold text-white hover:bg-primary-700 disabled:cursor-not-allowed disabled:bg-primary-300 disabled:opacity-50">
                                 Tambah ke Keranjang
                             </button>
                         </div>

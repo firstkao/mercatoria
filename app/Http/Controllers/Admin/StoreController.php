@@ -7,6 +7,7 @@ use App\Models\Store;
 use App\Services\Product\StoreService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 class StoreController extends Controller
@@ -68,7 +69,7 @@ class StoreController extends Controller
 
     public function update(Request $request, Store $store): RedirectResponse
     {
-        $this->storeService->update($store, $this->validateStore($request));
+        $this->storeService->update($store, $this->validateStore($request, $store));
 
         return redirect()->route('office.stores.edit', $store)
             ->with('success', 'Perubahan store berhasil disimpan.');
@@ -85,14 +86,17 @@ class StoreController extends Controller
     /**
      * @return array{name: string, min_belanja_rmb: string, ongkir_rmb: string}
      */
-    private function validateStore(Request $request): array
+    private function validateStore(Request $request, ?Store $store = null): array
     {
+        $request->merge(['name' => trim((string) $request->input('name'))]);
+
         return $request->validate([
-            'name' => ['required', 'string', 'max:100'],
+            'name' => ['required', 'string', 'max:100', Rule::unique('stores', 'name')->ignore($store)],
             'min_belanja_rmb' => ['required', 'numeric', 'min:0', 'max:99999999.99'],
             'ongkir_rmb' => ['required', 'numeric', 'min:0', 'max:99999999.99'],
         ], [
             'name.required' => 'Nama store wajib diisi.',
+            'name.unique' => 'Nama store sudah digunakan.',
             'min_belanja_rmb.required' => 'Minimum belanja wajib diisi.',
             'min_belanja_rmb.min' => 'Minimum belanja tidak boleh kurang dari 0.',
             'ongkir_rmb.required' => 'Ongkir wajib diisi.',

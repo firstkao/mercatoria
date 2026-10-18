@@ -5,6 +5,11 @@
 @section('content')
 <div class="mx-auto max-w-3xl px-4 py-8">
     <h1 class="text-2xl font-bold text-navy-500">Checkout</h1>
+    @auth
+        @if (auth()->user()->hasVerifiedEmail() && ! auth()->user()->hasCompletedProfile())
+            <x-profile-banner />
+        @endif
+    @endauth
     @if ($errors->any())
         <div role="alert" class="mt-4 rounded-lg bg-red-50 p-3 text-sm text-red-800">{{ $errors->first() }}</div>
     @endif
@@ -109,7 +114,9 @@
         @if (request('user_voucher_id'))
             <input type="hidden" name="user_voucher_id" value="{{ request('user_voucher_id') }}">
         @endif
-        <button type="submit" class="w-full rounded-lg bg-primary-600 px-5 py-3 font-semibold text-white hover:bg-primary-700">
+        <button type="submit"
+                @disabled(auth()->user()->hasVerifiedEmail() && ! auth()->user()->hasCompletedProfile())
+                class="w-full rounded-lg bg-primary-600 px-5 py-3 font-semibold text-white hover:bg-primary-700 disabled:cursor-not-allowed disabled:bg-primary-300 disabled:opacity-50">
             Buat Pesanan
         </button>
     </form>
