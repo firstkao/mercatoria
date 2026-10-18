@@ -336,6 +336,17 @@ class SprintNineTenTest extends TestCase
             ->assertExitCode(1);
     }
 
+    public function test_deployment_preflight_passes_with_mysql_and_persistent_sessions(): void
+    {
+        config()->set('database.default', 'mysql');
+        config()->set('session.driver', 'file');
+
+        $this->artisan('app:deployment-check')
+            ->expectsOutputToContain('PASS Session storage uses a durable driver')
+            ->expectsOutputToContain('PASS Database uses MySQL')
+            ->assertExitCode(0);
+    }
+
     public function test_expired_spammer_grace_period_is_reblocked(): void
     {
         $spammer = Spammer::create([
