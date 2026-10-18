@@ -32,76 +32,105 @@
         </div>
     </header>
 
-    <div class="mx-auto grid max-w-7xl gap-6 px-4 py-6 md:grid-cols-[220px_minmax(0,1fr)]">
+    <div class="mx-auto grid max-w-7xl gap-6 px-4 py-6 md:grid-cols-[var(--admin-sidebar-width)_minmax(0,1fr)]"
+         x-data="{ collapsed: false }"
+         :style="collapsed ? '--admin-sidebar-width: 56px' : '--admin-sidebar-width: 240px'">
         <aside>
-            <nav aria-label="Navigasi admin" class="rounded-xl border border-border bg-white p-4">
-                <p class="mb-2 text-xs font-semibold uppercase tracking-wide text-text-light">Produk</p>
+            <nav aria-label="Navigasi admin" class="rounded-xl border border-border bg-white p-4"
+                 :class="collapsed ? 'admin-sidebar-collapsed md:p-2' : 'md:p-4'">
+                <div class="mb-3 flex justify-end">
+                    <button type="button" x-on:click="collapsed = !collapsed"
+                            :aria-label="collapsed ? 'Perluas navigasi admin' : 'Ciutkan navigasi admin'"
+                            class="hidden rounded-lg border border-border px-2 py-1 text-sm text-text-muted hover:bg-surface-2 md:block">
+                        <span x-show="!collapsed" aria-hidden="true">←</span>
+                        <span x-show="collapsed" x-cloak aria-hidden="true">→</span>
+                    </button>
+                </div>
+                <p x-show="!collapsed" class="mb-2 text-xs font-semibold uppercase tracking-wide text-text-light">Produk</p>
                 <a href="{{ route('office.games.index') }}"
-                   @class(['block rounded-lg px-3 py-2 text-sm', 'bg-info-50 font-semibold text-navy-500' => request()->routeIs('office.games.*'), 'text-text-muted hover:bg-surface-2' => ! request()->routeIs('office.games.*')])>
-                    Game
+                   aria-label="Game" title="Game"
+                   @class(['flex items-center gap-3 rounded-lg border-l-4 px-3 py-2 text-sm', 'border-white bg-primary-600 font-semibold text-white' => request()->routeIs('office.games.*'), 'border-transparent text-text-muted hover:bg-surface-2' => ! request()->routeIs('office.games.*')])>
+                    <span aria-hidden="true">🎮</span><span x-show="!collapsed">Game</span>
                 </a>
                 <a href="{{ route('office.products.index') }}"
-                   @class(['block rounded-lg px-3 py-2 text-sm', 'bg-info-50 font-semibold text-navy-500' => request()->routeIs('office.products.*'), 'text-text-muted hover:bg-surface-2' => ! request()->routeIs('office.products.*')])>
-                    Produk
-                </a>
-                <a href="{{ route('office.orders.index') }}"
-                   @class(['block rounded-lg px-3 py-2 text-sm', 'bg-info-50 font-semibold text-navy-500' => request()->routeIs('office.orders.*', 'office.payments.*', 'office.refunds.*'), 'text-text-muted hover:bg-surface-2' => ! request()->routeIs('office.orders.*', 'office.payments.*', 'office.refunds.*')])>
-                    Pesanan &amp; Pembayaran
+                   aria-label="Produk" title="Produk"
+                   @class(['flex items-center gap-3 rounded-lg border-l-4 px-3 py-2 text-sm', 'border-white bg-primary-600 font-semibold text-white' => request()->routeIs('office.products.*'), 'border-transparent text-text-muted hover:bg-surface-2' => ! request()->routeIs('office.products.*')])>
+                    <span aria-hidden="true">📦</span><span x-show="!collapsed">Produk</span>
                 </a>
                 <a href="{{ route('office.stores.index') }}"
-                   @class(['block rounded-lg px-3 py-2 text-sm', 'bg-info-50 font-semibold text-navy-500' => request()->routeIs('office.stores.*'), 'text-text-muted hover:bg-surface-2' => ! request()->routeIs('office.stores.*')])>
-                    Stores (Tier Ongkir)
+                   aria-label="Stores (Tier Ongkir)" title="Stores (Tier Ongkir)"
+                   @class(['flex items-center gap-3 rounded-lg border-l-4 px-3 py-2 text-sm', 'border-white bg-primary-600 font-semibold text-white' => request()->routeIs('office.stores.*'), 'border-transparent text-text-muted hover:bg-surface-2' => ! request()->routeIs('office.stores.*')])>
+                    <span aria-hidden="true">🏪</span><span x-show="!collapsed">Stores (Tier Ongkir)</span>
                 </a>
-                <a href="{{ route('office.settings.edit') }}"
-                   @class(['block rounded-lg px-3 py-2 text-sm', 'bg-info-50 font-semibold text-navy-500' => request()->routeIs('office.settings.*'), 'text-text-muted hover:bg-surface-2' => ! request()->routeIs('office.settings.*')])>
-                    Pengaturan
+                <p x-show="!collapsed" class="mb-2 mt-5 text-xs font-semibold uppercase tracking-wide text-text-light">Transaksi</p>
+                <a href="{{ route('office.orders.index') }}"
+                   aria-label="Pesanan &amp; Pembayaran" title="Pesanan &amp; Pembayaran"
+                   @class(['flex items-center gap-3 rounded-lg border-l-4 px-3 py-2 text-sm', 'border-white bg-primary-600 font-semibold text-white' => request()->routeIs('office.orders.*', 'office.payments.*', 'office.refunds.*'), 'border-transparent text-text-muted hover:bg-surface-2' => ! request()->routeIs('office.orders.*', 'office.payments.*', 'office.refunds.*')])>
+                    <span aria-hidden="true">🛒</span><span x-show="!collapsed">Pesanan &amp; Pembayaran</span>
                 </a>
-                <p class="mb-2 mt-5 text-xs font-semibold uppercase tracking-wide text-text-light">Customer</p>
+                <p x-show="!collapsed" class="mb-2 mt-5 text-xs font-semibold uppercase tracking-wide text-text-light">Customer</p>
                 <a href="{{ route('office.users.index') }}"
-                   @class(['block rounded-lg px-3 py-2 text-sm', 'bg-info-50 font-semibold text-navy-500' => request()->routeIs('office.users.*'), 'text-text-muted hover:bg-surface-2' => ! request()->routeIs('office.users.*')])>
-                    Customer &amp; Migrasi
+                   aria-label="Customer &amp; Migrasi" title="Customer &amp; Migrasi"
+                   @class(['flex items-center gap-3 rounded-lg border-l-4 px-3 py-2 text-sm', 'border-white bg-primary-600 font-semibold text-white' => request()->routeIs('office.users.*'), 'border-transparent text-text-muted hover:bg-surface-2' => ! request()->routeIs('office.users.*')])>
+                    <span aria-hidden="true">👥</span><span x-show="!collapsed">Customer &amp; Migrasi</span>
                 </a>
                 <a href="{{ route('office.spammers.index') }}"
-                   @class(['block rounded-lg px-3 py-2 text-sm', 'bg-info-50 font-semibold text-navy-500' => request()->routeIs('office.spammers.*'), 'text-text-muted hover:bg-surface-2' => ! request()->routeIs('office.spammers.*')])>
-                    Spammer
+                   aria-label="Spammer" title="Spammer"
+                   @class(['flex items-center gap-3 rounded-lg border-l-4 px-3 py-2 text-sm', 'border-white bg-primary-600 font-semibold text-white' => request()->routeIs('office.spammers.*'), 'border-transparent text-text-muted hover:bg-surface-2' => ! request()->routeIs('office.spammers.*')])>
+                    <span aria-hidden="true">🚫</span><span x-show="!collapsed">Spammer</span>
                 </a>
-                <p class="mb-2 mt-5 text-xs font-semibold uppercase tracking-wide text-text-light">Konten &amp; laporan</p>
+                <p x-show="!collapsed" class="mb-2 mt-5 text-xs font-semibold uppercase tracking-wide text-text-light">Konten &amp; laporan</p>
                 <a href="{{ route('office.pages.index') }}"
-                   @class(['block rounded-lg px-3 py-2 text-sm', 'bg-info-50 font-semibold text-navy-500' => request()->routeIs('office.pages.*'), 'text-text-muted hover:bg-surface-2' => ! request()->routeIs('office.pages.*')])>
-                    Halaman
+                   aria-label="Halaman" title="Halaman"
+                   @class(['flex items-center gap-3 rounded-lg border-l-4 px-3 py-2 text-sm', 'border-white bg-primary-600 font-semibold text-white' => request()->routeIs('office.pages.*'), 'border-transparent text-text-muted hover:bg-surface-2' => ! request()->routeIs('office.pages.*')])>
+                    <span aria-hidden="true">📄</span><span x-show="!collapsed">Halaman</span>
                 </a>
                 <a href="{{ route('office.preorder-pages.index') }}"
-                   @class(['block rounded-lg px-3 py-2 text-sm', 'bg-info-50 font-semibold text-navy-500' => request()->routeIs('office.preorder-pages.*'), 'text-text-muted hover:bg-surface-2' => ! request()->routeIs('office.preorder-pages.*')])>
-                    Preorder
+                   aria-label="Preorder" title="Preorder"
+                   @class(['flex items-center gap-3 rounded-lg border-l-4 px-3 py-2 text-sm', 'border-white bg-primary-600 font-semibold text-white' => request()->routeIs('office.preorder-pages.*'), 'border-transparent text-text-muted hover:bg-surface-2' => ! request()->routeIs('office.preorder-pages.*')])>
+                    <span aria-hidden="true">🧩</span><span x-show="!collapsed">Preorder</span>
                 </a>
                 <a href="{{ route('office.vouchers.index') }}"
-                   @class(['block rounded-lg px-3 py-2 text-sm', 'bg-info-50 font-semibold text-navy-500' => request()->routeIs('office.vouchers.*'), 'text-text-muted hover:bg-surface-2' => ! request()->routeIs('office.vouchers.*')])>
-                    Voucher
+                   aria-label="Voucher" title="Voucher"
+                   @class(['flex items-center gap-3 rounded-lg border-l-4 px-3 py-2 text-sm', 'border-white bg-primary-600 font-semibold text-white' => request()->routeIs('office.vouchers.*'), 'border-transparent text-text-muted hover:bg-surface-2' => ! request()->routeIs('office.vouchers.*')])>
+                    <span aria-hidden="true">🎟️</span><span x-show="!collapsed">Voucher</span>
                 </a>
                 <a href="{{ route('office.announcements.index') }}"
-                   @class(['block rounded-lg px-3 py-2 text-sm', 'bg-info-50 font-semibold text-navy-500' => request()->routeIs('office.announcements.*'), 'text-text-muted hover:bg-surface-2' => ! request()->routeIs('office.announcements.*')])>
-                    Announcement Bar
+                   aria-label="Announcement Bar" title="Announcement Bar"
+                   @class(['flex items-center gap-3 rounded-lg border-l-4 px-3 py-2 text-sm', 'border-white bg-primary-600 font-semibold text-white' => request()->routeIs('office.announcements.*'), 'border-transparent text-text-muted hover:bg-surface-2' => ! request()->routeIs('office.announcements.*')])>
+                    <span aria-hidden="true">📣</span><span x-show="!collapsed">Announcement Bar</span>
                 </a>
                 <a href="{{ route('office.hero-slides.index') }}"
-                   @class(['block rounded-lg px-3 py-2 text-sm', 'bg-info-50 font-semibold text-navy-500' => request()->routeIs('office.hero-slides.*'), 'text-text-muted hover:bg-surface-2' => ! request()->routeIs('office.hero-slides.*')])>
-                    Hero Carousel
+                   aria-label="Hero Carousel" title="Hero Carousel"
+                   @class(['flex items-center gap-3 rounded-lg border-l-4 px-3 py-2 text-sm', 'border-white bg-primary-600 font-semibold text-white' => request()->routeIs('office.hero-slides.*'), 'border-transparent text-text-muted hover:bg-surface-2' => ! request()->routeIs('office.hero-slides.*')])>
+                    <span aria-hidden="true">🖼️</span><span x-show="!collapsed">Hero Carousel</span>
                 </a>
                 <a href="{{ route('office.email-templates.index') }}"
-                   @class(['block rounded-lg px-3 py-2 text-sm', 'bg-info-50 font-semibold text-navy-500' => request()->routeIs('office.email-templates.*'), 'text-text-muted hover:bg-surface-2' => ! request()->routeIs('office.email-templates.*')])>
-                    Template Email
+                   aria-label="Template Email" title="Template Email"
+                   @class(['flex items-center gap-3 rounded-lg border-l-4 px-3 py-2 text-sm', 'border-white bg-primary-600 font-semibold text-white' => request()->routeIs('office.email-templates.*'), 'border-transparent text-text-muted hover:bg-surface-2' => ! request()->routeIs('office.email-templates.*')])>
+                    <span aria-hidden="true">✉️</span><span x-show="!collapsed">Template Email</span>
                 </a>
                 <a href="{{ route('office.reports.index') }}"
-                   @class(['block rounded-lg px-3 py-2 text-sm', 'bg-info-50 font-semibold text-navy-500' => request()->routeIs('office.reports.*'), 'text-text-muted hover:bg-surface-2' => ! request()->routeIs('office.reports.*')])>
-                    Laporan &amp; Rank
+                   aria-label="Laporan &amp; Rank" title="Laporan &amp; Rank"
+                   @class(['flex items-center gap-3 rounded-lg border-l-4 px-3 py-2 text-sm', 'border-white bg-primary-600 font-semibold text-white' => request()->routeIs('office.reports.*'), 'border-transparent text-text-muted hover:bg-surface-2' => ! request()->routeIs('office.reports.*')])>
+                    <span aria-hidden="true">📊</span><span x-show="!collapsed">Laporan &amp; Rank</span>
                 </a>
                 <a href="{{ route('office.seo.edit') }}"
-                   @class(['block rounded-lg px-3 py-2 text-sm', 'bg-info-50 font-semibold text-navy-500' => request()->routeIs('office.seo.*'), 'text-text-muted hover:bg-surface-2' => ! request()->routeIs('office.seo.*')])>
-                    SEO
+                   aria-label="SEO" title="SEO"
+                   @class(['flex items-center gap-3 rounded-lg border-l-4 px-3 py-2 text-sm', 'border-white bg-primary-600 font-semibold text-white' => request()->routeIs('office.seo.*'), 'border-transparent text-text-muted hover:bg-surface-2' => ! request()->routeIs('office.seo.*')])>
+                    <span aria-hidden="true">🔍</span><span x-show="!collapsed">SEO</span>
                 </a>
-                <p class="mb-2 mt-5 text-xs font-semibold uppercase tracking-wide text-text-light">Operasional</p>
+                <p x-show="!collapsed" class="mb-2 mt-5 text-xs font-semibold uppercase tracking-wide text-text-light">Pengaturan</p>
+                <a href="{{ route('office.settings.edit') }}"
+                   aria-label="Pengaturan" title="Pengaturan"
+                   @class(['flex items-center gap-3 rounded-lg border-l-4 px-3 py-2 text-sm', 'border-white bg-primary-600 font-semibold text-white' => request()->routeIs('office.settings.*'), 'border-transparent text-text-muted hover:bg-surface-2' => ! request()->routeIs('office.settings.*')])>
+                    <span aria-hidden="true">⚙️</span><span x-show="!collapsed">Pengaturan</span>
+                </a>
+                <p x-show="!collapsed" class="mb-2 mt-5 text-xs font-semibold uppercase tracking-wide text-text-light">Operasional</p>
                 <a href="{{ route('office.logs.activity') }}"
-                   @class(['block rounded-lg px-3 py-2 text-sm', 'bg-info-50 font-semibold text-navy-500' => request()->routeIs('office.logs.*'), 'text-text-muted hover:bg-surface-2' => ! request()->routeIs('office.logs.*')])>
-                    Audit Log
+                   aria-label="Audit Log" title="Audit Log"
+                   @class(['flex items-center gap-3 rounded-lg border-l-4 px-3 py-2 text-sm', 'border-white bg-primary-600 font-semibold text-white' => request()->routeIs('office.logs.*'), 'border-transparent text-text-muted hover:bg-surface-2' => ! request()->routeIs('office.logs.*')])>
+                    <span aria-hidden="true">🧾</span><span x-show="!collapsed">Audit Log</span>
                 </a>
             </nav>
         </aside>

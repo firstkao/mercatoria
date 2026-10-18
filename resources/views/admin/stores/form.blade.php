@@ -25,14 +25,15 @@
     @endif
 
     <section class="rounded-xl border border-border bg-white p-5 md:p-6">
-        <h2 class="font-semibold text-navy-500">Informasi Store</h2>
+        <h2 class="text-xs font-bold uppercase tracking-wide text-text-muted">Informasi Store</h2>
         <div class="mt-4 grid gap-5 md:grid-cols-2">
             <div class="md:col-span-2">
                 <label for="name" class="mb-1 block text-sm font-medium">Nama Store <span class="text-danger-500">*</span></label>
                 <input id="name" name="name" value="{{ old('name', $store->name) }}" required maxlength="100"
-                       class="w-full rounded-lg border-border focus:border-primary-400 focus:ring-primary-400">
-                <p class="mt-1 text-xs text-text-muted">Nama toko atau tier. Nama boleh sama dengan store lain.</p>
-                @error('name')<p class="mt-1 text-sm text-danger-500">{{ $message }}</p>@enderror
+                       class="w-full rounded-lg border focus:border-primary-400 focus:ring-primary-400 {{ $errors->has('name') ? 'border-danger-500 bg-danger-50' : 'border-border' }}"
+                       @if ($errors->has('name')) aria-invalid="true" aria-describedby="name-error" @endif>
+                <p class="mt-1 text-xs text-text-muted">Nama toko atau tier harus unik.</p>
+                @error('name')<p id="name-error" class="mt-1 text-sm text-danger-500" role="alert">{{ $message }}</p>@enderror
             </div>
 
             <div>
@@ -40,9 +41,10 @@
                 <input id="min_belanja_rmb" name="min_belanja_rmb" type="number" step="0.01" min="0" required
                        value="{{ old('min_belanja_rmb', $store->min_belanja_rmb ?? 0) }}"
                        x-on:input="min = Number($event.target.value)"
-                       class="w-full rounded-lg border-border focus:border-primary-400 focus:ring-primary-400">
+                       class="w-full rounded-lg border focus:border-primary-400 focus:ring-primary-400 {{ $errors->has('min_belanja_rmb') ? 'border-danger-500 bg-danger-50' : 'border-border' }}"
+                       @if ($errors->has('min_belanja_rmb')) aria-invalid="true" aria-describedby="min-belanja-error" @endif>
                 <p class="mt-1 text-xs text-text-muted">Minimum untuk gratis ongkir lokal CN. Isi 0 bila tidak ada minimum.</p>
-                @error('min_belanja_rmb')<p class="mt-1 text-sm text-danger-500">{{ $message }}</p>@enderror
+                @error('min_belanja_rmb')<p id="min-belanja-error" class="mt-1 text-sm text-danger-500" role="alert">{{ $message }}</p>@enderror
             </div>
 
             <div>
@@ -50,16 +52,17 @@
                 <input id="ongkir_rmb" name="ongkir_rmb" type="number" step="0.01" min="0" required
                        value="{{ old('ongkir_rmb', $store->ongkir_rmb ?? 0) }}"
                        x-on:input="shipping = Number($event.target.value)"
-                       class="w-full rounded-lg border-border focus:border-primary-400 focus:ring-primary-400">
+                       class="w-full rounded-lg border focus:border-primary-400 focus:ring-primary-400 {{ $errors->has('ongkir_rmb') ? 'border-danger-500 bg-danger-50' : 'border-border' }}"
+                       @if ($errors->has('ongkir_rmb')) aria-invalid="true" aria-describedby="ongkir-error" @endif>
                 <p class="mt-1 text-xs text-text-muted">Isi 0 bila ongkir lokal selalu gratis.</p>
-                @error('ongkir_rmb')<p class="mt-1 text-sm text-danger-500">{{ $message }}</p>@enderror
+                @error('ongkir_rmb')<p id="ongkir-error" class="mt-1 text-sm text-danger-500" role="alert">{{ $message }}</p>@enderror
             </div>
         </div>
     </section>
 
     @if ($isEditing)
         <section class="rounded-xl border border-border bg-white p-5 md:p-6">
-            <h2 class="font-semibold text-navy-500">Penggunaan Store</h2>
+            <h2 class="text-xs font-bold uppercase tracking-wide text-text-muted">Penggunaan Store</h2>
             <p class="mt-1 text-sm text-text-muted">Store ini dipakai oleh {{ $usage['games'] }} game dan {{ $usage['products'] }} produk.</p>
             @if ($games->isNotEmpty())
                 <ul class="mt-3 list-inside list-disc text-sm text-text-muted">
@@ -80,7 +83,7 @@
     @endif
 
     <section class="rounded-xl border border-border bg-white p-5 md:p-6">
-        <h2 class="font-semibold text-navy-500">Preview Perhitungan</h2>
+        <h2 class="text-xs font-bold uppercase tracking-wide text-text-muted">Preview Perhitungan</h2>
         <p class="mt-1 text-sm text-text-muted">Contoh ongkir lokal untuk harga produk 58 RMB dan 150 RMB.</p>
         <div class="mt-4 grid gap-3 sm:grid-cols-2">
             @foreach ([58, 150] as $price)
@@ -116,7 +119,7 @@
                     <li>{{ $usage['games'] }} game</li>
                     <li>{{ $usage['products'] }} produk</li>
                 </ul>
-                <p class="mt-2">Jika dihapus, foreign key store pada game dan produk akan menjadi NULL. Data game dan produk tetap ada.</p>
+                <p class="mt-2">Jika dihapus, foreign key store pada game dan produk akan menjadi NULL. Data game dan produk tetap ada, dan order lama tetap utuh dari snapshot.</p>
             </div>
         @else
             <p class="mt-4 rounded-lg bg-surface-2 p-4 text-sm text-text-muted">Store ini belum dipakai oleh game atau produk.</p>

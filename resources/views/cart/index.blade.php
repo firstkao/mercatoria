@@ -5,6 +5,11 @@
 @section('content')
 <div class="mx-auto max-w-5xl px-4 py-8">
     <h1 class="text-2xl font-bold text-navy-500">Keranjang Belanja</h1>
+    @auth
+        @if (auth()->user()->hasVerifiedEmail() && ! auth()->user()->hasCompletedProfile())
+            <x-profile-banner />
+        @endif
+    @endauth
     @if (session('success'))
         <p role="status" class="mt-4 rounded-lg bg-green-50 p-3 text-sm text-green-800">{{ session('success') }}</p>
     @endif
@@ -50,7 +55,9 @@
             @endforeach
         </div>
         <div class="mt-6 flex justify-end">
-            <button form="cart-checkout-selection" type="submit" class="rounded-lg bg-primary-600 px-5 py-3 font-semibold text-white hover:bg-primary-700">
+            <button form="cart-checkout-selection" type="submit"
+                    @disabled(auth()->user()->hasVerifiedEmail() && ! auth()->user()->hasCompletedProfile())
+                    class="rounded-lg bg-primary-600 px-5 py-3 font-semibold text-white hover:bg-primary-700 disabled:cursor-not-allowed disabled:bg-primary-300 disabled:opacity-50">
                 Checkout item terpilih
             </button>
         </div>

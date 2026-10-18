@@ -129,3 +129,11 @@
         display: none;
     }
 }
+
+@layer components {
+    .admin-sidebar-collapsed > a {
+        justify-content: center;
+        gap: 0;
+        padding-inline: 0.25rem;
+    }
+}

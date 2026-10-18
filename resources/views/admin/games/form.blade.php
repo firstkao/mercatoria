@@ -4,6 +4,10 @@
 
 @php
     $selectedDeveloperIds = old('developer_ids', $game->relationLoaded('developers') ? $game->developers->modelKeys() : []);
+    $storeOptions = $stores->map(fn ($store) => [
+        'id' => (string) $store->id,
+        'label' => $store->name.' ('.($store->hasMinBelanja() ? number_format((float) $store->min_belanja_rmb, 2, ',', '.').' RMB' : 'tanpa minimum').' · '.($store->isFreeShipping() ? 'Gratis' : number_format((float) $store->ongkir_rmb, 2, ',', '.').' RMB').')',
+    ])->values();
 @endphp
 
 @section('content')
@@ -47,15 +51,22 @@
             @error('developer_ids')<p class="mt-1 text-sm text-danger-500">{{ $message }}</p>@enderror
             @error('developer_ids.*')<p class="mt-1 text-sm text-danger-500">{{ $message }}</p>@enderror
         </div>
-        <div>
+        <div x-data="{
+            search: '',
+            selectedStore: @js((string) old('default_store_id', $game->default_store_id ?? '')),
+            stores: @js($storeOptions)
+        }">
             <label for="default_store_id" class="mb-1 block text-sm font-medium">Default Store</label>
-            <select id="default_store_id" name="default_store_id" class="w-full rounded-lg border-border focus:border-primary-400 focus:ring-primary-400">
+            <label for="default-store-search" class="sr-only">Cari opsi store</label>
+            <input id="default-store-search" type="search" x-model="search" autocomplete="off"
+                   placeholder="Cari store..."
+                   class="mb-2 w-full rounded-lg border-border text-sm focus:border-primary-400 focus:ring-primary-400">
+            <select id="default_store_id" name="default_store_id" x-model="selectedStore"
+                    class="w-full rounded-lg border-border focus:border-primary-400 focus:ring-primary-400">
                 <option value="">— Tidak ada default store —</option>
-                @foreach ($stores as $store)
-                    <option value="{{ $store->id }}" @selected((string) old('default_store_id', $game->default_store_id) === (string) $store->id)>
-                        {{ $store->name }} ({{ $store->hasMinBelanja() ? number_format((float) $store->min_belanja_rmb, 2, ',', '.').' RMB' : 'tanpa minimum' }} · {{ $store->isFreeShipping() ? 'Gratis' : number_format((float) $store->ongkir_rmb, 2, ',', '.').' RMB' }})
-                    </option>
-                @endforeach
+                <template x-for="store in stores.filter(store => store.id === selectedStore || store.label.toLocaleLowerCase('id').includes(search.toLocaleLowerCase('id')))" :key="store.id">
+                    <option :value="store.id" x-text="store.label"></option>
+                </template>
             </select>
             @error('default_store_id')<p class="mt-1 text-sm text-danger-500">{{ $message }}</p>@enderror
             <a href="{{ route('office.stores.create') }}" class="mt-2 inline-block text-sm text-navy-500 hover:underline">+ Store Baru</a>
