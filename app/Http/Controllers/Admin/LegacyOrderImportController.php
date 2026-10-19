@@ -16,6 +16,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
 class LegacyOrderImportController extends Controller
@@ -82,6 +83,12 @@ class LegacyOrderImportController extends Controller
 
         [$order, $user] = DB::transaction(function () use ($validated, $request): array {
             $user = User::query()->where('role', 'customer')->where('is_migrated', true)->findOrFail($validated['user_id']);
+            if (blank($user->no_hp)) {
+                throw ValidationException::withMessages([
+                    'user_id' => 'Customer belum memiliki nomor HP. Lengkapi data customer sebelum mengimpor order lama.',
+                ]);
+            }
+
             $product = Product::query()->with(['games.developers', 'tags'])->findOrFail($validated['product_id']);
             $variant = isset($validated['variant_id'])
                 ? ProductVariant::query()->with('combinations')->findOrFail($validated['variant_id'])

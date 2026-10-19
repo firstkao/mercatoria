@@ -96,6 +96,26 @@ class SprintThreeTest extends TestCase
         $this->assertSame('2025-09-03', $snapshot->snapshot_at->toDateString());
     }
 
+    public function test_legacy_order_import_requires_a_customer_phone_before_creating_the_order(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        $user = User::factory()->create(['is_migrated' => true, 'no_hp' => null]);
+        $product = $this->createProduct('legacy-order-without-phone');
+
+        $this->actingAs($admin)->post(route('office.orders.store'), [
+            'user_id' => $user->id,
+            'product_id' => $product->id,
+            'qty' => 1,
+            'unit_price' => 125000,
+            'ordered_at' => '2025-09-03T10:30',
+        ])
+            ->assertSessionHasErrors([
+                'user_id' => 'Customer belum memiliki nomor HP. Lengkapi data customer sebelum mengimpor order lama.',
+            ]);
+
+        $this->assertDatabaseCount('orders', 0);
+    }
+
     public function test_legacy_order_import_rejects_regular_users_and_variants_from_other_products(): void
     {
         $admin = User::factory()->create(['role' => 'admin']);
