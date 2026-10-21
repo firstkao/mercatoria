@@ -8,7 +8,7 @@
         Akses dari alamat jaringan ini dibatasi. Halaman beranda tetap dapat diakses.
     </div>
 @endif
-@if ($heroSlides->isNotEmpty())
+@if (isset($heroSlides) && $heroSlides->isNotEmpty())
     <section id="hero-carousel" class="relative w-full overflow-hidden bg-surface-2" aria-label="Promo pilihan Mercatoria">
         <div class="relative aspect-[2/1] max-h-[560px] min-h-48 md:aspect-[3/1]">
             @foreach ($heroSlides as $index => $slide)
