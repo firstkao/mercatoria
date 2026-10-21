@@ -22,7 +22,7 @@
     <article class="grid gap-8 lg:grid-cols-2">
         <div class="overflow-hidden rounded-2xl border border-border bg-surface-2">
             @if ($product->main_image_path)
-                <img src="{{ \Illuminate\Support\Facades\Storage::url($product->main_image_path) }}" alt="{{ $product->name }}" class="max-h-[640px] w-full object-contain">
+                <x-protected-image :src="\Illuminate\Support\Facades\Storage::url($product->main_image_path)" :alt="$product->name" class="max-h-[640px] w-full object-contain" />
             @else
                 <div class="flex aspect-square items-center justify-center text-text-light">Gambar belum tersedia</div>
             @endif
@@ -95,8 +95,8 @@
                             <select id="variant_id" name="variant_id" required class="w-full rounded-lg border-border">
                                 <option value="">Pilih varian</option>
                                 @foreach ($product->variants->where('availability', 'tersedia') as $variant)
-                                    <option value="{{ $variant->id }}" @selected(old('variant_id') == $variant->id)>
-                                        {{ $variant->name }}{{ $variant->price > 0 ? ' · '.format_rupiah($variant->price) : '' }}
+                                    <option value="{{ $variant->id }}" @selected((string) old('variant_id', request()->query('variant')) === (string) $variant->id)>
+                                        {{ $variant->name }} · {{ format_rupiah(app(\App\Services\Cart\CartPricingService::class)->calculate($product, $variant)['final_price']) }}
                                     </option>
                                 @endforeach
                             </select>

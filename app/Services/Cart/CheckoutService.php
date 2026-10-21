@@ -94,9 +94,7 @@ class CheckoutService
         ?UserVoucher $userVoucher = null,
     ): array {
         $subtotal = round($lines->sum(
-            fn (array $line): float => (
-                $line['pricing']['base_price'] + $line['pricing']['shipping']['ongkir_total_idr']
-            ) * $line['cart']->qty,
+            fn (array $line): float => $line['pricing']['base_price'] * $line['cart']->qty,
         ), 2);
         $discount = round($lines->sum(
             fn (array $line): float => $line['pricing']['discount_amount'] * $line['cart']->qty,
@@ -116,8 +114,7 @@ class CheckoutService
             ? min(max(0, (int) floor($netSubtotal * 0.05)), max(0, $coinBalance))
             : 0;
         $netSubtotal = max(0, $netSubtotal - $voucherDiscount - $coinDiscount);
-        $profitPercent = (float) setting('profit_percent', 11);
-        $baseTotal = $netSubtotal * (1 + $profitPercent / 100);
+        $baseTotal = $netSubtotal;
         $feeMarketplace = match ([$platform, $paymentScheme]) {
             ['toco', 'fp'] => 1,
             ['toco', 'dp'] => 0,
@@ -128,7 +125,7 @@ class CheckoutService
         $feeQris = $paymentMethod === 'qris' && $baseTotal >= 500000
             ? round($baseTotal * 0.0003, 2)
             : 0;
-        $total = (int) (ceil((($netSubtotal + $feeMarketplace + $feeQris) * (1 + $profitPercent / 100)) / 5000) * 5000);
+        $total = (int) (ceil(($netSubtotal + $feeMarketplace + $feeQris) / 5000) * 5000);
 
         return [
             'subtotal' => $subtotal,

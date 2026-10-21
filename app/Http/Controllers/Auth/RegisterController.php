@@ -109,6 +109,7 @@ class RegisterController extends Controller
         $identityBlocked = $matchingSpammers()->where('status', 'blocked')->exists();
         $ipBlocked = $request->ip() && SpammerIp::query()
             ->where('ip_address', $request->ip())
+            ->active()
             ->whereHas('spammer', fn (Builder $query) => $query->where('status', 'blocked'))
             ->exists();
 
@@ -249,6 +250,7 @@ class RegisterController extends Controller
             ]);
             $ipRecord->attempt_count = $ipRecord->exists ? $ipRecord->attempt_count + 1 : 1;
             $ipRecord->last_attempt_at = now();
+            $ipRecord->expires_at = now()->addDays((int) config('mercatoria.state.spammer_ip_ttl_days', 30));
             $ipRecord->save();
         }
     }

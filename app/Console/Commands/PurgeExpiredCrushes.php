@@ -2,7 +2,9 @@
 
 namespace App\Console\Commands;
 
+use App\Enums\NotificationType;
 use App\Models\Crush;
+use App\Services\Notification\UserNotificationService;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 
@@ -15,6 +17,7 @@ class PurgeExpiredCrushes extends Command
     public function handle(): int
     {
         $deleted = 0;
+        $warned = $this->warnCrushesNearDeletion();
         Crush::query()
             ->whereNotNull('verified_at')
             ->where('verified_at', '<=', now()->subDays(30))
@@ -40,8 +43,43 @@ class PurgeExpiredCrushes extends Command
                 }
             });
 
-        $this->info("Permanently deleted {$deleted} expired Crush account(s) without orders.");
+        $this->info("Permanently deleted {$deleted} expired Crush account(s) without orders. Warned {$warned} Crush account(s).");
 
         return self::SUCCESS;
+    }
+
+    /**
+     * H-7 sebelum auto-delete (hari ke-23 sejak verifikasi), satu kali per akun.
+     */
+    private function warnCrushesNearDeletion(): int
+    {
+        $warned = 0;
+        Crush::query()
+            ->whereNotNull('verified_at')
+            ->where('verified_at', '<=', now()->subDays(23))
+            ->where('verified_at', '>', now()->subDays(30))
+            ->with('user')
+            ->orderBy('id')
+            ->chunkById(100, function ($crushes) use (&$warned): void {
+                foreach ($crushes as $crush) {
+                    $user = $crush->user;
+                    if (! $user || $user->orders()->exists()
+                        || $user->notifications()->where('subtype', 'state_warning_delete')->exists()) {
+                        continue;
+                    }
+
+                    UserNotificationService::push(
+                        $user->id,
+                        NotificationType::STATE,
+                        'Akun akan dihapus 7 hari lagi',
+                        'Akun kamu akan dihapus 7 hari lagi. Yuk order sebelum hilang!',
+                        route('home'),
+                        subtype: 'state_warning_delete',
+                    );
+                    $warned++;
+                }
+            });
+
+        return $warned;
     }
 }

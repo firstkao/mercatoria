@@ -16,15 +16,13 @@ class CartPricingService
     public function calculate(Product $product, ?ProductVariant $variant = null): array
     {
         $shipping = $this->shippingCalculator->calculateItemShipping($product, $variant);
-        $basePrice = $variant && (float) $variant->price > 0
-            ? (float) $variant->price
-            : (float) $product->price_rmb * (float) setting('rate_rmb_idr', 2200);
-        $discountAmount = $product->hasActiveDiscount() ? (float) $product->discount_amount : 0;
-        $finalPrice = max(0, $basePrice + $shipping['ongkir_total_idr'] - $discountAmount);
+        $basePrice = $shipping['base_price_bersih'];
+        $discountAmount = $shipping['discount_amount'];
+        $finalPrice = $shipping['final_price_bersih'];
 
         return [
             'base_price' => round($basePrice, 2),
-            'discount_amount' => round(min($discountAmount, $basePrice + $shipping['ongkir_total_idr']), 2),
+            'discount_amount' => round($discountAmount, 2),
             'final_price' => round($finalPrice, 2),
             'shipping' => $shipping,
         ];

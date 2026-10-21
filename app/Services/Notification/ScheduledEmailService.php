@@ -2,6 +2,7 @@
 
 namespace App\Services\Notification;
 
+use App\Listeners\SuppressCustomerEmailWhenPaused;
 use App\Models\EmailLog;
 use App\Models\EmailTemplate;
 use App\Models\User;
@@ -30,6 +31,17 @@ class ScheduledEmailService
         }
         $subject = str_replace(array_keys($subjectReplacements), array_values($subjectReplacements), $template->subject);
         $body = str_replace(array_keys($bodyReplacements), array_values($bodyReplacements), $template->body);
+
+        if (SuppressCustomerEmailWhenPaused::shouldSuppress($user->email)) {
+            EmailLog::create([
+                'template_id' => $template->id,
+                'recipient_email' => $user->email,
+                'subject' => $subject,
+                'status' => 'suppressed_maintenance',
+            ]);
+
+            return true;
+        }
 
         try {
             Mail::html($body, function ($message) use ($template, $user, $subject): void {

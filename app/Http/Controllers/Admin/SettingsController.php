@@ -12,6 +12,13 @@ use Illuminate\View\View;
 
 class SettingsController extends Controller
 {
+    private const OPTIONAL_SETTINGS = [
+        'pause_customer_emails',
+        'image_protection_enabled',
+        'image_watermark_enabled',
+        'image_watermark_opacity',
+    ];
+
     private const SETTINGS = [
         'ongkir_cn_btm_per_kg' => [
             'type' => 'int',
@@ -27,6 +34,26 @@ class SettingsController extends Controller
             'type' => 'int',
             'group' => 'pricing',
             'description' => 'Default berat produk (gram)',
+        ],
+        'pause_customer_emails' => [
+            'type' => 'bool',
+            'group' => 'email',
+            'description' => 'Stop kirim email ke customer (mode testing/maintenance)',
+        ],
+        'image_protection_enabled' => [
+            'type' => 'bool',
+            'group' => 'security',
+            'description' => 'Proteksi klik-kanan, drag, dan long-press pada gambar',
+        ],
+        'image_watermark_enabled' => [
+            'type' => 'bool',
+            'group' => 'security',
+            'description' => 'Watermark otomatis pada foto yang diunggah',
+        ],
+        'image_watermark_opacity' => [
+            'type' => 'int',
+            'group' => 'security',
+            'description' => 'Opacity watermark (%)',
         ],
         'ga4_measurement_id' => [
             'type' => 'string',
@@ -51,6 +78,10 @@ class SettingsController extends Controller
             'ongkir_btm_jkt_per_kg' => ['required', 'integer', 'min:0', 'max:999999999'],
             'default_weight_gram' => ['required', 'integer', 'min:0', 'max:999999'],
             'ga4_measurement_id' => ['nullable', 'string', 'regex:/\AG-[A-Z0-9]{4,20}\z/'],
+            'pause_customer_emails' => ['sometimes', 'boolean'],
+            'image_protection_enabled' => ['sometimes', 'boolean'],
+            'image_watermark_enabled' => ['sometimes', 'boolean'],
+            'image_watermark_opacity' => ['sometimes', 'integer', 'min:5', 'max:80'],
         ]);
 
         DB::transaction(function () use ($validated): void {
@@ -61,7 +92,13 @@ class SettingsController extends Controller
             $new = [];
 
             foreach (self::SETTINGS as $key => $metadata) {
+                if (! array_key_exists($key, $validated) && in_array($key, self::OPTIONAL_SETTINGS, true)) {
+                    continue;
+                }
                 $value = $validated[$key] ?? '';
+                if ($metadata['type'] === 'bool') {
+                    $value = $value ? '1' : '0';
+                }
                 $setting = Setting::query()->updateOrCreate(
                     ['key' => $key],
                     [...$metadata, 'value' => (string) $value],

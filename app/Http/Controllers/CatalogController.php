@@ -66,6 +66,7 @@ class CatalogController extends Controller
             $this->activeProducts()->search(trim($validated['q'])),
             'Hasil pencarian',
             search: trim($validated['q']),
+            view: 'search.index',
         );
     }
 
@@ -107,9 +108,11 @@ class CatalogController extends Controller
         ?MerchCategory $category = null,
         ?Developer $developer = null,
         ?string $search = null,
+        string $view = 'catalog.index',
     ): View {
         $filters = $request->validate([
             'q' => ['nullable', 'string', 'max:100'],
+            'game' => ['nullable', 'string', 'max:120'],
             'tag' => ['nullable', 'string', 'max:80'],
             'category' => ['nullable', 'string', 'max:100'],
             'availability' => ['nullable', 'in:tersedia,kosong'],
@@ -120,6 +123,10 @@ class CatalogController extends Controller
 
         $products
             ->when($filters['q'] ?? null, fn (Builder $query, string $queryText) => $query->search(trim($queryText)))
+            ->when($filters['game'] ?? null, fn (Builder $query, string $gameSlug) => $query->whereHas(
+                'games',
+                fn (Builder $gameQuery) => $gameQuery->where('slug', $gameSlug),
+            ))
             ->when($filters['tag'] ?? null, fn (Builder $query, string $tag) => $query->whereHas(
                 'tags',
                 fn (Builder $tagQuery) => $tagQuery->where('slug', $tag),
@@ -151,11 +158,11 @@ class CatalogController extends Controller
         };
 
         $products = $products
-            ->with(['games', 'tags', 'merchCategories'])
+            ->with(['games', 'tags', 'merchCategories', 'variants'])
             ->paginate(30)
             ->withQueryString();
 
-        return view('catalog.index', [
+        return view($view, [
             'products' => $products,
             'title' => $title,
             'game' => $game,

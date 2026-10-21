@@ -16,7 +16,7 @@ class ProductVariantController extends Controller
         $validated = $request->validate([
             'sku' => ['required', 'string', 'max:64', 'unique:product_variants,sku'],
             'name' => ['nullable', 'string', 'max:255'],
-            'price' => ['required', 'numeric', 'min:0', 'max:9999999999.99'],
+            'price_rmb' => ['nullable', 'numeric', 'min:0', 'max:99999999.99'],
             'availability' => ['required', Rule::in(['tersedia', 'kosong'])],
             'weight_gram' => ['nullable', 'integer', 'min:1', 'max:1000000'],
         ]);
@@ -59,5 +59,26 @@ class ProductVariantController extends Controller
         return redirect()->route('office.products.edit', $product)
             ->with('variant_weight_updated', $updatedCount)
             ->with('success', "Berat {$updatedCount} varian berhasil diperbarui.");
+    }
+
+    public function bulkUpdatePriceRmb(Request $request, Product $product): RedirectResponse
+    {
+        $validated = $request->validate([
+            'selected_variant_ids' => ['required', 'array', 'min:1'],
+            'selected_variant_ids.*' => [
+                'required',
+                'integer',
+                'distinct',
+                Rule::exists('product_variants', 'id')->where('product_id', $product->id),
+            ],
+            'price_rmb' => ['required', 'numeric', 'min:0', 'max:99999999.99'],
+        ]);
+
+        $updatedCount = $product->variants()
+            ->whereIn('id', $validated['selected_variant_ids'])
+            ->update(['price_rmb' => $validated['price_rmb']]);
+
+        return redirect()->route('office.products.edit', $product)
+            ->with('success', "Harga RMB {$updatedCount} varian berhasil diperbarui.");
     }
 }
