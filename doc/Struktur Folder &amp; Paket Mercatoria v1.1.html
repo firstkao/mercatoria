@@ -1,0 +1,1245 @@
+<!DOCTYPE html>
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+      xmlns:w="urn:schemas-microsoft-com:office:word"
+      xmlns="http://www.w3.org/TR/REC-html40">
+<head>
+<meta charset="UTF-8">
+<title>Struktur Folder &amp; Paket — Mercatoria v1.1 FINAL</title>
+<!--[if gte mso 9]>
+<xml>
+  <w:WordDocument>
+    <w:View>Print</w:View>
+    <w:Zoom>100</w:Zoom>
+    <w:DoNotOptimizeForBrowser/>
+  </w:WordDocument>
+</xml>
+<![endif]-->
+<style>
+  @page { size: A4; margin: 2cm; }
+  body { font-family: 'Calibri', 'Segoe UI', Arial, sans-serif; font-size: 11pt; line-height: 1.5; color: #222; max-width: 900px; margin: 0 auto; padding: 20px; }
+  h1 { font-size: 22pt; color: #1a4d8f; border-bottom: 3px solid #1a4d8f; padding-bottom: 8px; margin-top: 30px; margin-bottom: 15px; page-break-after: avoid; }
+  h2 { font-size: 16pt; color: #1a4d8f; border-bottom: 1px solid #ccc; padding-bottom: 5px; margin-top: 22px; margin-bottom: 12px; page-break-after: avoid; }
+  h3 { font-size: 13pt; color: #2c5fa8; margin-top: 18px; margin-bottom: 8px; page-break-after: avoid; }
+  h4 { font-size: 11.5pt; color: #333; margin-top: 12px; margin-bottom: 6px; }
+  p { margin: 6px 0; text-align: justify; }
+  ul, ol { margin: 6px 0 6px 22px; padding-left: 0; }
+  li { margin: 3px 0; }
+  table { border-collapse: collapse; width: 100%; margin: 10px 0; font-size: 10pt; page-break-inside: avoid; }
+  th { background: #1a4d8f; color: #fff; border: 1px solid #1a4d8f; padding: 6px 8px; text-align: left; }
+  td { border: 1px solid #ccc; padding: 6px 8px; vertical-align: top; }
+  tr:nth-child(even) td { background: #f5f7fa; }
+  code { background: #f0f2f5; padding: 2px 5px; border-radius: 3px; font-family: 'Consolas', monospace; font-size: 9.5pt; color: #c0392b; }
+  pre { background: #1e1e1e; color: #d4d4d4; border-left: 4px solid #4FC3F7; padding: 12px 16px; font-family: 'Consolas', 'Monaco', monospace; font-size: 9pt; line-height: 1.45; white-space: pre; page-break-inside: avoid; overflow-x: auto; border-radius: 4px; }
+  pre .cmt { color: #6A9955; }
+  pre .kw { color: #569CD6; }
+  pre .str { color: #CE9178; }
+  pre .fn { color: #DCDCAA; }
+  pre .cls { color: #4EC9B0; }
+  pre .dir { color: #C586C0; font-weight: bold; }
+  .cover { text-align: center; padding: 100px 20px; page-break-after: always; }
+  .cover h1 { font-size: 40pt; border: none; color: #1a4d8f; margin-bottom: 10px; }
+  .cover .subtitle { font-size: 18pt; color: #666; margin-bottom: 80px; }
+  .cover .meta { font-size: 12pt; color: #444; line-height: 2; text-align: left; display: inline-block; margin-top: 40px; }
+  .cover .meta strong { color: #1a4d8f; }
+  .toc { background: #f5f7fa; border: 1px solid #ccc; padding: 15px 25px; margin: 20px 0; page-break-after: always; }
+  .toc h2 { margin-top: 0; border: none; }
+  .toc ol { margin-left: 20px; }
+  .toc li { margin: 3px 0; font-size: 10.5pt; }
+  hr { border: none; border-top: 1px solid #ccc; margin: 18px 0; }
+  .note { background: #fff8e1; border-left: 4px solid #ffc107; padding: 10px 14px; margin: 12px 0; font-size: 10.5pt; page-break-inside: avoid; }
+  .note-info { background: #e3f2fd; border-left: 4px solid #1e88e5; padding: 10px 14px; margin: 12px 0; font-size: 10.5pt; page-break-inside: avoid; }
+  .note-danger { background: #ffebee; border-left: 4px solid #e53935; padding: 10px 14px; margin: 12px 0; font-size: 10.5pt; page-break-inside: avoid; }
+  .note-success { background: #e8f5e9; border-left: 4px solid #43a047; padding: 10px 14px; margin: 12px 0; font-size: 10.5pt; page-break-inside: avoid; }
+  .file-header { background: #2d2d2d; color: #fff; padding: 8px 14px; font-family: 'Consolas', monospace; font-size: 10pt; border-radius: 4px 4px 0 0; margin-top: 12px; margin-bottom: 0; }
+  .file-header::before { content: '📄 '; }
+  .file-header + pre { margin-top: 0; border-radius: 0 0 4px 4px; }
+  .folder-header { background: #2d2d2d; color: #fff; padding: 8px 14px; font-family: 'Consolas', monospace; font-size: 10pt; border-radius: 4px 4px 0 0; margin-top: 12px; margin-bottom: 0; }
+  .folder-header::before { content: '📁 '; }
+  .folder-header + pre { margin-top: 0; border-radius: 0 0 4px 4px; }
+  .pill { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 9pt; font-weight: bold; color: #fff; margin-right: 4px; }
+  .pill-core { background: #1a4d8f; }
+  .pill-ui { background: #43A047; }
+  .pill-dev { background: #FB8C00; }
+  .pill-test { background: #9C27B0; }
+  .pill-ops { background: #607D8B; }
+</style>
+</head>
+<body>
+
+<div class="cover">
+  <h1>STRUKTUR FOLDER &amp; PAKET</h1>
+  <div class="subtitle">Mercatoria — Laravel Project Structure</div>
+  <div class="meta">
+    <p><strong>Versi:</strong> 1.1 (FINAL — Selaras Penuh)</p>
+    <p><strong>Tanggal:</strong> 21 Oktober 2026</p>
+    <p><strong>Referensi:</strong> PRD v4.6 FINAL · Design Spec v3.0 FINAL · Backlog v1.5 · Skema DB v1.4</p>
+    <p><strong>Framework:</strong> Laravel 11.x</p>
+    <p><strong>PHP:</strong> 8.2+</p>
+    <p><strong>Database:</strong> MySQL 8.0+</p>
+    <p><strong>Frontend:</strong> Blade + Alpine.js + Livewire 3 + Tailwind CSS 3</p>
+    <p><strong>Build:</strong> Vite 5</p>
+    <p><strong>Total Paket Composer:</strong> 15</p>
+    <p><strong>Total Paket NPM:</strong> 10</p>
+  </div>
+</div>
+
+<div class="toc">
+  <h2>Daftar Isi</h2>
+  <ol>
+    <li>Overview — Kenapa Struktur Ini Penting?</li>
+    <li>Folder Tree Lengkap (Root)</li>
+    <li>Folder <code>app/</code> — Detail</li>
+    <li>Folder <code>resources/</code> — Detail</li>
+    <li>Folder <code>database/</code> — Detail</li>
+    <li>Folder <code>routes/</code> — Detail</li>
+    <li>Folder <code>config/</code> — Detail</li>
+    <li>Folder <code>public/</code> &amp; <code>storage/</code></li>
+    <li>Folder <code>tests/</code> — Detail</li>
+    <li>composer.json — Paket PHP</li>
+    <li>package.json — Paket JS</li>
+    <li>Konvensi Naming</li>
+    <li>Alur Request (Route → Controller → Service)</li>
+    <li>Alur Response</li>
+    <li>File Konfigurasi Kustom</li>
+    <li>Tips Development</li>
+  </ol>
+</div>
+
+<h1>1. Overview — Kenapa Struktur Ini Penting?</h1>
+
+<h3>1.1 Analogi Gampang</h3>
+<div class="note-info">
+Bayangin bikin kue. Ada 3 hal yang harus disiapkan dulu:
+<ol>
+  <li><strong>Dapur</strong> — tempat masak (folder)</li>
+  <li><strong>Alat</strong> — mixer, oven, cetakan (paket/library)</li>
+  <li><strong>Bahan</strong> — tepung, telur, gula (database)</li>
+</ol>
+Dokumen ini bahas <strong>dapur</strong> (folder) dan <strong>alat</strong> (paket). Bahannya (database) udah di dokumen Skema DB.
+</div>
+
+<h3>1.2 Kenapa Laravel Pakai Struktur Folder?</h3>
+<p>Laravel itu framework. Dia punya <strong>aturan main</strong> — kalau kamu ikutin, dia bakal kerja otomatis. Contoh:</p>
+<ul>
+  <li>File di <code>app/Models/</code> → otomatis jadi Model yang bisa connect ke DB</li>
+  <li>File di <code>app/Http/Controllers/</code> → otomatis bisa handle request dari URL</li>
+  <li>File di <code>resources/views/</code> → otomatis bisa jadi halaman web</li>
+</ul>
+<p>Kalau kamu taruh file di tempat yang salah, Laravel gak tahu itu apa.</p>
+
+<h3>1.3 Yang Perlu Dipahami Pemula</h3>
+<table>
+  <tr><th>Istilah</th><th>Arti Gampang</th></tr>
+  <tr><td><strong>Folder</strong></td><td>Lemari / ruangan tempat nyimpan file</td></tr>
+  <tr><td><strong>File</strong></td><td>1 dokumen kode (misal: 1 file = 1 kelas PHP)</td></tr>
+  <tr><td><strong>Composer</strong></td><td>Alat beli library PHP (kayak App Store untuk kode)</td></tr>
+  <tr><td><strong>NPM</strong></td><td>Alat beli library JavaScript</td></tr>
+  <tr><td><strong>Blade</strong></td><td>Bahasa template Laravel (HTML + PHP)</td></tr>
+  <tr><td><strong>Alpine.js</strong></td><td>Bikin halaman interaktif (tombol, dropdown)</td></tr>
+  <tr><td><strong>Livewire</strong></td><td>Bikin halaman real-time tanpa reload (kayak React, tapi PHP)</td></tr>
+  <tr><td><strong>Tailwind</strong></td><td>Bikin tampilan cepat pakai class (misal: <code>bg-blue-500</code>)</td></tr>
+  <tr><td><strong>Vite</strong></td><td>Alat build CSS + JS biar cepat</td></tr>
+</table>
+
+<h1>2. Folder Tree Lengkap (Root)</h1>
+
+<div class="folder-header">Root Project — Mercatoria</div>
+<pre><span class="dir">mercatoria/</span>
+├── <span class="dir">app/</span>                          <span class="cmt"># Kode utama aplikasi (backend)</span>
+├── <span class="dir">bootstrap/</span>                   <span class="cmt"># File startup Laravel (jangan diubah manual)</span>
+├── <span class="dir">config/</span>                       <span class="cmt"># File konfigurasi (DB, mail, dll)</span>
+├── <span class="dir">database/</span>                     <span class="cmt"># Migration, Seeder, Factory</span>
+├── <span class="dir">lang/</span>                         <span class="cmt"># File bahasa (id/en)</span>
+├── <span class="dir">node_modules/</span>                 <span class="cmt"># Library JS (auto-generated, jangan diedit)</span>
+├── <span class="dir">public/</span>                       <span class="cmt"># Folder publik (index.php, asset, upload)</span>
+├── <span class="dir">resources/</span>                    <span class="cmt"># View, CSS, JS (frontend)</span>
+├── <span class="dir">routes/</span>                       <span class="cmt"># Definisi URL / routing</span>
+├── <span class="dir">storage/</span>                      <span class="cmt"># File upload, cache, log</span>
+├── <span class="dir">tests/</span>                        <span class="cmt"># Unit test, feature test</span>
+├── <span class="dir">vendor/</span>                       <span class="cmt"># Library PHP (auto-generated, jangan diedit)</span>
+│
+├── .env                            <span class="cmt"># Konfigurasi environment (RAHASIA!)</span>
+├── .env.example                    <span class="cmt"># Contoh .env (untuk tim)</span>
+├── .gitignore                      <span class="cmt"># File yang gak di-push ke Git</span>
+├── artisan                         <span class="cmt"># CLI Laravel (php artisan ...)</span>
+├── composer.json                   <span class="cmt"># Daftar paket PHP</span>
+├── composer.lock                   <span class="cmt"># Versi paket PHP terkunci</span>
+├── package.json                    <span class="cmt"># Daftar paket JS</span>
+├── package-lock.json               <span class="cmt"># Versi paket JS terkunci</span>
+├── phpunit.xml                     <span class="cmt"># Config testing</span>
+├── README.md                       <span class="cmt"># Dokumentasi project</span>
+├── tailwind.config.js              <span class="cmt"># Config Tailwind CSS</span>
+├── vite.config.js                  <span class="cmt"># Config Vite (build tool)</span>
+└── .editorconfig                   <span class="cmt"># Config editor (indentasi, dll)</span></pre>
+
+<div class="note">
+<strong>Perhatian:</strong> Folder <code>vendor/</code> dan <code>node_modules/</code> itu <strong>auto-generated</strong>. Jangan pernah diedit manual, dan jangan di-push ke Git (sudah masuk <code>.gitignore</code>). Kalau hilang, tinggal jalankan <code>composer install</code> + <code>npm install</code>.
+</div>
+
+<h1>3. Folder <code>app/</code> — Detail</h1>
+
+<div class="folder-header">app/ — Detail Struktur</div>
+<pre><span class="dir">app/</span>
+├── <span class="dir">Actions/</span>                    <span class="cmt"># Single-purpose action classes (opsional)</span>
+│   ├── <span class="dir">Order/</span>
+│   │   ├── CreateOrderAction.php
+│   │   ├── CancelOrderAction.php
+│   │   └── CompleteOrderAction.php
+│   ├── <span class="dir">Product/</span>
+│   │   ├── CreateProductAction.php
+│   │   └── HardDeleteProductAction.php
+│   └── <span class="dir">User/</span>
+│       └── RegisterUserAction.php
+│
+├── <span class="dir">Casts/</span>                     <span class="cmt"># Custom cast untuk attribute model</span>
+│   └── MoneyCast.php
+│
+├── <span class="dir">Console/</span>                    <span class="cmt"># CLI command kustom</span>
+│   └── <span class="dir">Commands/</span>
+│       ├── PurgeLogs.php
+│       ├── PurgeNotifications.php
+│       ├── UpdateUserState.php
+│       ├── PurgeCrush.php
+│       ├── CancelExpiredOrders.php
+│       ├── SendCartReminders.php
+│       ├── NotifyCoinExpiry.php
+│       ├── BirthdayBonus.php
+│       ├── RecheckSpammerGrace.php
+│       └── UpdateCustomerTier.php
+│
+├── <span class="dir">Enums/</span>                     <span class="cmt"># PHP Enum (v4.3 baru)</span>
+│   ├── OrderStatus.php
+│   ├── PaymentScheme.php
+│   ├── PaymentMethod.php
+│   ├── PaymentType.php
+│   ├── RefundStatus.php
+│   ├── UserState.php
+│   ├── TierLevel.php
+│   ├── CoinSource.php
+│   ├── NotificationType.php
+│   ├── SpammerReason.php
+│   └── VisitorType.php
+│
+├── <span class="dir">Events/</span>                    <span class="cmt"># Event (sesuatu yang terjadi)</span>
+│   ├── OrderCreated.php
+│   ├── OrderStatusChanged.php
+│   ├── OrderCompleted.php
+│   ├── OrderHangus.php
+│   ├── PaymentUploaded.php
+│   ├── PaymentVerified.php
+│   ├── RefundRequested.php
+│   ├── SnapshotCreated.php
+│   ├── UserRegistered.php
+│   ├── UserStateChanged.php
+│   ├── CoinEarned.php
+│   ├── VoucherReceived.php
+│   └── ProductDeleted.php
+│
+├── <span class="dir">Exceptions/</span>                <span class="cmt"># Custom exception</span>
+│   ├── Handler.php
+│   ├── InsufficientStockException.php
+│   ├── InvalidOrderTransitionException.php
+│   └── SnapshotCreationFailedException.php
+│
+├── <span class="dir">Exports/</span>                   <span class="cmt"># Excel/CSV export (Maatwebsite)</span>
+│   ├── OrdersExport.php
+│   ├── UsersExport.php
+│   ├── ProductsExport.php
+│   └── SalesReportExport.php
+│
+├── <span class="dir">Helpers/</span>                   <span class="cmt"># Helper functions</span>
+│   ├── helpers.php
+│   ├── RealIpHelper.php
+│   └── OrderNumberHelper.php
+│
+├── <span class="dir">Http/</span>                      <span class="cmt"># Semua yang berhubungan dengan HTTP request</span>
+│   ├── <span class="dir">Controllers/</span>
+│   │   ├── Controller.php                <span class="cmt"># Base controller</span>
+│   │   ├── <span class="dir">Frontend/</span>                    <span class="cmt"># Controller untuk user</span>
+│   │   │   ├── HomeController.php
+│   │   │   ├── CatalogController.php
+│   │   │   ├── ProductController.php
+│   │   │   ├── SearchController.php
+│   │   │   ├── CartController.php
+│   │   │   ├── CheckoutController.php
+│   │   │   ├── OrderController.php
+│   │   │   ├── InvoiceController.php
+│   │   │   ├── DashboardController.php
+│   │   │   ├── CoinController.php
+│   │   │   ├── ReferralController.php
+│   │   │   ├── ProfileController.php
+│   │   │   ├── NotificationController.php
+│   │   │   ├── PageController.php
+│   │   │   └── ShareController.php
+│   │   ├── <span class="dir">Auth/</span>                        <span class="cmt"># Login, register</span>
+│   │   │   ├── LoginController.php
+│   │   │   ├── RegisterController.php
+│   │   │   ├── ForgotPasswordController.php
+│   │   │   ├── ResetPasswordController.php
+│   │   │   └── VerifyEmailController.php
+│   │   ├── <span class="dir">Admin/</span>                       <span class="cmt"># Admin panel (/office)</span>
+│   │   │   ├── DashboardController.php
+│   │   │   ├── ProductController.php
+│   │   │   ├── GameController.php
+│   │   │   ├── DeveloperController.php
+│   │   │   ├── MerchCategoryController.php
+│   │   │   ├── TagController.php
+│   │   │   ├── StoreController.php              <span class="cmt"># ⭐ v1.1 CRUD Tier Ongkir Toko CN</span>
+│   │   │   ├── OrderController.php
+│   │   │   ├── PaymentController.php
+│   │   │   ├── RefundController.php
+│   │   │   ├── VoucherController.php
+│   │   │   ├── UserController.php
+│   │   │   ├── SpammerController.php
+│   │   │   ├── PageController.php
+│   │   │   ├── EmailTemplateController.php
+│   │   │   ├── PreorderController.php
+│   │   │   ├── SeoController.php
+│   │   │   ├── ReportController.php
+│   │   │   ├── RankController.php
+│   │   │   ├── SettingsController.php
+│   │   │   ├── ActivityLogController.php
+│   │   │   ├── AuthLogController.php
+│   │   │   ├── AdminLogController.php
+│   │   │   └── HeroSlideController.php
+│   │   └── <span class="dir">Api/</span>                         <span class="cmt"># API internal (polling bell, dll)</span>
+│   │       └── NotificationController.php
+│   ├── <span class="dir">Middleware/</span>
+│   │   ├── Authenticate.php
+│   │   ├── EnsureUserIsLoggedIn.php       <span class="cmt"># Guest Barrier</span>
+│   │   ├── EnsureEmailVerifiedForOrder.php <span class="cmt"># ⭐ v1.1 Gate Verif Email (Order &amp; Konfirmasi Bayar)</span>
+│   │   ├── EnsureProfileComplete.php      <span class="cmt"># ⭐ v1.1 Gate Tgl Lahir (Order &amp; Konfirmasi Bayar)</span>
+│   │   ├── EnsureUserIsAdmin.php
+│   │   ├── DetectBotCrawler.php
+│   │   ├── EnforceIpBlacklist.php         <span class="cmt"># ⭐ v1.1 Smart Scoped IP + Device Ban (TTL 30h)</span>
+│   │   ├── VerifyTurnstile.php
+│   │   ├── LogUserActivity.php
+│   │   └── SetTimezone.php
+│   ├── <span class="dir">Requests/</span>                       <span class="cmt"># Form Request (validasi)</span>
+│   │   ├── <span class="dir">Auth/</span>
+│   │   │   ├── LoginRequest.php
+│   │   │   └── RegisterRequest.php
+│   │   ├── <span class="dir">Frontend/</span>
+│   │   │   ├── AddToCartRequest.php
+│   │   │   ├── CheckoutRequest.php
+│   │   │   ├── UploadPaymentRequest.php
+│   │   │   └── UpdateProfileRequest.php
+│   │   └── <span class="dir">Admin/</span>
+│   │       ├── StoreProductRequest.php
+│   │       ├── UpdateProductRequest.php
+│   │       ├── BulkDeleteProductRequest.php
+│   │       ├── StoreVoucherRequest.php
+│   │       ├── UpdateOrderStatusRequest.php
+│   │       ├── SendNoteToCustomerRequest.php
+│   │       └── InjectOrderRequest.php
+│   └── <span class="dir">Resources/</span>                     <span class="cmt"># API Resource (JSON response)</span>
+│       ├── ProductResource.php
+│       ├── OrderResource.php
+│       └── NotificationResource.php
+│
+├── <span class="dir">Jobs/</span>                      <span class="cmt"># Background job (queue)</span>
+│   ├── CopySnapshotImageJob.php
+│   ├── SendOrderEmailJob.php
+│   ├── SendNotificationJob.php
+│   ├── PurgeOldLogsJob.php
+│   └── GenerateSitemapJob.php
+│
+├── <span class="dir">Listeners/</span>                 <span class="cmt"># Listener event</span>
+│   ├── SuppressCustomerEmailWhenPaused.php    <span class="cmt"># ⭐ v1.1 Stop Email Customer saat Maintenance/Testing</span>
+│   ├── SendOrderCreatedEmail.php
+│   ├── CreateSnapshotOnCheckout.php
+│   ├── GiveCoinOnOrderCompleted.php
+│   ├── SendNotificationOnOrderStatusChanged.php
+│   ├── NotifyAdminOnPaymentUploaded.php
+│   ├── UpdateUserStateOnOrderCompleted.php
+│   └── UpdateTierOnOrderCompleted.php
+│
+├── <span class="dir">Livewire/</span>                  <span class="cmt"># Komponen Livewire</span>
+│   ├── <span class="dir">Frontend/</span>
+│   │   ├── CartItem.php
+│   │   ├── ProductVariantSelector.php
+│   │   ├── NotificationBell.php
+│   │   └── SearchBox.php
+│   └── <span class="dir">Admin/</span>
+│       ├── ProductTable.php
+│       ├── OrderTable.php
+│       └── UserTable.php
+│
+├── <span class="dir">Mail/</span>                      <span class="cmt"># Mailable class</span>
+│   ├── VerifyEmailMail.php
+│   ├── ResetPasswordMail.php
+│   ├── OrderCreatedMail.php
+│   ├── OrderStatusChangedMail.php
+│   ├── PaymentVerifiedMail.php
+│   ├── CoinEarnedMail.php
+│   └── AdminPaymentNotificationMail.php
+│
+├── <span class="dir">Models/</span>                    <span class="cmt"># Eloquent Model (dari Skema DB)</span>
+│   ├── User.php
+│   ├── Crush.php
+│   ├── Customer.php
+│   ├── Store.php                   <span class="cmt"># ⭐ v1.1 Tier Ongkir Lokal CN</span>
+│   ├── Developer.php
+│   ├── Game.php
+│   ├── Product.php
+│   ├── ProductVariant.php
+│   ├── VariantCombination.php
+│   ├── VariantImage.php
+│   ├── ProductImage.php
+│   ├── MerchCategory.php
+│   ├── Tag.php
+│   ├── Cart.php
+│   ├── CartReminder.php
+│   ├── Order.php
+│   ├── OrderItem.php
+│   ├── OrderItemSnapshot.php       <span class="cmt"># ⭐ v4.3</span>
+│   ├── OrderStatusLog.php
+│   ├── Payment.php
+│   ├── Refund.php
+│   ├── Coin.php
+│   ├── CoinTransaction.php
+│   ├── Voucher.php
+│   ├── UserVoucher.php
+│   ├── Referral.php
+│   ├── ShareClick.php
+│   ├── ProductView.php
+│   ├── UserNotification.php
+│   ├── AdminNotification.php
+│   ├── UserGift.php
+│   ├── Spammer.php
+│   ├── SpammerIp.php
+│   ├── SpammerLog.php
+│   ├── ActivityLog.php
+│   ├── AuthLog.php
+│   ├── AdminLog.php
+│   ├── PaymentMethod.php
+│   ├── EmailTemplate.php
+│   ├── EmailLog.php
+│   ├── Page.php
+│   ├── PreorderPage.php
+│   ├── HeroSlide.php
+│   ├── Announcement.php
+│   ├── VisitorTracking.php
+│   └── Setting.php
+│
+├── <span class="dir">Notifications/</span>             <span class="cmt"># Laravel Notification</span>
+│   ├── OrderStatusChangedNotification.php
+│   ├── CoinEarnedNotification.php
+│   ├── NoteToCustomerNotification.php
+│   └── AdminNewOrderNotification.php
+│
+├── <span class="dir">Observers/</span>                 <span class="cmt"># Model Observer</span>
+│   ├── ProductObserver.php
+│   ├── OrderObserver.php
+│   └── UserObserver.php
+│
+├── <span class="dir">Policies/</span>                  <span class="cmt"># Authorization policy</span>
+│   ├── OrderPolicy.php
+│   ├── ProductPolicy.php
+│   └── UserPolicy.php
+│
+├── <span class="dir">Providers/</span>                 <span class="cmt"># Service Provider</span>
+│   ├── AppServiceProvider.php
+│   ├── AuthServiceProvider.php
+│   ├── EventServiceProvider.php
+│   └── RouteServiceProvider.php
+│
+├── <span class="dir">Repositories/</span>              <span class="cmt"># Repository pattern (opsional)</span>
+│   ├── ProductRepository.php
+│   └── OrderRepository.php
+│
+├── <span class="dir">Rules/</span>                     <span class="cmt"># Custom validation rule</span>
+│   ├── PhoneNumberRule.php
+│   └── UniqueVoucherCodeRule.php
+│
+├── <span class="dir">Services/</span>                  <span class="cmt"># Business logic</span>
+│   ├── <span class="dir">Order/</span>
+│   │   ├── OrderItemSnapshotService.php     <span class="cmt"># ⭐ v4.3</span>
+│   │   ├── ShippingCalculatorService.php    <span class="cmt"># ⭐ v1.1 Ongkir Per-Varian RMB &amp; Harga Bersih</span>
+│   │   ├── OrderNumberService.php
+│   │   ├── OrderStatusService.php
+│   │   └── OrderHangusService.php
+│   ├── <span class="dir">Product/</span>
+│   │   ├── StoreService.php                  <span class="cmt"># ⭐ v1.1 CRUD Store Tier Ongkir</span>
+│   │   ├── ProductSearchService.php          <span class="cmt"># ⭐ v1.1 Deep Search (Nama Produk + Nama Varian)</span>
+│   │   ├── ImageWatermarkService.php         <span class="cmt"># ⭐ v1.1 Auto-Watermark Foto Produk/Varian/Deskripsi</span>
+│   │   ├── ProductHardDeleteService.php      <span class="cmt"># ⭐ v4.3</span>
+│   │   ├── ProductPriceService.php
+│   │   └── ProductCategoryService.php
+│   ├── <span class="dir">Payment/</span>
+│   │   ├── PaymentVerificationService.php
+│   │   ├── PriceCalculatorService.php
+│   │   └── RefundService.php
+│   ├── <span class="dir">User/</span>
+│   │   ├── UserStateService.php
+│   │   ├── UserTierService.php
+│   │   └── SpammerDetectionService.php
+│   ├── <span class="dir">Coin/</span>
+│   │   ├── CoinService.php
+│   │   └── ReferralService.php
+│   ├── <span class="dir">Notification/</span>
+│   │   ├── UserNotificationService.php
+│   │   └── AdminNotificationService.php
+│   ├── <span class="dir">Bot/</span>
+│   │   └── BotCrawlerDetectorService.php
+│   ├── <span class="dir">Seo/</span>
+│   │   └── SeoMetaService.php
+│   └── <span class="dir">Geo/</span>
+│       └── GeoIpService.php
+│
+├── <span class="dir">Support/</span>                   <span class="cmt"># Helper classes</span>
+│   ├── Money.php
+│   └── Timezone.php
+│
+├── <span class="dir">Traits/</span>                    <span class="cmt"># Reusable trait</span>
+│   ├── LogsActivity.php
+│   ├── LogsAdminActivity.php
+│   ├── HasReferralCode.php
+│   └── HasFullName.php
+│
+└── <span class="dir">View/</span>                      <span class="cmt"># View Component</span>
+    └── <span class="dir">Components/</span>
+        ├── BadgeRole.php
+        ├── BadgeTier.php
+        ├── Button.php
+        ├── Alert.php
+        ├── Modal.php
+        └── Toast.php</pre>
+
+<div class="note-info">
+<strong>Catatan:</strong> Folder <code>Actions/</code>, <code>Repositories/</code>, <code>Support/</code> itu <strong>opsional</strong>. Kalau tim kamu kecil (1-2 orang), bisa skip dan taruh semua logic di <code>Services/</code> aja. Saya include biar lengkap, tapi jangan bingung kalau gak semua dipakai.
+</div>
+
+<h3>3.1 Penjelasan Folder Kunci</h3>
+<table>
+  <tr><th>Folder</th><th>Fungsi</th><th>Contoh File</th></tr>
+  <tr><td><span class="pill pill-core">CORE</span> <code>app/Models/</code></td><td>Representasi tabel DB</td><td>User.php, Order.php</td></tr>
+  <tr><td><span class="pill pill-core">CORE</span> <code>app/Http/Controllers/</code></td><td>Handle request dari URL</td><td>HomeController.php</td></tr>
+  <tr><td><span class="pill pill-core">CORE</span> <code>app/Services/</code></td><td>Business logic (perhitungan, validasi kompleks)</td><td>PriceCalculatorService.php</td></tr>
+  <tr><td><span class="pill pill-core">CORE</span> <code>app/Enums/</code></td><td>Enum untuk status, tipe, state</td><td>OrderStatus.php</td></tr>
+  <tr><td><span class="pill pill-core">CORE</span> <code>app/Http/Requests/</code></td><td>Validasi input form</td><td>StoreProductRequest.php</td></tr>
+  <tr><td><span class="pill pill-dev">DEV</span> <code>app/Events/</code></td><td>Sesuatu yang terjadi (pemicu)</td><td>OrderCreated.php</td></tr>
+  <tr><td><span class="pill pill-dev">DEV</span> <code>app/Listeners/</code></td><td>Reaksi terhadap event</td><td>SendOrderCreatedEmail.php</td></tr>
+  <tr><td><span class="pill pill-dev">DEV</span> <code>app/Jobs/</code></td><td>Proses background (queue)</td><td>CopySnapshotImageJob.php</td></tr>
+  <tr><td><span class="pill pill-dev">DEV</span> <code>app/Notifications/</code></td><td>Notifikasi Laravel</td><td>OrderStatusChangedNotification.php</td></tr>
+  <tr><td><span class="pill pill-ui">UI</span> <code>app/Livewire/</code></td><td>Komponen real-time</td><td>NotificationBell.php</td></tr>
+  <tr><td><span class="pill pill-ui">UI</span> <code>app/View/Components/</code></td><td>Komponen Blade reusable</td><td>Button.php, Modal.php</td></tr>
+  <tr><td><span class="pill pill-ops">OPS</span> <code>app/Console/Commands/</code></td><td>Perintah CLI (<code>php artisan ...</code>)</td><td>UpdateUserState.php</td></tr>
+  <tr><td><span class="pill pill-test">TEST</span> <code>tests/</code></td><td>Testing otomatis</td><td>OrderTest.php</td></tr>
+</table>
+
+<h1>4. Folder <code>resources/</code> — Detail</h1>
+
+<div class="folder-header">resources/ — Detail Struktur</div>
+<pre><span class="dir">resources/</span>
+├── <span class="dir">css/</span>
+│   └── app.css                     <span class="cmt"># Entry point CSS (import Tailwind)</span>
+│
+├── <span class="dir">js/</span>
+│   ├── app.js                      <span class="cmt"># Entry point JS (import Alpine, dll)</span>
+│   ├── bootstrap.js                <span class="cmt"># Bootstrap JS (axios, dll)</span>
+│   └── <span class="dir">components/</span>                <span class="cmt"># Custom JS module</span>
+│       ├── image-protection.js         <span class="cmt"># ⭐ v1.1 Kunci Download/Drag Foto (Bebas Copy Teks)</span>
+│       ├── countdown.js
+│       ├── lightbox.js
+│       └── dropdown.js
+│
+└── <span class="dir">views/</span>                        <span class="cmt"># Blade templates</span>
+    ├── <span class="dir">layouts/</span>                    <span class="cmt"># Layout master</span>
+    │   ├── app.blade.php              <span class="cmt"># Layout frontend</span>
+    │   ├── admin.blade.php            <span class="cmt"># Layout admin</span>
+    │   └── auth.blade.php             <span class="cmt"># Layout login/register</span>
+    │
+    ├── <span class="dir">components/</span>                 <span class="cmt"># Blade component</span>
+    │   ├── navbar-guest.blade.php
+    │   ├── navbar-user.blade.php
+    │   ├── footer.blade.php
+    │   ├── badge-role.blade.php
+    │   ├── badge-tier.blade.php
+    │   ├── notification-bell.blade.php
+    │   ├── product-card.blade.php
+    │   ├── modal.blade.php
+    │   └── toast.blade.php
+    │
+    ├── <span class="dir">frontend/</span>                   <span class="cmt"># Halaman user</span>
+    │   ├── <span class="dir">home/</span>
+    │   │   ├── index.blade.php
+    │   │   ├── partials/
+    │   │   │   ├── hero-carousel.blade.php
+    │   │   │   ├── game-grid.blade.php
+    │   │   │   ├── best-offers.blade.php
+    │   │   │   └── new-merch.blade.php
+    │   ├── <span class="dir">catalog/</span>
+    │   │   ├── game.blade.php
+    │   │   ├── developer.blade.php
+    │   │   ├── category.blade.php
+    │   │   └── partials/
+    │   │       ├── sidebar-filter.blade.php
+    │   │       └── toolbar.blade.php
+    │   ├── <span class="dir">product/</span>
+    │   │   ├── show.blade.php
+    │   │   └── partials/
+    │   │       ├── variant-grid.blade.php
+    │   │       ├── image-gallery.blade.php
+    │   │       └── related-products.blade.php
+    │   ├── <span class="dir">search/</span>
+    │   │   └── index.blade.php
+    │   ├── <span class="dir">cart/</span>
+    │   │   └── index.blade.php
+    │   ├── <span class="dir">checkout/</span>
+    │   │   └── index.blade.php
+    │   ├── <span class="dir">order/</span>
+    │   │   ├── index.blade.php         <span class="cmt"># Order list</span>
+    │   │   ├── show.blade.php          <span class="cmt"># Detail order</span>
+    │   │   └── partials/
+    │   │       ├── timeline.blade.php
+    │   │       ├── note-from-admin.blade.php
+    │   │       └── countdown.blade.php
+    │   ├── <span class="dir">dashboard/</span>
+    │   │   ├── index.blade.php
+    │   │   └── tabs/
+    │   │       ├── orders.blade.php
+    │   │       ├── coins.blade.php
+    │   │       ├── referral.blade.php
+    │   │       └── profile.blade.php
+    │   ├── <span class="dir">notifications/</span>
+    │   │   └── index.blade.php
+    │   ├── <span class="dir">pages/</span>
+    │   │   └── show.blade.php
+    │   └── <span class="dir">preorder/</span>
+    │       └── show.blade.php
+    │
+    ├── <span class="dir">auth/</span>                       <span class="cmt"># Login, register, dll</span>
+    │   ├── login.blade.php
+    │   ├── register.blade.php
+    │   ├── forgot-password.blade.php
+    │   ├── reset-password.blade.php
+    │   └── verify-email.blade.php
+    │
+    ├── <span class="dir">admin/</span>                      <span class="cmt"># Admin panel</span>
+    │   ├── <span class="dir">dashboard/</span>
+    │   │   └── index.blade.php
+    │   ├── <span class="dir">products/</span>
+    │   │   ├── index.blade.php
+    │   │   ├── create.blade.php
+    │   │   ├── edit.blade.php
+    │   │   └── partials/
+    │   │       ├── delete-modal.blade.php
+    │   │       ├── bulk-delete-modal.blade.php
+    │   │       └── order-count-card.blade.php
+    │   ├── <span class="dir">orders/</span>
+    │   │   ├── index.blade.php
+    │   │   ├── show.blade.php
+    │   │   ├── inject.blade.php
+    │   │   └── partials/
+    │   │       ├── note-form.blade.php
+    │   │       ├── product-deleted-badge.blade.php
+    │   │       └── snapshot-viewer-modal.blade.php
+    │   ├── <span class="dir">users/</span>
+    │   │   └── index.blade.php
+    │   ├── <span class="dir">spammers/</span>
+    │   │   └── index.blade.php
+    │   ├── <span class="dir">vouchers/</span>
+    │   │   └── index.blade.php
+    │   ├── <span class="dir">settings/</span>
+    │   │   └── index.blade.php
+    │   └── <span class="dir">logs/</span>
+    │       ├── activity.blade.php
+    │       ├── auth.blade.php
+    │       └── admin.blade.php
+    │
+    ├── <span class="dir">pdf/</span>                       <span class="cmt"># Template PDF</span>
+    │   ├── invoice.blade.php
+    │   └── packing-list.blade.php
+    │
+    ├── <span class="dir">emails/</span>                    <span class="cmt"># Template email</span>
+    │   ├── layouts/
+    │   │   └── base.blade.php
+    │   ├── verify-email.blade.php
+    │   ├── order-created.blade.php
+    │   └── ... (25+ template)
+    │
+    └── <span class="dir">errors/</span>                    <span class="cmt"># Halaman error</span>
+        ├── 403.blade.php
+        ├── 404.blade.php
+        ├── 419.blade.php
+        └── 500.blade.php</pre>
+
+<h1>5. Folder <code>database/</code> — Detail</h1>
+
+<div class="folder-header">database/ — Detail Struktur</div>
+<pre><span class="dir">database/</span>
+├── <span class="dir">factories/</span>                 <span class="cmt"># Factory untuk testing</span>
+│   ├── UserFactory.php
+│   ├── ProductFactory.php
+│   ├── OrderFactory.php
+│   └── ...
+│
+├── <span class="dir">migrations/</span>                <span class="cmt"># 50 migration (dari Skema DB)</span>
+│   ├── 2026_10_14_000001_create_users_table.php
+│   ├── 2026_10_14_000002_create_crushes_table.php
+│   ├── 2026_10_14_000003_create_customers_table.php
+│   ├── ... (sampai 50)
+│   └── 2026_10_14_000050_create_settings_table.php
+│
+└── <span class="dir">seeders/</span>                   <span class="cmt"># Seeder data default</span>
+    ├── DatabaseSeeder.php
+    ├── AdminSeeder.php
+    ├── SettingsSeeder.php
+    ├── PaymentMethodSeeder.php
+    ├── MerchCategorySeeder.php
+    ├── TagSeeder.php
+    ├── EmailTemplateSeeder.php
+    └── PageSeeder.php</pre>
+
+<h1>6. Folder <code>routes/</code> — Detail</h1>
+
+<div class="folder-header">routes/ — Detail Struktur</div>
+<pre><span class="dir">routes/</span>
+├── web.php                     <span class="cmt"># Route frontend (dengan session)</span>
+├── api.php                     <span class="cmt"># Route API (untuk polling bell)</span>
+├── console.php                 <span class="cmt"># Route CLI command</span>
+└── channels.php                <span class="cmt"># Broadcast channel (opsional)</pre>
+
+<div class="note-info">
+<strong>Untuk project besar</strong>, <code>web.php</code> bisa dipecah jadi beberapa file:
+<pre>routes/
+├── web.php                     <span class="cmt"># Include semua file di bawah</span>
+├── frontend.php                <span class="cmt"># Route user (katalog, cart, checkout)</span>
+├── auth.php                    <span class="cmt"># Route login, register</span>
+├── dashboard.php               <span class="cmt"># Route dashboard user</span>
+├── admin.php                   <span class="cmt"># Route admin (/office)</span>
+├── api.php
+└── console.php</pre>
+</div>
+
+<h1>7. Folder <code>config/</code> — Detail</h1>
+
+<div class="folder-header">config/ — Detail Struktur</div>
+<pre><span class="dir">config/</span>
+├── app.php                     <span class="cmt"># Config utama (timezone WIB, dll)</span>
+├── auth.php                    <span class="cmt"># Config autentikasi</span>
+├── cache.php                   <span class="cmt"># Config cache</span>
+├── database.php                <span class="cmt"># Config DB</span>
+├── filesystems.php             <span class="cmt"># Config storage</span>
+├── logging.php                 <span class="cmt"># Config log</span>
+├── mail.php                    <span class="cmt"># Config SMTP Hostinger</span>
+├── queue.php                   <span class="cmt"># Config queue</span>
+├── services.php                <span class="cmt"># Config 3rd party (Turnstile, GA4)</span>
+├── session.php                 <span class="cmt"># Config session</span>
+│
+└── mercatoria.php              <span class="cmt"># ⭐ CONFIG KUSTOM MERCATORIA</span></pre>
+
+<div class="note-success">
+<strong>File <code>config/mercatoria.php</code></strong> adalah config kustom kita. Isinya konstanta yang dipakai di seluruh aplikasi (warna badge, path snapshot, dll). Ini dibuat biar gampang diubah tanpa nyentuh kode.
+</div>
+
+<h1>8. Folder <code>public/</code> &amp; <code>storage/</code></h1>
+
+<div class="folder-header">public/ &amp; storage/ — Detail Struktur</div>
+<pre><span class="dir">public/</span>                          <span class="cmt"># Folder yang bisa diakses browser</span>
+├── index.php                     <span class="cmt"># Entry point (semua request masuk sini)</span>
+├── .htaccess                     <span class="cmt"># Config Apache</span>
+├── favicon.ico
+├── robots.txt
+├── <span class="dir">build/</span>                        <span class="cmt"># Asset hasil build Vite (CSS, JS)</span>
+│   ├── assets/
+│   └── manifest.json
+├── <span class="dir">images/</span>                       <span class="cmt"># Gambar statis (logo, banner)</span>
+│   ├── logo.svg
+│   └── placeholder.jpg
+└── <span class="dir">storage/</span>                      <span class="cmt"># Symlink ke storage/app/public</span>
+    └── (link ke storage/app/public)
+
+<span class="dir">storage/</span>                         <span class="cmt"># File yang di-upload / di-generate</span>
+├── <span class="dir">app/</span>
+│   ├── <span class="dir">public/</span>                     <span class="cmt"># File yang bisa diakses publik</span>
+│   │   ├── <span class="dir">products/</span>              <span class="cmt"># Gambar produk (admin upload)</span>
+│   │   │   ├── main/
+│   │   │   ├── variants/
+│   │   │   └── descriptions/
+│   │   │
+│   │   ├── <span class="dir">order-snapshots/</span>       <span class="cmt"># ⭐ v4.3 — COPY gambar saat checkout</span>
+│   │   │   ├── MER-XXXX-0001/
+│   │   │   │   ├── p-100.jpg
+│   │   │   │   └── v-100.jpg
+│   │   │   └── MER-XXXX-0002/
+│   │   │
+│   │   ├── <span class="dir">payments/</span>              <span class="cmt"># Bukti transfer</span>
+│   │   │   └── 2026/10/
+│   │   │
+│   │   ├── <span class="dir">games/</span>                 <span class="cmt"># Logo game</span>
+│   │   ├── <span class="dir">developers/</span>            <span class="cmt"># Logo developer</span>
+│   │   ├── <span class="dir">hero-slides/</span>           <span class="cmt"># Gambar hero carousel</span>
+│   │   └── <span class="dir">pages/</span>                 <span class="cmt"># Featured image halaman statis</span>
+│   │
+│   └── <span class="dir">private/</span>                   <span class="cmt"># File private (gak bisa diakses publik)</span>
+│       ├── originals/                 <span class="cmt"># ⭐ v1.1 Master foto asli sebelum di-watermark</span>
+│       └── backups/
+│
+├── <span class="dir">framework/</span>
+│   ├── <span class="dir">cache/</span>
+│   ├── <span class="dir">sessions/</span>
+│   └── <span class="dir">views/</span>
+│
+└── <span class="dir">logs/</span>                        <span class="cmt"># Log aplikasi</span>
+    └── laravel.log</pre>
+
+<div class="note-danger">
+<strong>Penting v4.3:</strong> Folder <code>storage/app/public/order-snapshots/</code> <strong>TIDAK PERNAH dihapus</strong> oleh sistem. Ini tempat copy gambar produk saat checkout. Kalau produk asli dihapus admin, gambar di sini tetap ada → order item tetap tampil lengkap.
+</div>
+
+<h1>9. Folder <code>tests/</code> — Detail</h1>
+
+<div class="folder-header">tests/ — Detail Struktur</div>
+<pre><span class="dir">tests/</span>
+├── <span class="dir">Feature/</span>                    <span class="cmt"># Feature test (test fitur end-to-end)</span>
+│   ├── <span class="dir">Auth/</span>
+│   │   ├── LoginTest.php
+│   │   ├── RegisterTest.php
+│   │   └── ResetPasswordTest.php
+│   ├── <span class="dir">Frontend/</span>
+│   │   ├── CatalogTest.php
+│   │   ├── ProductDetailTest.php
+│   │   ├── CartTest.php
+│   │   ├── CheckoutTest.php
+│   │   └── OrderTest.php
+│   ├── <span class="dir">Admin/</span>
+│   │   ├── ProductDeleteTest.php     <span class="cmt"># ⭐ Test hard delete</span>
+│   │   ├── BulkDeleteTest.php
+│   │   ├── InjectOrderTest.php
+│   │   └── OrderStatusTest.php
+│   └── <span class="dir">Snapshot/</span>
+│       ├── SnapshotCreationTest.php   <span class="cmt"># ⭐ Test snapshot</span>
+│       └── OrderIntegrityTest.php     <span class="cmt"># ⭐ Test order utuh walau produk dihapus</span>
+│
+├── <span class="dir">Unit/</span>                       <span class="cmt"># Unit test (test 1 fungsi aja)</span>
+│   ├── <span class="dir">Services/</span>
+│   │   ├── PriceCalculatorTest.php
+│   │   ├── OrderNumberServiceTest.php
+│   │   └── ProductHardDeleteServiceTest.php
+│   ├── <span class="dir">Helpers/</span>
+│   │   └── RealIpHelperTest.php
+│   └── <span class="dir">Enums/</span>
+│       └── OrderStatusTest.php
+│
+├── CreatesApplication.php
+└── TestCase.php</pre>
+
+<h1>10. composer.json — Paket PHP</h1>
+
+<div class="file-header">composer.json — Daftar Paket PHP</div>
+<pre>{
+    <span class="str">"name"</span>: <span class="str">"mercatoria/mercatoria"</span>,
+    <span class="str">"type"</span>: <span class="str">"project"</span>,
+    <span class="str">"description"</span>: <span class="str">"Marketplace merch IP Cina — Mercatoria"</span>,
+    <span class="str">"require"</span>: {
+        <span class="str">"php"</span>: <span class="str">"^8.2"</span>,
+        <span class="str">"laravel/framework"</span>: <span class="str">"^11.0"</span>,
+        <span class="str">"laravel/tinker"</span>: <span class="str">"^2.9"</span>,
+
+        <span class="cmt">// ─── UI &amp; Frontend ─────────────────────────────</span>
+        <span class="str">"livewire/livewire"</span>: <span class="str">"^3.5"</span>,
+        <span class="str">"blade-ui-kit/blade-heroicons"</span>: <span class="str">"^2.3"</span>,
+
+        <span class="cmt">// ─── Image Processing ───────────────────────────</span>
+        <span class="str">"intervention/image"</span>: <span class="str">"^3.7"</span>,
+
+        <span class="cmt">// ─── PDF Generation ─────────────────────────────</span>
+        <span class="str">"barryvdh/laravel-dompdf"</span>: <span class="str">"^3.0"</span>,
+
+        <span class="cmt">// ─── Excel / CSV Export ─────────────────────────</span>
+        <span class="str">"maatwebsite/excel"</span>: <span class="str">"^3.1"</span>,
+
+        <span class="cmt">// ─── SEO ────────────────────────────────────────</span>
+        <span class="str">"spatie/laravel-sitemap"</span>: <span class="str">"^7.0"</span>,
+        <span class="str">"spatie/laravel-sluggable"</span>: <span class="str">"^3.6"</span>,
+
+        <span class="cmt">// ─── Security ───────────────────────────────────</span>
+        <span class="str">"ryangjchandler/laravel-cloudflare-turnstile"</span>: <span class="str">"^1.0"</span>,
+        <span class="str">"spatie/laravel-honeypot"</span>: <span class="str">"^4.5"</span>,
+
+        <span class="cmt">// ─── Geolocation ────────────────────────────────</span>
+        <span class="str">"stevebauman/location"</span>: <span class="str">"^7.0"</span>,
+
+        <span class="cmt">// ─── Activity Log ───────────────────────────────</span>
+        <span class="str">"spatie/laravel-activitylog"</span>: <span class="str">"^4.8"</span>,
+
+        <span class="cmt">// ─── Utilities ──────────────────────────────────</span>
+        <span class="str">"spatie/laravel-backup"</span>: <span class="str">"^9.0"</span>,
+        <span class="str">"spatie/laravel-permission"</span>: <span class="str">"^6.9"</span>,
+        <span class="str">"guzzlehttp/guzzle"</span>: <span class="str">"^7.9"</span>
+    },
+    <span class="str">"require-dev"</span>: {
+        <span class="str">"fakerphp/faker"</span>: <span class="str">"^1.23"</span>,
+        <span class="str">"laravel/pint"</span>: <span class="str">"^1.17"</span>,
+        <span class="str">"larastan/larastan"</span>: <span class="str">"^2.9"</span>,
+        <span class="str">"laravel/pail"</span>: <span class="str">"^1.1"</span>,
+        <span class="str">"laravel/sail"</span>: <span class="str">"^1.30"</span>,
+        <span class="str">"nunomaduro/collision"</span>: <span class="str">"^8.4"</span>,
+        <span class="str">"phpunit/phpunit"</span>: <span class="str">"^11.0"</span>
+    },
+    <span class="str">"autoload"</span>: {
+        <span class="str">"psr-4"</span>: {
+            <span class="str">"App\\"</span>: <span class="str">"app/"</span>,
+            <span class="str">"Database\\Factories\\"</span>: <span class="str">"database/factories/"</span>,
+            <span class="str">"Database\\Seeders\\"</span>: <span class="str">"database/seeders/"</span>
+        },
+        <span class="str">"files"</span>: [
+            <span class="str">"app/Helpers/helpers.php"</span>
+        ]
+    },
+    <span class="str">"scripts"</span>: {
+        <span class="str">"post-autoload-dump"</span>: [
+            <span class="str">"@php artisan package:discover --ansi"</span>
+        ],
+        <span class="str">"post-update-cmd"</span>: [
+            <span class="str">"@php artisan vendor:publish --tag=laravel-assets --ansi --force"</span>
+        ],
+        <span class="str">"lint"</span>: <span class="str">"./vendor/bin/pint"</span>,
+        <span class="str">"analyze"</span>: <span class="str">"./vendor/bin/phpstan analyse"</span>,
+        <span class="str">"test"</span>: <span class="str">"@php artisan test"</span>
+    }
+}</pre>
+
+<h3>10.1 Penjelasan Paket PHP</h3>
+<table>
+  <tr><th>Paket</th><th>Fungsi Gampang</th><th>Dipakai untuk</th></tr>
+  <tr><td><code>laravel/framework</code></td><td>Framework utama</td><td>Semua</td></tr>
+  <tr><td><code>livewire/livewire</code></td><td>Halaman real-time tanpa reload</td><td>Bell notifikasi, cart, admin tabel</td></tr>
+  <tr><td><code>blade-ui-kit/blade-heroicons</code></td><td>Koleksi icon</td><td>Icon di seluruh UI</td></tr>
+  <tr><td><code>intervention/image</code></td><td>Resize + kompres gambar</td><td>Upload produk, bukti bayar</td></tr>
+  <tr><td><code>barryvdh/laravel-dompdf</code></td><td>Bikin PDF dari HTML</td><td>Invoice, Packing List</td></tr>
+  <tr><td><code>maatwebsite/excel</code></td><td>Export Excel/CSV</td><td>Laporan penjualan, rank pelanggan</td></tr>
+  <tr><td><code>spatie/laravel-sitemap</code></td><td>Auto-generate sitemap.xml</td><td>SEO</td></tr>
+  <tr><td><code>spatie/laravel-sluggable</code></td><td>Auto-bikin slug dari nama</td><td>Produk, game, halaman</td></tr>
+  <tr><td><code>ryangjchandler/...turnstile</code></td><td>Anti-bot Cloudflare</td><td>Login, register</td></tr>
+  <tr><td><code>spatie/laravel-honeypot</code></td><td>Trap bot pakai field tersembunyi</td><td>Form publik</td></tr>
+  <tr><td><code>stevebauman/location</code></td><td>Deteksi negara dari IP</td><td>Share produk (batasi IP ID)</td></tr>
+  <tr><td><code>spatie/laravel-activitylog</code></td><td>Auto-log aktivitas</td><td>Activity log (opsional)</td></tr>
+  <tr><td><code>spatie/laravel-backup</code></td><td>Backup DB + file otomatis</td><td>Cron backup</td></tr>
+  <tr><td><code>spatie/laravel-permission</code></td><td>RBAC (role + permission)</td><td>Opsional — bisa pakai native <code>role</code> column</td></tr>
+  <tr><td><code>laravel/pint</code></td><td>Auto-format kode biar rapi</td><td>Development</td></tr>
+  <tr><td><code>larastan/larastan</code></td><td>Cek error di kode sebelum jalan</td><td>Development</td></tr>
+</table>
+
+<h1>11. package.json — Paket JS</h1>
+
+<div class="file-header">package.json — Daftar Paket JS</div>
+<pre>{
+    <span class="str">"name"</span>: <span class="str">"mercatoria"</span>,
+    <span class="str">"type"</span>: <span class="str">"module"</span>,
+    <span class="str">"private"</span>: <span class="kw">true</span>,
+    <span class="str">"scripts"</span>: {
+        <span class="str">"dev"</span>: <span class="str">"vite"</span>,
+        <span class="str">"build"</span>: <span class="str">"vite build"</span>
+    },
+    <span class="str">"devDependencies"</span>: {
+        <span class="str">"@tailwindcss/forms"</span>: <span class="str">"^0.5.9"</span>,
+        <span class="str">"@tailwindcss/typography"</span>: <span class="str">"^0.5.15"</span>,
+        <span class="str">"autoprefixer"</span>: <span class="str">"^10.4.20"</span>,
+        <span class="str">"axios"</span>: <span class="str">"^1.7.7"</span>,
+        <span class="str">"laravel-vite-plugin"</span>: <span class="str">"^1.0.5"</span>,
+        <span class="str">"postcss"</span>: <span class="str">"^8.4.47"</span>,
+        <span class="str">"tailwindcss"</span>: <span class="str">"^3.4.14"</span>,
+        <span class="str">"vite"</span>: <span class="str">"^5.4.0"</span>
+    },
+    <span class="str">"dependencies"</span>: {
+        <span class="str">"alpinejs"</span>: <span class="str">"^3.14.1"</span>,
+        <span class="str">"chart.js"</span>: <span class="str">"^4.4.4"</span>,
+        <span class="str">"grapesjs"</span>: <span class="str">"^0.21.10"</span>,
+        <span class="str">"grapesjs-preset-webpage"</span>: <span class="str">"^1.0.3"</span>,
+        <span class="str">"@alpinejs/focus"</span>: <span class="str">"^3.14.1"</span>,
+        <span class="str">"@alpinejs/persist"</span>: <span class="str">"^3.14.1"</span>,
+        <span class="str">"@alpinejs/collapse"</span>: <span class="str">"^3.14.1"</span>,
+        <span class="str">"flatpickr"</span>: <span class="str">"^4.6.13"</span>,
+        <span class="str">"sweetalert2"</span>: <span class="str">"^11.14.0"</span>
+    }
+}</pre>
+
+<h3>11.1 Penjelasan Paket JS</h3>
+<table>
+  <tr><th>Paket</th><th>Fungsi Gampang</th><th>Dipakai untuk</th></tr>
+  <tr><td><code>tailwindcss</code></td><td>Bikin tampilan pakai class</td><td>Semua UI</td></tr>
+  <tr><td><code>alpinejs</code></td><td>Interaktif ringan (dropdown, modal, toggle)</td><td>Navbar, dropdown bell, filter</td></tr>
+  <tr><td><code>chart.js</code></td><td>Bikin grafik batang/garis</td><td>Admin dashboard</td></tr>
+  <tr><td><code>grapesjs</code></td><td>Drag &amp; drop page builder</td><td>Preorder Builder (admin)</td></tr>
+  <tr><td><code>flatpickr</code></td><td>Kalender pilih tanggal</td><td>Form tanggal lahir, filter tanggal</td></tr>
+  <tr><td><code>axios</code></td><td>Kirim request AJAX</td><td>Polling bell, fetch data</td></tr>
+  <tr><td><code>vite</code></td><td>Build tool</td><td>Development &amp; production build</td></tr>
+  <tr><td><code>sweetalert2</code></td><td>Modal cantik siap pakai</td><td>Modal konfirmasi (alternatif)</td></tr>
+</table>
+
+<h1>12. Konvensi Naming</h1>
+
+<h3>12.1 File &amp; Class</h3>
+<table>
+  <tr><th>Jenis</th><th>Konvensi</th><th>Contoh</th></tr>
+  <tr><td>Class PHP</td><td>PascalCase</td><td><code>OrderItemSnapshotService</code></td></tr>
+  <tr><td>Method</td><td>camelCase</td><td><code>createForOrderItem()</code></td></tr>
+  <tr><td>Variabel</td><td>camelCase</td><td><code>$orderItem</code></td></tr>
+  <tr><td>Konstanta</td><td>UPPER_SNAKE</td><td><code>MAX_RETRY_ATTEMPT</code></td></tr>
+  <tr><td>Tabel DB</td><td>snake_case plural</td><td><code>order_items</code></td></tr>
+  <tr><td>Kolom DB</td><td>snake_case</td><td><code>product_name</code></td></tr>
+  <tr><td>Blade file</td><td>kebab-case</td><td><code>notification-bell.blade.php</code></td></tr>
+  <tr><td>Migration</td><td>snake_case + timestamp</td><td><code>2026_10_14_000001_create_users_table.php</code></td></tr>
+  <tr><td>Route name</td><td>dot.notation</td><td><code>admin.orders.index</code></td></tr>
+  <tr><td>URL</td><td>kebab-case</td><td><code>/office/merch-categories</code></td></tr>
+</table>
+
+<h3>12.2 Controller Method</h3>
+<table>
+  <tr><th>Method</th><th>Fungsi</th></tr>
+  <tr><td><code>index()</code></td><td>Tampil list</td></tr>
+  <tr><td><code>create()</code></td><td>Tampil form tambah</td></tr>
+  <tr><td><code>store()</code></td><td>Simpan data baru</td></tr>
+  <tr><td><code>show($id)</code></td><td>Tampil detail</td></tr>
+  <tr><td><code>edit($id)</code></td><td>Tampil form edit</td></tr>
+  <tr><td><code>update($id)</code></td><td>Update data</td></tr>
+  <tr><td><code>destroy($id)</code></td><td>Hapus data</td></tr>
+</table>
+
+<h1>13. Alur Request (Route → Controller → Service)</h1>
+
+<div class="folder-header">Contoh: User Klik "Buat Pesanan" (Checkout)</div>
+<pre>1. USER KLIK "BUAT PESANAN"
+   → Browser kirim POST /checkout dengan data form
+                            ↓
+2. ROUTE (routes/web.php)
+   Route::post('/checkout', [CheckoutController::class, 'store'])
+       ->middleware(['auth', 'turnstile']);
+                            ↓
+3. MIDDLEWARE (app/Http/Middleware/)
+   - Authenticate → cek login
+   - VerifyTurnstile → cek anti-bot
+   - LogUserActivity → catat aktivitas
+                            ↓
+4. FORM REQUEST (app/Http/Requests/Frontend/CheckoutRequest.php)
+   → Validasi: platform, payment_scheme, payment_method, dll
+   → Kalau gagal → redirect back + error message
+                            ↓
+5. CONTROLLER (app/Http/Controllers/Frontend/CheckoutController)
+   public function store(CheckoutRequest $request)
+   {
+       $order = $this->orderService->create($request->validated());
+       return redirect()->route('orders.show', $order);
+   }
+                            ↓
+6. SERVICE (app/Services/Order/OrderService.php)
+   public function create(array $data): Order
+   {
+       DB::beginTransaction();
+       try {
+           $order = Order::create([...]);
+           $this->createOrderItemsAndSnapshots($order);  // ⭐
+           DB::commit();
+           event(new OrderCreated($order));    // trigger
+           return $order;
+       } catch (\Exception $e) {
+           DB::rollBack();
+           throw $e;
+       }
+   }
+                            ↓
+7. EVENT + LISTENER
+   event(new OrderCreated($order))
+       ↓
+   Listener:
+   - SendOrderCreatedEmail → kirim email
+   - SendNotificationOnOrderCreated → kirim bell
+   - NotifyAdminOnNewOrder → bell admin
+                            ↓
+8. RESPONSE
+   → redirect ke /orders/{id}
+   → user lihat detail order</pre>
+
+<h3>13.1 Kenapa Service Dipisah?</h3>
+<div class="note-info">
+Kalau semua logic taruh di <strong>Controller</strong>, file-nya bisa jadi 500+ baris. Susah dibaca, susah di-test. Dengan <strong>Service</strong>:
+<ul>
+  <li>Controller cuma 5–10 baris</li>
+  <li>Service berisi business logic yang reusable</li>
+  <li>Mudah di-test (unit test)</li>
+  <li>Kalau butuh dipakai di tempat lain (misal CLI command, API), tinggal panggil service</li>
+</ul>
+</div>
+
+<h1>14. Alur Response</h1>
+
+<div class="folder-header">Alur Response — 3 Tipe</div>
+<pre><span class="cmt">// ─── 1. Response HTML (Blade) ────────────────────────
+public function index()
+{
+    $products = Product::active()->paginate(30);
+    return view('frontend.catalog.game', compact('products'));
+}
+
+// ─── 2. Response Redirect ────────────────────────────
+public function store(CheckoutRequest $request)
+{
+    $order = $this->orderService->create($request->validated());
+    return redirect()
+        ->route('orders.show', $order)
+        ->with('success', 'Pesanan berhasil dibuat!');
+}
+
+// ─── 3. Response JSON (API internal) ─────────────────
+public function latest()
+{
+    $notifications = auth()->user()
+        ->notifications()
+        ->orderByDesc('created_at')
+        ->limit(10)
+        ->get();
+
+    return NotificationResource::collection($notifications);
+}</pre>
+
+<h1>15. File Konfigurasi Kustom</h1>
+
+<div class="file-header">config/mercatoria.php — Config Kustom</div>
+<pre><span class="kw">&lt;?php</span>
+
+<span class="cmt">// File ini berisi konstanta yang dipakai di seluruh aplikasi Mercatoria</span>
+
+<span class="kw">return</span> [
+    <span class="cmt">// ─── Store Info ─────────────────────────────────────</span>
+    <span class="str">'store'</span> =&gt; [
+        <span class="str">'name'</span> =&gt; <span class="str">'Mercatoria'</span>,
+        <span class="str">'domain'</span> =&gt; <span class="str">'mercatoria.id'</span>,
+        <span class="str">'admin_url'</span> =&gt; <span class="str">'/office'</span>,
+        <span class="str">'cs_email'</span> =&gt; <span class="str">'cs@mercatoria.id'</span>,
+        <span class="str">'security_email'</span> =&gt; <span class="str">'security@mercatoria.id'</span>,
+        <span class="str">'info_email'</span> =&gt; <span class="str">'info@mercatoria.id'</span>,
+    ],
+
+    <span class="cmt">// ─── Order ──────────────────────────────────────────</span>
+    <span class="str">'order'</span> =&gt; [
+        <span class="str">'number_prefix'</span> =&gt; <span class="str">'MER'</span>,
+        <span class="str">'pickup_timer_days'</span> =&gt; <span class="str">7</span>,
+        <span class="str">'dp_percent'</span> =&gt; <span class="str">50</span>,
+        <span class="str">'rounding'</span> =&gt; <span class="str">5000</span>,
+    ],
+
+    <span class="cmt">// ─── Snapshot (v4.3) ────────────────────────────────</span>
+    <span class="str">'snapshot'</span> =&gt; [
+        <span class="str">'storage_path'</span> =&gt; <span class="str">'order-snapshots'</span>,
+        <span class="str">'retention'</span> =&gt; <span class="str">'permanent'</span>,
+        <span class="str">'image_max_size'</span> =&gt; <span class="str">200</span> * <span class="str">1024</span>,
+        <span class="str">'delete_confirm_text'</span> =&gt; <span class="str">'HAPUS'</span>,
+    ],
+
+    <span class="cmt">// ─── Bell Notifikasi ────────────────────────────────</span>
+    <span class="str">'bell'</span> =&gt; [
+        <span class="str">'poll_interval'</span> =&gt; <span class="str">60</span>,
+        <span class="str">'max_dropdown'</span> =&gt; <span class="str">10</span>,
+        <span class="str">'retention_days'</span> =&gt; <span class="str">90</span>,
+        <span class="str">'toast_duration'</span> =&gt; <span class="str">5</span>,
+    ],
+
+    <span class="cmt">// ─── Shipping &amp; Pricing (v1.1 Selaras PRD v4.6) ─────</span>
+    <span class="str">'shipping'</span> =&gt; [
+        <span class="str">'cn_btm_per_kg'</span> =&gt; <span class="fn">env</span>(<span class="str">'SHIPPING_CN_BTM_PER_KG'</span>, <span class="str">25000</span>),
+        <span class="str">'btm_jkt_per_kg'</span> =&gt; <span class="fn">env</span>(<span class="str">'SHIPPING_BTM_JKT_PER_KG'</span>, <span class="str">60000</span>),
+        <span class="str">'default_weight_gram'</span> =&gt; <span class="fn">env</span>(<span class="str">'SHIPPING_DEFAULT_WEIGHT'</span>, <span class="str">0</span>),
+        <span class="str">'local_cn_mode'</span> =&gt; <span class="str">'per_variant_customer_pays_directly'</span>,
+    ],
+
+    <span class="cmt">// ─── State &amp; Smart Scoped Ban (v1.1 Selaras PRD v4.6)</span>
+    <span class="str">'state'</span> =&gt; [
+        <span class="str">'crush_auto_delete_days'</span> =&gt; <span class="str">30</span>,
+        <span class="str">'view_limit'</span> =&gt; <span class="str">10</span>,
+        <span class="str">'mvp_to_ex_days'</span> =&gt; <span class="str">0</span>,          <span class="cmt">// Instan (0 hari) saat order aktif terakhir Selesai</span>
+        <span class="str">'ex_to_ons_days'</span> =&gt; <span class="str">30</span>,         <span class="cmt">// 0–30 hari = Ex, &gt;30 hari = ONS</span>
+        <span class="str">'ons_to_blocked_days'</span> =&gt; <span class="str">60</span>,    <span class="cmt">// &gt;60 hari = Blocked (Tier badge bukan tameng)</span>
+        <span class="str">'h7_warning_days_before'</span> =&gt; <span class="str">7</span>,  <span class="cmt">// H-7 untuk Crush-&gt;Delete, Ex-&gt;ONS, ONS-&gt;Blocked</span>
+        <span class="str">'max_unblock_count'</span> =&gt; <span class="str">2</span>,       <span class="cmt">// Maks 2x unblock sebelum permanen</span>
+        <span class="str">'unblock_grace_days'</span> =&gt; <span class="str">7</span>,
+        <span class="str">'spammer_ip_ttl_days'</span> =&gt; <span class="str">30</span>,    <span class="cmt">// Auto-decay IP dinamis CGNAT 30 hari</span>
+    ],
+
+    <span class="cmt">// ─── Coin ───────────────────────────────────────────</span>
+    <span class="str">'coin'</span> =&gt; [
+        <span class="str">'referrer_reward'</span> =&gt; <span class="str">3000</span>,
+        <span class="str">'referee_reward'</span> =&gt; <span class="str">1000</span>,
+        <span class="str">'order_percent'</span> =&gt; <span class="str">1</span>,
+        <span class="str">'share_reward'</span> =&gt; <span class="str">5</span>,
+        <span class="str">'max_discount_percent'</span> =&gt; <span class="str">5</span>,
+        <span class="str">'expiry_days'</span> =&gt; <span class="str">365</span>,
+    ],
+
+    <span class="cmt">// ─── Share ──────────────────────────────────────────</span>
+    <span class="str">'share'</span> =&gt; [
+        <span class="str">'restrict_to_indonesia'</span> =&gt; <span class="kw">true</span>,
+    ],
+
+    <span class="cmt">// ─── Mail Control (v1.1 Stop Email Customer) ────────</span>
+    <span class="str">'mail_control'</span> =&gt; [
+        <span class="str">'pause_customer_emails'</span> =&gt; <span class="fn">env</span>(<span class="str">'MAIL_PAUSE_CUSTOMER_EMAILS'</span>, <span class="kw">false</span>),
+        <span class="str">'always_allow_templates'</span> =&gt; [<span class="str">'admin_otp'</span>],
+    ],
+
+    <span class="cmt">// ─── Image Protection &amp; Auto-Watermark (v1.1) ───────</span>
+    <span class="str">'image_protection'</span> =&gt; [
+        <span class="str">'enabled'</span> =&gt; <span class="fn">env</span>(<span class="str">'IMAGE_PROTECTION_ENABLED'</span>, <span class="kw">true</span>),
+        <span class="str">'watermark_enabled'</span> =&gt; <span class="fn">env</span>(<span class="str">'IMAGE_WATERMARK_ENABLED'</span>, <span class="kw">true</span>),
+        <span class="str">'watermark_text'</span> =&gt; <span class="fn">env</span>(<span class="str">'IMAGE_WATERMARK_TEXT'</span>, <span class="str">'MERCATORIA · mercatoria.id'</span>),
+        <span class="str">'watermark_opacity'</span> =&gt; <span class="fn">env</span>(<span class="str">'IMAGE_WATERMARK_OPACITY'</span>, <span class="str">25</span>),
+        <span class="str">'watermark_mode'</span> =&gt; <span class="str">'diagonal_tiled'</span>,
+    ],
+];</pre>
+
+<h1>16. Tips Development</h1>
+
+<h3>16.1 Command Penting</h3>
+<table>
+  <tr><th>Command</th><th>Fungsi</th></tr>
+  <tr><td><code>php artisan serve</code></td><td>Jalankan server development</td></tr>
+  <tr><td><code>npm run dev</code></td><td>Jalankan Vite (watch CSS/JS)</td></tr>
+  <tr><td><code>php artisan migrate</code></td><td>Jalankan migration DB</td></tr>
+  <tr><td><code>php artisan db:seed</code></td><td>Isi data default</td></tr>
+  <tr><td><code>php artisan migrate:fresh --seed</code></td><td>Reset DB + isi ulang (HATI-HATI!)</td></tr>
+  <tr><td><code>php artisan make:model Product</code></td><td>Bikin model baru</td></tr>
+  <tr><td><code>php artisan make:controller ...</code></td><td>Bikin controller</td></tr>
+  <tr><td><code>php artisan make:migration ...</code></td><td>Bikin migration</td></tr>
+  <tr><td><code>php artisan test</code></td><td>Jalankan test</td></tr>
+  <tr><td><code>./vendor/bin/pint</code></td><td>Auto-format kode</td></tr>
+  <tr><td><code>./vendor/bin/phpstan analyse</code></td><td>Cek error kode</td></tr>
+</table>
+
+<h3>16.2 Workflow Development</h3>
+<ol>
+  <li>Buka 2 terminal:
+    <ul>
+      <li>Terminal 1: <code>php artisan serve</code></li>
+      <li>Terminal 2: <code>npm run dev</code></li>
+    </ul>
+  </li>
+  <li>Buka browser: <code>http://localhost:8000</code></li>
+  <li>Edit kode → auto reload (Vite HMR)</li>
+  <li>Kalau ubah migration → <code>php artisan migrate</code></li>
+  <li>Kalau ubah config → <code>php artisan config:clear</code></li>
+</ol>
+
+<h3>16.3 Yang Jangan Dilakukan</h3>
+<div class="note-danger">
+<ul>
+  <li>❌ Jangan edit <code>vendor/</code> atau <code>node_modules/</code></li>
+  <li>❌ Jangan commit <code>.env</code> (rahasia!)</li>
+  <li>❌ Jangan <code>php artisan migrate:fresh</code> di production</li>
+  <li>❌ Jangan taruh logic bisnis di Controller (pakai Service)</li>
+  <li>❌ Jangan query DB di View Blade (pakai Controller)</li>
+  <li>❌ Jangan hardcode credential di kode (pakai <code>.env</code> + <code>config/</code>)</li>
+</ul>
+</div>
+
+<hr>
+<p style="text-align: center; color: #666; margin-top: 40px;">
+<strong>— End of Document —</strong><br>
+Struktur Folder &amp; Paket Mercatoria v1.1 FINAL · 21 Oktober 2026<br>
+15 Paket Composer · 10 Paket NPM · 50 Migration · 30 Model<br>
+Laravel 11 · PHP 8.2 · MySQL 8 · Blade + Alpine + Livewire + Tailwind
+</p>
+
+</body>
+</html>

@@ -1,0 +1,3132 @@
+<!DOCTYPE html>
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+      xmlns:w="urn:schemas-microsoft-com:office:word"
+      xmlns="http://www.w3.org/TR/REC-html40">
+<head>
+<meta charset="UTF-8">
+<title>PRD Mercatoria v4.6 FINAL — Patched &amp; Aligned</title>
+<!--[if gte mso 9]>
+<xml>
+  <w:WordDocument>
+    <w:View>Print</w:View>
+    <w:Zoom>100</w:Zoom>
+    <w:DoNotOptimizeForBrowser/>
+  </w:WordDocument>
+</xml>
+<![endif]-->
+<style>
+  @page { size: A4; margin: 2cm; }
+  body { font-family: 'Calibri', 'Segoe UI', Arial, sans-serif; font-size: 11pt; line-height: 1.5; color: #222; max-width: 850px; margin: 0 auto; padding: 20px; }
+  h1 { font-size: 22pt; color: #1a4d8f; border-bottom: 3px solid #1a4d8f; padding-bottom: 8px; margin-top: 30px; margin-bottom: 15px; page-break-after: avoid; }
+  h2 { font-size: 16pt; color: #1a4d8f; border-bottom: 1px solid #ccc; padding-bottom: 5px; margin-top: 22px; margin-bottom: 12px; page-break-after: avoid; }
+  h3 { font-size: 13pt; color: #2c5fa8; margin-top: 18px; margin-bottom: 8px; page-break-after: avoid; }
+  h4 { font-size: 11.5pt; color: #333; margin-top: 12px; margin-bottom: 6px; }
+  p { margin: 6px 0; text-align: justify; }
+  ul, ol { margin: 6px 0 6px 22px; padding-left: 0; }
+  li { margin: 3px 0; }
+  table { border-collapse: collapse; width: 100%; margin: 10px 0; font-size: 10.5pt; page-break-inside: avoid; }
+  th { background: #1a4d8f; color: #fff; border: 1px solid #1a4d8f; padding: 7px 9px; text-align: left; }
+  td { border: 1px solid #ccc; padding: 6px 9px; vertical-align: top; }
+  tr:nth-child(even) td { background: #f5f7fa; }
+  code { background: #f0f2f5; padding: 2px 5px; border-radius: 3px; font-family: 'Consolas', monospace; font-size: 10pt; color: #c0392b; }
+  pre { background: #f8f9fa; border-left: 4px solid #1a4d8f; padding: 10px 14px; font-family: 'Consolas', monospace; font-size: 9.5pt; line-height: 1.4; white-space: pre-wrap; page-break-inside: avoid; }
+  .cover { text-align: center; padding: 100px 20px; page-break-after: always; }
+  .cover h1 { font-size: 40pt; border: none; color: #1a4d8f; margin-bottom: 10px; }
+  .cover .subtitle { font-size: 18pt; color: #666; margin-bottom: 80px; }
+  .cover .meta { font-size: 12pt; color: #444; line-height: 2; text-align: left; display: inline-block; margin-top: 40px; }
+  .cover .meta strong { color: #1a4d8f; }
+  .toc { background: #f5f7fa; border: 1px solid #ccc; padding: 15px 25px; margin: 20px 0; page-break-after: always; }
+  .toc h2 { margin-top: 0; border: none; }
+  .toc ol { margin-left: 20px; }
+  .toc li { margin: 3px 0; font-size: 10.5pt; }
+  hr { border: none; border-top: 1px solid #ccc; margin: 18px 0; }
+  .note { background: #fff8e1; border-left: 4px solid #ffc107; padding: 10px 14px; margin: 12px 0; font-size: 10.5pt; page-break-inside: avoid; }
+  .note-info { background: #e3f2fd; border-left: 4px solid #1e88e5; padding: 10px 14px; margin: 12px 0; font-size: 10.5pt; page-break-inside: avoid; }
+  .note-danger { background: #ffebee; border-left: 4px solid #e53935; padding: 10px 14px; margin: 12px 0; font-size: 10.5pt; page-break-inside: avoid; }
+  .note-success { background: #e8f5e9; border-left: 4px solid #43a047; padding: 10px 14px; margin: 12px 0; font-size: 10.5pt; page-break-inside: avoid; }
+  .new { background: #e8f5e9; border-left: 4px solid #43a047; padding: 4px 8px; font-size: 9pt; color: #2e7d32; font-weight: bold; border-radius: 3px; display: inline-block; margin-left: 6px; }
+  .rev { background: #fff3e0; border-left: 4px solid #fb8c00; padding: 4px 8px; font-size: 9pt; color: #e65100; font-weight: bold; border-radius: 3px; display: inline-block; margin-left: 6px; }
+</style>
+</head>
+<body>
+
+<div class="cover">
+  <h1>PRD MERCATORIA</h1>
+  <div class="subtitle">Product Requirements Document</div>
+  <div class="meta">
+    <p><strong>Versi:</strong> 4.6 (FINAL — Patched &amp; Aligned)</p>
+    <p><strong>Tanggal:</strong> 21 Oktober 2026</p>
+    <p><strong>Referensi Selaras:</strong> Design Spec v3.0 · Skema DB v1.4 · Backlog v1.5 · Struktur Folder v1.1</p>
+    <p><strong>Status:</strong> Siap Development</p>
+    <p><strong>Tech Stack:</strong> Laravel + MySQL</p>
+    <p><strong>Domain:</strong> mercatoria.id</p>
+    <p><strong>Admin URL:</strong> /office</p>
+    <p><strong>Platform:</strong> Web only (semi-auto, no API)</p>
+    <p><strong>Timezone:</strong> WIB (GMT+7)</p>
+
+  </div>
+</div>
+
+<div class="toc">
+  <h2>Daftar Isi</h2>
+  <ol>
+    <li>Ringkasan Produk</li>
+    <li>Latar Belakang &amp; Masalah</li>
+    <li>Tujuan &amp; Metrik</li>
+    <li>Persona</li>
+    <li>Value Proposition</li>
+    <li>Scope MVP</li>
+    <li>User System</li>
+    <li>Security</li>
+    <li>Koin, Referral &amp; Voucher</li>
+    <li>Spammer, Block &amp; Multi-IP Ban</li>
+    <li>Buyer Protection</li>
+    <li>Landing &amp; Referral Tracking</li>
+    <li>Produk &amp; Katalog</li>
+    <li>Kategori Merch (Auto-Group)</li>
+    <li>Edukasi Cara Belanja</li>
+    <li>Cart &amp; Checkout</li>
+    <li>Pembayaran</li>
+    <li>Alur Order, Status &amp; Invoice</li>
+    <li>Logistik</li>
+    <li>Model Bisnis &amp; Rumus Harga</li>
+    <li>Snapshot &amp; Freeze Harga</li>
+    <li>Admin Panel</li>
+    <li>Settings</li>
+    <li>Template Email (CRUD)</li>
+    <li>CMS Halaman Statis</li>
+    <li>Preorder Builder</li>
+    <li>Rank Pelanggan &amp; Kirim Gift</li>
+    <li>Laporan Penjualan</li>
+    <li>SEO</li>
+    <li>UI/UX Rules</li>
+    <li>Non-Functional Requirements</li>
+    <li>Risiko &amp; Mitigasi</li>
+    <li>Timeline</li>
+    <li>Refund Policy</li>
+    <li>Entity Relationship</li>
+    <li>Skema Halaman</li>
+    <li>Integrasi &amp; Hosting</li>
+    <li>GA4 Events</li>
+    <li>Activity Log System</li>
+    <li>Home Layout &amp; UI Components</li>
+    <li>Admin Notifikasi &amp; Search</li>
+    <li>Future Development (v1.1+)</li>
+    <li>Bell Notifikasi User</li>
+    <li>Note to Customer</li>
+    <li>Badge &amp; Tier System</li>
+    <li>Product vs Order Item — Design Principle</li>
+    <li><strong>Store Concept &amp; Berat Produk</strong> <span class="new">NEW v4.4</span></li>
+  </ol>
+</div>
+
+<h1>1. Ringkasan Produk</h1>
+<p><strong>Mercatoria</strong> adalah web marketplace B2C yang membantu penggemar IP Cina (game, anime, donghua, novel) membeli merchandise resmi &amp; fanmade dari Tiongkok — tanpa harus paham Mandarin, punya akun Taobao/Weidian, atau mengurus pengiriman internasional sendiri.</p>
+<p>Mercatoria berperan sebagai <strong>perantara + katalog terkurasi per IP</strong>, menangani pembelian, konsolidasi, dan pengiriman ke pembeli.</p>
+<p><strong>Platform:</strong> Web only, semi-otomatis. <strong>Timezone:</strong> WIB (GMT+7).</p>
+
+<h3>Email Resmi</h3>
+<table>
+  <tr><th>Email</th><th>Fungsi</th></tr>
+  <tr><td><code>security@mercatoria.id</code></td><td>Keamanan akun (verifikasi email, reset password, OTP admin, blokir, hapus akun)</td></tr>
+  <tr><td><code>info@mercatoria.id</code></td><td>Notifikasi otomatis sistem</td></tr>
+  <tr><td><code>cs@mercatoria.id</code></td><td>Komunikasi 2 arah dengan customer service</td></tr>
+</table>
+
+<h1>2. Latar Belakang &amp; Masalah</h1>
+<h3>Masalah Utama</h3>
+<ol>
+  <li>Seller Tiongkok hanya kirim domestik</li>
+  <li>Registrasi Taobao/Weidian susah</li>
+  <li>Hambatan bahasa Mandarin</li>
+  <li>Proses beli &amp; kirim ribet</li>
+  <li>Risiko scam</li>
+</ol>
+<h3>Kenapa Sekarang</h3>
+<p>Penggemar IP Cina tumbuh pesat, akses merch masih via jastip tidak terstruktur.</p>
+<h3>Dampak Jika Tidak Diselesaikan</h3>
+<p>Biaya mahal, waktu lama, penggemar tidak bisa koleksi merch.</p>
+
+<h1>3. Tujuan &amp; Metrik</h1>
+<ul>
+  <li><strong>North Star:</strong> transaksi sukses / bulan</li>
+  <li><strong>Pendukung:</strong> IP aktif, SKU per IP, repeat order, waktu order → sampai, NPS</li>
+</ul>
+<p><strong>Skala awal:</strong> 200–300 user aktif · 30–50 koneksi/hari</p>
+
+<h1>4. Persona</h1>
+<table>
+  <tr><th>Persona</th><th>Kebutuhan</th></tr>
+  <tr><td>Kolektor pemula</td><td>Katalog jelas, panduan, pembayaran lokal, rasa aman</td></tr>
+  <tr><td>Kolektor berpengalaman</td><td>Harga transparan, kepastian, tracking</td></tr>
+  <tr><td>Admin / Operator</td><td>Dashboard efisien, kontrol penuh, activity log lengkap</td></tr>
+</table>
+
+<h1>5. Value Proposition</h1>
+<ul>
+  <li><strong>Pembeli:</strong> beli merch IP Cina semudah marketplace lokal</li>
+  <li><strong>Mercatoria:</strong> pintu masuk utama merch IP Cina untuk pasar luar Tiongkok</li>
+</ul>
+
+<h1>6. Scope MVP</h1>
+<h3>In Scope</h3>
+<ul>
+  <li>Katalog per game &amp; developer (many-to-many)</li>
+  <li><strong>Deep Search (Produk + Nama Varian/Karakter) &amp; Filter Lengkap</strong> — pencarian wajib membaca nama produk induk sekaligus nama varian/karakter (<code>product_variants.name</code>) dengan layout halaman Search khusus (Full-Width 6 Kolom + Horizontal Filter Bar) agar konsisten namun tidak membingungkan dengan halaman Katalog <span class="new">v4.6</span></li>
+  <li>Tag produk: kosong / PRESALE / LIMITED</li>
+  <li>Kategori merch auto-group by sistem (admin CRUD kategori &amp; keyword)</li>
+  <li>Produk single &amp; varian (Karakter, Ukuran, Model, Tipe: Random/Set/Jar)</li>
+  <li>Multi-varian kombinasi (Karakter + Model, Karakter + Ukuran, dll)</li>
+  <li>Varian punya gambar + preview; jika kosong → ambil gambar induk</li>
+  <li>Varian ditampilkan sebagai card/button grid (Shopee-style)</li>
+  <li>SKU &amp; slug unique per produk</li>
+  <li><strong>Deskripsi produk 1 gambar panjang</strong> + <strong>preview di admin</strong> (thumbnail + modal full)</li>
+  <li><strong>Zoom gambar induk &amp; varian</strong> di halaman produk (user) — deskripsi panjang tidak di-zoom</li>
+  <li><strong>Proteksi Anti-Download Foto &amp; Auto-Watermark (Bebas Copy-Paste Teks)</strong> — kalimat/kata tetap bebas di-copy user, namun seluruh foto produk, varian, &amp; deskripsi panjang dikunci dari klik-kanan/drag/save serta ditanamkan watermark <code>MERCATORIA.ID</code> otomatis di server <span class="new">v4.6</span></li>
+  <li>Produk terkait: 6 random dari game/developer sama, scroll horizontal</li>
+  <li><strong>Diskon Produk</strong> (nominal) + <strong>Penawaran Terbaik</strong></li>
+  <li><strong>Katalog dengan sidebar</strong></li>
+  <li><strong>Terakhir Dilihat</strong> (hanya user login)</li>
+  <li><strong>Toolbar katalog</strong> (Menampilkan X dari Y, Pengurutan, Pagination 30/halaman)</li>
+  <li><strong>Catatan Pembelian (customer_note)</strong> di cart</li>
+  <li><strong>Note to Customer</strong> (admin → customer, 1-way)</li>
+  <li><strong>Product vs Order Item — Hard Delete + Snapshot</strong> (data + gambar copy)</li>
+  <li><strong>Store Concept</strong> — tier ongkir lokal CN per toko (min_belanja, ongkir_rmb) <span class="new">v4.4</span></li>
+  <li><strong>Berat Produk</strong> — default di produk, override di varian, bulk edit varian <span class="new">v4.4</span></li>
+  <li><strong>Ongkir Internasional per kg</strong> — CN-BTM &amp; BTM-JKT dihitung dari berat total <span class="new">v4.4</span></li>
+  <li><strong>Snapshot Breakdown Ongkir</strong> — order item simpan detail 3 jenis ongkir + berat <span class="new">v4.4</span></li>
+  <li>User system lengkap + verifikasi email</li>
+  <li>State User System: Guest, Crush, Customer (sub-state MVP/Ex/ONS/Blocked), Admin</li>
+  <li>Home SAMA untuk guest &amp; login (cuma beda navbar)</li>
+  <li>Guest Human hanya lihat home &amp; halaman publik</li>
+  <li>Bot Crawler full akses konten publik (SEO)</li>
+  <li>Announcement Bar (promo bar) dismissible</li>
+  <li>Hero Carousel di Home</li>
+  <li>Home Layout: Game Grid + Penawaran Terbaik + Merch Baru</li>
+  <li>Auto-delete Crush 30 hari (HARD DELETE)</li>
+  <li>View limit Crush/Ex/ONS: 10x (detail produk)</li>
+  <li>Koin + Referral + Voucher</li>
+  <li><strong>2 Badge System</strong>: Role/State Badge + Tier Badge</li>
+  <li>Checkout: BCA / QRIS / ShopeePay (WAJIB LOGIN)</li>
+  <li>FP &amp; DP 50%</li>
+  <li>Platform pengiriman: Toco / Shopee</li>
+  <li>Freeze harga saat "Buat Pesanan"</li>
+  <li>Pembulatan harga ke kelipatan 5.000 (CEILING)</li>
+  <li>Modal edukasi cara belanja setelah registrasi (1x seumur hidup)</li>
+  <li>Cart bulk selection + cart reminder per 30 menit</li>
+  <li>Notifikasi email + in-web</li>
+  <li><strong>Bell Notifikasi User</strong> (in-web)</li>
+  <li>Notifikasi H-7 sebelum state berubah</li>
+  <li>Indikator visual dashboard (2 badge, view counter)</li>
+  <li><strong>Dashboard Tab Layout</strong>: Pesanan Saya · Koin Saya · Undang Teman · Edit Profil</li>
+  <li><strong>Section "Tagihan Menunggu"</strong> di Dashboard &amp; Order List</li>
+  <li><strong>Tombol "Bayar &amp; Unggah Bukti"</strong> shortcut</li>
+  <li><strong>Riwayat Status (Timeline)</strong> di Detail Order</li>
+  <li><strong>Halaman Koin Saya</strong> dengan tabel riwayat koin</li>
+  <li><strong>Halaman Undang Teman</strong> dengan stats + share link</li>
+  <li><strong>Invoice PDF</strong> (user &amp; admin, tanpa alamat, cuma bukti pembayaran)</li>
+  <li><strong>Packing List PDF</strong> (admin only, tanpa alamat)</li>
+  <li><strong>Bell Notifikasi Admin</strong> (order baru, bukti bayar, refund, spammer)</li>
+  <li><strong>Search Admin</strong> (produk, order, user) di topbar</li>
+  <li><strong>Dashboard Admin</strong> dengan grafik &amp; stats</li>
+  <li><strong>Kirim Gift/Voucher/Koin</strong> ke user (dari Rank Pelanggan atau User Detail)</li>
+  <li><strong>Sidebar Admin collapse-able</strong></li>
+  <li>Template Email CRUD + <strong>Global Toggle "Stop Kirim Email ke Customer" (Mode Testing/Maintenance)</strong> <span class="new">v4.6</span></li>
+  <li>SEO (meta tags, Open Graph, sitemap, robots.txt)</li>
+  <li><strong>GA4 Settings</strong> (Measurement ID di /office/settings)</li>
+  <li>Crawler Bot Whitelist (Search Engine + AI + Social)</li>
+  <li>Real IP Detection (XFF-based)</li>
+  <li>Admin panel + migrasi data lama</li>
+  <li>CMS halaman statis</li>
+  <li>Preorder Builder (GrapesJS)</li>
+  <li>Refund manual (full/partial) — 3 event notif</li>
+  <li>Spammer list + auto block + multi-IP ban</li>
+  <li>Buyer Protection</li>
+  <li>Forever Delete (scope: spammer list only)</li>
+  <li>Inject Data Manual: <strong>Produk → Customer → Pesanan</strong> (shortcut /create)</li>
+  <li>Landing &amp; Referral Tracking</li>
+  <li>Auto-delete file bukti transfer saat order Selesai/Refunded/Hangus</li>
+  <li>Auto-delete foto lama saat override</li>
+  <li>Activity Log System (user + auth + admin)</li>
+  <li>Modal only, no browser popup</li>
+  <li>Scroll to top + WA floating button</li>
+  <li>Bulk update status order</li>
+  <li>Rank pelanggan (hanya Customer)</li>
+  <li>Laporan penjualan (DP &amp; pelunasan terpisah)</li>
+  <li><strong>Share produk</strong> — 5 koin per IP unik <strong>INDONESIA ONLY</strong></li>
+  <li>Semua tampilan waktu: WIB (GMT+7)</li>
+</ul>
+<h3>Out of Scope (v1)</h3>
+<ul>
+  <li>Integrasi otomatis Taobao/Weidian</li>
+  <li>Fitur komunitas (review, forum, chat antar user)</li>
+  <li>Review produk</li>
+  <li>Wishlist / produk favorit</li>
+  <li>Galeri produk (multi-foto per produk)</li>
+  <li>Refund otomatis</li>
+  <li>Multi-bahasa</li>
+  <li>Mobile app native</li>
+  <li>Escrow otomatis</li>
+  <li>Integrasi logistik otomatis</li>
+  <li>Nomor resi di web</li>
+  <li>Pelunasan DP di web</li>
+  <li>Manajemen stok</li>
+  <li>Penukaran koin → voucher</li>
+  <li>API publik</li>
+  <li>Guest checkout</li>
+  <li><strong>Admin Note</strong> (hanya pakai customer_note)</li>
+  <li><strong>Bulk Verifikasi Pembayaran</strong> (verifikasi satu-satu)</li>
+  <li>Halaman Reseller (masuk v1.1)</li>
+  <li><strong>Preferensi Notifikasi User per Kategori</strong> (toggle di Edit Profil) — masuk v1.1</li>
+  <li><strong>Push Notification (Web Push / FCM)</strong> — masuk v1.1</li>
+  <li><strong>GTM (Google Tag Manager)</strong> — cuma GA4 aja</li>
+  <li><strong>Pembatasan IP Indonesia untuk Daftar &amp; Belanja</strong> — skip karena ada case real (user Turki)</li>
+  <li><strong>Customer Reply untuk Note to Customer</strong> — 1-way dulu, 2-way masuk v1.1</li>
+  <li><strong>Soft Delete untuk produk</strong> — hard delete permanen</li>
+  <li><strong>Restore produk yang sudah dihapus</strong> — hard delete permanen</li>
+  <li><strong>Pembulatan berat ke atas per kg</strong> — pakai berat aktual (gram) <span class="new">v4.4</span></li>
+  <li><strong>Buffer packaging di berat</strong> — pakai berat aktual <span class="new">v4.4</span></li>
+</ul>
+<p><strong>Fitur yang ditunda ke v1.1+:</strong> Win-Back System, Grace Period 30 hari, IP Whitelist Admin, Floating Countdown Bar, Halaman Reseller, Preferensi Notifikasi, Web Push, Customer Reply, Soft Delete. Lihat Section 42.</p>
+
+<h1>7. User System</h1>
+<h3>7.1 Role &amp; Sub-State</h3>
+<table>
+  <tr><th>Role</th><th>Sub-State</th><th>Kapan Dapat</th><th>Akses</th></tr>
+  <tr><td><strong>Guest — Real Human</strong></td><td>—</td><td>Belum daftar</td><td>Home + halaman publik. Klik game/produk → redirect login.</td></tr>
+  <tr><td><strong>Guest — Bot Crawler</strong></td><td>—</td><td>Bot resmi</td><td>Full akses konten publik (SEO).</td></tr>
+  <tr><td>Crush</td><td>—</td><td>Setelah verifikasi email</td><td>Katalog (max 10x view), cart, checkout.</td></tr>
+  <tr><td rowspan="4">Customer</td><td><strong>MVP</strong></td><td>Ada pesanan aktif</td><td>Full access, unlimited view</td></tr>
+  <tr><td><strong>Ex</strong></td><td>Pesanan terakhir keputus 0–30 hari</td><td>View limit 10x, bisa order</td></tr>
+  <tr><td><strong>ONS</strong></td><td>Pesanan terakhir keputus 30–60 hari</td><td>View limit 10x, bisa order</td></tr>
+  <tr><td><strong>Blocked</strong></td><td>Pesanan terakhir keputus &gt; 60 hari</td><td>Dashboard only.</td></tr>
+  <tr><td>Admin</td><td>—</td><td>Manual</td><td>Full access via /office</td></tr>
+</table>
+
+<div class="note-info">
+<strong>Definisi MVP:</strong> Customer dengan minimal 1 pesanan berstatus <strong>aktif</strong>. MVP tidak ada countdown ke Ex — transisi terjadi <strong>langsung</strong>.
+</div>
+
+<h3>7.2 Guest Behavior</h3>
+<p><strong>Prinsip:</strong> Home Guest (Real Human) = Home Login. Beda cuma navbar.</p>
+
+<h4>Yang Bisa Diakses Guest (Real Human):</h4>
+<ul>
+  <li>✅ Home (hero, grid game, grid merch baru, footer)</li>
+  <li>✅ Halaman publik: /tentang-kami, /faq, /cara-belanja, /tnc, /kebijakan-privasi</li>
+  <li>✅ Login, Register</li>
+</ul>
+
+<h4>Yang TIDAK Bisa Diakses Guest — Redirect ke Login:</h4>
+<ul>
+  <li>❌ Katalog game, developer, kategori, detail produk, search</li>
+  <li>❌ Cart, Checkout, Order list, Profile, Wallet</li>
+</ul>
+
+<h4>Pengecualian: Bot Crawler</h4>
+<ul>
+  <li>Bypass Guest Barrier (bisa akses katalog &amp; produk)</li>
+  <li>Tidak bisa add to cart / checkout / akses halaman user</li>
+</ul>
+
+<h4>Alur Guest (Real Human) Klik Produk / Menu Game / Developer:</h4>
+<ol>
+  <li>Guest klik kartu produk / menu Game / Developer</li>
+  <li><strong>Langsung redirect ke /login</strong> (tanpa modal)</li>
+  <li>Setelah login → redirect ke halaman yang dituju (via <code>intended URL</code>)</li>
+</ol>
+
+<h4>Navbar Guest:</h4>
+<ul>
+  <li>Menu kiri: Beranda, Game, Developer, Pre-order Baru</li>
+  <li>Logo center</li>
+  <li>Kanan: 🔍 Search · 📷 Instagram · 📘 Facebook · ❌ X · 🧵 Threads · 💬 WhatsApp · 👤 <strong>Icon User (klik → login)</strong></li>
+</ul>
+
+<h4>Navbar User Login:</h4>
+<ul>
+  <li>Menu kiri: Beranda, Game, Developer, Pre-order Baru</li>
+  <li>Logo center</li>
+  <li>Kanan: 🔍 Search · 📷 Instagram · 📘 Facebook · ❌ X · 🧵 Threads · 💬 WhatsApp · 🛒 Cart · <strong>🔔 Bell Notifikasi (badge angka)</strong> · 👤 <strong>Avatar User (dropdown, dengan 2 badge)</strong></li>
+</ul>
+
+<h3>7.3 Registrasi</h3>
+<table>
+  <tr><th>Field</th><th>Wajib</th><th>Locked?</th><th>Catatan</th></tr>
+  <tr><td>Nama lengkap</td><td>Ya</td><td>Tidak</td><td>Min 2 karakter, bukan junk</td></tr>
+  <tr><td>Tanggal lahir</td><td>Ya</td><td>Locked</td><td>Date picker native</td></tr>
+  <tr><td>Provinsi</td><td>Ya</td><td>Tidak</td><td>Dropdown</td></tr>
+  <tr><td>Kota / Kabupaten</td><td>Ya</td><td>Tidak</td><td>Input text</td></tr>
+  <tr><td>Kecamatan</td><td>Ya</td><td>Tidak</td><td>Input text</td></tr>
+  <tr><td>Alamat Lengkap</td><td>Ya</td><td>Tidak</td><td>Textarea</td></tr>
+  <tr><td>Kode Pos</td><td>Ya</td><td>Tidak</td><td>Input text</td></tr>
+  <tr><td>No HP (WA)</td><td>Ya</td><td>Tidak (Bisa diedit)</td><td>Format 08xxx / 628xxx (bisa diubah di Edit Profil dengan verifikasi &amp; cek tabel spammer)</td></tr>
+  <tr><td>Email</td><td>Ya</td><td>Tidak</td><td>—</td></tr>
+  <tr><td>Password</td><td>Ya</td><td>Tidak</td><td>Min 8 karakter</td></tr>
+  <tr><td>Ulangi Kata Sandi</td><td>Ya</td><td>Tidak</td><td>Konfirmasi password</td></tr>
+  <tr><td>Kode Undangan (opsional)</td><td>Tidak</td><td>Locked</td><td>Auto dari link referal</td></tr>
+  <tr><td>Checklist Syarat &amp; Ketentuan</td><td>Ya</td><td>—</td><td>Wajib dicentang</td></tr>
+  <tr><td>Checklist Kebijakan Privasi</td><td>Ya</td><td>—</td><td>Wajib dicentang</td></tr>
+</table>
+
+<div class="note">"Akun baru hanya bisa membuka 10 detail produk dan terhapus otomatis 30 hari setelah mendaftar jika belum ada pembayaran. Email dan nomor WhatsApp yang sama maksimal 3 kali mendaftar."</div>
+
+<div class="note-info">
+<strong>Tidak ada pembatasan IP untuk daftar.</strong> User dari luar Indonesia (mis. Turki) boleh daftar &amp; belanja. Pembatasan IP Indonesia hanya berlaku untuk <strong>share produk reward</strong> (Section 9.5).
+</div>
+
+<h3>7.4 Verifikasi Email</h3>
+<ul>
+  <li>Email verifikasi via <code>security@mercatoria.id</code></li>
+  <li>Link berlaku 24 jam</li>
+  <li>Setelah verifikasi → role = Crush</li>
+</ul>
+
+<h3>7.5 Login</h3>
+<ul>
+  <li>Email + password</li>
+  <li>Checkbox "Ingat saya"</li>
+  <li>Cloudflare Turnstile + rate limit + honeypot + lockout</li>
+  <li>Subtitle: "Katalog hanya bisa dilihat setelah masuk"</li>
+  <li>Tombol Login: hitam (#000000)</li>
+</ul>
+
+<h3>7.6 Edit Profil</h3>
+<ul>
+  <li>Bisa edit: nama, alamat, email, password, no HP (dengan verifikasi)</li>
+  <li>Locked: tanggal lahir, kode undangan</li>
+  <li>Blocked user tetap bisa edit profil</li>
+</ul>
+
+<h3>7.7 Reset Password</h3>
+<ul>
+  <li>Via <code>security@mercatoria.id</code>, token dengan expiry</li>
+</ul>
+
+<h3>7.8 Lifecycle Lengkap</h3>
+<pre>Guest (Human) ──[daftar + verifikasi]──> Crush
+Guest (Bot)  ──[whitelist]──> Akses konten publik
+
+Crush ──[30 hari tanpa order]──> HARD DELETE
+Crush ──[order pertama verified]──> Customer (MVP)
+
+Customer (MVP)
+  ├──[ada pesanan aktif]──> MVP (langsung, tidak ada countdown)
+  └──[semua pesanan keputus]──> hitung hari sejak pesanan terakhir keputus:
+        ├── 0–30 hari   ──> Ex
+        ├── 30–60 hari  ──> ONS
+        └── > 60 hari   ──> Blocked
+
+Ex / ONS / Blocked
+  └──[order baru (atau admin unblock + grace 7 hari)]──> MVP</pre>
+
+<h3>7.9 State User System (FINAL)</h3>
+<table>
+  <tr><th>State</th><th>View Limit</th><th>Auto-Delete</th><th>Bisa Order</th><th>Akses Halaman</th><th>Tombol WA</th></tr>
+  <tr><td><strong>Crush</strong></td><td>10x detail produk</td><td>Ya (30 hari)</td><td>✅</td><td>Katalog + Cart + Checkout</td><td>Reset View</td></tr>
+  <tr><td><strong>MVP</strong></td><td>Unlimited</td><td>❌</td><td>✅</td><td>Full</td><td>—</td></tr>
+  <tr><td><strong>Ex</strong></td><td>10x detail produk</td><td>❌</td><td>✅</td><td>Katalog + Cart + Checkout</td><td>Reset View</td></tr>
+  <tr><td><strong>ONS</strong></td><td>10x detail produk</td><td>❌</td><td>✅</td><td>Katalog + Cart + Checkout</td><td>Reset View</td></tr>
+  <tr><td><strong>Blocked</strong></td><td>0 (locked)</td><td>❌</td><td>❌</td><td>Dashboard only</td><td>Unblock Akun</td></tr>
+</table>
+
+<h4>Aturan Penting State:</h4>
+<ul>
+  <li><strong>Pesanan aktif</strong> = status selain Selesai / Pembayaran Gagal / Dana Dikembalikan / Hangus</li>
+  <li>Hitung hari dari timestamp pesanan terakhir berubah ke "keputus"</li>
+  <li><strong>MVP → Ex</strong> transisi langsung, tidak ada countdown</li>
+  <li>View counter = hanya detail produk. Buka produk sama 2x → hitung 2x</li>
+  <li>Koin &amp; voucher tetap berjalan &amp; bisa expired walau Blocked</li>
+  <li><strong>Blocked → unblock admin</strong> = grace period 7 hari.</li>
+  <li>Ex/ONS/Blocked tidak auto-delete</li>
+  <li>Spammer HANYA untuk Crush (3x daftar / admin force-ban)</li>
+  <li>Blocked ≠ Spammer</li>
+</ul>
+
+<h3>7.10 Auto-Delete Crush</h3>
+<ul>
+  <li>30 hari sejak verifikasi email</li>
+  <li>Tidak ada transaksi → HARD DELETE</li>
+  <li>Koin ikut terhapus</li>
+  <li>TIDAK masuk spammer — kecuali 3x daftar</li>
+</ul>
+
+<h3>7.11 Customer</h3>
+<ul>
+  <li>Customer (MVP/Ex/ONS/Blocked) tidak dihapus otomatis</li>
+  <li>Admin bisa hapus manual</li>
+  <li>Data order &amp; riwayat tetap tersimpan</li>
+</ul>
+
+<h3>7.12 Restore Akun</h3>
+<ul>
+  <li>Crush hard delete → tidak bisa di-restore</li>
+  <li>Daftar ulang email sama → cek semua tabel</li>
+</ul>
+
+<h3>7.13 Tabel Terpisah</h3>
+<ul>
+  <li><strong>users</strong> — auth dasar</li>
+  <li><strong>crushes</strong> — extension role crush</li>
+  <li><strong>customers</strong> — extension role customer</li>
+</ul>
+
+<h3>7.14 Tidak Ada Guest Checkout</h3>
+<ul>
+  <li>Semua pembelian WAJIB LOGIN</li>
+</ul>
+
+<h3>7.15 Login Timestamp Capture</h3>
+<ul>
+  <li>Setiap login sukses → simpan timestamp ke <code>last_login</code></li>
+</ul>
+
+<h3>7.16 Dashboard Tab Layout</h3>
+<p>Dashboard user pakai <strong>TAB LAYOUT</strong>, bukan sidebar.</p>
+<p><strong>4 Tab:</strong></p>
+<ol>
+  <li><strong>Pesanan Saya</strong> — daftar order + Tagihan Menunggu</li>
+  <li><strong>Koin Saya</strong> — saldo koin + riwayat koin</li>
+  <li><strong>Undang Teman</strong> — kode undangan + stats + share</li>
+  <li><strong>Edit Profil</strong> — form edit profil</li>
+</ol>
+
+<p><strong>Header Dashboard:</strong> Judul tab, nama user, <strong>2 badge (Role/State + Tier)</strong>, tanggal registrasi, 🔔 Bell Notifikasi, tombol "Keluar"</p>
+
+<p><strong>Info Bar (4 stats):</strong></p>
+<ul>
+  <li>Total Pesanan</li>
+  <li>Total Belanja</li>
+  <li>Koin Aktif</li>
+  <li>Undang Teman (berhasil)</li>
+</ul>
+
+<h3>7.17 Indikator Visual Dashboard</h3>
+<ul>
+  <li><strong>2 badge di header</strong>:
+    <ul>
+      <li><strong>Badge 1 — Role/State Badge</strong> (semua user): Crush / MVP / Ex / ONS / Blocked</li>
+      <li><strong>Badge 2 — Tier Badge</strong> (semua Customer, termasuk Ex/ONS/Blocked): MVP Silver / MVP Gold / MVP Platinum</li>
+    </ul>
+  </li>
+  <li>View counter sisa untuk Crush/Ex/ONS</li>
+  <li>Countdown untuk Ex &amp; ONS</li>
+  <li>Warna badge: Crush (Pink), MVP (Hijau), Ex (Biru), ONS (Oranye), Blocked (Merah)</li>
+  <li>Detail lengkap: Section 45</li>
+</ul>
+
+<h3>7.18 Notifikasi H-7 Sebelum State Berubah <span class="rev">REV v4.6</span></h3>
+<table>
+  <tr><th>Transisi</th><th>Trigger Waktu</th><th>Pesan</th></tr>
+  <tr><td>Crush → Auto-Delete</td><td>Hari ke-23 sejak daftar (H-7 sebelum 30 hari)</td><td>"Akun kamu akan dihapus 7 hari lagi. Yuk order sebelum hilang!"</td></tr>
+  <tr><td>Ex → ONS</td><td>Hari ke-23 sejak pesanan terakhir selesai (H-7 sebelum 30 hari)</td><td>"Kamu sudah 23 hari tidak order. Yuk order sebelum jadi ONS."</td></tr>
+  <tr><td>ONS → Blocked</td><td>Hari ke-53 sejak pesanan terakhir selesai (H-7 sebelum 60 hari)</td><td>"Kamu sudah 53 hari tidak order. Yuk order sebelum akun ke-lock!"</td></tr>
+</table>
+<p><strong>Catatan Penting:</strong> Channel melalui Email (<code>info@</code>) + In-web (Bell + toast). Transisi <strong><code>MVP → Ex</code> terjadi seketika (langsung / 0 hari)</strong> pada saat pesanan aktif terakhir berstatus <code>Selesai</code> (jika tidak ada pesanan aktif lain), sehingga <strong>tidak memiliki countdown dan tidak memiliki notifikasi H-7</strong>.</p>
+
+<h3>7.19 Badge Sisa Kuota View (Crush/Ex/ONS)</h3>
+<ul>
+  <li>Muncul di halaman detail produk</li>
+  <li>Konten: "⚠️ Kuota jelajah katalog kamu tersisa X dari 10 produk."</li>
+</ul>
+
+<h3>7.20 Tombol WA di Dashboard</h3>
+<table>
+  <tr><th>State</th><th>Message</th></tr>
+  <tr><td>Crush / Ex / ONS (habis view)</td><td>"Halo Admin, saya mau minta reset view produk."</td></tr>
+  <tr><td>Blocked</td><td>"Halo Admin, saya mau minta unblock akun."</td></tr>
+</table>
+
+<h3>7.21 Modal Edukasi Cara Belanja</h3>
+<ul>
+  <li>Trigger: setelah verifikasi email pertama kali</li>
+  <li>Frequency: 1x seumur hidup</li>
+  <li>Isi: 4–5 poin tentang alur belanja</li>
+  <li>Tombol: "Mengerti" + "Baca Selengkapnya" (link /cara-belanja &amp; /tnc)</li>
+</ul>
+
+<h3>7.22 Bell Notifikasi User (Overview)</h3>
+<p>User login (Crush, MVP, Ex, ONS, Blocked) punya <strong>Bell Notifikasi</strong> di navbar frontend &amp; header Dashboard.</p>
+<ul>
+  <li><strong>Lokasi:</strong> Navbar kanan (desktop &amp; tablet) · Header Dashboard (mobile)</li>
+  <li><strong>Badge:</strong> jumlah notifikasi belum dibaca (max tampil "99+")</li>
+  <li><strong>Dropdown:</strong> 10 notifikasi terbaru + tombol "Tandai semua dibaca" + link "Lihat Semua"</li>
+  <li><strong>Halaman lengkap:</strong> <code>/profile/notifications</code></li>
+  <li><strong>Channel:</strong> In-web (bell + toast) + Email (info@) untuk event kritikal</li>
+  <li><strong>Retensi:</strong> 90 hari (auto-purge)</li>
+  <li>Detail lengkap: lihat <strong>Section 43</strong></li>
+</ul>
+
+<h1>8. Security</h1>
+<h3>8.1 Layer Security</h3>
+<table>
+  <tr><th>Layer</th><th>Aktif di</th></tr>
+  <tr><td>Cloudflare Turnstile</td><td>Login user, register, login admin, reset password</td></tr>
+  <tr><td>Rate limiting</td><td>Login (5x/menit), register (3x/menit), search (30x/menit)</td></tr>
+  <tr><td>Honeypot field</td><td>Register, login user, login admin</td></tr>
+  <tr><td>Email verification</td><td>Register</td></tr>
+  <tr><td>Login attempt lockout</td><td>5x gagal → lock 15 menit</td></tr>
+  <tr><td>2FA Admin (Email OTP)</td><td>Wajib untuk admin</td></tr>
+  <tr><td>IP Blacklist Enforcement</td><td>IP ter-banned hanya bisa akses beranda</td></tr>
+  <tr><td>Activity Logging</td><td>Semua aksi user &amp; admin</td></tr>
+  <tr><td>Real IP Detection</td><td>XFF-based</td></tr>
+  <tr><td>Crawler Bot Whitelist</td><td>Search engine + AI + social</td></tr>
+  <tr><td><strong>Image Anti-Theft &amp; Server-Side Watermark</strong> <span class="new">v4.6</span></td><td>Seluruh halaman frontend (Teks tetap bebas di-copy, foto dikunci + ber-watermark)</td></tr>
+</table>
+
+<h3>8.2 Honeypot</h3>
+<ul>
+  <li>Field tersembunyi dengan nama menggoda (website, url, phone2)</li>
+  <li>Kalau terisi = bot → reject silently</li>
+</ul>
+
+<h3>8.3 2FA Admin (Email OTP)</h3>
+<ul>
+  <li>Setelah login password → kode OTP dikirim ke email admin</li>
+  <li>Kode 6 digit, berlaku 5 menit</li>
+</ul>
+
+<h3>8.4 Admin URL</h3>
+<ul>
+  <li>URL admin: <code>/office</code></li>
+  <li>Opsional: IP whitelist (v1.1)</li>
+</ul>
+
+<h3>8.5 Smart Scoped IP Blacklist Enforcement (Anti False-Positive CGNAT) <span class="rev">REV v4.6</span></h3>
+<ul>
+  <li><strong>Layer 1 — Hard Identity Lock (Email &amp; No HP Permanen):</strong> Email dan No HP yang masuk daftar <code>spammers</code> (atau <code>Blocked</code> permanen setelah 2x gagal unblock) dikunci total pada <code>/register</code> dan <code>/login</code> dari IP mana pun.</li>
+  <li><strong>Layer 2 — Scoped IP + Device Fingerprint Ban (<code>spammer_ips</code>):</strong> Setiap kali email/no HP yang ter-block mencoba daftar atau login, IP-nya dicatat ke <code>spammer_ips</code>. IP di daftar ini <strong>diblokir penuh dari mengakses pendaftaran akun baru (<code>/register</code>)</strong> dan hanya bisa mengakses Beranda (<code>/</code>). Namun, <code>/login</code> tetap mengizinkan autentikasi <strong>khusus jika kredensial yang dimasukkan adalah milik akun Customer sah (<code>MVP</code>, <code>Ex</code>, <code>ONS</code>) yang tidak ter-block</strong> (mencegah pelanggan aktif terkunci akibat berbagi IP dinamis CGNAT provider seluler Indonesia).</li>
+  <li><strong>Layer 3 — Auto-Decay / TTL IP Dinamis (30 Hari):</strong> Email &amp; No HP di <code>spammers</code> ter-ban selamanya (<code>Forever Delete</code>), sedangkan alamat IP di <code>spammer_ips</code> memiliki masa aktif blokir otomatis <strong>30 hari sejak percobaan terakhir</strong> agar rotasi IP dinamis ISP tidak memblokir pengguna publik baru selamanya.</li>
+  <li>Bot Crawler resmi tetap bypass restriction ini.</li>
+</ul>
+
+<h3>8.6 Activity &amp; Audit Log</h3>
+<table>
+  <tr><th>Log Type</th><th>Isi</th><th>Retensi</th></tr>
+  <tr><td><code>activity_logs</code></td><td>Aktivitas user</td><td>30 hari</td></tr>
+  <tr><td><code>auth_logs</code></td><td>Login attempt, sukses, logout</td><td>30 hari</td></tr>
+  <tr><td><code>admin_logs</code></td><td>Aksi admin</td><td>30 hari</td></tr>
+</table>
+
+<h3>8.7 Real IP Detection (XFF-based)</h3>
+<p>Mercatoria TIDAK pakai Cloudflare proxy — hanya Cloudflare Turnstile.</p>
+<ul>
+  <li>Deteksi IP prioritas: <code>HTTP_X_FORWARDED_FOR</code> → <code>HTTP_X_REAL_IP</code> → <code>REMOTE_ADDR</code></li>
+  <li>Validasi dengan <code>filter_var()</code>, skip private &amp; reserved IP</li>
+</ul>
+
+<h3>8.8 Crawler Bot Whitelist</h3>
+<table>
+  <tr><th>Kategori</th><th>Bot</th><th>Verifikasi</th></tr>
+  <tr><td>Search Engine</td><td>Googlebot, Bingbot, YandexBot, Baiduspider, DuckDuckBot, Sogou</td><td>rDNS + forward DNS match</td></tr>
+  <tr><td>AI Bots</td><td>GPTBot, ChatGPT-User, OAI-SearchBot, ClaudeBot, anthropic-ai, PerplexityBot</td><td>Whitelist langsung</td></tr>
+  <tr><td>Social Preview</td><td>facebookexternalhit, Twitterbot, WhatsApp, Pinterestbot, LinkedInBot</td><td>Whitelist langsung</td></tr>
+</table>
+<ul>
+  <li>Bot whitelist bypass Guest Barrier &amp; IP Blacklist</li>
+  <li>Verifikasi di-cache 1 hari per IP</li>
+  <li>Bot tetap tidak bisa add to cart / checkout / akses halaman user</li>
+</ul>
+
+<h3>8.9 Helper: IP in CIDR Match</h3>
+<ul>
+  <li>Fungsi menerima 2 parameter: IP &amp; CIDR range</li>
+  <li>Support IPv4 &amp; IPv6</li>
+</ul>
+
+<h3>8.10 Proteksi Anti-Download Foto &amp; Auto-Watermark (Bebas Copy-Paste Teks) <span class="new">NEW v4.6</span></h3>
+<div class="note-info">
+<strong>Prinsip Utama:</strong> Pengunjung/pelanggan <strong>100% BEBAS mem-blok dan copy-paste teks/kalimat/kata</strong> di seluruh website (seperti nama produk, karakter, SKU, harga, nomor rekening, kode voucher/undangan), namun <strong>DILARANG men-download atau mencuri foto katalog/deskripsi hasil kerja keras Admin</strong>.
+</div>
+<table>
+  <tr><th>Layer Proteksi</th><th>Mekanisme Teknis di Laravel</th></tr>
+  <tr><td><strong>1. Bebas Copy-Paste Teks (<code>user-select: text</code>)</strong></td><td>Seluruh elemen teks (<code>p, h1-h6, span, td, li, code</code>) tetap mengizinkan <em>block selection</em>, <code>Ctrl+C / Cmd+C</code>, dan menu klik-kanan <em>Copy</em>. Tidak boleh memasang script global yang mematikan <code>user-select</code> pada teks.</td></tr>
+  <tr><td><strong>2. Scoped Image Shield (Anti Klik-Kanan, Drag &amp; Long-Press Foto)</strong></td><td>• Event listener JavaScript hanya mencegat <code>contextmenu</code> (klik kanan) dan <code>dragstart</code> <strong>khusus jika targetnya adalah elemen gambar (<code>&lt;img&gt;</code>, <code>&lt;canvas&gt;</code>, atau <code>.protected-image-wrap</code>)</strong> dan memunculkan toast peringatan: <em>"🔒 Gambar dilindungi hak cipta Mercatoria."</em><br>
+  • CSS khusus pada gambar: <code>-webkit-user-drag: none; user-select: none; -webkit-touch-callout: none;</code> (mematikan popup <em>"Save Image / Simpan Gambar"</em> saat foto ditekan lama di browser HP iOS/Android).<br>
+  • Setiap gambar dilapisi elemen transparan (<code>.img-shield-overlay</code>) sehingga klik kanan atau <em>tap-hold</em> tidak pernah menyentuh tag <code>&lt;img&gt;</code> secara langsung.</td></tr>
+  <tr><td><strong>3. Server-Side Burned Watermark (<code>intervention/image</code> v3)</strong></td><td>• Saat Admin mengupload foto produk utama, foto varian, dan gambar deskripsi panjang, <code>ImageWatermarkService</code> menyimpan file master asli di folder privat (<code>storage/app/private/originals/</code>) dan men-generate versi publik yang <strong>sudah menyatu (<em>baked-in</em>) dengan watermark berulang/diagonal semi-transparan <code>MERCATORIA · mercatoria.id</code></strong>.<br>
+  • Dengan teknik <em>server-side burned watermark</em> ini, meskipun pencuri memaksa mengambil foto lewat <em>Screenshot / Snipping Tool</em> atau membongkar <em>Inspect Element (Network Tab)</em>, file gambar yang terambil tetap memiliki watermark permanen Mercatoria.</td></tr>
+  <tr><td><strong>4. Anti-Hotlink &amp; Heavy Watermark Decoy pada Direct URL</strong></td><td>Jika seseorang mencoba membuka URL file gambar secara langsung di tab baru browser (tanpa <code>Referer</code> halaman <code>mercatoria.id</code>) atau melakukan <em>hotlinking</em> dari website lain, server otomatis menolak akses atau menyajikan gambar dengan <strong>Heavy Watermark Penuh di Tengah Gambar (<em>"© MERCATORIA.ID — DO NOT STEAL"</em>)</strong>.</td></tr>
+</table>
+
+<h1>9. Koin, Referral &amp; Voucher</h1>
+<h3>9.1 Rasio Koin</h3>
+<p><strong>1 koin = Rp 1</strong></p>
+
+<h3>9.2 Cara Dapat Koin</h3>
+<table>
+  <tr><th>Aksi</th><th>Koin</th><th>Penerima</th><th>Trigger</th></tr>
+  <tr><td>Undang teman (referral)</td><td>3.000</td><td><strong>Referrer</strong> (yang ngundang)</td><td>Referee selesaikan order pertama</td></tr>
+  <tr><td>Referee daftar via link</td><td>1.000</td><td><strong>Referee</strong> (yang daftar)</td><td>Pembayaran pertama referee terverifikasi</td></tr>
+  <tr><td>Order selesai</td><td>1% × total transaksi</td><td>Pembeli</td><td>Order status Selesai</td></tr>
+  <tr><td>Share link produk (IP unik)</td><td>5</td><td>Sharer</td><td>Per IP unik per link, <strong>IP Indonesia only</strong></td></tr>
+  <tr><td>Bonus ulang tahun</td><td>5.000 + voucher</td><td>User</td><td>Otomatis tiap ulang tahun</td></tr>
+</table>
+
+<div class="note-info">
+<strong>Klarifikasi Referral:</strong>
+<ul>
+  <li><strong>Referrer</strong> dapat <strong>3.000 koin</strong> saat Referee <strong>selesaikan order pertama</strong></li>
+  <li><strong>Referee</strong> dapat <strong>1.000 koin</strong> saat <strong>pembayaran pertama terverifikasi</strong></li>
+  <li>Referee <strong>juga dapat 1% koin</strong> dari order selesai (sama seperti order normal)</li>
+  <li>Referrer dapat <strong>notif bell</strong> saat Referee daftar (info doang, tanpa koin)</li>
+  <li>Reward koin dikirim via <strong>email + bell</strong></li>
+</ul>
+</div>
+
+<h3>9.3 Cara Pakai Koin</h3>
+<ul>
+  <li>Diskon saat checkout</li>
+  <li>Max 5% per transaksi</li>
+  <li>Tidak bisa digabung dengan voucher</li>
+  <li>Expired 1 tahun sejak didapat</li>
+  <li>Notifikasi H-30, H-7, H-1</li>
+</ul>
+
+<h3>9.4 Referral</h3>
+<ul>
+  <li>Kode referal random (unik per user)</li>
+  <li>1 kode untuk 2 hal: undang teman &amp; share link produk</li>
+</ul>
+
+<h3>9.5 Share Link Produk</h3>
+<ul>
+  <li>Tombol "Share" di halaman produk</li>
+  <li>Link: <code>mercatoria.id/{game}/{product}?ref={kode}</code></li>
+  <li><strong>5 koin per IP unik per link</strong></li>
+  <li><strong>Hanya IP Indonesia yang dapat koin</strong></li>
+  <li>IP luar Indonesia → tetap track klik untuk analitik, tapi tidak dapat koin</li>
+  <li>Deteksi via geo-IP lookup (country_code === 'ID')</li>
+</ul>
+
+<div class="note">
+<strong>Alasan pembatasan IP Indonesia untuk share produk:</strong> mencegah farming koin dari luar negeri. Untuk daftar &amp; belanja, TIDAK dibatasi (ada case real user Turki belanja di Mercatoria).
+</div>
+
+<h3>9.6 Voucher</h3>
+<table>
+  <tr><th>Atribut</th><th>Nilai (default ulang tahun)</th></tr>
+  <tr><td>Jenis</td><td>Diskon nominal</td></tr>
+  <tr><td>Nominal</td><td>Rp 25.000</td></tr>
+  <tr><td>Min belanja</td><td>Rp 100.000</td></tr>
+  <tr><td>Masa berlaku</td><td>30 hari</td></tr>
+</table>
+
+<h3>9.7 Halaman Wallet</h3>
+<pre>/profile/wallet
+  Koin: saldo, riwayat, expiry
+  Voucher: Aktif / Akan expired / Riwayat</pre>
+
+<h3>9.8 MVP Tier Badge (Silver / Gold / Platinum)</h3>
+<table>
+  <tr><th>Tier</th><th>Threshold (default)</th><th>Badge</th></tr>
+  <tr><td>Silver</td><td>&gt; Rp 0</td><td>🥈 MVP Silver</td></tr>
+  <tr><td>Gold</td><td>&gt; Rp 2.000.000</td><td>🥇 MVP Gold</td></tr>
+  <tr><td>Platinum</td><td>&gt; Rp 5.000.000</td><td>💎 MVP Platinum</td></tr>
+</table>
+<ul>
+  <li><strong>Badge tier muncul untuk semua Customer</strong> (MVP/Ex/ONS/Blocked), berdasarkan total belanja historis</li>
+  <li>Threshold bisa diubah admin</li>
+  <li>Detail lengkap: Section 45</li>
+</ul>
+
+<h3>9.9 Halaman "Koin Saya"</h3>
+<p>User bisa lihat saldo koin &amp; riwayat koin lengkap.</p>
+<p><strong>Header:</strong> Judul "Koin Saya", subtitle "1 Koin = Rp1. Bisa dipakai maksimal 5% dari total pesanan."</p>
+<p><strong>Saldo:</strong> Label "TOTAL KOIN AKTIF" + angka besar (56pt)</p>
+<p><strong>Tabel Riwayat Koin:</strong></p>
+<table>
+  <tr><th>Kolom</th><th>Keterangan</th></tr>
+  <tr><td>Tanggal</td><td>Kapan transaksi koin terjadi</td></tr>
+  <tr><td>Sumber</td><td>Asal koin (Referral Click, Order Selesai, dsb)</td></tr>
+  <tr><td>Awal</td><td>Koin masuk (+) atau keluar (-)</td></tr>
+  <tr><td>Sisa</td><td>Saldo setelah transaksi</td></tr>
+  <tr><td>Kedaluwarsa</td><td>Tanggal koin expired</td></tr>
+  <tr><td>Status</td><td>HABIS (merah) / AKTIF (hijau)</td></tr>
+</table>
+
+<h3>9.10 Halaman "Undang Teman" <span class="rev">REV v4.6</span></h3>
+<p><strong>Section 1 — Kode Undanganmu:</strong> Kode besar spasi-spasi + tombol "Copy Kode" + "Copy Link Undang"</p>
+<p><strong>Section 2 — Reward Cards (Sesuai Section 9.2):</strong> <strong>+3.000 koin</strong> untuk pengundang (saat teman menyelesaikan pesanan pertama), <strong>+1.000 koin</strong> untuk teman yang diundang (saat pembayaran pertama terverifikasi), dan <strong>+5 koin/klik</strong> (share link produk per IP unik Indonesia)</p>
+<p><strong>Section 3 — Stats Undang:</strong> Total Diundang · Berhasil · Menunggu Order · Koin dari Undang</p>
+<p><strong>Section 4 — Stats Share:</strong> Link Dibuka · Koin dari Share · Reward/Klik</p>
+<p><strong>Section 5 — Riwayat Undangan:</strong> Tabel atau empty state</p>
+
+<h1>10. Spammer, Block &amp; Multi-IP Ban System</h1>
+<h3>10.1 Trigger Masuk List Spammer</h3>
+<ol>
+  <li>3x daftar tanpa belanja (email atau no HP sama)</li>
+  <li>Admin force-ban via menu Spammers</li>
+</ol>
+<div class="note"><strong>Penting:</strong> Spammer HANYA untuk Crush yang cuma main-main. <strong>Blocked user (Customer pasif) BUKAN spammer</strong>.</div>
+
+<h3>10.2 Data Spammer</h3>
+<ul>
+  <li>Email, No HP (ternormalisasi ke 62xxx)</li>
+  <li>Alasan (no_purchase_3x / manual)</li>
+  <li>Tanggal masuk, Status (blocked / watchlist), Unblock count</li>
+  <li>IP Addresses (multi-IP)</li>
+</ul>
+
+<h3>10.3 Efek (Smart Scoped Ban) <span class="rev">REV v4.6</span></h3>
+<ul>
+  <li>Email di list → tidak bisa daftar &amp; tidak bisa login lagi (permanen)</li>
+  <li>No HP di list → tidak bisa daftar &amp; tidak bisa dipakai di profil mana pun (permanen)</li>
+  <li>IP di <code>spammer_ips</code> (TTL 30 hari sejak attempt terakhir) → hanya bisa akses Beranda (<code>/</code>) dan diblokir penuh dari <code>/register</code>, namun tetap mengizinkan <code>/login</code> khusus bagi akun Customer sah (<code>MVP/Ex/ONS</code>) yang tidak ter-block</li>
+</ul>
+
+<h3>10.4 Unblock Manual oleh Admin &amp; Aturan Tanpa Tameng Tier <span class="rev">REV v4.6</span></h3>
+<ul>
+  <li>Admin dapat melakukan unblock manual (baik untuk <code>Spammer Crush</code> maupun <code>Customer Blocked</code> yang vakum &gt; 60 hari)</li>
+  <li>User punya <strong>7 hari (grace period)</strong> untuk menyelesaikan pembayaran order baru agar kembali menjadi <code>MVP</code></li>
+  <li>Lewat 7 hari tanpa pembayaran terverifikasi → auto-block kembali</li>
+  <li>Setelah <strong>2x unblock gagal → block permanen</strong> (tidak bisa di-unblock lagi)</li>
+  <li><strong>Tier Badge Bukan Tameng:</strong> Kepemilikan Tier Badge (<code>MVP Silver</code>, <code>MVP Gold</code>, maupun <code>MVP Platinum</code>) <strong>tidak memberikan imunitas/tameng</strong> terhadap transisi ke <code>Blocked</code> saat vakum &gt; 60 hari maupun batas maksimal 2x unblock</li>
+</ul>
+
+<h3>10.5 Multi-IP Ban Tracking</h3>
+<ul>
+  <li>Tabel terpisah: <code>spammer_ips</code></li>
+  <li>Setiap kali email/HP banned nyoba daftar → IP dicatat, attempt_count bertambah</li>
+  <li>IP di tabel ini otomatis ikut ke-block</li>
+  <li>Unban manual → histori IP dihapus</li>
+</ul>
+
+<h3>10.6 Forever Delete (Admin Action)</h3>
+<div class="note-danger"><strong>Scope:</strong> HANYA untuk user di spammer list.</div>
+<ul>
+  <li>Aksi "Forever Delete" muncul di User List — hanya untuk user di spammer list</li>
+  <li>Admin klik → konfirmasi modal → akun dihapus dari <code>users</code></li>
+  <li>Data di tabel <code>spammers</code> tetap aktif selamanya</li>
+  <li>Hard delete akun, ban tetap di tabel spammer</li>
+</ul>
+
+<h3>10.7 Inject Data Manual (Include ke Menu Existing)</h3>
+<p><strong>Urutan inject: Produk → Customer → Pesanan</strong></p>
+<table>
+  <tr><th>Fungsi</th><th>Lokasi</th><th>Shortcut</th></tr>
+  <tr><td>1. Inject Produk</td><td>/office/products</td><td>Tombol "+ Tambah Produk"</td></tr>
+  <tr><td>2. Inject User/Customer</td><td>/office/users</td><td>Tombol "+ Tambah User"</td></tr>
+  <tr><td>3. Inject Order Lama</td><td>/office/orders</td><td>Tombol "+ Tambah Pesanan" + shortcut "+ User Baru" &amp; "+ Produk Baru"</td></tr>
+  <tr><td>Inject Spammer Manual</td><td>/office/spammers</td><td>Tombol "+ Tambah Spammer"</td></tr>
+</table>
+<p><strong>Validasi Inject Spammer:</strong> Attempt 1–3, HP format angka/+/-, Email wajib ada, IP admin TIDAK terinject (pakai placeholder).</p>
+<p><strong>Validasi Inject Order:</strong> Wajib pilih User + Produk + Varian. Kalau user/produk belum ada → tombol shortcut buka modal create di halaman yang sama (URL <code>/create</code>).</p>
+
+<h3>10.8 Attempt Count Logic</h3>
+<ul>
+  <li>Anchor: email atau HP</li>
+  <li>Setiap registrasi baru → cek di tabel spammers, users, crushes, customers</li>
+  <li>Kalau ada → attempt count +1</li>
+  <li>Kalau attempt ≥ 3x → auto permanent ban</li>
+  <li>Buyer Protection tetap berlaku</li>
+  <li>Update profile TIDAK dihitung sebagai attempt</li>
+</ul>
+
+<h3>10.9 Normalisasi Nomor HP</h3>
+<ul>
+  <li>Semua HP dinormalisasi ke format <code>62xxx</code></li>
+</ul>
+
+<h1>11. Buyer Protection</h1>
+<ul>
+  <li>Sebelum user registrasi → cek ke tabel <code>customers</code></li>
+  <li>Kalau email/HP ada di tabel customers (pernah belanja) → tidak boleh daftar ulang</li>
+  <li>User harus login pakai akun lama, atau reset password</li>
+  <li>Kalau tidak ada di tabel customers → boleh daftar, tapi cek pernah registrasi sebelumnya</li>
+</ul>
+
+<h1>12. Landing &amp; Referral Tracking</h1>
+<table>
+  <tr><th>Field</th><th>Keterangan</th></tr>
+  <tr><td><code>referral_source</code></td><td>Domain asal (twitter.com, instagram.com)</td></tr>
+  <tr><td><code>landing_page</code></td><td>URL pertama yang dikunjungi</td></tr>
+  <tr><td><code>first_visit</code></td><td>Timestamp kunjungan pertama</td></tr>
+</table>
+<ul>
+  <li>Hanya track kunjungan PERTAMA</li>
+  <li>Disimpan di cookie 30 hari</li>
+  <li>Skip halaman: login, register, cart, checkout, my-account, admin, AJAX</li>
+</ul>
+
+<h1>13. Produk &amp; Katalog</h1>
+<h3>13.1 Hierarki</h3>
+<pre>Developer ↔ Game ↔ Product → Varian (multi-kombinasi)
+                ↓
+              Store (tier ongkir lokal CN) ← NEW v4.4</pre>
+<p><strong>Many-to-many:</strong> 1 game bisa punya 2+ developer, 1 developer bisa punya banyak game. 1 game punya 1 store default, produk bisa override.</p>
+
+<h3>13.2 Atribut Produk</h3>
+<table>
+  <tr><th>Field</th><th>Keterangan</th></tr>
+  <tr><td>Nama, SKU, Slug</td><td>SKU &amp; slug unique</td></tr>
+  <tr><td>Game, Developer</td><td>relasi</td></tr>
+  <tr><td><strong>Store</strong> <span class="new">v4.4</span></td><td>FK nullable. Default dari game, bisa override. Untuk hitung ongkir lokal CN.</td></tr>
+  <tr><td><strong>Berat (gram)</strong> <span class="new">v4.4</span></td><td>Integer nullable. Default berat produk. Varian bisa override.</td></tr>
+  <tr><td>Tag</td><td>kosong / PRESALE / LIMITED</td></tr>
+  <tr><td>Kategori Merch</td><td>Auto-group</td></tr>
+  <tr><td>Tipe</td><td>single / varian</td></tr>
+  <tr><td>Deskripsi</td><td>1 gambar panjang + <strong>preview admin</strong></td></tr>
+  <tr><td>Harga RMB, Ongkir lokal CN (RMB), Ongkir CN-BTM (IDR), Ongkir BTM-JKT (IDR)</td><td>Admin input <em>(ongkir lokal CN otomatis dari store, ongkir internasional otomatis dari berat)</em></td></tr>
+  <tr><td>Diskon (nominal), Diskon Mulai, Diskon Berakhir</td><td>Opsional</td></tr>
+  <tr><td>Ketersediaan</td><td>tersedia / kosong</td></tr>
+  <tr><td>Status</td><td>aktif / nonaktif</td></tr>
+</table>
+
+<h3>13.3 Tag</h3>
+<table>
+  <tr><th>Tag</th><th>Arti</th><th>Estimasi</th></tr>
+  <tr><td>(kosong)</td><td>Reguler</td><td>Kirim cepat dari official</td></tr>
+  <tr><td>PRESALE</td><td>Pre-order</td><td>≈200 hari</td></tr>
+  <tr><td>LIMITED</td><td>Edisi terbatas</td><td>Tidak dijual lagi</td></tr>
+</table>
+
+<h3>13.4 Varian (Multi-Kombinasi)</h3>
+<ul>
+  <li>Atribut: Karakter, Ukuran, Model, Tipe (Random / Set / Jar)</li>
+  <li>1 produk bisa punya banyak kombinasi</li>
+  <li>Setiap kombinasi: <strong>harga sendiri dalam RMB (<code>price_rmb</code>, wajib)</strong>, ketersediaan, gambar</li>
+  <li><strong>Ongkir Lokal CN dihitung per varian</strong> <span class="new">v4.6</span> berdasarkan <code>variant.price_rmb</code> terhadap <code>store.min_belanja_rmb</code> &amp; <code>store.ongkir_rmb</code></li>
+  <li><strong>Berat sendiri (gram)</strong> <span class="new">v4.4</span> — override berat produk. Kalau null → pakai berat produk.</li>
+  <li>Varian ditampilkan sebagai card/button grid (Shopee-style)</li>
+  <li>Kalau varian tidak upload gambar → ambil gambar induk</li>
+  <li>Urutan: terbaru di atas, terlama di bawah</li>
+  <li>Jar = blind box yang dikasih tempat sendiri</li>
+</ul>
+
+<h3>13.5 Aksi Produk (Admin)</h3>
+<ul>
+  <li>Duplicate, Preview, Bulk action, Override kategori</li>
+  <li>Set Diskon Produk (nominal Rp + tanggal mulai/berakhir)</li>
+  <li><strong>Hapus Produk = HARD DELETE</strong> (permanen)
+    <ul>
+      <li>Row <code>products</code> dihapus permanen dari DB</li>
+      <li>File gambar produk asli dihapus dari storage</li>
+      <li><code>order_items.product_id</code> → NULL (otomatis via <code>onDelete('set null')</code>)</li>
+      <li><code>order_item_snapshots</code> → <strong>TETAP UTUH</strong> (data + gambar copy)</li>
+      <li>Order lama tetap bisa dilihat lengkap</li>
+      <li><strong>Restore tidak bisa</strong> (hard delete permanen)</li>
+      <li>SKU bisa dipakai ulang setelah produk dihapus</li>
+    </ul>
+  </li>
+  <li><strong>Konfirmasi Hapus (Single):</strong>
+    <ul>
+      <li>Modal konfirmasi + warning count order</li>
+      <li>Isi: "⚠️ Produk ini pernah di-order 15 kali. Order lama tetap utuh (data dari snapshot). Lanjut hapus permanen?"</li>
+      <li>Tombol: [ Batal ] [ Hapus Permanen ]</li>
+    </ul>
+  </li>
+  <li><strong>Bulk Hapus:</strong>
+    <ul>
+      <li>Bisa bulk delete (pilih banyak produk)</li>
+      <li>Modal konfirmasi: "X produk akan dihapus. Y di antaranya pernah di-order. Order lama tetap utuh."</li>
+      <li>Tombol: [ Batal ] [ Hapus Semua Permanen ]</li>
+    </ul>
+  </li>
+  <li><strong>Bulk Edit Berat Varian</strong> <span class="new">v4.4</span>
+    <ul>
+      <li>Mode "Set Same" — set semua varian terpilih ke berat X gram</li>
+      <li>Pilih varian via checkbox, input berat, apply</li>
+      <li>Cocok untuk produk dengan 30–50 varian</li>
+    </ul>
+  </li>
+</ul>
+
+<div class="note-danger">
+<strong>PENTING:</strong> Produk yang dihapus <strong>TIDAK BISA DI-RESTORE</strong>. Hard delete permanen. Pastikan admin sudah yakin sebelum klik "Hapus Permanen". Order lama tetap utuh karena baca dari snapshot.
+</div>
+
+<h3>13.6 Gambar Produk &amp; Varian</h3>
+<table>
+  <tr><th>Jenis</th><th>Jumlah</th><th>Max</th><th>Format</th></tr>
+  <tr><td>Foto produk utama</td><td>1</td><td>1 MB</td><td>JPG/PNG/WebP</td></tr>
+  <tr><td>Foto varian</td><td>1 per varian</td><td>1 MB</td><td>JPG/PNG/WebP</td></tr>
+  <tr><td>Deskripsi (panjang)</td><td>1</td><td>2 MB</td><td>JPG/PNG/WebP</td></tr>
+  <tr><td>Logo game / developer</td><td>1</td><td>500 KB</td><td>PNG/WebP</td></tr>
+  <tr><td>Bukti bayar</td><td>1</td><td>1 MB</td><td>JPG/PNG</td></tr>
+  <tr><td><strong>Snapshot produk (copy)</strong></td><td>1 per order item</td><td>~200 KB</td><td>JPG (copy dari produk)</td></tr>
+  <tr><td><strong>Snapshot varian (copy)</strong></td><td>1 per order item</td><td>~200 KB</td><td>JPG (copy dari varian)</td></tr>
+</table>
+<p>Tidak ada galeri produk. Auto-delete foto lama saat override. Snapshot gambar TIDAK dihapus (retention permanen).</p>
+
+<div class="note-info">
+<strong>Preview &amp; Zoom:</strong>
+<ul>
+  <li><strong>Admin (Form Edit Produk):</strong> Setelah upload deskripsi panjang → tampil <strong>preview thumbnail</strong> + tombol <strong>"Lihat Full"</strong> (modal, scrollable). Cegah salah upload.</li>
+  <li><strong>User (Detail Produk):</strong> Zoom/lightbox hanya untuk <strong>gambar induk</strong> + <strong>gambar varian</strong>. Deskripsi panjang di-render sebagai <code>&lt;img&gt;</code> biasa tanpa zoom.</li>
+  <li>Kalau deskripsi panjang &gt; 5000px → auto-split jadi beberapa <code>&lt;img&gt;</code> chunk (optimasi performa browser, opsional).</li>
+  <li><strong>Proteksi Gambar &amp; Auto-Watermark (v4.6):</strong> Seluruh foto produk utama, foto varian, dan potongan gambar deskripsi panjang otomatis diberi watermark <code>MERCATORIA.ID</code> oleh <code>ImageWatermarkService</code> saat di-upload serta dilindungi <em>Image Shield Overlay</em> (tidak bisa klik-kanan save/drag, namun teks di halaman produk tetap bebas di-copy).</li>
+</ul>
+</div>
+
+<h3>13.7 Filter Katalog &amp; Deep Search (Termasuk Nama Varian) <span class="rev">REV v4.6</span></h3>
+<ul>
+  <li>Pengurutan: Pengurutan standar (Relevansi untuk Search / Default untuk Katalog), Termurah, Termahal, Terpopuler, Terbaru, Abjad</li>
+  <li>Filter: Tag (<code>PRESALE</code>, <code>LIMITED</code>), Ketersediaan (<code>Tersedia</code>, <code>Kosong</code>), Kategori Merch, Game &amp; Developer, serta Range Harga</li>
+  <li><strong>Cakupan Deep Search Wajib Membaca Nama Varian:</strong> Mesin pencarian (<code>/search?q=...</code>) <strong>TIDAK BOLEH hanya membaca nama produk induk (<code>products.name</code>)</strong>, melainkan <strong>WAJIB ikut mencari ke tabel varian (<code>product_variants.name</code>, <code>product_variants.sku</code>, dan kombinasi atribut Karakter/Model/Tipe)</strong>. Hal ini krusial karena banyak produk merchandise memiliki nama seri umum (misal: <em>"2023 Exhibition Series Acrylic Stand"</em>), sedangkan nama karakter (misal: <em>"Tartaglia"</em>, <em>"Childe"</em>, <em>"Alhaitham"</em>, <em>"Osborn"</em>) tersimpan di nama varian.</li>
+</ul>
+
+<h3>13.8 Navigasi</h3>
+<pre>/                              → Home
+/{game-slug}                   → Katalog game
+/{game-slug}/kategori/{cat}    → Katalog per kategori
+/developer/{developer-slug}    → Katalog developer
+/{game-slug}/{product-slug}    → Detail produk
+/search?q=...                  → Hasil search</pre>
+
+<h3>13.9 Katalog Behavior</h3>
+<p><strong>Layout:</strong> 2-kolom dengan sidebar kiri + grid produk kanan.</p>
+
+<h4>Sidebar Kiri:</h4>
+<ul>
+  <li><strong>Kategori Game</strong> — List semua game urut alfabetis + count</li>
+  <li><strong>Filter Harga (Slider)</strong> — Range otomatis dari harga termurah–termahal</li>
+  <li><strong>Penawaran Terbaik</strong> — 3–5 produk dengan diskon terbesar</li>
+  <li><strong>Terakhir Dilihat</strong> — Hanya user login</li>
+</ul>
+
+<h4>Toolbar:</h4>
+<ul>
+  <li>Teks "Menampilkan X–Y dari Z hasil"</li>
+  <li>Dropdown "Pengurutan standar"</li>
+</ul>
+
+<h4>Grid + Pagination:</h4>
+<ul>
+  <li>Grid: Desktop 6 kolom, Tablet 4, Mobile 2</li>
+  <li>Pagination: 30 produk/halaman (admin bisa ubah)</li>
+</ul>
+
+<h3>13.10 Diskon Produk &amp; Penawaran Terbaik</h3>
+<ul>
+  <li>Diskon nominal Rp per produk</li>
+  <li>Field: <code>discount_amount</code>, <code>discount_start</code>, <code>discount_end</code></li>
+  <li>Tampilan: <del>Rp X</del> <strong>Rp Y</strong></li>
+  <li>Penawaran Terbaik: sort by <code>discount_amount DESC</code></li>
+  <li>Diskon ikut di-snapshot saat "Buat Pesanan"</li>
+</ul>
+
+<h3>13.11 Terakhir Dilihat</h3>
+<ul>
+  <li>Section di sidebar katalog</li>
+  <li>4–5 produk terakhir dibuka user</li>
+  <li>Hanya user login</li>
+  <li>Data source: <code>product_views</code></li>
+</ul>
+
+<h3>13.12 Produk Terkait</h3>
+<ul>
+  <li>6 produk random dari game/developer sama</li>
+  <li>Scroll horizontal</li>
+</ul>
+
+<h3>13.13 Desain Halaman Hasil Pencarian (<code>/search?q=...</code>) &amp; Logika Deep Variant Search <span class="new">NEW v4.6</span></h3>
+<div class="note-success">
+<strong>Prinsip Desain Halaman Search (Konsisten tapi Punya Identitas Berbeda dari Katalog):</strong> Agar customer tidak bingung membedakan antara sedang berada di <em>Katalog Game</em> atau di <em>Hasil Pencarian</em>, halaman Search memadukan elemen kartu produk yang konsisten (grid 6 kolom Desktop, rasio 1:1, ribbon <code>PRESALE</code>/<code>LIMITED</code>, prefix <code>[NAMA GAME]</code>, harga bersih biru) dengan <strong>Layout 1-Kolom Full-Width (Tanpa Sidebar Kiri) + Search Hero Bar &amp; Horizontal Quick-Filter Bar</strong>.
+</div>
+<table>
+  <tr><th>Aspek</th><th>Halaman Katalog Game (<code>/{game-slug}</code>)</th><th>Halaman Hasil Pencarian (<code>/search?q=...</code>)</th></tr>
+  <tr><td><strong>Struktur Layout</strong></td><td><strong>2 Kolom</strong>: Sidebar Kiri 25% (4 kartu vertikal) + Konten Kanan 75%.</td><td><strong>1 Kolom Full-Width Container (max 1200px, Tanpa Sidebar Kiri)</strong> di atas background <code>#F5F7FA</code> agar lapang dan langsung dibedakan oleh customer.</td></tr>
+  <tr><td><strong>Header Halaman</strong></td><td>Judul Nama Game + Breadcrumb Katalog.</td><td><strong>Search Header Box:</strong> Judul <code>Hasil Pencarian untuk "Tartaglia"</code>, input search aktif untuk ganti kata kunci cepat, dan ringkasan jumlah hasil (contoh: <code>Menampilkan semua 11 hasil</code> atau <code>Menampilkan 1–30 dari 42 hasil</code>).</td></tr>
+  <tr><td><strong>Posisi Filter</strong></td><td>Vertikal di Sidebar Kiri.</td><td><strong>Horizontal Quick-Filter Bar (Mix Katalog):</strong> Baris filter horizontal ringkas di atas grid berisi dropdown <code>[ Semua Game ▾ ]</code>, <code>[ Kategori Merch ▾ ]</code>, <code>[ Tag ▾ ]</code>, <code>[ Rentang Harga ]</code>, dan dropdown <code>[ Pengurutan standar ▾ ]</code> di sisi kanan.</td></tr>
+  <tr><td><strong>Grid Kartu Produk</strong></td><td>6 kolom × 5 baris (30 item/hlm) di Desktop; 4 kolom Tablet; 2 kolom Mobile.</td><td><strong>6 kolom per baris (maks 30 item/hlm) di Desktop</strong>; 4 kolom Tablet; 2 kolom Mobile (sama persis proporsinya dengan referensi desain).</td></tr>
+  <tr><td><strong>Cakupan Pencarian (Deep Variant Search)</strong></td><td>Filter berdasarkan relasi Game/Developer/Kategori.</td><td>Mencari secara simultan (<code>DISTINCT products.id</code>) pada:<br>
+  1. <code>products.name</code> &amp; <code>products.sku</code> (Nama &amp; SKU Produk Induk)<br>
+  2. <strong><code>product_variants.name</code> &amp; <code>product_variants.sku</code> (Nama Varian / Karakter / Model / Tipe)</strong><br>
+  3. <code>games.name</code>, <code>developers.name</code>, &amp; <code>merch_categories.name</code></td></tr>
+  <tr><td><strong>Indikator &amp; Thumbnail Kecocokan Varian</strong></td><td>Menampilkan thumbnail induk &amp; harga produk.</td><td>Jika suatu produk muncul karena kata kunci cocok dengan <strong>Nama Varian</strong> (misal produk multi-karakter yang memiliki varian <code>Tartaglia</code>):<br>
+  • Kartu menampilkan badge kecil: <code>🎯 Varian tersedia: Tartaglia</code>.<br>
+  • Jika varian tersebut memiliki foto varian sendiri, thumbnail kartu otomatis menampilkan foto varian yang cocok.<br>
+  • Klik kartu mengarah ke <code>/{game}/{product}?variant={id_varian}</code> sehingga varian tersebut langsung terpilih otomatis di halaman detail produk.</td></tr>
+</table>
+
+<h1>14. Kategori Merch (Auto-Group)</h1>
+<p>Sistem scan nama + slug, prioritas cek dari atas:</p>
+<table>
+  <tr><th>Prioritas</th><th>Kategori</th><th>Keyword</th></tr>
+  <tr><td>1</td><td>Shikishi</td><td>shikishi, shikisi, art board, mini shikishi</td></tr>
+  <tr><td>2</td><td>Standee</td><td>standee, acrylic stand, akrilik, stand</td></tr>
+  <tr><td>3</td><td>Pendant</td><td>pendant, acrylic pendant</td></tr>
+  <tr><td>4</td><td>Plush</td><td>plush, plushie, boneka, nui, doll, nuigurumi</td></tr>
+  <tr><td>5</td><td>Keychain</td><td>keychain, key chain, gantungan, keyring, acrylic charm</td></tr>
+  <tr><td>6</td><td>Badge</td><td>badge, pin, can badge, oval badge, square badge, round badge</td></tr>
+  <tr><td>7</td><td>Apparel</td><td>apparel, t-shirt, kaos, hoodie, jaket, impression wear</td></tr>
+  <tr><td>8</td><td>Other</td><td>Tidak match</td></tr>
+</table>
+<p>Admin bisa CRUD kategori + keyword, override manual di level produk.</p>
+
+<h1>15. Edukasi Cara Belanja</h1>
+<ul>
+  <li>Modal setelah registrasi &amp; verifikasi email</li>
+  <li>Frequency: 1x seumur hidup</li>
+  <li>Judul: "Baru di Mercatoria? Ini Cara Belanja di Mercatoria"</li>
+  <li>Tombol: "Mengerti" + "Baca Selengkapnya"</li>
+</ul>
+
+<h1>16. Cart &amp; Checkout</h1>
+<h3>16.1 Alur</h3>
+<ol>
+  <li>User tambah ke cart</li>
+  <li>Buka cart → pilih item (bulk selection)</li>
+  <li>Checkout (alamat sudah ada dari registrasi)</li>
+  <li>Pilih platform (Toco/Shopee)</li>
+  <li>Pilih FP atau DP</li>
+  <li>Pilih metode bayar (BCA/QRIS/ShopeePay)</li>
+  <li>Opsional: pakai koin ATAU voucher</li>
+  <li>Sistem hitung total (termasuk ongkir 3 jenis dari store + berat) <span class="new">v4.4</span></li>
+  <li>Sistem tampilkan kalkulasi total (dibulatkan ke 5.000)</li>
+  <li>Klik "Buat Pesanan" → harga di-freeze + <strong>snapshot gambar di-copy</strong></li>
+  <li>Upload bukti bayar → verifikasi admin</li>
+</ol>
+
+<h3>16.2 Bulk Selection</h3>
+<ul>
+  <li>Setiap item di cart punya checkbox</li>
+</ul>
+
+<h3>16.3 Cart Reminder</h3>
+<ul>
+  <li>Notifikasi in-web (Bell + toast) + email via <code>info@mercatoria.id</code></li>
+  <li>Setiap 30 menit selama item masih di cart</li>
+  <li>Berhenti kalau: item di-checkout atau dihapus</li>
+</ul>
+
+<h3>16.4 Catatan Pembelian (customer_note)</h3>
+<ul>
+  <li>Field <strong>optional</strong> di halaman Cart</li>
+  <li>Label: "Catatan untuk Mercatoria"</li>
+  <li>Placeholder: "Contoh: bubble wrap extra, packing rapi, mau bonus A/B"</li>
+  <li>Textarea, max 500 karakter</li>
+  <li>Disimpan di order, tampil di detail order <strong>admin &amp; user</strong></li>
+  <li>Field di tabel <code>orders</code>: <code>customer_note</code></li>
+</ul>
+
+<h3>16.5 Skema Pembayaran</h3>
+<ul>
+  <li>Full Payment (100%)</li>
+  <li>Down Payment (50%)</li>
+</ul>
+
+<h3>16.6 Pilihan Platform Marketplace</h3>
+<ul>
+  <li>Shopee</li>
+  <li>Toco</li>
+</ul>
+
+<h3>16.7 Total Berat di Checkout <span class="new">v4.4</span></h3>
+<p>Saat checkout, sistem hitung <strong>total berat</strong> per item:</p>
+<ul>
+  <li>Berat = varian <code>weight_gram</code> kalau ada, else produk <code>weight_gram</code></li>
+  <li>Kalau dua-duanya kosong → default 0g (admin harus input berat)</li>
+  <li>Total berat order = sum(berat item × qty)</li>
+  <li>Berat per item disimpan di <code>order_item_snapshots.weight_gram</code></li>
+</ul>
+
+<div class="note-info">
+<strong>Berat per ITEM, bukan per order.</strong> Karena ongkir internasional dihitung per kg dari total berat, tapi saat snapshot per item kita tetap simpan berat masing-masing untuk audit. Total berat order = sum semua item.
+</div>
+
+<h3>16.8 Rumus Ongkir di Checkout <span class="new">v4.4</span></h3>
+<p>Total ongkir per item = 3 komponen:</p>
+<ol>
+  <li><strong>Ongkir Lokal CN</strong> (per produk, dari store produk):
+    <ul>
+      <li>Kalau harga produk ≥ min_belanja store → gratis (Rp 0)</li>
+      <li>Kalau &lt; min_belanja → (harga_rmb × ongkir_rmb) / min_belanja × rate</li>
+      <li>Kalau store ongkir_rmb = 0 → gratis</li>
+    </ul>
+  </li>
+  <li><strong>Ongkir CN-BTM</strong> (per item) = berat_kg × ongkir_cn_btm_per_kg</li>
+  <li><strong>Ongkir BTM-JKT</strong> (per item) = berat_kg × ongkir_btm_jkt_per_kg</li>
+</ol>
+<p>Total ongkir = sum ketiga komponen per item. Detail rumus lengkap: <strong>Section 20</strong>.</p>
+
+<h1>17. Pembayaran</h1>
+<h3>17.1 Metode (CRUD Admin)</h3>
+<table>
+  <tr><th>Metode</th><th>Cara</th></tr>
+  <tr><td>Bank BCA</td><td>Transfer manual. Detail: nomor + atas nama.</td></tr>
+  <tr><td>QRIS</td><td>Scan QR. QR code tampil setelah pilih metode.</td></tr>
+  <tr><td>ShopeePay</td><td>Scan QR. QR code tampil setelah pilih metode.</td></tr>
+</table>
+
+<h3>17.2 Opsi</h3>
+<ul>
+  <li>FP (Full Payment)</li>
+  <li>DP (Down Payment) — 50% fixed</li>
+</ul>
+
+<h3>17.3 Fee Marketplace (fixed per transaksi)</h3>
+<table>
+  <tr><th>Platform</th><th>FP</th><th>DP</th></tr>
+  <tr><td>Toco</td><td>Rp 1</td><td>Rp 0</td></tr>
+  <tr><td>Shopee</td><td>Rp 109</td><td>25% × sisa pelunasan</td></tr>
+</table>
+
+<h3>17.4 Fee QRIS</h3>
+<ul>
+  <li>0,03% × total jika total ≥ Rp 500.000</li>
+  <li>Hanya untuk QRIS</li>
+</ul>
+
+<h3>17.5 Alur Logistik Marketplace (DP 50% &amp; FP 100%) &amp; Timer 7 Hari <span class="rev">REV v4.6</span></h3>
+<ol>
+  <li>Di website Mercatoria tidak ada penambahan ongkos kirim domestik Indonesia karena pengiriman lokal dari gudang Jakarta ke alamat pembeli menggunakan <strong>logistik marketplace (Shopee / Toco)</strong>.</li>
+  <li>Saat barang tiba di Indonesia (status <code>Sampai WH Indonesia</code> → <code>Menunggu Pelunasan &amp; Pengambilan</code>), <strong>Countdown Timer 7 Hari</strong> otomatis berjalan.</li>
+  <li>Customer <strong>wajib melakukan checkout (CO) barangnya di marketplace pilihan (Shopee/Toco) terlepas dari skema DP 50% maupun FP 100%</strong>:
+    <ul>
+      <li><strong>Order FP (100%):</strong> Tetap wajib CO di marketplace dengan membayar biaya admin logistik marketplace (Toco Rp 1 / Shopee Rp 109) agar resi logistik marketplace terbit.</li>
+      <li><strong>Order DP (50%):</strong> Wajib CO di marketplace untuk melunasi sisa 50% + biaya admin logistik marketplace (Toco Rp 0 / Shopee 25% dari sisa tagihan).</li>
+    </ul>
+  </li>
+  <li><strong>Tidak Ada Tombol Pelunasan di Web:</strong> Pada halaman detail pesanan maupun section <em>Tagihan Menunggu</em>, <strong>tidak ada tombol <code>[Lunasi &amp; Ambil Sekarang]</code></strong>. Customer cukup memantau <strong>Countdown Timer 7 Hari</strong> dan informasi nominal CO marketplace, sementara perubahan status ke <code>Selesai</code> (atau <code>Hangus</code> jika lewat 7 hari tanpa CO) berjalan otomatis by sistem/sinkronisasi admin.</li>
+</ol>
+
+<h3>17.6 Pembulatan Harga ke Kelipatan 5.000</h3>
+<p>Rumus: <code>CEILING(total / 5000) × 5000</code></p>
+
+<h3>17.7 Auto-Delete File Bukti Transfer</h3>
+<ul>
+  <li>Saat order status Selesai, Refunded, atau <strong>Hangus</strong> → file bukti otomatis dihapus</li>
+  <li>Berlaku untuk FP dan DP</li>
+  <li><strong>Snapshot gambar TIDAK dihapus</strong> (retention permanen)</li>
+</ul>
+
+<h3>17.8 Format Nomor Order</h3>
+<pre>MER-{4 huruf random KAPITAL}-{4 digit}</pre>
+<p>Contoh: <code>MER-J79NR-0004</code></p>
+
+<h3>17.9 Nama File Bukti Bayar</h3>
+<pre>{no_order} - {tipe_pembayaran} - {metode_pembayaran}.jpg</pre>
+
+<h3>17.10 Lock &amp; Reset Bukti Bayar</h3>
+<ul>
+  <li>Submit 1x → locked, order status ke Ditahan</li>
+  <li>Admin tolak bukti → lock otomatis di-reset</li>
+  <li>User punya 24 jam untuk upload ulang</li>
+</ul>
+
+<h3>17.11 Email Notif Admin</h3>
+<ul>
+  <li>Trigger: user upload bukti bayar</li>
+  <li>Dikirim ke: admin utama + cs@</li>
+  <li>Isi: no order, nama customer, email, total, tipe bayar, metode, link bukti</li>
+</ul>
+
+<div class="note-info">
+<strong>Verifikasi Pembayaran: SATU-SATU.</strong> Tidak ada bulk verify — admin harus cek manual setiap bukti karena setiap order unique.
+</div>
+
+<h1>18. Alur Order, Status &amp; Invoice</h1>
+<h3>Status Normal (11)</h3>
+<ol>
+  <li>Menunggu Pembayaran</li>
+  <li>Ditahan (Menunggu Verifikasi)</li>
+  <li>Pembayaran Diterima</li>
+  <li>Sedang Diproses</li>
+  <li>Sampai WH China</li>
+  <li>Dikirim ke Indonesia</li>
+  <li>Bea Cukai</li>
+  <li>Sampai WH Indonesia</li>
+  <li><strong>Menunggu Pelunasan &amp; Pengambilan</strong> — timer 7 hari</li>
+  <li>Sedang Dikemas</li>
+  <li>Selesai</li>
+</ol>
+<h3>Status Gagal / Refund (3)</h3>
+<ul>
+  <li>Pembayaran Gagal</li>
+  <li>Dana Dikembalikan (Full / Partial)</li>
+  <li><strong>Hangus</strong> — gabungan DP Hangus &amp; FP Hangus</li>
+</ul>
+
+<div class="note-info">
+<strong>Perubahan Status:</strong>
+<ul>
+  <li><strong>"DP Hangus" di-rename jadi "Hangus"</strong> — berlaku untuk DP &amp; FP yang lewat 7 hari di status "Menunggu Pelunasan &amp; Pengambilan"</li>
+  <li>Status baru: <strong>"Menunggu Pelunasan &amp; Pengambilan"</strong> — timer 7 hari mulai saat status "Sampai WH Indonesia"</li>
+  <li>Kalau lewat 7 hari → status jadi <strong>"Hangus"</strong>, barang jadi milik Mercatoria, <strong>tanpa refund</strong></li>
+</ul>
+</div>
+
+<h3>18.1 Info di Setiap Pesanan</h3>
+<ul>
+  <li>Nama pemesan, Alamat, No HP</li>
+  <li>Pembayaran (FP / DP)</li>
+  <li>Metode pembayaran (BCA/QRIS/ShopeePay)</li>
+  <li>Referral source</li>
+  <li><strong>Catatan Pembelian</strong> dari user (kalau ada)</li>
+  <li><strong>Note to Customer</strong> dari admin (kalau ada)</li>
+</ul>
+
+<h3>18.2 Tombol WA Kontekstual</h3>
+<ul>
+  <li>Untuk setiap barang dengan status "Sampai WH Indonesia" → tombol WA ke WA pemilik pesanan</li>
+  <li>Untuk status "Menunggu Pelunasan &amp; Pengambilan" → tombol WA reminder</li>
+</ul>
+
+<h3>18.3 Bulk Update Status Order</h3>
+<ul>
+  <li>Admin bisa ubah status banyak pesanan sekaligus</li>
+</ul>
+
+<h3>18.4 Section "Tagihan Menunggu" <span class="rev">REV v4.6</span></h3>
+<p>Section khusus di Dashboard &amp; Order List yang menampilkan order yang butuh perhatian user.</p>
+<ul>
+  <li>Menampilkan order dengan status <strong>"Menunggu Pembayaran"</strong> + <strong>"Menunggu Pelunasan &amp; Pengambilan"</strong></li>
+  <li>Judul: "TAGIHAN MENUNGGU"</li>
+  <li>Tombol "Lihat semua" di pojok kanan</li>
+  <li>Setiap item menampilkan: No Order · Nominal Tagihan / Info CO Marketplace · Status</li>
+  <li><strong>Khusus status "Menunggu Pembayaran":</strong> Menampilkan tombol <code>[Bayar &amp; Unggah Bukti]</code> yang mengarahkan ke form upload bukti transfer di detail pesanan.</li>
+  <li><strong>Khusus status "Menunggu Pelunasan &amp; Pengambilan" (DP maupun FP):</strong> <strong>TIDAK ADA tombol <code>[Lunasi &amp; Ambil Sekarang]</code></strong> karena proses CO dilakukan di marketplace (Shopee/Toco) sebagai logistik dan status diperbarui otomatis by sistem. User hanya melihat <strong>Countdown Timer 7 Hari</strong> beserta pengingat wajib CO di marketplace sebelum hangus.</li>
+</ul>
+
+<h3>18.5 Tombol "Bayar &amp; Unggah Bukti"</h3>
+<ul>
+  <li>Shortcut di Section Tagihan Menunggu (Dashboard &amp; Order List)</li>
+  <li>Detail order dengan status "Menunggu Pembayaran"</li>
+  <li>Klik → langsung ke form upload bukti transfer</li>
+</ul>
+
+<h3>18.6 Riwayat Status / Timeline</h3>
+<p>Timeline vertikal di bawah detail order (admin &amp; user).</p>
+<ul>
+  <li>Setiap entry: timestamp + label status + oleh siapa</li>
+  <li>Entry terbaru di bawah</li>
+  <li>Entry aktif di-highlight (bold)</li>
+  <li>Data source: tabel <code>order_status_logs</code></li>
+</ul>
+
+<h3>18.7 Invoice PDF</h3>
+<div class="note-success">
+<strong>Invoice = Bukti Pembayaran (TANPA ALAMAT).</strong> Semua data baca dari <strong>order_item_snapshots</strong>, bukan dari products. Jadi tetap valid walau produk dihapus permanen.
+</div>
+<ul>
+  <li>Tombol "Download Invoice PDF" di halaman detail order:
+    <ul>
+      <li><strong>User</strong> — di halaman /orders/{id} (detail order)</li>
+      <li><strong>Admin</strong> — di halaman /office/orders/{id} (sidebar Download)</li>
+    </ul>
+  </li>
+  <li>User juga bisa print dari browser (Ctrl+P) → PDF</li>
+  <li>Isi invoice PDF (TANPA alamat, baca dari snapshot):
+    <ul>
+      <li>Header: <strong>Logo Mercatoria</strong> + <strong>Email CS</strong> + <strong>No WA Admin</strong> + <strong>Link Web (mercatoria.id)</strong></li>
+      <li>No Order, tanggal</li>
+      <li><strong>Nama pembeli saja</strong> (tanpa alamat)</li>
+      <li>2 badge mini (Role/State + Tier) di samping nama pembeli</li>
+      <li>Tabel item: nama produk, varian, qty, harga, subtotal — <strong>dari snapshot</strong></li>
+      <li>Subtotal, diskon, fee marketplace, fee QRIS, total</li>
+      <li>Metode bayar, skema (FP/DP)</li>
+      <li>Catatan Pembelian (kalau ada)</li>
+      <li>Footer: TNC singkat, terima kasih</li>
+    </ul>
+  </li>
+  <li>Format: A4, layout clean, watermark "MERCATORIA"</li>
+</ul>
+
+<h3>18.8 Packing List PDF</h3>
+<ul>
+  <li><strong>Admin only</strong> — di sidebar Download di /office/orders/{id}</li>
+  <li>Tujuan: Admin cetak buat packing</li>
+  <li>Isi packing list (TANPA alamat, baca dari snapshot):
+    <ul>
+      <li>Header: Logo + Email CS + WA Admin + Link Web + No Order + Tanggal</li>
+      <li>Nama pembeli saja (tanpa alamat)</li>
+      <li>Checklist item: nama produk, varian, qty, ☐ check — <strong>dari snapshot</strong></li>
+      <li>Catatan Pembelian dari user (highlighted)</li>
+      <li><strong>Note to Customer</strong> dari admin (highlighted)</li>
+      <li>Footer: Tanda tangan packer</li>
+    </ul>
+  </li>
+  <li>Format: A4, layout clean</li>
+</ul>
+
+<h1>19. Logistik</h1>
+<ul>
+  <li>User pilih platform (Toco / Shopee) saat checkout</li>
+  <li>Pelunasan DP di marketplace</li>
+  <li>Web tampilkan nominal pelunasan + timer 7 hari</li>
+  <li>Admin cek manual di marketplace → update Selesai</li>
+  <li>Kalau lewat 7 hari → status Hangus</li>
+  <li>Tidak ada nomor resi di web</li>
+</ul>
+
+<h1>20. Model Bisnis &amp; Rumus Harga <span class="rev">REV v4.4</span></h1>
+
+<div class="note-info">
+<strong>Perubahan v4.4:</strong> Tambah Store Concept, Berat Produk, dan perhitungan ongkir 3 jenis yang lebih akurat.
+</div>
+
+<h3>20.1 Setting Admin</h3>
+<table>
+  <tr><th>Setting</th><th>Satuan</th><th>Default</th></tr>
+  <tr><td>Rate RMB → IDR</td><td>angka</td><td>2.200</td></tr>
+  <tr><td>Profit</td><td>%</td><td>11</td></tr>
+  <tr><td><strong>Ongkir CN-BTM per kg</strong> <span class="new">v4.4</span></td><td>IDR/kg</td><td>25.000</td></tr>
+  <tr><td><strong>Ongkir BTM-JKT per kg</strong> <span class="new">v4.4</span></td><td>IDR/kg</td><td>60.000</td></tr>
+  <tr><td><strong>Default berat produk</strong> <span class="new">v4.4</span></td><td>gram</td><td>0 (admin harus input)</td></tr>
+</table>
+
+<h3>20.2 Store Concept (Tier Ongkir Lokal CN) <span class="new">v4.4</span></h3>
+<p><strong>Konsep:</strong> Setiap toko punya kebijakan ongkir lokal CN sendiri. Admin CRUD toko (nama = tier, min_belanja_rmb, ongkir_rmb).</p>
+
+<table>
+  <tr><th>Field</th><th>Keterangan</th></tr>
+  <tr><td><code>name</code></td><td>Nama tier/toko (mis. "Official HoYoverse", "Toko Baju Collab")</td></tr>
+  <tr><td><code>min_belanja_rmb</code></td><td>Minimum belanja (RMB) untuk gratis ongkir lokal</td></tr>
+  <tr><td><code>ongkir_rmb</code></td><td>Ongkir lokal CN (RMB). Set 0 = gratis selalu.</td></tr>
+</table>
+
+<p><strong>Relasi:</strong> Game punya 1 store default. Produk punya FK ke store (default dari game, bisa override untuk case collab).</p>
+
+<h3>20.3 Rumus Ongkir Lokal CN (per produk) <span class="new">v4.4</span></h3>
+
+<p><strong>Interpretasi:</strong> Customer bayar langsung (bukan disubsidi toko).</p>
+
+<pre>Cek harga produk (RMB):
+├── Kalau store.ongkir_rmb = 0 → GRATIS
+├── Kalau harga_produk ≥ store.min_belanja_rmb → GRATIS
+└── Selain itu → HITUNG:
+
+    ongkir_lokal_rmb = (harga_produk × store.ongkir_rmb) / store.min_belanja_rmb
+    ongkir_lokal_idr = ongkir_lokal_rmb × rate_rmb_idr</pre>
+
+<p><strong>Contoh 1:</strong> Harga 58 yuan, store min 100, ongkir 7 yuan</p>
+<pre>58 < 100 → hitung
+ongkir_lokal_rmb = (58 × 7) / 100 = 4,06 yuan
+ongkir_lokal_idr = 4,06 × 2.200 = Rp 8.932</pre>
+
+<p><strong>Contoh 2:</strong> Harga 150 yuan, store min 100, ongkir 7 yuan</p>
+<pre>150 ≥ 100 → GRATIS (Rp 0)</pre>
+
+<p><strong>Contoh 3:</strong> Harga apa pun, store ongkir 0 yuan</p>
+<pre>ongkir_rmb = 0 → GRATIS (Rp 0)</pre>
+
+<h3>20.4 Rumus Ongkir Internasional (per item) <span class="new">v4.4</span></h3>
+
+<p><strong>Per item:</strong></p>
+<pre>berat_kg = berat_item_gram / 1000
+
+ongkir_cn_btm_idr  = berat_kg × ongkir_cn_btm_per_kg  (default 25.000)
+ongkir_btm_jkt_idr = berat_kg × ongkir_btm_jkt_per_kg (default 60.000)</pre>
+
+<p><strong>Berat item = varian.weight_gram kalau ada, else produk.weight_gram</strong></p>
+
+<p><strong>Contoh:</strong> Berat 500g = 0,5 kg</p>
+<pre>ongkir_cn_btm_idr  = 0,5 × 25.000 = Rp 12.500
+ongkir_btm_jkt_idr = 0,5 × 60.000 = Rp 30.000</pre>
+
+<h3>20.5 Rumus Harga Bersih per Produk / Varian (Sama di Katalog, Detail Produk, Keranjang &amp; Checkout) <span class="rev">REV v4.6</span></h3>
+
+<pre># 1. Gunakan harga RMB varian (jika produk bervarian) atau harga RMB produk induk (jika single)
+harga_rmb_item = variant.price_rmb ?? product.price_rmb
+berat_gram_item = variant.weight_gram ?? product.weight_gram
+
+harga_idr    = harga_rmb_item × rate
+ongkir_lokal = (rumus 20.3 dihitung per varian menggunakan harga_rmb_item)
+ongkir_btm   = (berat_gram_item / 1000) × ongkir_cn_btm_per_kg
+ongkir_jkt   = (berat_gram_item / 1000) × ongkir_btm_jkt_per_kg
+
+# 2. Profit 11% & pembulatan CEILING 5.000 sudah termasuk di dalam Harga Bersih per item
+ modal_item   = harga_idr + ongkir_lokal + ongkir_btm + ongkir_jkt
+profit_item  = modal_item × 0.11
+harga_bersih_item = CEILING((modal_item + profit_item) / 5000) × 5000
+
+# 3. Diskon produk nominal (kalau ada & aktif)
+harga_tayang_item = harga_bersih_item - discount_amount</pre>
+<p><strong>Prinsip Utama:</strong> Harga yang tertera di Katalog, Detail Produk, Keranjang, dan Subtotal Item di Checkout <strong>100% SAMA (<code>harga_tayang_item</code>)</strong> dan sudah termasuk profit 11%.</p>
+
+<h3>20.6 Rumus Total Order di Checkout (Tanpa Double Profit) <span class="rev">REV v4.6</span></h3>
+
+<pre># 1. Subtotal item di Keranjang & Checkout (sama persis dengan harga tayang produk)
+subtotal_order = sum(harga_tayang_item × qty)
+
+# 2. Diskon Koin (maks 5% dari subtotal_order) ATAU Voucher (pilih salah satu)
+diskon_order = diskon_koin_atau_voucher
+subtotal_setelah_diskon = subtotal_order - diskon_order
+
+# 3. Fee Admin Logistik Marketplace (baru tampil di Checkout)
+Toco   FP = Rp 1
+Toco   DP = Rp 0 (saat CO pelunasan di Toco)
+Shopee FP = Rp 109
+Shopee DP = 25% × sisa_pelunasan_50_persen (saat CO pelunasan di Shopee)
+
+# 4. Fee QRIS (baru tampil di Checkout jika metode == QRIS dan tagihan >= Rp 500.000)
+fee_qris = 0.0003 × tagihan (jika >= 500.000, selain itu Rp 0)
+
+# 5. Total Tagihan Checkout (dibulatkan CEILING 5.000 jika ada pecahan dari diskon/fee)
+total_checkout = CEILING((subtotal_setelah_diskon + fee_marketplace_web + fee_qris) / 5000) × 5000</pre>
+
+<h3>20.7 Contoh Perhitungan Lengkap</h3>
+
+<p><strong>Setup:</strong> Rate 3.000, Profit 11%, CN-BTM 25.000/kg, BTM-JKT 60.000/kg</p>
+
+<p><strong>Produk:</strong> Harga 58 yuan, berat 500g, store min 100 yuan ongkir 7 yuan</p>
+
+<pre>Harga produk     = 58 × 3.000 = Rp 174.000
+
+Ongkir lokal CN:
+58 < 100 → hitung
+= (58 × 7) / 100 = 4,06 yuan × 3.000 = Rp 12.180
+
+Ongkir CN-BTM    = 0,5 × 25.000 = Rp 12.500
+Ongkir BTM-JKT   = 0,5 × 60.000 = Rp 30.000
+
+Subtotal         = 174.000 + 12.180 + 12.500 + 30.000 = Rp 228.680
+
+Profit 11%       = 228.680 × 0.11 = Rp 25.154,80
+
+Total            = 228.680 + 25.154,80 = Rp 253.834,80
+Pembulatan       = CEILING(253.834,80 / 5.000) × 5.000
+                 = 51 × 5.000 = Rp 255.000
+
+HARGA KE CUSTOMER: Rp 255.000</pre>
+
+<div class="note-info">
+<strong>Rumus ongkir lokal CN:</strong> customer bayar langsung, BUKAN disubsidi toko. Alasan: kalau disubsidi, harga melonjak, customer kabur. Strategi ninja untuk acquire customer di awal. Nanti bisa direvisi kalau udah stabil.
+</div>
+
+<h1>21. Snapshot &amp; Freeze Harga <span class="rev">REV v4.4</span></h1>
+<table>
+  <tr><th>Kondisi</th><th>Katalog</th><th>Cart</th><th>Checkout</th><th>Order</th></tr>
+  <tr><td>Rate berubah</td><td>Berubah</td><td>Berubah</td><td>Berubah</td><td>Freeze</td></tr>
+  <tr><td>Profit berubah</td><td>Berubah</td><td>Berubah</td><td>Berubah</td><td>Freeze</td></tr>
+  <tr><td>Diskon berubah</td><td>Berubah</td><td>Berubah</td><td>Berubah</td><td>Freeze</td></tr>
+  <tr><td>Produk diedit</td><td>Berubah</td><td>Berubah</td><td>Berubah</td><td><strong>Freeze</strong></td></tr>
+  <tr><td>Produk dihapus</td><td>Hilang</td><td>—</td><td>—</td><td><strong>Tetap utuh</strong></td></tr>
+  <tr><td><strong>Ongkir/kg berubah</strong> <span class="new">v4.4</span></td><td>Berubah</td><td>Berubah</td><td>Berubah</td><td><strong>Freeze</strong></td></tr>
+  <tr><td><strong>Store tier berubah</strong> <span class="new">v4.4</span></td><td>Berubah</td><td>Berubah</td><td>Berubah</td><td><strong>Freeze</strong></td></tr>
+  <tr><td><strong>Berat produk diedit</strong> <span class="new">v4.4</span></td><td>Berubah</td><td>Berubah</td><td>Berubah</td><td><strong>Freeze</strong></td></tr>
+</table>
+<p><strong>Titik freeze:</strong> klik "Buat Pesanan"</p>
+
+<div class="note-info">
+<strong>v4.4 — Snapshot tambah field:</strong>
+<ul>
+  <li><code>weight_gram</code> — berat saat order (gram)</li>
+  <li><code>store_name</code> — nama toko saat order (biar tetap ada walau store dihapus)</li>
+  <li><code>ongkir_lokal_cn_idr</code> — komponen ongkir lokal CN (Rp)</li>
+  <li><code>ongkir_cn_btm_idr</code> — komponen ongkir CN-BTM (Rp)</li>
+  <li><code>ongkir_btm_jkt_idr</code> — komponen ongkir BTM-JKT (Rp)</li>
+  <li><code>ongkir_total_idr</code> — sum 3 komponen (Rp)</li>
+</ul>
+Alasan: audit trail lengkap. Kalau ada komplain "kenapa ongkir gede?", admin bisa lihat breakdown.
+</div>
+
+<h1>22. Admin Panel <span class="rev">REV v4.4</span></h1>
+<h3>22.1 Layout Admin</h3>
+<ul>
+  <li><strong>Sidebar kiri</strong> — collapse-able (240px → 56px)</li>
+  <li><strong>Topbar</strong> — height 56px, search admin, bell notifikasi, profile dropdown, tombol "Lihat Frontend"</li>
+  <li><strong>Content area</strong> — BG #F8F9FA, padding 24px</li>
+  <li>Warna pakai Design System (biru #4FC3F7, hitam #000000)</li>
+  <li>Admin URL: <code>/office</code></li>
+</ul>
+
+<h3>22.2 Sidebar Menu <span class="rev">+ Store</span></h3>
+<table>
+  <tr><th>Group</th><th>Menu</th><th>URL</th></tr>
+  <tr><td rowspan="4">📊 Dashboard</td><td>Dashboard</td><td>/office</td></tr>
+  <tr><td>Activity Log</td><td>/office/activity-logs</td></tr>
+  <tr><td>Auth Log</td><td>/office/auth-logs</td></tr>
+  <tr><td>Admin Log</td><td>/office/admin-logs</td></tr>
+  <tr><td rowspan="4">📦 Produk</td><td>Semua Produk</td><td>/office/products</td></tr>
+  <tr><td>Kategori Merch</td><td>/office/merch-categories</td></tr>
+  <tr><td>Tag</td><td>/office/tags</td></tr>
+  <tr><td><strong>Stores (Tier Ongkir)</strong> <span class="new">v4.4</span></td><td>/office/stores</td></tr>
+  <tr><td rowspan="2">🎮 Katalog</td><td>Game</td><td>/office/games</td></tr>
+  <tr><td>Developer</td><td>/office/developers</td></tr>
+  <tr><td rowspan="4">🛒 Transaksi</td><td>Orders</td><td>/office/orders</td></tr>
+  <tr><td>Verifikasi Pembayaran</td><td>/office/payments</td></tr>
+  <tr><td>Refunds</td><td>/office/refunds</td></tr>
+  <tr><td>Voucher</td><td>/office/vouchers</td></tr>
+  <tr><td rowspan="2">👥 Pengguna</td><td>Users</td><td>/office/users</td></tr>
+  <tr><td>Spammers</td><td>/office/spammers</td></tr>
+  <tr><td rowspan="3">📄 Konten</td><td>Pages CMS</td><td>/office/pages</td></tr>
+  <tr><td>Email Templates</td><td>/office/email-templates</td></tr>
+  <tr><td>Preorder Builder</td><td>/office/preorder</td></tr>
+  <tr><td>🔍 SEO</td><td>SEO</td><td>/office/seo</td></tr>
+  <tr><td>📈 Laporan</td><td>Reports</td><td>/office/reports</td></tr>
+  <tr><td>🏆 Pelanggan</td><td>Rank Pelanggan</td><td>/office/customers/rank</td></tr>
+  <tr><td>⚙️ Settings</td><td>Settings</td><td>/office/settings</td></tr>
+</table>
+
+<h3>22.3 Admin Dashboard (Detail)</h3>
+<ul>
+  <li><strong>4 Stats Card:</strong> Total Pesanan · Pesanan Hari Ini · Pendapatan Bulan Ini · User Baru Minggu Ini (dengan % change)</li>
+  <li><strong>Grafik Penjualan 30 Hari Terakhir</strong> — Line chart (sumbu Y rupiah, X tanggal)</li>
+  <li><strong>Pesanan Menunggu Aksi:</strong> Counter pembayaran verif · refund pending · spammer baru · order baru + tombol "Lihat Semua"</li>
+  <li><strong>Produk Terjual (Top 5)</strong> — Top 5 produk terlaris bulan ini</li>
+  <li><strong>Notifikasi Terbaru</strong> — 5 notifikasi terbaru</li>
+</ul>
+
+<h3>22.4 Bell Notifikasi Admin</h3>
+<ul>
+  <li>Icon 🔔 di topbar dengan badge jumlah notifikasi belum dibaca</li>
+  <li>Event yang muncul:
+    <ul>
+      <li><strong>Order baru</strong> — user checkout</li>
+      <li><strong>Bukti bayar diupload</strong> — butuh verifikasi</li>
+      <li><strong>Refund request</strong> — user minta refund</li>
+      <li><strong>Spammer baru</strong> — user masuk spammer list</li>
+      <li><strong>Order nearing expiry</strong> — 7 hari lewat di status Menunggu Pelunasan</li>
+    </ul>
+  </li>
+  <li>Klik icon → dropdown list 10 notifikasi terbaru</li>
+  <li>Setiap item ada link ke halaman terkait</li>
+  <li>Tombol "Tandai semua dibaca"</li>
+</ul>
+
+<h3>22.5 Search Admin</h3>
+<ul>
+  <li>Search box di topbar</li>
+  <li>Cari: Produk (nama/SKU), Order (no order/email), User (nama/email/HP)</li>
+  <li>Hasil dropdown: grouped by type</li>
+  <li>Klik hasil → langsung ke halaman terkait</li>
+</ul>
+
+<h3>22.6 Kemampuan Admin (lengkap)</h3>
+<ul>
+  <li>CRUD game, developer, produk, varian</li>
+  <li>Duplicate / Preview produk</li>
+  <li>Bulk action produk (aktifkan, nonaktifkan, <strong>hapus permanen</strong>)</li>
+  <li><strong>Hapus produk = HARD DELETE</strong> (konfirmasi + warning count, bulk bisa)</li>
+  <li><strong>Bulk Edit Berat Varian</strong> (Set Same) <span class="new">v4.4</span></li>
+  <li>Kelola kategori merch &amp; keyword (CRUD)</li>
+  <li><strong>Kelola Stores / Tier Ongkir (CRUD)</strong> <span class="new">v4.4</span></li>
+  <li>Set Diskon Produk</li>
+  <li>Verifikasi pembayaran (satu-satu)</li>
+  <li>Update status order (single &amp; bulk)</li>
+  <li>Kelola refund (3 event notif)</li>
+  <li>Tambah User, Tambah Pesanan, Tambah Spammer (inject, urutan: Produk → Customer → Pesanan)</li>
+  <li>Buat voucher template</li>
+  <li>Hapus user (soft/hard/forever delete)</li>
+  <li>Kelola spammer list + multi-IP ban</li>
+  <li>Kelola metode pembayaran</li>
+  <li>Kelola template email + <strong>Toggle Stop Kirim Email ke Customer (Mode Testing/Maintenance)</strong> <span class="new">v4.6</span></li>
+  <li>Kelola halaman statis (CMS)</li>
+  <li>Kelola Preorder Builder</li>
+  <li>Lihat rank pelanggan + kirim gift</li>
+  <li>Kelola SEO + GA4 Measurement ID</li>
+  <li>Lihat landing &amp; referral source</li>
+  <li>Lihat activity log, auth log, admin log</li>
+  <li>Unblock Customer Blocked (grace 7 hari)</li>
+  <li>Reset view counter user Crush/Ex/ONS</li>
+  <li><strong>Download Invoice PDF</strong> (baca dari snapshot)</li>
+  <li><strong>Download Packing List PDF</strong> (baca dari snapshot)</li>
+  <li><strong>Kirim Note to Customer</strong> ke user terkait order</li>
+  <li><strong>Kirim notifikasi manual ke user</strong></li>
+</ul>
+
+<h3>22.7 Input Order Lama</h3>
+<ul>
+  <li>/office/orders → tombol "Tambah Pesanan"</li>
+  <li><strong>WAJIB pilih User</strong> (dropdown search by nama/email/HP)</li>
+  <li>Kalau user belum ada → tombol shortcut "+ User Baru"</li>
+  <li>Kalau produk belum ada → tombol shortcut "+ Produk Baru"</li>
+  <li>Pilih produk existing, varian, qty</li>
+  <li>Harga bisa diedit manual</li>
+  <li><strong>Snapshot manual</strong> — saat simpan order lama:
+    <ul>
+      <li>Sistem tetap bikin <code>order_item_snapshots</code></li>
+      <li>Copy gambar produk + varian ke folder snapshot</li>
+      <li>Snapshot pakai data terkini dari produk</li>
+      <li>Admin bisa edit harga di snapshot sebelum simpan</li>
+    </ul>
+  </li>
+  <li>Status bisa langsung ke tahap mana pun</li>
+  <li>Tidak butuh bukti bayar</li>
+  <li>Log ke admin_logs</li>
+</ul>
+
+<h3>22.8 Store CRUD <span class="new">v4.4</span></h3>
+<ul>
+  <li>URL: <code>/office/stores</code></li>
+  <li>List store: nama (tier), min_belanja, ongkir, jumlah produk</li>
+  <li>Form create/edit: nama, min_belanja_rmb, ongkir_rmb</li>
+  <li>Validasi: nama unique, min_belanja ≥ 0, ongkir ≥ 0</li>
+  <li>Hapus store → produk yang pakai jadi NULL (fallback ke game default)</li>
+  <li>Assign store ke game (default) → assign store ke produk (override)</li>
+</ul>
+
+<h1>23. Settings <span class="rev">REV v4.4</span></h1>
+<table>
+  <tr><th>Setting</th><th>Default</th></tr>
+  <tr><td>Rate RMB → IDR</td><td>2.200</td></tr>
+  <tr><td>Profit</td><td>11%</td></tr>
+  <tr><td><strong>Ongkir CN-BTM per kg</strong> <span class="new">v4.4</span></td><td><strong>25.000 IDR/kg</strong></td></tr>
+  <tr><td><strong>Ongkir BTM-JKT per kg</strong> <span class="new">v4.4</span></td><td><strong>60.000 IDR/kg</strong></td></tr>
+  <tr><td><strong>Default berat produk (gram)</strong> <span class="new">v4.4</span></td><td><strong>0 (admin harus input)</strong></td></tr>
+  <tr><td>Fee Toco FP / DP</td><td>Rp 1 / Rp 0</td></tr>
+  <tr><td>Fee Shopee FP / DP</td><td>Rp 109 / 25%</td></tr>
+  <tr><td>Fee QRIS</td><td>0,03%</td></tr>
+  <tr><td>Threshold QRIS</td><td>Rp 500.000</td></tr>
+  <tr><td>DP minimum</td><td>50%</td></tr>
+  <tr><td>Auto-cancel DP</td><td>7 hari setelah Sampai WH Indonesia</td></tr>
+  <tr><td>Koin undang teman / referee / order / share</td><td>3.000 / 1.000 / 1% / 5</td></tr>
+  <tr><td>Koin max diskon</td><td>5%</td></tr>
+  <tr><td>Koin expiry</td><td>1 tahun</td></tr>
+  <tr><td>Bonus ulang tahun koin</td><td>5.000</td></tr>
+  <tr><td>Voucher ulang tahun</td><td>Rp 25.000 / min 100rb</td></tr>
+  <tr><td>Auto-delete Crush</td><td>30 hari</td></tr>
+  <tr><td>View limit Crush / Ex / ONS</td><td>10x</td></tr>
+  <tr><td>Max daftar tanpa belanja</td><td>3x</td></tr>
+  <tr><td>Verifikasi email</td><td>24 jam</td></tr>
+  <tr><td>Rate limit login</td><td>5x/menit</td></tr>
+  <tr><td>Lockout duration</td><td>15 menit</td></tr>
+  <tr><td>Cart reminder interval</td><td>30 menit</td></tr>
+  <tr><td>Unblock grace period</td><td>7 hari</td></tr>
+  <tr><td>State threshold MVP→Ex / Ex→ONS / ONS→Blocked</td><td>0–30 / 30–60 / &gt;60 hari</td></tr>
+  <tr><td>Notifikasi H-7 state change</td><td>Aktif</td></tr>
+  <tr><td>Metode Pembayaran</td><td>CRUD</td></tr>
+  <tr><td>Kategori Merch &amp; Keyword</td><td>CRUD</td></tr>
+  <tr><td>Stores (Tier Ongkir) <span class="new">v4.4</span></td><td>CRUD</td></tr>
+  <tr><td>SEO title/description per halaman</td><td>CRUD</td></tr>
+  <tr><td>GA4 Measurement ID</td><td>Kosong (format G-XXXXXXXXXX)</td></tr>
+  <tr><td>Auto-delete file bukti transfer</td><td>Aktif (Selesai/Refunded/Hangus)</td></tr>
+  <tr><td>Activity / Auth / Admin log retention</td><td>30 hari</td></tr>
+  <tr><td>MVP Tier Silver / Gold / Platinum</td><td>0 / 2jt / 5jt</td></tr>
+  <tr><td>Forever Delete aktif</td><td>Ya</td></tr>
+  <tr><td>Inject Spammer — max attempt</td><td>3</td></tr>
+  <tr><td>Bot Whitelist — Search / AI / Social</td><td>Ya / Ya / Ya</td></tr>
+  <tr><td>Email notif admin saat bukti bayar masuk</td><td>Aktif</td></tr>
+  <tr style="background:#FFF8E1;"><td><strong>Proteksi Anti-Download Foto &amp; Auto-Watermark (<code>image_protection_enabled</code>, <code>image_watermark_enabled</code>)</strong> <span class="new">v4.6</span></td><td><strong>Aktif / True</strong> (Teks bebas di-copy; gambar dikunci dari klik-kanan/drag/long-press + auto-watermark <code>MERCATORIA.ID</code> opacity 25% via Intervention Image)</td></tr>
+  <tr style="background:#FFF8E1;"><td><strong>Stop Kirim Email ke Customer (<code>pause_customer_emails</code>)</strong> <span class="new">v4.6</span></td><td><strong>Nonaktif / False</strong> (Saat diaktifkan: semua email ke customer di-stop sementara untuk maintenance/testing, namun sistem &amp; OTP Admin tetap jalan normal)</td></tr>
+  <tr><td>Pembulatan harga ke kelipatan</td><td>5.000</td></tr>
+  <tr><td>Timezone tampilan</td><td>WIB (GMT+7)</td></tr>
+  <tr><td>Pagination katalog per halaman</td><td>30</td></tr>
+  <tr><td>Produk terkait jumlah</td><td>6</td></tr>
+  <tr><td>Penawaran Terbaik jumlah</td><td>5</td></tr>
+  <tr><td>Terakhir Dilihat jumlah</td><td>5</td></tr>
+  <tr><td>Catatan Pembelian max karakter</td><td>500</td></tr>
+  <tr><td>Invoice prefix</td><td>INV-MER</td></tr>
+  <tr><td>Bell Notifikasi User — aktif</td><td>Ya</td></tr>
+  <tr><td>Bell User — polling interval</td><td>60 detik</td></tr>
+  <tr><td>Bell User — max dropdown tampil</td><td>10 item</td></tr>
+  <tr><td>Bell User — retention notifikasi</td><td>90 hari</td></tr>
+  <tr><td>Bell User — auto-delete setelah dibaca</td><td>Tidak</td></tr>
+  <tr><td>Bell User — toast in-web aktif</td><td>Ya</td></tr>
+  <tr><td>Bell User — halaman semua notifikasi per halaman</td><td>20</td></tr>
+  <tr><td>Note to Customer — max karakter</td><td>1000</td></tr>
+  <tr><td>Note to Customer — kirim email juga?</td><td>Tidak (cuma bell)</td></tr>
+  <tr><td>Share produk — batasi IP Indonesia?</td><td>Ya</td></tr>
+  <tr><td>Timer 7 hari (Menunggu Pelunasan)</td><td>7 hari</td></tr>
+  <tr><td>Snapshot image storage — retention</td><td>Permanen</td></tr>
+  <tr><td>Snapshot image path prefix</td><td>/storage/order-snapshots/</td></tr>
+  <tr><td>Hapus produk — konfirmasi warning count</td><td>Aktif</td></tr>
+  <tr><td>Hapus produk — bulk delete aktif</td><td>Ya</td></tr>
+</table>
+
+<h1>24. Template Email (CRUD)</h1>
+<h3>24.1 Email Pengirim</h3>
+<table>
+  <tr><th>Email</th><th>Kategori</th><th>Fungsi</th></tr>
+  <tr><td><code>security@mercatoria.id</code></td><td>Keamanan akun</td><td>Verifikasi email, reset password, OTP admin, blokir, hapus akun</td></tr>
+  <tr><td><code>info@mercatoria.id</code></td><td>Notifikasi otomatis</td><td>Reminder, status order, koin, voucher, ulang tahun, referral, state change</td></tr>
+  <tr><td><code>cs@mercatoria.id</code></td><td>Komunikasi 2 arah</td><td>CS reply, follow-up, notif admin payment</td></tr>
+</table>
+
+<h3>24.2 Daftar Template Email (27 template)</h3>
+<table>
+  <tr><th>Kode</th><th>Nama</th><th>Dari</th><th>Trigger</th></tr>
+  <tr><td><code>verify_email</code></td><td>Verifikasi Email</td><td>security@</td><td>Registrasi</td></tr>
+  <tr><td><code>reset_password</code></td><td>Reset Password</td><td>security@</td><td>Minta reset</td></tr>
+  <tr><td><code>admin_otp</code></td><td>OTP Admin</td><td>security@</td><td>Login admin</td></tr>
+  <tr><td><code>spammer_blocked</code></td><td>Akun Diblokir</td><td>security@</td><td>3x daftar tanpa belanja</td></tr>
+  <tr><td><code>crush_deleted</code></td><td>Akun Crush Dihapus</td><td>security@</td><td>Auto-delete 30 hari</td></tr>
+  <tr><td><code>welcome</code></td><td>Selamat Datang</td><td>info@</td><td>Verifikasi email</td></tr>
+  <tr><td><code>order_created</code></td><td>Order Dibuat</td><td>info@</td><td>Checkout</td></tr>
+  <tr><td><code>payment_verified</code></td><td>Pembayaran Terverifikasi</td><td>info@</td><td>Admin verifikasi</td></tr>
+  <tr><td><code>payment_rejected</code></td><td>Pembayaran Ditolak</td><td>info@</td><td>Admin tolak</td></tr>
+  <tr><td><code>order_status_changed</code></td><td>Status Order Berubah</td><td>info@</td><td>Admin update status</td></tr>
+  <tr><td><code>order_completed</code></td><td>Order Selesai</td><td>info@</td><td>Status Selesai</td></tr>
+  <tr><td><code>settlement_reminder</code></td><td>Reminder Pelunasan (H-7)</td><td>info@</td><td>Status Menunggu Pelunasan</td></tr>
+  <tr><td><code>order_hangus</code></td><td>Order Hangus</td><td>info@</td><td>Lewat 7 hari → Hangus</td></tr>
+  <tr><td><code>cart_reminder</code></td><td>Reminder Cart</td><td>info@</td><td>Setiap 30 menit</td></tr>
+  <tr><td><code>coin_earned</code></td><td>Koin Bertambah</td><td>info@</td><td>User dapat koin</td></tr>
+  <tr><td><code>coin_expiring</code></td><td>Koin Akan Expired</td><td>info@</td><td>H-30/H-7/H-1</td></tr>
+  <tr><td><code>voucher_received</code></td><td>Voucher Diterima</td><td>info@</td><td>User dapat voucher</td></tr>
+  <tr><td><code>voucher_expiring</code></td><td>Voucher Akan Expired</td><td>info@</td><td>H-7</td></tr>
+  <tr><td><code>birthday_reward</code></td><td>Bonus Ulang Tahun</td><td>info@</td><td>Hari ulang tahun</td></tr>
+  <tr><td><code>referral_reward</code></td><td>Bonus Referral</td><td>info@</td><td>Referee selesaikan order pertama</td></tr>
+  <tr><td><code>referee_reward</code></td><td>Bonus Referee</td><td>info@</td><td>Pembayaran pertama verified</td></tr>
+  <tr><td><code>state_warning_h7</code></td><td>Peringatan H-7 State Change</td><td>info@</td><td>H-7 sebelum state berubah</td></tr>
+  <tr><td><code>state_changed</code></td><td>State Berubah</td><td>info@</td><td>State berubah</td></tr>
+  <tr><td><code>cs_reply</code></td><td>Balasan CS</td><td>cs@</td><td>Admin balas user</td></tr>
+  <tr><td><code>cs_followup</code></td><td>Follow-up Pesanan</td><td>cs@</td><td>Admin hubungi user</td></tr>
+  <tr><td><code>admin_payment_notification</code></td><td>Notif Admin — Pembayaran Masuk</td><td>cs@</td><td>User upload bukti</td></tr>
+  <tr><td><code>user_gift_notification</code></td><td>Gift dari Admin</td><td>info@</td><td>Admin kirim gift ke user</td></tr>
+</table>
+
+<h3>24.3 Fitur Template Email</h3>
+<ul>
+  <li>CRUD template</li>
+  <li>Editor rich text</li>
+  <li>Variable placeholder</li>
+  <li>Preview + Test send</li>
+  <li>Status aktif / nonaktif per template</li>
+  <li><strong>Global Toggle "Stop Kirim Email ke Customer" (Mode Maintenance / Testing)</strong> <span class="new">v4.6</span></li>
+  <li>Log pengiriman (termasuk status <code>suppressed</code> saat Mode Stop Email aktif)</li>
+</ul>
+
+<h3>24.5 Fitur Stop Kirim Email ke Customer (Global Email Kill-Switch) <span class="new">NEW v4.6</span></h3>
+<div class="note-info">
+<strong>Tujuan:</strong> Memungkinkan Admin menghentikan sementara seluruh pengiriman email ke Customer pada saat sedang melakukan <em>maintenance</em>, migrasi data, atau simulasi/testing transaksi di sistem live, sehingga email percobaan tidak masuk ke inbox pelanggan asli meskipun sistem tetap berjalan normal.
+</div>
+<table>
+  <tr><th>Aspek</th><th>Aturan &amp; Perilaku Sistem</th></tr>
+  <tr><td>Lokasi Pengaturan</td><td><code>/office/settings</code> → Tab <strong>Email</strong> (dilengkapi tombol shortcut cepat di halaman <code>/office/email-templates</code>).</td></tr>
+  <tr><td>Key Setting</td><td><code>pause_customer_emails</code> (boolean, default: <code>false</code> / Nonaktif).</td></tr>
+  <tr><td>Efek Saat Aktif (<code>true</code>)</td><td>• Seluruh proses bisnis di web (checkout, ubah status order, inject data, koin, voucher, Bell Notifikasi in-web) <strong>tetap berjalan 100% normal</strong>.<br>
+  • Semua pengiriman email keluar yang ditujukan ke Customer/Crush (baik dari <code>info@</code>, <code>cs@</code>, maupun <code>security@</code>) <strong>di-intercept (dihentikan) otomatis sebelum dikirim ke SMTP</strong>.<br>
+  • Setiap email yang dihentikan tetap dicatat ke tabel <code>email_logs</code> dengan status <code>suppressed_maintenance</code> agar Admin dapat memverifikasi bahwa trigger email di sistem sudah terpanggil dengan benar.</td></tr>
+  <tr><td>Pengecualian Wajib (Safety Guardrail)</td><td>• Email <strong>2FA OTP Admin (<code>admin_otp</code>)</strong> ke email Admin <strong>TETAP DIKIRIM</strong> agar Admin tidak terkunci (<em>locked out</em>) saat login ke <code>/office</code>.<br>
+  • Fitur <strong>"Test Send"</strong> manual dari halaman Template Email ke alamat email internal Admin tetap diizinkan.</td></tr>
+  <tr><td>Indikator Anti-Lupa di Topbar Admin</td><td>Selama <code>pause_customer_emails = true</code>, Topbar di seluruh halaman <code>/office</code> wajib menampilkan badge/banner peringatan mencolok: <code>🔇 STOP EMAIL CUSTOMER AKTIF (Mode Testing/Maintenance) [Matikan]</code> agar Admin tidak lupa mengaktifkannya kembali setelah selesai pengecekan.</td></tr>
+  <tr><td>Audit Trail</td><td>Setiap kali toggle diaktifkan atau dimatikan oleh Admin, aksi tersebut wajib tercatat di <code>admin_logs</code> dan mengirim event GA4 <code>admin_toggle_customer_email</code>.</td></tr>
+</table>
+
+<h3>24.4 Variable Standar</h3>
+<table>
+  <tr><th>Variable</th><th>Keterangan</th></tr>
+  <tr><td><code>{{nama_user}}</code></td><td>Nama lengkap user</td></tr>
+  <tr><td><code>{{email}}</code></td><td>Email user</td></tr>
+  <tr><td><code>{{no_hp}}</code></td><td>No HP user</td></tr>
+  <tr><td><code>{{no_order}}</code></td><td>No order</td></tr>
+  <tr><td><code>{{total}}</code></td><td>Total transaksi</td></tr>
+  <tr><td><code>{{status}}</code></td><td>Status order</td></tr>
+  <tr><td><code>{{state}}</code></td><td>State user</td></tr>
+  <tr><td><code>{{link}}</code></td><td>Link aksi</td></tr>
+  <tr><td><code>{{tanggal}}</code></td><td>Tanggal sekarang</td></tr>
+  <tr><td><code>{{nama_toko}}</code></td><td>Mercatoria</td></tr>
+</table>
+
+<h1>25. CMS Halaman Statis</h1>
+<p>Admin bisa CRUD halaman statis:</p>
+<ul>
+  <li>Tentang Kami</li>
+  <li>FAQ (pakai accordion)</li>
+  <li>Cara Belanja</li>
+  <li>TNC (Syarat &amp; Ketentuan)</li>
+  <li>Kebijakan Privasi</li>
+  <li>Reseller (future v1.1)</li>
+  <li>Halaman custom lainnya</li>
+</ul>
+<p>Field: judul, slug, konten (rich text), status (draft/publish), meta SEO.</p>
+<p>URL: <code>/{slug}</code></p>
+
+<h1>26. Preorder Builder (MVP)</h1>
+<p>Admin bisa buat halaman preorder custom pakai drag &amp; drop builder.</p>
+<h3>Elemen yang Tersedia</h3>
+<ul>
+  <li>Text (heading, paragraph)</li>
+  <li>Image</li>
+  <li>Divider</li>
+  <li>Kolom (1/2/3/4)</li>
+  <li>Spacer</li>
+  <li>HTML custom</li>
+</ul>
+<h3>Fitur</h3>
+<ul>
+  <li>Simpan sebagai halaman preorder baru</li>
+  <li>URL: <code>/preorder-baru</code></li>
+  <li>Publish / unpublish</li>
+  <li>SEO meta</li>
+</ul>
+<p><strong>Library:</strong> GrapesJS.</p>
+
+<h1>27. Rank Pelanggan &amp; Kirim Gift</h1>
+<h3>27.1 Rank Pelanggan</h3>
+<p><strong>Hanya untuk role Customer</strong> (Crush tidak termasuk).</p>
+<ul>
+  <li>Nama pelanggan</li>
+  <li>Total pesanan</li>
+  <li>Total pengeluaran</li>
+  <li>AOV (Average Order Value)</li>
+</ul>
+<p>Fitur: sortir, filter, export CSV.</p>
+
+<h3>27.2 Kirim Gift ke User Tertentu</h3>
+<p>Admin bisa kirim gift langsung ke user dari:</p>
+<ul>
+  <li><strong>Halaman Rank Pelanggan</strong> — klik tombol aksi di setiap row</li>
+  <li><strong>Halaman User Detail</strong> — tombol "Kirim Gift"</li>
+</ul>
+<p><strong>Jenis gift:</strong></p>
+<ul>
+  <li>Voucher (pilih dari template atau buat baru)</li>
+  <li>Koin (input nominal)</li>
+  <li>Gift Box Special (opsional — kirim barang fisik)</li>
+</ul>
+<p><strong>Flow kirim gift:</strong></p>
+<ol>
+  <li>Admin klik "Kirim Gift" di user</li>
+  <li>Pilih jenis gift (Voucher / Koin / Gift Box)</li>
+  <li>Isi detail (nominal koin, kode voucher, catatan)</li>
+  <li>Klik Kirim → user dapat notifikasi <strong>email + Bell Notifikasi User</strong></li>
+  <li>Tercatat di <code>admin_logs</code> dan <code>user_notifications</code></li>
+</ol>
+
+<h1>28. Laporan Penjualan</h1>
+<ul>
+  <li><strong>Total DP Diterima</strong> — uang masuk dari DP</li>
+  <li><strong>Total Pelunasan</strong> — uang masuk dari pelunasan</li>
+  <li><strong>Total Penjualan</strong> — hanya order status Selesai</li>
+  <li><strong>Outstanding</strong> — DP belum lunas</li>
+  <li><strong>Hangus</strong> — uang masuk tanpa barang keluar (DP atau FP)</li>
+</ul>
+<p>Tabel <code>payments</code> field <code>type</code>: <code>dp</code> / <code>full</code> / <code>settlement</code> / <code>refund</code>.</p>
+
+<h1>29. SEO</h1>
+<table>
+  <tr><th>Paket</th><th>Fungsi</th></tr>
+  <tr><td><code>rankbeam/laravel-seo</code> atau <code>elegantly/laravel-seo</code></td><td>Meta tags, canonical, Open Graph, JSON-LD</td></tr>
+  <tr><td><code>spatie/laravel-sitemap</code></td><td>Auto-generate sitemap.xml</td></tr>
+  <tr><td><code>fuelviews/laravel-robots-txt</code></td><td>Kelola robots.txt</td></tr>
+</table>
+
+<h3>Meta Tags Dinamis</h3>
+<ul>
+  <li>Homepage, Halaman game, Halaman developer, Detail produk, Halaman statis, Halaman preorder</li>
+</ul>
+
+<h3>Open Graph (WAJIB)</h3>
+<ul>
+  <li><code>og:title</code> · <code>og:description</code> · <code>og:image</code> · <code>og:url</code> · <code>og:type</code></li>
+  <li><code>twitter:card</code> · <code>twitter:title</code> · <code>twitter:description</code> · <code>twitter:image</code></li>
+</ul>
+
+<h3>JSON-LD, Sitemap, robots.txt</h3>
+<ul>
+  <li>JSON-LD: Product schema, Organization, BreadcrumbList</li>
+  <li>Sitemap: auto-generate</li>
+  <li>robots.txt: disallow /office, /cart, /checkout, /profile, /orders, /profile/notifications</li>
+</ul>
+
+<h3>GA4</h3>
+<div class="note-info">
+<strong>GA4 only, tanpa GTM.</strong> Simpan <code>ga4_measurement_id</code> di tabel <code>settings</code>. Inject script GA4 di layout master, hanya render kalau ID terisi. Event tracking via <code>gtag('event', ...)</code>.
+</div>
+
+<h1>30. UI/UX Rules</h1>
+<table>
+  <tr><th>Rule</th><th>Detail</th></tr>
+  <tr><td>No AI Slop</td><td>UI custom, bukan template generic</td></tr>
+  <tr><td>No browser default popup</td><td>Semua pakai modal</td></tr>
+  <tr><td>Scroll to top</td><td>Tombol muncul saat scroll &gt; 400px</td></tr>
+  <tr><td>WA floating button</td><td>Icon WA klik → wa.me/admin</td></tr>
+  <tr><td>Bulk selection</td><td>Checkbox di cart</td></tr>
+  <tr><td>Filter lengkap</td><td>Di katalog &amp; search</td></tr>
+  <tr><td>Modal only</td><td>Confirm, alert, info semua modal</td></tr>
+  <tr><td>Button Auth</td><td>Hitam (#000000) + text putih</td></tr>
+  <tr><td>Bell Notifikasi User</td><td>Sticky di navbar kanan + header dashboard, badge merah</td></tr>
+  <tr><td>Badge 2-Tier</td><td>Role/State Badge + Tier Badge di header dashboard, navbar, rank, invoice</td></tr>
+  <tr><td>Hapus Produk = Hard Delete</td><td>Modal konfirmasi + warning count order. Bulk bisa. Restore tidak bisa.</td></tr>
+  <tr><td>Order Item baca dari Snapshot</td><td>SELALU baca dari snapshot, gak pernah dari produk. Gambar pakai copy.</td></tr>
+  <tr><td><strong>Customer cuma lihat harga final</strong> <span class="new">v4.4</span></td><td><strong>Breakdown ongkir &amp; profit cuma internal admin. Customer cuma lihat 1 harga bersih.</strong></td></tr>
+  <tr><td><strong>Bebas Copy Teks, Kunci Download Foto + Watermark</strong> <span class="new">v4.6</span></td><td><strong>User bebas blok &amp; copy-paste kalimat/kata di seluruh web, tetapi klik-kanan/drag/save foto diblokir + setiap foto produk/varian/deskripsi memiliki watermark permanen Mercatoria.</strong></td></tr>
+</table>
+
+<h1>31. Non-Functional Requirements</h1>
+<ul>
+  <li>Performa: katalog load &lt; 3 detik</li>
+  <li>Keamanan: HTTPS, RBAC, audit log, enkripsi bukti, Cloudflare Turnstile</li>
+  <li>Skalabilitas: 200–300 user aktif, 30–50 koneksi/hari</li>
+  <li>Compliance: UU PDP Indonesia</li>
+  <li>Bahasa: Indonesia</li>
+  <li>Timezone: WIB (GMT+7)</li>
+  <li>UI mobile &amp; desktop dibedakan</li>
+  <li>Stack: Laravel + MySQL + queue + storage</li>
+  <li>Image: intervention/image v3 + WebP</li>
+  <li>SEO: rankbeam/laravel-seo + spatie/laravel-sitemap + Open Graph</li>
+  <li>Analytics: GA4 only (tanpa GTM)</li>
+  <li>Web only (semi-auto, no API publik)</li>
+  <li>Tidak ada guest checkout</li>
+  <li>Activity log retention 30 hari (auto-purge)</li>
+  <li>Notifikasi user retention 90 hari (auto-purge)</li>
+  <li>Snapshot order item retention: PERMANEN</li>
+</ul>
+
+<h1>32. Risiko &amp; Mitigasi <span class="rev">REV v4.4</span></h1>
+<table>
+  <tr><th>Risiko</th><th>Mitigasi</th></tr>
+  <tr><td>Bukti bayar palsu</td><td>Validasi admin, cek mutasi</td></tr>
+  <tr><td>Verifikasi bottleneck</td><td>SLA 1×24 jam</td></tr>
+  <tr><td>Stok kosong</td><td>Refund full/partial</td></tr>
+  <tr><td>Bea cukai</td><td>Komunikasi proaktif</td></tr>
+  <tr><td>Kurs berubah</td><td>Snapshot di order</td></tr>
+  <tr><td>Rekening pribadi</td><td>Pisahkan pembukuan</td></tr>
+  <tr><td>DP tidak dilunasi</td><td>Timer 7 hari → Hangus</td></tr>
+  <tr><td>Crush spam</td><td>Auto-delete 30 hari + spammer list</td></tr>
+  <tr><td>Brute force</td><td>Turnstile + rate limit + lockout + 2FA</td></tr>
+  <tr><td>False positive auto-ban</td><td>Buyer Protection</td></tr>
+  <tr><td>Storage penuh bukti transfer</td><td>Auto-delete file saat Selesai/Refunded/Hangus</td></tr>
+  <tr><td>Storage penuh foto produk</td><td>Auto-delete foto lama saat override</td></tr>
+  <tr><td>Storage penuh log</td><td>Auto-purge 30 hari</td></tr>
+  <tr><td>SEO tidak optimal</td><td>Bot Whitelist + Open Graph + JSON-LD + sitemap</td></tr>
+  <tr><td>User kaget ke-lock</td><td>Notifikasi H-7</td></tr>
+  <tr><td>Diskon salah input</td><td>Validasi: diskon ≤ harga jual</td></tr>
+  <tr><td>User tidak buka email</td><td>Bell Notifikasi User sebagai kanal in-web utama</td></tr>
+  <tr><td>Salah upload deskripsi panjang</td><td>Preview admin + tombol "Lihat Full"</td></tr>
+  <tr><td>Admin lupa info ke customer</td><td>Note to Customer + push ke bell user</td></tr>
+  <tr><td>User luar Indonesia farming koin share</td><td>Batasi share reward hanya IP Indonesia</td></tr>
+  <tr><td>Admin salah hapus produk permanen</td><td>Modal konfirmasi + warning count order</td></tr>
+  <tr><td>Storage snapshot bengkak</td><td>~200 KB per order item, cleanup opsional v1.1</td></tr>
+  <tr><td>Copy gambar gagal saat checkout</td><td>Rollback transaction, order gagal dibuat</td></tr>
+  <tr style="background:#FFF3E0;"><td><strong>Ongkir internasional naik tiba-tiba</strong> <span class="new">v4.4</span></td><td><strong>Setting ongkir/kg bisa diubah admin kapan saja. Snapshot freeze harga order lama. Komunikasi proaktif ke customer untuk order baru.</strong></td></tr>
+  <tr style="background:#FFF3E0;"><td><strong>Berat produk salah input admin</strong> <span class="new">v4.4</span></td><td><strong>Validasi: berat &gt; 0. Preview berat di detail produk admin. Bulk edit "Set Same" untuk 30–50 varian.</strong></td></tr>
+  <tr style="background:#FFF3E0;"><td><strong>Store tier salah setup</strong> <span class="new">v4.4</span></td><td><strong>Validasi: min_belanja &gt; 0 (kalau ongkir &gt; 0). Preview perhitungan ongkir di form produk.</strong></td></tr>
+  <tr style="background:#FFF3E0;"><td><strong>Pencurian foto produk, varian &amp; gambar deskripsi panjang hasil kurasi Admin oleh pihak lain</strong> <span class="new">v4.6</span></td><td><strong>3-Layer Image Protection: Scoped JS/CSS Image Shield (tanpa mematikan copy teks) + Transparent Overlay + Server-Side Burned Watermark (<code>intervention/image</code> v3) &amp; Anti-Hotlink.</strong></td></tr>
+  <tr style="background:#FFF3E0;"><td><strong>Email testing/percobaan saat maintenance terkirim ke inbox customer asli</strong> <span class="new">v4.6</span></td><td><strong>Global Toggle "Stop Kirim Email ke Customer" (<code>pause_customer_emails</code>) di <code>/office/settings</code> Tab Email + banner pengingat di Topbar Admin. Sistem tetap jalan &amp; mencatat ke <code>email_logs</code> (status <code>suppressed</code>) tanpa mengirim email ke customer.</strong></td></tr>
+</table>
+
+<h1>33. Timeline</h1>
+<table>
+  <tr><th>Fase</th><th>Durasi</th></tr>
+  <tr><td>Discovery</td><td>Minggu 1–2</td></tr>
+  <tr><td>Desain UI/UX</td><td>Minggu 2–4</td></tr>
+  <tr><td>Development MVP</td><td>Minggu 4–10</td></tr>
+  <tr><td>Setup SMTP + GA4 + Turnstile + SEO + Cron</td><td>Paralel</td></tr>
+  <tr><td>Beta tertutup</td><td>Minggu 11</td></tr>
+  <tr><td>Launch publik</td><td>Minggu 12</td></tr>
+  <tr><td>v1.1 (Win-Back, Grace 30 hari, Reseller, Preferensi Notifikasi, Web Push, Customer Reply, Soft Delete)</td><td>Setelah launch</td></tr>
+</table>
+
+<h1>34. Refund Policy</h1>
+<ul>
+  <li>Full Refund: semua barang kosong</li>
+  <li>Partial Refund: min 1 barang kosong</li>
+  <li>Manual admin</li>
+  <li><strong>Refund 3 Event Notif</strong>:
+    <ul>
+      <li><code>refund_requested</code> — "Refund pesanan #MER-XXXX sedang diproses"</li>
+      <li><code>refund_completed</code> — "Refund pesanan #MER-XXXX selesai. Dana sudah ditransfer."</li>
+      <li><code>refund_rejected</code> — "Refund pesanan #MER-XXXX ditolak. Alasan: XXX"</li>
+    </ul>
+  </li>
+</ul>
+<p><strong>Hangus:</strong> auto-cancel 7 hari setelah "Sampai WH Indonesia". <strong>TANPA REFUND.</strong> Barang jadi milik Mercatoria.</p>
+
+<h1>35. Entity Relationship <span class="rev">REV v4.4</span></h1>
+<pre>users ──┬── crushes (extension role crush, HARD DELETE 30 hari)
+        ├── customers (extension role customer, permanen)
+        │    └── current_state (MVP/Ex/ONS/Blocked) + state_updated_at
+        │    └── tier (silver/gold/platinum) + total_belanja
+        ├── orders ──┬── order_items ── order_item_snapshots
+        │            ├── payments
+        │            ├── order_status_logs
+        │            └── refunds
+        │    └── note_to_customer + admin_note
+        ├── coins, coin_transactions
+        ├── user_vouchers
+        ├── referrals, share_clicks
+        ├── product_views
+        ├── cart_reminders
+        ├── user_notifications
+        └── last_login
+
+# ─── KATALOG (v4.4) ───────────────────────────────────────────────────
+developers ↔ games ↔ products ──┬── product_images
+                                ├── product_variants ── variant_combinations ── variant_images
+                                └── product_related
+
+stores (BARU v4.4) ← tier ongkir lokal CN
+  ├── id
+  ├── name (tier name)               ← "Official HoYoverse"
+  ├── min_belanja_rmb                ← 100
+  └── ongkir_rmb                     ← 7 (0 = gratis selalu)
+
+games.default_store_id  ← FK nullable ke stores
+products.store_id        ← FK nullable ke stores (override)
+products.weight_gram     ← integer nullable (BARU v4.4)
+product_variants.weight_gram ← integer nullable (BARU v4.4, override)
+
+products juga punya:
+  ├── diskon_amount, discount_start, discount_end
+  └── sold_count (counter)
+
+# ─── SNAPSHOT (v4.4) ──────────────────────────────────────────────────
+order_items ── order_item_snapshots
+  ├── product_id_audit, variant_id_audit
+  ├── product_name, product_sku, variant_name, variant_sku
+  ├── base_price, discount_amount, final_price, qty, subtotal
+  ├── product_image_path, variant_image_path
+  ├── weight_gram (BARU v4.4)            ← berat saat order
+  ├── store_name (BARU v4.4)             ← nama toko saat order
+  ├── ongkir_lokal_cn_idr (BARU v4.4)    ← komponen ongkir 1
+  ├── ongkir_cn_btm_idr (BARU v4.4)      ← komponen ongkir 2
+  ├── ongkir_btm_jkt_idr (BARU v4.4)     ← komponen ongkir 3
+  ├── ongkir_total_idr (BARU v4.4)       ← sum komponen
+  └── snapshot_at
+
+# ─── SPAMMER, LOG, KONTEN ─────────────────────────────────────────────
+spammers, spammer_ips, spammer_logs
+activity_logs, auth_logs, admin_logs
+payment_methods, email_templates, email_logs
+pages, preorder_pages, hero_slides, announcements
+merch_categories, tags, vouchers, user_gifts
+admin_notifications, visitor_tracking, settings</pre>
+
+<h1>36. Skema Halaman <span class="rev">REV v4.4</span></h1>
+<h3>Publik (Guest boleh akses)</h3>
+<pre>/                          → Home
+/login, /register
+/register?ref=XXX
+/tentang-kami, /faq, /cara-belanja, /tnc, /kebijakan-privasi</pre>
+
+<h3>Butuh Login</h3>
+<pre>/{game-slug}               → Katalog game
+/{game-slug}/kategori/{cat}
+/developer/{developer-slug}
+/{game-slug}/{product-slug}
+/search?q=...
+/cart, /checkout
+/orders, /orders/{id}, /orders/{id}/invoice
+/profile, /profile/koin, /profile/undang, /profile/edit, /profile/wallet
+/profile/notifications</pre>
+
+<h3>Admin (/office)</h3>
+<pre>/office                    → Dashboard
+/office/games, /office/developers, /office/products
+/office/merch-categories, /office/tags
+/office/stores             → CRUD Store / Tier Ongkir ⭐ BARU v4.4
+/office/orders, /office/orders/{id}
+/office/orders/{id}/invoice, /office/orders/{id}/packing-list
+/office/users, /office/users/create
+/office/products/create
+/office/spammers
+/office/payments, /office/payment-methods
+/office/refunds, /office/vouchers
+/office/email-templates, /office/pages, /office/preorder
+/office/seo, /office/marketing
+/office/activity-logs, /office/auth-logs, /office/admin-logs
+/office/customers/rank, /office/reports, /office/settings</pre>
+
+<h1>37. Integrasi &amp; Hosting</h1>
+<table>
+  <tr><th>Layanan</th><th>Tool</th></tr>
+  <tr><td>Payment</td><td>Manual (BCA/QRIS/ShopeePay)</td></tr>
+  <tr><td>Email security / notifikasi / CS</td><td>Hostinger SMTP (3 email)</td></tr>
+  <tr><td>Analytics</td><td>GA4 only</td></tr>
+  <tr><td>Security</td><td>Cloudflare Turnstile</td></tr>
+  <tr><td>2FA Admin</td><td>Email OTP</td></tr>
+  <tr><td>Image</td><td>intervention/image v3 + WebP</td></tr>
+  <tr><td>SEO</td><td>rankbeam/laravel-seo + spatie/laravel-sitemap + Open Graph</td></tr>
+  <tr><td>Activity Log</td><td>spatie/laravel-activitylog (opsional)</td></tr>
+  <tr><td>Preorder Builder</td><td>GrapesJS</td></tr>
+  <tr><td>Logistik</td><td>Toco / Shopee (manual)</td></tr>
+  <tr><td>Invoice PDF</td><td>barryvdh/laravel-dompdf</td></tr>
+  <tr><td>Bell Notifikasi User</td><td>Custom Laravel Notification + polling AJAX 60 detik</td></tr>
+  <tr><td>Geo-IP (Share)</td><td>stevebauman/location (country detection)</td></tr>
+</table>
+
+<h3>Schedule Job di Hostinger</h3>
+<pre>Cron Job 1 — Laravel Scheduler (wajib):
+Command: /usr/bin/php /home/u[username]/domains/mercatoria.id/public_html/artisan schedule:run >> /dev/null 2>&1
+
+Cron Job 2 — Queue Worker (opsional):
+Minute: */5
+Command: /usr/bin/php .../artisan queue:work --stop-when-empty >> /dev/null 2>&1
+
+Scheduled Tasks:
+- log:purge                → tiap hari 03:00 WIB
+- notification:purge       → tiap hari 03:30 WIB
+- user:update-state        → tiap hari 02:00 WIB
+- user:purge-crush         → tiap hari 04:00 WIB
+- cart:send-reminder       → tiap 30 menit
+- coin:expiry-notify       → tiap hari
+- user:birthday-bonus      → tiap hari
+- order:hangus-expired     → tiap hari
+- spammer:recheck-grace    → tiap hari
+- customer:update-tier     → tiap hari 02:30 WIB
+- sitemap:generate         → tiap hari</pre>
+
+<h1>38. GA4 Events</h1>
+<h3>User</h3>
+<p><code>sign_up</code> · <code>login</code> · <code>email_verified</code> · <code>role_upgraded_to_customer</code> · <code>crush_auto_deleted</code> · <code>referral_click</code> · <code>referral_signup</code> · <code>referral_reward_given</code> · <code>guest_redirected_to_login</code> · <code>view_limit_reached</code> · <code>spammer_added</code> · <code>spammer_unblocked</code> · <code>mvp_tier_upgraded</code> · <code>user_state_changed</code> · <code>state_warning_h7_sent</code> · <code>blocked_user_unblocked</code> · <code>view_counter_reset</code></p>
+
+<h3>Katalog</h3>
+<p><code>view_home</code> · <code>view_game_catalog</code> · <code>view_developer_catalog</code> · <code>view_product</code> · <code>search</code> · <code>filter_applied</code> · <code>view_merch_category</code> · <code>view_penawaran_terbaik</code> · <code>view_terakhir_dilihat</code> · <code>filter_price_applied</code> · <code>sort_changed</code> · <code>pagination_changed</code></p>
+
+<h3>Transaksi</h3>
+<p><code>add_to_cart</code> · <code>view_cart</code> · <code>begin_checkout</code> · <code>add_payment_info</code> · <code>freeze_price</code> · <code>purchase</code> · <code>upload_payment_proof</code> · <code>cart_reminder_sent</code> · <code>checkout_with_note</code> · <code>download_invoice</code> · <code>order_hangus</code></p>
+
+<h3>Koin &amp; Voucher</h3>
+<p><code>coin_earned</code> · <code>coin_used</code> · <code>coin_expired</code> · <code>view_wallet</code> · <code>view_koin_saya</code> · <code>view_undang_teman</code> · <code>view_voucher</code> · <code>use_voucher</code> · <code>voucher_expired</code> · <code>birthday_reward_received</code></p>
+
+<h3>Share</h3>
+<p><code>share_product</code> · <code>share_link_click</code> · <code>share_reward_granted</code> · <code>share_reward_skipped_non_id</code></p>
+
+<h3>Order</h3>
+<p><code>view_orders</code> · <code>view_order_detail</code> · <code>view_order_timeline</code> · <code>payment_method_viewed</code> · <code>bulk_status_update</code> · <code>click_bayar_unggah_bukti</code></p>
+
+<h3>Edukasi</h3>
+<p><code>view_cara_belanja_modal</code> · <code>click_cara_belanja_guide</code></p>
+
+<h3>Referral Tracking</h3>
+<p><code>first_visit</code> · <code>referral_source_captured</code></p>
+
+<h3>Bot &amp; Security</h3>
+<p><code>bot_crawler_verified</code> · <code>bot_crawler_blocked</code> · <code>inject_data_used</code> · <code>forever_delete_used</code></p>
+
+<h3>Admin</h3>
+<p><code>admin_download_packing_list</code> · <code>admin_send_gift</code> · <code>admin_bulk_status_update</code> · <code>admin_notification_clicked</code> · <code>admin_search_used</code> · <code>admin_send_note_to_customer</code> · <code>admin_delete_product</code> · <code>admin_bulk_delete_product</code> · <code>admin_bulk_edit_weight</code> <span class="new">v4.4</span> · <code>admin_store_crud</code> <span class="new">v4.4</span></p>
+
+<h3>Bell Notifikasi User</h3>
+<p><code>user_notification_received</code> · <code>user_notification_opened_dropdown</code> · <code>user_notification_clicked</code> · <code>user_notification_mark_all_read</code> · <code>user_notification_deleted</code> · <code>user_notification_view_all_page</code> · <code>user_notification_filtered</code> · <code>user_notification_toast_shown</code> · <code>user_notification_toast_clicked</code></p>
+
+<h1>39. Activity Log System</h1>
+<h3>39.1 Tiga Tabel Log</h3>
+<table>
+  <tr><th>Log Type</th><th>Isi</th><th>Retensi</th></tr>
+  <tr><td><code>activity_logs</code></td><td>Aktivitas user</td><td>30 hari</td></tr>
+  <tr><td><code>auth_logs</code></td><td>Login attempt, sukses, logout</td><td>30 hari</td></tr>
+  <tr><td><code>admin_logs</code></td><td>Aksi admin</td><td>30 hari</td></tr>
+</table>
+
+<h3>39.2 Struktur <code>activity_logs</code></h3>
+<p><code>id, user_id (nullable), action, description, url, ip_address, user_agent, metadata (json), created_at</code></p>
+
+<h3>39.3 Struktur <code>auth_logs</code></h3>
+<p><code>id, user_id (nullable), email_attempt, action, reason (nullable), ip_address, user_agent, created_at</code></p>
+
+<h3>39.4 Struktur <code>admin_logs</code></h3>
+<p><code>id, admin_id, action, model, model_id, old_value (json), new_value (json), description, ip_address, created_at</code></p>
+
+<h3>39.5 Daftar Action (activity_logs)</h3>
+<p><code>register</code> · <code>email_verified</code> · <code>password_reset_request</code> · <code>password_reset_success</code> · <code>view_profile</code> · <code>edit_profile</code> · <code>change_password</code> · <code>view_home</code> · <code>view_game_catalog</code> · <code>view_developer_catalog</code> · <code>view_product</code> · <code>search</code> · <code>filter_applied</code> · <code>add_to_cart</code> · <code>remove_from_cart</code> · <code>view_cart</code> · <code>begin_checkout</code> · <code>freeze_price</code> · <code>order_created</code> · <code>upload_payment_proof</code> · <code>view_wallet</code> · <code>view_koin_saya</code> · <code>view_undang_teman</code> · <code>use_coin</code> · <code>use_voucher</code> · <code>share_product</code> · <code>click_referral_link</code> · <code>spammer_blocked</code> · <code>bot_crawler_verified</code> · <code>state_changed</code> · <code>view_counter_reset</code> · <code>blocked_user_unblocked</code> · <code>download_invoice</code> · <code>view_notifications</code> · <code>snapshot_created</code> · <code>receive_note_from_admin</code></p>
+
+<h3>39.6 Halaman Admin Log</h3>
+<ul>
+  <li><strong>/office/activity-logs</strong> — filter, search, export CSV, group by session, auto-purge 30 hari</li>
+  <li><strong>/office/auth-logs</strong> — filter, highlight login gagal, export CSV</li>
+  <li><strong>/office/admin-logs</strong> — filter, detail old vs new value, export CSV</li>
+</ul>
+
+<h3>39.7 Auto-Purge</h3>
+<p><code>php artisan log:purge</code> — hapus log &gt; 30 hari, tiap hari jam 03:00 WIB</p>
+<p><code>php artisan notification:purge</code> — hapus notifikasi user &gt; 90 hari, tiap hari jam 03:30 WIB</p>
+
+<h3>39.8 Scheduled Job: State Update</h3>
+<p><code>php artisan user:update-state</code> — Loop semua Customer, hitung state, update, kirim notif H-7. Tiap hari jam 02:00 WIB.</p>
+
+<h3>39.9 Scheduled Job: Auto-Delete Crush</h3>
+<p><code>php artisan user:purge-crush</code> — Loop semua Crush, cek 30 hari, HARD DELETE. Tiap hari jam 04:00 WIB.</p>
+
+<h3>39.10 Scheduled Job: Order Hangus</h3>
+<p><code>php artisan order:hangus-expired</code> — Loop order dengan status "Menunggu Pelunasan" &gt; 7 hari, ubah ke "Hangus", kirim notif, auto-delete bukti. Tiap hari jam 05:00 WIB.</p>
+
+<h1>40. Home Layout &amp; UI Components</h1>
+<h3>40.1 Announcement Bar</h3>
+<ul>
+  <li>Muncul di paling atas, sebelum navbar</li>
+  <li>Konten: kode promo + nominal + minimum belanja (editable admin)</li>
+  <li>Dismissible (klik × → hidden 7 hari, localStorage)</li>
+  <li>Aktif/nonaktif bisa di-toggle admin</li>
+</ul>
+
+<h3>40.2 Hero Carousel</h3>
+<ul>
+  <li>Full width, di bawah navbar</li>
+  <li>Auto-slide 5 detik</li>
+  <li>Unlimited slide</li>
+  <li>Dot indicator, panah kiri/kanan, swipe mobile</li>
+  <li>Pause on hover</li>
+  <li>Setiap slide: gambar + URL tujuan</li>
+  <li>Admin CRUD slide</li>
+</ul>
+
+<h3>40.3 Home Layout</h3>
+<ol>
+  <li>Announcement Bar</li>
+  <li>Navbar</li>
+  <li>Hero Carousel</li>
+  <li>Section "Jelajahi Game Favoritmu"</li>
+  <li>Section "Penawaran Terbaik"</li>
+  <li>Section "Merch Baru"</li>
+  <li>Footer</li>
+</ol>
+
+<h3>40.4 Section Game Favoritmu</h3>
+<ul>
+  <li>Data source: tabel <code>games</code></li>
+  <li>Urutan: Alfabetis (default)</li>
+  <li>Card: gambar + overlay gradient + nama game</li>
+  <li>Grid: 6/4/2 kolom (desktop/tablet/mobile)</li>
+  <li>Klik → katalog game</li>
+</ul>
+
+<h3>40.5 Section Penawaran Terbaik</h3>
+<ul>
+  <li>Data source: products dengan diskon aktif</li>
+  <li>Sort: <code>discount_amount DESC</code></li>
+  <li>5 produk default</li>
+  <li>Card: badge DISKON + gambar + nama + harga coret + harga diskon</li>
+</ul>
+
+<h3>40.6 Section Merch Baru</h3>
+<ul>
+  <li>Data source: products</li>
+  <li>Urutan: <code>created_at DESC</code></li>
+  <li>14 produk default (2 baris × 7 kolom)</li>
+  <li>Card: badge tag + gambar + nama + harga (atau diskon)</li>
+</ul>
+
+<h3>40.7 Button Variants</h3>
+<table>
+  <tr><th>Varian</th><th>BG</th><th>Text</th></tr>
+  <tr><td>Auth</td><td>#000000</td><td>#FFFFFF</td></tr>
+  <tr><td>Primary</td><td>#4FC3F7</td><td>#FFFFFF</td></tr>
+  <tr><td>Secondary</td><td>#FFFFFF</td><td>#212121</td></tr>
+  <tr><td>Ghost</td><td>Transparent</td><td>#4FC3F7</td></tr>
+  <tr><td>Danger</td><td>#E53935</td><td>#FFFFFF</td></tr>
+  <tr><td>Success</td><td>#43A047</td><td>#FFFFFF</td></tr>
+</table>
+
+<h3>40.8 Badge Produk</h3>
+<table>
+  <tr><th>Tipe</th><th>BG</th><th>Text</th></tr>
+  <tr><td>PRESALE</td><td>#FFC107</td><td>#000000</td></tr>
+  <tr><td>LIMITED</td><td>#E53935</td><td>#FFFFFF</td></tr>
+  <tr><td>DISKON</td><td>#E53935</td><td>#FFFFFF</td></tr>
+  <tr><td>NEW</td><td>#4FC3F7</td><td>#FFFFFF</td></tr>
+  <tr><td>KOSONG</td><td>#9E9E9E</td><td>#FFFFFF</td></tr>
+</table>
+
+<h3>40.9 Toast / Modal / Floating Buttons</h3>
+<ul>
+  <li>Toast: 4 tipe, auto-dismiss 3 detik, bisa stack</li>
+  <li>Modal: semua konfirmasi/alert/info pakai modal, bukan browser popup</li>
+  <li>Floating: Scroll to Top (muncul scroll &gt; 400px), WA Admin (selalu tampil)</li>
+</ul>
+
+<h3>40.10 Grid Responsive</h3>
+<table>
+  <tr><th>Section</th><th>Mobile</th><th>Tablet</th><th>Desktop</th></tr>
+  <tr><td>Game Grid</td><td>2</td><td>4</td><td>6</td></tr>
+  <tr><td>Merch Grid</td><td>2</td><td>5</td><td>7</td></tr>
+  <tr><td>Penawaran Terbaik</td><td>2</td><td>3</td><td>5</td></tr>
+  <tr><td>Katalog Grid (sidebar)</td><td>2</td><td>4</td><td>6</td></tr>
+  <tr><td>Produk Terkait</td><td>2.5</td><td>4</td><td>6</td></tr>
+  <tr><td>Footer</td><td>Accordion</td><td>3 kolom</td><td>5 kolom</td></tr>
+</table>
+
+<h3>40.11 Breakpoints &amp; Container</h3>
+<ul>
+  <li>Mobile: &lt; 768px, max-width 100%, padding 16px</li>
+  <li>Tablet: 768–1023px, max-width 720px, padding 24px</li>
+  <li>Desktop: ≥ 1024px, max-width 1200px, padding 32px</li>
+  <li>Wide: ≥ 1440px, max-width 1440px</li>
+</ul>
+
+<h1>41. Admin Notifikasi &amp; Search</h1>
+<h3>41.1 Bell Notifikasi Admin</h3>
+<ul>
+  <li>Icon 🔔 di topbar dengan badge jumlah belum dibaca</li>
+  <li>Event yang muncul:
+    <ul>
+      <li>Order baru (user checkout)</li>
+      <li>Bukti bayar diupload (butuh verifikasi)</li>
+      <li>Refund request</li>
+      <li>Spammer baru</li>
+      <li>Order nearing expiry — 7 hari lewat di status Menunggu Pelunasan</li>
+    </ul>
+  </li>
+  <li>Klik → dropdown list 10 notifikasi terbaru</li>
+  <li>Setiap item ada link ke halaman terkait</li>
+  <li>Tombol "Tandai semua dibaca"</li>
+  <li>Data source: tabel <code>admin_notifications</code></li>
+</ul>
+
+<h3>41.2 Search Admin</h3>
+<ul>
+  <li>Search box di topbar</li>
+  <li>Cari: Produk (nama/SKU), Order (no order/email), User (nama/email/HP)</li>
+  <li>Hasil dropdown: grouped by type</li>
+  <li>Klik hasil → langsung ke halaman terkait</li>
+</ul>
+
+<h3>41.3 Bell Notifikasi User (Ringkas)</h3>
+<div class="note-info">
+Detail lengkap Bell Notifikasi User ada di <strong>Section 43</strong>.
+</div>
+<table>
+  <tr><th>Aspek</th><th>Bell Admin</th><th>Bell User</th></tr>
+  <tr><td>Lokasi</td><td>Topbar /office</td><td>Navbar frontend + Header Dashboard</td></tr>
+  <tr><td>Data source</td><td><code>admin_notifications</code></td><td><code>user_notifications</code></td></tr>
+  <tr><td>Event</td><td>Order baru, bukti bayar, refund, spammer, order nearing expiry</td><td>Order status, payment, koin, voucher, state, referral, cart, gift, birthday, system, order_note</td></tr>
+  <tr><td>Halaman lengkap</td><td>—</td><td><code>/profile/notifications</code></td></tr>
+  <tr><td>Retention</td><td>30 hari</td><td>90 hari</td></tr>
+  <tr><td>Polling</td><td>60 detik</td><td>60 detik</td></tr>
+</table>
+
+<h1>42. Future Development (v1.1+)</h1>
+<table>
+  <tr><th>Fitur</th><th>Status</th><th>Catatan</th></tr>
+  <tr><td>Halaman Reseller</td><td>v1.1</td><td>Halaman khusus program reseller</td></tr>
+  <tr><td>Win-Back System</td><td>v1.1</td><td>Email + token 48 jam untuk user pasif</td></tr>
+  <tr><td>Grace Period 30 Hari (Blocked)</td><td>v1.1</td><td>Saat ini 7 hari</td></tr>
+  <tr><td>IP Whitelist Admin</td><td>v1.1</td><td>Extra security untuk /office</td></tr>
+  <tr><td>Floating Countdown Bar</td><td>v1.1</td><td>Untuk win-back access</td></tr>
+  <tr><td>Preferensi Notifikasi User</td><td>v1.1</td><td>Toggle di Edit Profil</td></tr>
+  <tr><td>Web Push Notification</td><td>v1.1</td><td>Push ke browser/PWA</td></tr>
+  <tr><td>Notifikasi Digest</td><td>v1.1</td><td>Email digest untuk user pasif</td></tr>
+  <tr><td>Customer Reply untuk Note</td><td>v1.1</td><td>2-way chat-like</td></tr>
+  <tr><td>GTM (Google Tag Manager)</td><td>v1.1</td><td>MVP cuma GA4</td></tr>
+  <tr><td>Soft Delete untuk Produk</td><td>v1.1 (opsional)</td><td>Kalau butuh restore</td></tr>
+  <tr><td>Snapshot Storage Cleanup</td><td>v1.1 (opsional)</td><td>Hapus snapshot untuk order &gt; 5 tahun</td></tr>
+  <tr><td>Pembatasan IP Indonesia untuk Daftar/Belanja</td><td>skip</td><td>Ada case real user Turki</td></tr>
+  <tr style="background:#FFF3E0;"><td><strong>Ongkir Multi-Currency</strong> <span class="new">v4.4</span></td><td>v1.1</td><td>Kalau ada user luar Indonesia</td></tr>
+  <tr style="background:#FFF3E0;"><td><strong>Buffer Packaging Berat</strong> <span class="new">v4.4</span></td><td>v1.1</td><td>Fixed +200g per order</td></tr>
+  <tr style="background:#FFF3E0;"><td><strong>Ongkir Lokal per Toko per Order</strong> <span class="new">v4.4</span></td><td>v1.1</td><td>Alternatif dari per-produk</td></tr>
+</table>
+
+<h1>43. Bell Notifikasi User</h1>
+<div class="note-success">
+<strong>Bell Notifikasi User</strong> adalah kanal notifikasi in-web untuk user login. Berbeda dari Bell Admin yang ada di <code>/office</code>.
+</div>
+
+<h3>43.1 Tujuan</h3>
+<ul>
+  <li>Kanal notifikasi <strong>real-time in-web</strong> untuk user</li>
+  <li>Meningkatkan retensi &amp; engagement</li>
+  <li>Mengurangi risiko user kaget saat state berubah</li>
+  <li>Melengkapi email sebagai channel cadangan</li>
+</ul>
+
+<h3>43.2 Lokasi Bell</h3>
+<table>
+  <tr><th>Device</th><th>Posisi Bell</th></tr>
+  <tr><td>Desktop (≥ 1024px)</td><td>Navbar kanan, di antara icon Cart dan Avatar</td></tr>
+  <tr><td>Tablet (768–1023px)</td><td>Navbar kanan</td></tr>
+  <tr><td>Mobile (&lt; 768px)</td><td>Header Dashboard user / topbar mobile</td></tr>
+  <tr><td>Halaman Dashboard</td><td>Header Dashboard (di samping 2 badge &amp; tombol Keluar)</td></tr>
+</table>
+
+<h3>43.3 Icon &amp; Badge</h3>
+<ul>
+  <li><strong>Icon:</strong> 🔔 outline 22px</li>
+  <li><strong>Badge:</strong> lingkaran merah #E53935 dengan angka putih</li>
+  <li><strong>Max tampil:</strong> "99+"</li>
+  <li><strong>Kalau 0:</strong> badge hidden</li>
+</ul>
+
+<h3>43.4 Dropdown Panel</h3>
+<p>Klik icon bell → dropdown panel muncul dari kanan atas, lebar 380px (desktop) / full-width (mobile).</p>
+<ul>
+  <li>Header: judul "Notifikasi" + counter "X belum dibaca"</li>
+  <li>Toolbar mini: tombol "Tandai semua dibaca"</li>
+  <li>List notifikasi: max 10 item terbaru</li>
+  <li>Footer: link "Lihat Semua Notifikasi →" ke <code>/profile/notifications</code></li>
+  <li>Item: icon 40×40 + judul bold + deskripsi 2 baris + waktu relatif</li>
+  <li>Item belum dibaca → BG #E3F2FD + dot biru</li>
+</ul>
+
+<h3>43.5 Event yang Muncul di Bell User</h3>
+<table>
+  <tr><th>#</th><th>Kategori</th><th>Event</th><th>Link</th></tr>
+  <tr><td>1</td><td>Order</td><td>Order berhasil dibuat</td><td>/orders/{id}</td></tr>
+  <tr><td>2</td><td>Order</td><td>Pembayaran diterima</td><td>/orders/{id}</td></tr>
+  <tr><td>3</td><td>Order</td><td>Pembayaran ditolak</td><td>/orders/{id}</td></tr>
+  <tr><td>4</td><td>Order</td><td>Status order berubah</td><td>/orders/{id}</td></tr>
+  <tr><td>5</td><td>Order</td><td>Order selesai</td><td>/orders/{id}</td></tr>
+  <tr><td>6</td><td>Order</td><td>Reminder H-7 pelunasan</td><td>/orders/{id}</td></tr>
+  <tr><td>7</td><td>Order</td><td>Reminder H-1</td><td>/orders/{id}</td></tr>
+  <tr><td>8</td><td>Order</td><td>Hangus</td><td>/orders/{id}</td></tr>
+  <tr><td>9</td><td>Order</td><td>Refund requested</td><td>/orders/{id}</td></tr>
+  <tr><td>10</td><td>Order</td><td>Refund completed</td><td>/orders/{id}</td></tr>
+  <tr><td>11</td><td>Order</td><td>Refund rejected</td><td>/orders/{id}</td></tr>
+  <tr><td>12</td><td>Order</td><td>Note to Customer dari admin</td><td>/orders/{id}#note-from-admin</td></tr>
+  <tr><td>13</td><td>Koin</td><td>Koin bertambah</td><td>/profile/koin</td></tr>
+  <tr><td>14</td><td>Koin</td><td>Koin akan expired</td><td>/profile/koin</td></tr>
+  <tr><td>15</td><td>Voucher</td><td>Voucher diterima</td><td>/profile/wallet</td></tr>
+  <tr><td>16</td><td>Voucher</td><td>Voucher akan expired</td><td>/profile/wallet</td></tr>
+  <tr><td>17</td><td>State</td><td>H-7 peringatan state</td><td>/profile</td></tr>
+  <tr><td>18</td><td>State</td><td>State berubah</td><td>/profile</td></tr>
+  <tr><td>19</td><td>Referral</td><td>Referee selesai order pertama (ke Referrer)</td><td>/profile/koin</td></tr>
+  <tr><td>20</td><td>Referral</td><td>Referee bayar verified (ke Referee)</td><td>/profile/koin</td></tr>
+  <tr><td>21</td><td>Referral</td><td>Referee daftar via link (info only)</td><td>/profile/undang</td></tr>
+  <tr><td>22</td><td>Cart</td><td>Cart reminder</td><td>/cart</td></tr>
+  <tr><td>23</td><td>Gift</td><td>Admin kirim gift</td><td>/profile/wallet</td></tr>
+  <tr><td>24</td><td>Birthday</td><td>Bonus ulang tahun</td><td>/profile/koin</td></tr>
+  <tr><td>25-29</td><td>System</td><td>Edukasi, verifikasi email, Crush H-7, unblock, tier naik</td><td>variatif</td></tr>
+</table>
+
+<h3>43.6 Halaman Semua Notifikasi (<code>/profile/notifications</code>)</h3>
+<ul>
+  <li>Filter tab: Semua · Belum Dibaca · Order · Koin · Voucher · State · Sistem</li>
+  <li>Search box + Sort (Terbaru/Terlama)</li>
+  <li>Bulk action: Tandai Dibaca/Belum/Hapus</li>
+  <li>Pagination 20 per halaman</li>
+</ul>
+
+<h3>43.7 Tabel <code>user_notifications</code></h3>
+<pre>id, user_id, type, subtype, title, message, link_url, icon, meta,
+is_read, read_at, created_at, updated_at
+
+INDEX (user_id, is_read, created_at DESC)
+INDEX (user_id, type)
+INDEX (created_at)</pre>
+
+<h3>43.8 Polling &amp; Real-time</h3>
+<ul>
+  <li>Polling AJAX setiap 60 detik (unread-count)</li>
+  <li>Pause saat tab inactive (visibility API)</li>
+  <li>Kalau ada notif baru → badge update + toast + auto-refresh dropdown</li>
+  <li>Future v1.1: WebSocket / Laravel Echo</li>
+</ul>
+
+<h1>44. Note to Customer</h1>
+<div class="note-success">
+<strong>Note to Customer</strong> adalah pesan dari admin ke customer terkait order tertentu. 1-way: admin → customer. Cocok untuk info bonus dikirim duluan, update internal, dll.
+</div>
+
+<h3>44.1 Struktur Data</h3>
+<table>
+  <tr><th>Field</th><th>Tipe</th><th>Keterangan</th></tr>
+  <tr><td><code>orders.note_to_customer</code></td><td>text nullable</td><td>Note terbaru dari admin (per order)</td></tr>
+  <tr><td><code>orders.note_to_customer_updated_at</code></td><td>timestamp nullable</td><td>Kapan terakhir diupdate</td></tr>
+</table>
+
+<h3>44.2 Flow Kirim Note</h3>
+<ol>
+  <li>Admin buka detail order <code>/office/orders/{id}</code></li>
+  <li>Sidebar kanan → section "Catatan untuk Pelanggan"</li>
+  <li>Admin tulis textarea (max 1000 karakter)</li>
+  <li>Klik "Kirim Note"</li>
+  <li>Sistem: simpan + update timestamp + push ke <code>user_notifications</code> (type: order_note) + log admin_logs</li>
+  <li>Customer dapat: badge bell + toast + section "Pesan dari Admin" di detail order</li>
+</ol>
+
+<h3>44.3 Batasan (MVP)</h3>
+<ul>
+  <li>1-way: admin → customer</li>
+  <li>Per order (bukan per item)</li>
+  <li>Max 1000 karakter</li>
+  <li>Replace (note lama ditimpa)</li>
+  <li>Riwayat note di admin_logs</li>
+  <li>Customer reply masuk v1.1</li>
+</ul>
+
+<h1>45. Badge &amp; Tier System</h1>
+<div class="note-success">
+<strong>2 Badge System.</strong> Setiap user punya 2 badge: (1) Role/State Badge untuk semua user, (2) Tier Badge khusus Customer.
+</div>
+
+<h3>45.1 Badge 1 — Role/State (Semua User)</h3>
+<table>
+  <tr><th>State</th><th>Badge</th><th>Warna</th><th>Text Color</th></tr>
+  <tr><td>Crush</td><td>🌸 Crush</td><td>#F48FB1</td><td>#212121</td></tr>
+  <tr><td>MVP</td><td>⭐ MVP</td><td>#43A047</td><td>#FFFFFF</td></tr>
+  <tr><td>Ex</td><td>💤 Ex</td><td>#64B5F6</td><td>#212121</td></tr>
+  <tr><td>ONS</td><td>🌙 ONS</td><td>#FFB74D</td><td>#212121</td></tr>
+  <tr><td>Blocked</td><td>🔒 Blocked</td><td>#E53935</td><td>#FFFFFF</td></tr>
+</table>
+
+<h3>45.2 Badge 2 — Tier (Khusus Customer)</h3>
+<table>
+  <tr><th>Tier</th><th>Badge</th><th>Warna</th><th>Threshold</th></tr>
+  <tr><td>Silver</td><td>🥈 MVP Silver</td><td>#B0BEC5</td><td>&gt; Rp 0</td></tr>
+  <tr><td>Gold</td><td>🥇 MVP Gold</td><td>#FFC107</td><td>&gt; Rp 2.000.000</td></tr>
+  <tr><td>Platinum</td><td>💎 MVP Platinum</td><td>#4FC3F7</td><td>&gt; Rp 5.000.000</td></tr>
+</table>
+
+<h3>45.3 Kombinasi Badge per State</h3>
+<table>
+  <tr><th>State</th><th>Badge 1</th><th>Badge 2</th></tr>
+  <tr><td>Crush</td><td>🌸 Crush</td><td>—</td></tr>
+  <tr><td>MVP / Ex / ONS / Blocked</td><td>State badge</td><td>🥈/🥇/💎 Tier</td></tr>
+</table>
+
+<h3>45.4 Lokasi Tampil Badge</h3>
+<ul>
+  <li>Header Dashboard user</li>
+  <li>Navbar dropdown avatar</li>
+  <li>Halaman Rank Pelanggan (admin)</li>
+  <li>Invoice PDF</li>
+  <li>Halaman User Detail (admin)</li>
+</ul>
+
+<h1>46. Product vs Order Item — Design Principle</h1>
+<div class="note-success">
+<strong>Prinsip Fundamental.</strong> Di Mercatoria, <strong>produk katalog</strong> dan <strong>produk di order</strong> adalah <strong>2 entitas berbeda</strong>. Order item baca dari snapshot lengkap + gambar copy. Order 100% utuh walau produk dihapus permanen.
+</div>
+
+<h3>46.1 Perbandingan dengan WooCommerce</h3>
+<table>
+  <tr><th>Aspek</th><th>WooCommerce</th><th>Mercatoria</th></tr>
+  <tr><td>Struktur data</td><td>1 produk (link langsung)</td><td>2 entitas (produk + snapshot)</td></tr>
+  <tr><td>Produk dihapus</td><td>Order rusak</td><td>Order utuh</td></tr>
+  <tr><td>Gambar dihapus</td><td>Broken image</td><td>Gambar copy tetap ada</td></tr>
+  <tr><td>Produk diedit</td><td>Order ikut berubah</td><td>Order freeze</td></tr>
+  <tr><td>Restore produk</td><td>Soft delete</td><td>Hard delete permanen</td></tr>
+</table>
+
+<h3>46.2 Aturan Penting</h3>
+<table>
+  <tr><th>Aturan</th><th>Detail</th></tr>
+  <tr><td>Order item SELALU baca dari snapshot</td><td>Gak pernah baca dari products</td></tr>
+  <tr><td>Snapshot = immutable</td><td>Sekali dibuat, gak berubah</td></tr>
+  <tr><td>Gambar produk asli dihapus</td><td>Saat hard delete</td></tr>
+  <tr><td>Gambar snapshot copy tetap ada</td><td>Retention permanen</td></tr>
+  <tr><td>Restore produk = tidak bisa</td><td>Hard delete permanen</td></tr>
+  <tr><td>Audit trail</td><td><code>product_id_audit</code> tetap tercatat</td></tr>
+  <tr><td>SKU bisa dipakai ulang</td><td>Karena produk lama udah gak ada</td></tr>
+  <tr><td><strong>Snapshot simpan ongkir breakdown</strong> <span class="new">v4.4</span></td><td>3 komponen ongkir + berat + store_name</td></tr>
+</table>
+
+<!-- LANJUTAN DARI PART 2/3 — Copy-paste ke file yang sama setelah Section 46 -->
+
+<h1>47. Store Concept &amp; Berat Produk <span class="new">NEW v4.4</span></h1>
+
+<div class="note-success">
+<strong>Section baru v4.4.</strong> Store Concept adalah sistem untuk mengelola tier ongkir lokal CN per toko. Karena setiap toko dari game-game punya kebijakan ongkir berbeda (min belanja gratis, ongkir flat, gratis selalu). Ditambah Berat Produk untuk hitung ongkir internasional per kg.
+</div>
+
+<h3>47.1 Tujuan</h3>
+<ul>
+  <li>Admin bisa CRUD toko/tier ongkir lokal CN tanpa edit kode</li>
+  <li>Setiap produk terhubung ke toko (default dari game, bisa override untuk case collab)</li>
+  <li>Setiap produk punya berat (gram), bisa override di level varian</li>
+  <li>Sistem hitung otomatis 3 jenis ongkir (lokal CN, CN-BTM, BTM-JKT)</li>
+  <li>Snapshot simpan breakdown ongkir untuk audit trail</li>
+</ul>
+
+<h3>47.2 Konsep Dasar</h3>
+
+<h4>Apa itu Store?</h4>
+<p><strong>Store</strong> = representasi "toko" tempat kita beli produk. Bisa toko official game, toko collab, atau fanmade studio. Setiap toko punya kebijakan ongkir lokal CN yang berbeda.</p>
+
+<h4>Apa itu Tier?</h4>
+<p><strong>Tier</strong> = level kebijakan ongkir. Istilah "tier" dan "store" di sini sama saja. Admin isi 3 field:</p>
+<ul>
+  <li><code>name</code> — nama toko/tier (mis. "Official HoYoverse", "Toko Baju Collab")</li>
+  <li><code>min_belanja_rmb</code> — minimum belanja (RMB) untuk gratis ongkir lokal</li>
+  <li><code>ongkir_rmb</code> — ongkir lokal CN (RMB). Set 0 = gratis selalu.</li>
+</ul>
+
+<h4>Kenapa Store Terpisah dari Game?</h4>
+<p>Karena case collab: Game A collab sama Toko Baju B → tier-nya pakai tier toko B, bukan tier game A. Store berdiri sendiri, produk yang pilih store mana.</p>
+
+<h3>47.3 Struktur Data</h3>
+
+<h4>Tabel <code>stores</code></h4>
+<table>
+  <tr><th>Field</th><th>Tipe</th><th>Keterangan</th></tr>
+  <tr><td><code>id</code></td><td>bigint PK</td><td>—</td></tr>
+  <tr><td><code>name</code></td><td>varchar(100)</td><td>Nama toko/tier. Wajib.</td></tr>
+  <tr><td><code>min_belanja_rmb</code></td><td>decimal(10,2)</td><td>Minimum belanja RMB. Default 0.</td></tr>
+  <tr><td><code>ongkir_rmb</code></td><td>decimal(10,2)</td><td>Ongkir lokal CN dalam RMB. Default 0.</td></tr>
+  <tr><td><code>created_at</code></td><td>timestamp</td><td>—</td></tr>
+  <tr><td><code>updated_at</code></td><td>timestamp</td><td>—</td></tr>
+</table>
+
+<h4>Kolom Baru di Tabel Existing</h4>
+<table>
+  <tr><th>Tabel</th><th>Kolom Baru</th><th>Tipe</th><th>Keterangan</th></tr>
+  <tr><td><code>games</code></td><td><code>default_store_id</code></td><td>FK nullable</td><td>Store default untuk game ini</td></tr>
+  <tr><td><code>products</code></td><td><code>store_id</code></td><td>FK nullable</td><td>Override store. Kalau null → pakai game default.</td></tr>
+  <tr><td><code>products</code></td><td><code>weight_gram</code></td><td>integer nullable</td><td>Berat default produk (gram)</td></tr>
+  <tr><td><code>product_variants</code></td><td><code>weight_gram</code></td><td>integer nullable</td><td>Override berat. Kalau null → pakai produk.</td></tr>
+</table>
+
+<h4>Kolom Baru di <code>order_item_snapshots</code></h4>
+<table>
+  <tr><th>Kolom</th><th>Tipe</th><th>Keterangan</th></tr>
+  <tr><td><code>weight_gram</code></td><td>integer nullable</td><td>Berat saat order (audit)</td></tr>
+  <tr><td><code>store_name</code></td><td>varchar(100) nullable</td><td>Nama toko saat order (biar tetap ada walau store dihapus)</td></tr>
+  <tr><td><code>ongkir_lokal_cn_idr</code></td><td>decimal(14,2)</td><td>Komponen ongkir lokal CN (Rp)</td></tr>
+  <tr><td><code>ongkir_cn_btm_idr</code></td><td>decimal(14,2)</td><td>Komponen ongkir CN-BTM (Rp)</td></tr>
+  <tr><td><code>ongkir_btm_jkt_idr</code></td><td>decimal(14,2)</td><td>Komponen ongkir BTM-JKT (Rp)</td></tr>
+  <tr><td><code>ongkir_total_idr</code></td><td>decimal(14,2)</td><td>Sum 3 komponen (Rp)</td></tr>
+</table>
+
+<h3>47.4 Alur Admin Input</h3>
+
+<h4>Step 1: Admin CRUD Store</h4>
+<ol>
+  <li>Buka <code>/office/stores</code></li>
+  <li>Klik "+ Tambah Store"</li>
+  <li>Isi form:
+    <ul>
+      <li>Nama: "Official HoYoverse"</li>
+      <li>Min Belanja: 100 (RMB)</li>
+      <li>Ongkir: 7 (RMB)</li>
+    </ul>
+  </li>
+  <li>Klik Simpan</li>
+</ol>
+
+<h4>Step 2: Admin Assign Store ke Game</h4>
+<ol>
+  <li>Buka <code>/office/games/{id}/edit</code></li>
+  <li>Dropdown "Default Store" → pilih store dari list</li>
+  <li>Simpan</li>
+</ol>
+
+<h4>Step 3: Admin Input Berat Produk</h4>
+<ol>
+  <li>Buka <code>/office/products/create</code> atau edit</li>
+  <li>Field "Berat (gram)" → input angka (misal 500)</li>
+  <li>Kalau ada varian → di tab Varian, tiap varian punya field berat juga (opsional, override)</li>
+  <li>Simpan</li>
+</ol>
+
+<h4>Step 4: Admin Override Store di Produk (Kalau Perlu)</h4>
+<ol>
+  <li>Buka edit produk</li>
+  <li>Dropdown "Store" → default dari game, bisa override ke store lain</li>
+  <li>Simpan</li>
+</ol>
+
+<h4>Step 5: Bulk Edit Berat Varian</h4>
+<ol>
+  <li>Di form edit produk → tab Varian</li>
+  <li>Centang varian yang mau di-edit (misal 30 varian)</li>
+  <li>Klik "Bulk Edit Berat"</li>
+  <li>Pilih mode "Set Same"</li>
+  <li>Input berat (misal 250g)</li>
+  <li>Klik Apply → semua varian terpilih punya berat 250g</li>
+</ol>
+
+<h3>47.5 Rumus Ongkir Lokal CN</h3>
+
+<div class="note-info">
+<strong>Interpretasi:</strong> Customer bayar langsung (bukan disubsidi toko).
+</div>
+
+<h4>Logic Per Varian / Produk <span class="rev">REV v4.6</span></h4>
+<pre>Input:
+- harga_produk_rmb = variant.price_rmb ?? produk.price_rmb (Admin wajib input RMB per varian, bukan IDR)
+- store = produk.store (fallback: produk.games.default_store)
+- min_belanja = store.min_belanja_rmb
+- ongkir_store = store.ongkir_rmb
+- rate = setting('rate_rmb_idr')
+
+Logic:
+├── Kalau ongkir_store = 0
+│   → ongkir_lokal = Rp 0 (gratis selalu)
+│
+├── Kalau min_belanja = 0
+│   → ongkir_lokal = Rp 0 (biar gak divide by zero)
+│
+├── Kalau harga_produk ≥ min_belanja
+│   → ongkir_lokal = Rp 0 (gratis karena capai minimum)
+│
+└── Selain itu
+    → ongkir_lokal_rmb = (harga_produk × ongkir_store) / min_belanja
+    → ongkir_lokal_idr = ongkir_lokal_rmb × rate</pre>
+
+<h4>Contoh Perhitungan</h4>
+<p><strong>Setup:</strong> rate = 2.200</p>
+
+<table>
+  <tr><th>Harga (RMB)</th><th>Store Min</th><th>Store Ongkir</th><th>Hasil</th></tr>
+  <tr><td>58</td><td>100</td><td>7</td><td>(58×7)/100 = 4,06 RMB → Rp 8.932</td></tr>
+  <tr><td>80</td><td>100</td><td>7</td><td>(80×7)/100 = 5,6 RMB → Rp 12.320</td></tr>
+  <tr><td>100</td><td>100</td><td>7</td><td>≥ min → <strong>Gratis</strong></td></tr>
+  <tr><td>150</td><td>100</td><td>7</td><td>≥ min → <strong>Gratis</strong></td></tr>
+  <tr><td>58</td><td>0</td><td>7</td><td>min=0 → <strong>Gratis</strong></td></tr>
+  <tr><td>58</td><td>100</td><td>0</td><td>ongkir=0 → <strong>Gratis</strong></td></tr>
+</table>
+
+<h3>47.6 Rumus Ongkir Internasional</h3>
+
+<h4>Logic Per Item</h4>
+<pre>Input:
+- berat_item_gram = varian.weight_gram ?? produk.weight_gram ?? 0
+- ongkir_cn_btm_per_kg = setting('ongkir_cn_btm_per_kg', 25000)
+- ongkir_btm_jkt_per_kg = setting('ongkir_btm_jkt_per_kg', 60000)
+
+Logic:
+- berat_kg = berat_item_gram / 1000
+- ongkir_cn_btm = berat_kg × ongkir_cn_btm_per_kg
+- ongkir_btm_jkt = berat_kg × ongkir_btm_jkt_per_kg</pre>
+
+<h4>Contoh Perhitungan</h4>
+<table>
+  <tr><th>Berat</th><th>CN-BTM (25k/kg)</th><th>BTM-JKT (60k/kg)</th></tr>
+  <tr><td>50g (0,05 kg)</td><td>Rp 1.250</td><td>Rp 3.000</td></tr>
+  <tr><td>200g (0,2 kg)</td><td>Rp 5.000</td><td>Rp 12.000</td></tr>
+  <tr><td>500g (0,5 kg)</td><td>Rp 12.500</td><td>Rp 30.000</td></tr>
+  <tr><td>1.000g (1 kg)</td><td>Rp 25.000</td><td>Rp 60.000</td></tr>
+  <tr><td>2.500g (2,5 kg)</td><td>Rp 62.500</td><td>Rp 150.000</td></tr>
+</table>
+
+<div class="note">
+<strong>Tidak ada minimum weight.</strong> Berat 50g tetap dihitung 0,05 kg, bukan dibulatkan jadi 1 kg.
+</div>
+
+<h3>47.7 Rumus Total Harga (Full — Konsisten Produk, Keranjang &amp; Checkout) <span class="rev">REV v4.6</span></h3>
+
+<pre># A. PER ITEM / VARIAN (Ditampilkan sama di Katalog, Detail Produk, Keranjang, dan Checkout)
+harga_rmb_item      = variant.price_rmb ?? produk.price_rmb
+harga_idr           = harga_rmb_item × rate
+ongkir_lokal_cn_idr = (rumus 47.5 menggunakan harga_rmb_item)
+ongkir_cn_btm_idr   = (rumus 47.6 menggunakan variant.weight_gram ?? produk.weight_gram)
+ongkir_btm_jkt_idr  = (rumus 47.6 menggunakan variant.weight_gram ?? produk.weight_gram)
+
+modal_item          = harga_idr + ongkir_lokal_cn_idr + ongkir_cn_btm_idr + ongkir_btm_jkt_idr
+profit_item         = modal_item × 0.11
+harga_bersih_item   = CEILING((modal_item + profit_item) / 5000) × 5000
+
+# Diskon produk nominal (kalau ada & aktif)
+harga_item_final    = harga_bersih_item - discount_amount
+
+# B. PER ORDER DI CHECKOUT (Tanpa Double Profit 11% — Hanya Tambah Fee Marketplace & Fee QRIS)
+total_items              = sum(harga_item_final × qty)
+subtotal_setelah_diskon  = total_items - diskon_koin_atau_voucher
+
+# Fee Admin Logistik Marketplace & Fee QRIS (baru terlihat di Checkout)
+# Toco FP = Rp 1 · Toco DP = Rp 0 · Shopee FP = Rp 109 · Shopee DP = 25% di marketplace saat pelunasan
+# Fee QRIS = 0,03% jika tagihan >= Rp 500.000
+total_final = CEILING((subtotal_setelah_diskon + fee_marketplace_web + fee_qris) / 5000) × 5000</pre>
+
+<h3>47.8 Contoh Perhitungan Lengkap</h3>
+
+<h4>Setup</h4>
+<table>
+  <tr><th>Parameter</th><th>Nilai</th></tr>
+  <tr><td>Rate RMB → IDR</td><td>2.200</td></tr>
+  <tr><td>Profit</td><td>11%</td></tr>
+  <tr><td>Ongkir CN-BTM per kg</td><td>Rp 25.000</td></tr>
+  <tr><td>Ongkir BTM-JKT per kg</td><td>Rp 60.000</td></tr>
+</table>
+
+<h4>Store</h4>
+<table>
+  <tr><th>Store</th><th>Min</th><th>Ongkir</th></tr>
+  <tr><td>Official HoYoverse</td><td>100 yuan</td><td>7 yuan</td></tr>
+  <tr><td>Toko Baju Collab</td><td>150 yuan</td><td>10 yuan</td></tr>
+  <tr><td>Fanmade Studio X</td><td>—</td><td>0</td></tr>
+</table>
+
+<h4>Case 1 — Beli 1 Nendoroid Honkai</h4>
+<pre>Produk: 250 yuan, 500g, store "Official HoYoverse"
+
+Harga produk = 250 × 2.200 = Rp 550.000
+
+Ongkir lokal CN:
+250 ≥ 100 → Gratis (Rp 0)
+
+Ongkir CN-BTM = 0,5 × 25.000 = Rp 12.500
+Ongkir BTM-JKT = 0,5 × 60.000 = Rp 30.000
+
+Subtotal = 550.000 + 0 + 12.500 + 30.000 = Rp 592.500
+Profit 11% = 592.500 × 0,11 = Rp 65.175
+Total pre = 592.500 + 65.175 = Rp 657.675
+Pembulatan = CEILING(657.675/5.000) × 5.000
+           = 132 × 5.000 = Rp 660.000
+
+HARGA CUSTOMER: Rp 660.000</pre>
+
+<h4>Case 2 — Beli 1 Gantungan Akrilik</h4>
+<pre>Produk: 30 yuan, 50g, store "Official HoYoverse"
+
+Harga produk = 30 × 2.200 = Rp 66.000
+
+Ongkir lokal CN:
+30 < 100 → hitung
+= (30 × 7) / 100 = 2,1 yuan × 2.200 = Rp 4.620
+
+Ongkir CN-BTM = 0,05 × 25.000 = Rp 1.250
+Ongkir BTM-JKT = 0,05 × 60.000 = Rp 3.000
+
+Subtotal = 66.000 + 4.620 + 1.250 + 3.000 = Rp 74.870
+Profit 11% = 74.870 × 0,11 = Rp 8.236
+Total pre = 74.870 + 8.236 = Rp 83.106
+Pembulatan = CEILING(83.106/5.000) × 5.000
+           = 17 × 5.000 = Rp 85.000
+
+HARGA CUSTOMER: Rp 85.000</pre>
+
+<h4>Case 3 — Beli 1 Kaos Collab</h4>
+<pre>Produk: 80 yuan, 200g, store "Toko Baju Collab"
+
+Harga produk = 80 × 2.200 = Rp 176.000
+
+Ongkir lokal CN:
+80 < 150 → hitung
+= (80 × 10) / 150 = 5,33 yuan × 2.200 = Rp 11.733
+
+Ongkir CN-BTM = 0,2 × 25.000 = Rp 5.000
+Ongkir BTM-JKT = 0,2 × 60.000 = Rp 12.000
+
+Subtotal = 176.000 + 11.733 + 5.000 + 12.000 = Rp 204.733
+Profit 11% = 204.733 × 0,11 = Rp 22.521
+Total pre = 204.733 + 22.521 = Rp 227.254
+Pembulatan = Rp 230.000
+
+HARGA CUSTOMER: Rp 230.000</pre>
+
+<h4>Case 4 — Beli 1 Fanmade Charm</h4>
+<pre>Produk: 15 yuan, 50g, store "Fanmade Studio X" (gratis selalu)
+
+Harga produk = 15 × 2.200 = Rp 33.000
+
+Ongkir lokal CN: Gratis (ongkir=0)
+Ongkir CN-BTM = 0,05 × 25.000 = Rp 1.250
+Ongkir BTM-JKT = 0,05 × 60.000 = Rp 3.000
+
+Subtotal = 33.000 + 0 + 1.250 + 3.000 = Rp 37.250
+Profit 11% = 37.250 × 0,11 = Rp 4.098
+Total pre = 37.250 + 4.098 = Rp 41.348
+Pembulatan = Rp 45.000
+
+HARGA CUSTOMER: Rp 45.000</pre>
+
+<h3>47.9 Snapshot Saat Checkout</h3>
+
+<p>Setiap order item yang dibuat akan punya snapshot lengkap:</p>
+
+<pre>order_item_snapshots:
+- product_name, product_sku, variant_name, variant_sku
+- base_price, discount_amount, final_price, qty, subtotal
+- product_image_path (copy gambar)
+- variant_image_path (copy gambar)
+- weight_gram              ← BARU v4.4
+- store_name               ← BARU v4.4
+- ongkir_lokal_cn_idr      ← BARU v4.4
+- ongkir_cn_btm_idr        ← BARU v4.4
+- ongkir_btm_jkt_idr       ← BARU v4.4
+- ongkir_total_idr         ← BARU v4.4
+- snapshot_at</pre>
+
+<div class="note-info">
+<strong>Tujuan snapshot breakdown:</strong> Audit trail. Kalau ada komplain "kenapa ongkir gede?", admin bisa lihat breakdown: harga produk X, ongkir lokal Y, ongkir internasional Z. Gak perlu hitung ulang.
+</div>
+
+<h3>47.10 Admin: Bulk Edit Berat Varian</h3>
+
+<p>Untuk produk dengan banyak varian (30–50), admin bisa bulk edit:</p>
+
+<h4>Cara Pakai</h4>
+<ol>
+  <li>Buka form edit produk → tab Varian</li>
+  <li>Centang varian yang mau di-edit (misal 30 varian Osborn semua size)</li>
+  <li>Klik tombol "Bulk Edit Berat"</li>
+  <li>Modal muncul: pilih mode "Set Same"</li>
+  <li>Input berat: 250 gram</li>
+  <li>Klik Apply</li>
+  <li>Semua 30 varian terpilih → weight_gram = 250</li>
+</ol>
+
+<h4>Mode</h4>
+<table>
+  <tr><th>Mode</th><th>Fungsi</th></tr>
+  <tr><td><strong>Set Same</strong></td><td>Set semua varian terpilih ke berat X gram</td></tr>
+</table>
+
+<div class="note">
+<strong>Mode lain (Formula +50g per size):</strong> Masuk v1.1 kalau perlu.
+</div>
+
+<h3>47.11 UI Customer — Harga Bersih</h3>
+
+<div class="note-danger">
+<strong>PENTING:</strong> Customer cuma lihat <strong>1 harga final</strong>. Breakdown ongkir + profit cuma internal admin/sistem.
+</div>
+
+<h4>Yang Customer Lihat</h4>
+<pre>Nendoroid Honkai
+Rp 660.000
+
+[ Tambah ke Keranjang ]</pre>
+
+<h4>Yang Sistem Simpan (Internal)</h4>
+<pre>{
+  "product": "Nendoroid Honkai",
+  "harga_produk": 550000,
+  "ongkir_lokal_cn": 0,
+  "ongkir_cn_btm": 12500,
+  "ongkir_btm_jkt": 30000,
+  "subtotal": 592500,
+  "profit": 65175,
+  "total": 660000
+}</pre>
+
+<h4>Aturan UI</h4>
+<ul>
+  <li>Katalog: cuma tampil harga final</li>
+  <li>Detail produk: cuma tampil harga final</li>
+  <li>Cart: cuma tampil harga final per item + subtotal</li>
+  <li>Checkout: cuma tampil total + diskon</li>
+  <li>Invoice: cuma tampil total</li>
+  <li>Admin detail order: <strong>bisa lihat breakdown</strong> (khusus admin)</li>
+</ul>
+
+<h3>47.12 Use Case</h3>
+
+<table>
+  <tr><th>Use Case</th><th>Solusi</th></tr>
+  <tr><td>Game Honkai punya toko official</td><td>Setup store "Official HoYoverse", assign ke game Honkai sebagai default</td></tr>
+  <tr><td>Game Honkai collab dengan Toko Baju B</td><td>Bikin store "Toko Baju B", override di produk collab (store_id = toko baju)</td></tr>
+  <tr><td>Fanmade studio jual tanpa ongkir</td><td>Bikin store "Fanmade Studio X" dengan ongkir_rmb = 0</td></tr>
+  <tr><td>Toko official naikkan min belanja dari 100 → 150</td><td>Edit store → update min_belanja_rmb. Order baru pakai nilai baru. Order lama tetap freeze.</td></tr>
+  <tr><td>Ongkir CN-BTM naik dari 25k → 30k/kg</td><td>Edit setting → order baru pakai nilai baru. Order lama tetap freeze.</td></tr>
+  <tr><td>Produk nendoroid berat 500g, varian "Limited Box" 800g</td><td>Produk: 500g. Varian Limited Box: 800g (override).</td></tr>
+  <tr><td>Admin input 50 varian T-shirt, semua berat 250g</td><td>Bulk Edit → Set Same → 250g → apply ke 50 varian sekaligus.</td></tr>
+  <tr><td>Customer komplain ongkir gede</td><td>Admin buka detail order → lihat breakdown ongkir (lokal CN, CN-BTM, BTM-JKT) dari snapshot</td></tr>
+</table>
+
+<h3>47.13 Cross-Reference</h3>
+<ul>
+  <li>Entity Relationship (tabel <code>stores</code>): <strong>Section 35</strong></li>
+  <li>Rumus Harga (update v4.4): <strong>Section 20</strong></li>
+  <li>Produk — Field Store &amp; Berat: <strong>Section 13.2</strong></li>
+  <li>Varian — Field Berat Override: <strong>Section 13.4</strong></li>
+  <li>Snapshot Breakdown: <strong>Section 21</strong></li>
+  <li>Admin Store CRUD: <strong>Section 22.8</strong></li>
+  <li>Settings Ongkir/kg: <strong>Section 23</strong></li>
+</ul>
+
+<h3>47.14 Catatan Strategi</h3>
+
+<div class="note-info">
+<strong>Rumus ongkir lokal CN = customer bayar langsung.</strong> Bukan disubsidi toko.
+<ul>
+  <li><strong>Alasan:</strong> kalau disubsidi, harga produk melonjak jauh, customer kabur. Contoh: produk 20 yuan + ongkir 7 yuan (subsidi penuh) = harga naik 35%.</li>
+  <li><strong>Trade-off:</strong> admin rugi dikit karena ongkir sebenarnya lebih mahal dari yang dibayar customer. Tapi ini strategi acquire customer di awal.</li>
+  <li><strong>Rencana:</strong> nanti kalau user base stabil, bisa revisi rumus. Snapshot freeze di order lama, jadi gak akan ganggu customer lama.</li>
+</ul>
+</div>
+
+<h1>48. Migrasi User Lama <span class="new">NEW v4.5</span></h1>
+
+<div class="note-success">
+<strong>Section baru v4.5.</strong> Migrasi user dari sistem lama (WooCommerce) ke Mercatoria. Karena password WooCommerce pakai hash WordPress (`$P$`), tidak bisa langsung dipakai. User wajib reset password dulu, lalu verifikasi email, lalu lengkapi profil.
+</div>
+
+<h3>48.1 Tujuan</h3>
+<ul>
+  <li>Memindahkan data user lama dari WooCommerce ke Mercatoria</li>
+  <li>User lama tetap punya akun dengan email + HP yang sama</li>
+  <li>User set password sendiri (aman, user pilih sendiri)</li>
+  <li>Data order lama tetap tersimpan sebagai snapshot</li>
+</ul>
+
+<h3>48.2 Urutan Migrasi (WAJIB)</h3>
+<div class="note-danger">
+<strong>Urutan fix:</strong> Produk → Customer → Order. Jangan dibalik.
+</div>
+<ol>
+  <li><strong>Inject Produk</strong> → <code>/office/products/create</code></li>
+  <li><strong>Inject Customer</strong> → <code>/office/users/create</code> (form cuma: nama, email, HP, alamat)</li>
+  <li><strong>Inject Order Lama</strong> → <code>/office/orders/create</code> (pilih produk, qty, harga, tanggal order)</li>
+</ol>
+
+<h3>48.3 Field di Form Inject Customer</h3>
+<table>
+  <tr><th>Field</th><th>Wajib</th><th>Keterangan</th></tr>
+  <tr><td>Nama Lengkap</td><td>Ya</td><td>—</td></tr>
+  <tr><td>Email</td><td>Ya</td><td>Unique, dari WooCommerce</td></tr>
+  <tr><td>No HP</td><td>Ya</td><td>Format 62xxx</td></tr>
+  <tr><td>Alamat Lengkap</td><td>Ya</td><td>Provinsi, Kota, Kecamatan, Alamat, Kode Pos</td></tr>
+  <tr><td>Password</td><td>—</td><td><strong>KOSONG</strong> (user set sendiri nanti)</td></tr>
+  <tr><td>Tanggal Lahir</td><td>—</td><td><strong>KOSONG</strong> (user isi setelah verif)</td></tr>
+  <tr><td>Email Verified</td><td>—</td><td><strong>NULL</strong> (user verify sendiri)</td></tr>
+  <tr><td>Role</td><td>Auto</td><td><code>customer</code></td></tr>
+  <tr><td>State</td><td>Auto</td><td>Dihitung sistem dari order aktif</td></tr>
+  <tr><td><code>is_migrated</code></td><td>Auto</td><td><code>true</code></td></tr>
+</table>
+
+<h3>48.4 Flow Setelah Inject</h3>
+
+<h4>Fase 1 — Aktivasi User</h4>
+<ol>
+  <li>Admin inject user (password kosong)</li>
+  <li>Admin kasih tahu user via WA/sosmed: <em>"Akun kamu siap. Login dengan 'Lupa Password'."</em></li>
+  <li>User buka <code>/login</code> → klik "Lupa Password?"</li>
+  <li>Input email → sistem kirim link reset password (pakai template <code>reset_password</code> yang sudah ada)</li>
+  <li>User klik link → set password baru (min 8 char)</li>
+  <li>Auto-login → redirect ke dashboard</li>
+</ol>
+
+<h4>Fase 2 — Verifikasi Email (Soft Mode)</h4>
+<ol>
+  <li>User login → dashboard muncul banner kuning:<br>
+  <em>"⚠️ Verifikasi email dulu biar bisa order. [ Verifikasi Sekarang ]"</em></li>
+  <li>User bisa jelajah katalog, lihat produk, add to cart</li>
+  <li>Kalau klik "Buat Pesanan" → redirect ke <code>/verify-email</code></li>
+  <li>Klik "Verifikasi Sekarang" → kirim email verifikasi</li>
+  <li>User klik link verifikasi → <code>email_verified_at = now()</code></li>
+  <li>Banner hilang</li>
+</ol>
+
+<h4>Fase 3 — Lengkapi Profil (Wajib)</h4>
+<ol>
+  <li>Setelah verif → form "Lengkapi Profil"</li>
+  <li>Field wajib: <strong>Tanggal Lahir</strong> (locked, 1x set seumur hidup)</li>
+  <li>Setelah diisi → bisa order normal</li>
+  <li>Kalau belum verified atau belum isi Tanggal Lahir → tombol "Buat Pesanan" maupun aksi "Konfirmasi Pembayaran" (jika ada tanggungan order migrasi) disabled dan otomatis diarahkan untuk menyelesaikan verifikasi email &amp; lengkapi profil terlebih dahulu</li>
+</ol>
+
+<div class="note-info">
+<strong>Kenapa tgl lahir wajib?</strong> Untuk kalkulasi umur + bonus ulang tahun. Karena locked 1x, admin tidak bisa koreksi kalau salah — user harus isi sendiri dengan benar.
+</div>
+
+<h3>48.5 Aturan Penting</h3>
+<table>
+  <tr><th>Aturan</th><th>Detail</th></tr>
+  <tr><td>Password WooCommerce</td><td>Tidak dipakai (hash beda). User set password baru via "Lupa Password"</td></tr>
+  <tr><td>Email aktivasi</td><td>Pakai template <code>reset_password</code> yang sudah ada</td></tr>
+  <tr><td>Email verifikasi</td><td>Pakai template <code>verify_email</code> yang sudah ada</td></tr>
+  <tr><td>Notifikasi ke user</td><td>Manual via WA/sosmed (di luar sistem)</td></tr>
+  <tr><td>State customer</td><td>Auto-hitung dari tanggal order terakhir (order lama yang di-inject)</td></tr>
+  <tr><td>Override state</td><td><strong>Tidak ada</strong> — full otomatis</td></tr>
+  <tr><td>Link reset password expired</td><td>User minta ulang via "Lupa Password" (self-service)</td></tr>
+  <tr><td>Email lama gak aktif</td><td>Admin punya tombol "Force Reset + Verify" di <code>/office/users/{id}</code></td></tr>
+  <tr><td>Wajib isi tgl lahir</td><td>Setelah verif email (locked 1x)</td></tr>
+  <tr><td>Wajib verif email</td><td>Untuk bisa klik "Buat Pesanan"</td></tr>
+</table>
+
+<h3>48.6 Logika State Customer</h3>
+<p>State dihitung otomatis dari tanggal order terakhir yang di-inject:</p>
+<table>
+  <tr><th>Kondisi Order</th><th>State</th></tr>
+  <tr><td>Ada pesanan aktif</td><td>MVP</td></tr>
+  <tr><td>Order terakhir keputus 0–30 hari</td><td>Ex</td></tr>
+  <tr><td>Order terakhir keputus 30–60 hari</td><td>ONS</td></tr>
+  <tr><td>Order terakhir keputus &gt; 60 hari</td><td>Blocked</td></tr>
+  <tr><td>Belum ada order</td><td>Crush</td></tr>
+</table>
+
+<h3>48.7 Email Template yang Dipakai</h3>
+<table>
+  <tr><th>Kode</th><th>Fungsi</th></tr>
+  <tr><td><code>reset_password</code></td><td>Link reset password (yang sudah ada)</td></tr>
+  <tr><td><code>verify_email</code></td><td>Link verifikasi email (yang sudah ada)</td></tr>
+</table>
+<p><strong>Tidak ada template baru.</strong> Reuse yang sudah ada biar konsisten.</p>
+
+<h3>48.8 Admin Action: Force Reset + Verify</h3>
+<p>Di halaman <code>/office/users/{id}</code>, ada tombol:</p>
+<ul>
+  <li><strong>"Force Reset Password"</strong> — kirim link reset password manual ke email user</li>
+  <li><strong>"Force Verify Email"</strong> — set <code>email_verified_at = now()</code> tanpa user klik link</li>
+  <li>Keduanya tercatat di <code>admin_logs</code></li>
+</ul>
+<p>Dipakai kalau:</p>
+<ul>
+  <li>User gak bisa akses email lama</li>
+  <li>User kesulitan aktivasi</li>
+  <li>Data lama dari WooCommerce bermasalah</li>
+</ul>
+
+<h3>48.9 Cross-Reference</h3>
+<ul>
+  <li>Buyer Protection: Section 11</li>
+  <li>Inject Data Manual: Section 10.7</li>
+  <li>Inject Order: Section 22.7</li>
+  <li>Email Template: Section 24</li>
+</ul>
+
+<hr>
+<p style="text-align: center; color: #666; margin-top: 40px;">
+<strong>— End of Document —</strong><br>
+PRD Mercatoria v4.6 FINAL · 21 Oktober 2026<br>
+Fondasi data 100% siap coding
+</p>
+
+</body>
+</html>
