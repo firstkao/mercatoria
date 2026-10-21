@@ -1,6 +1,6 @@
 @php
     $tabs = [
-        ['Pesanan Saya', route('dashboard'), request()->routeIs('dashboard')],
+        ['Pesanan Saya', route('dashboard'), request()->routeIs('dashboard', 'orders.index')],
         ['Koin Saya', route('wallet.coins'), request()->routeIs('wallet.coins', 'wallet.index')],
         ['Undang Teman', route('referrals.invite'), request()->routeIs('referrals.invite', 'referrals.index')],
         ['Edit Profil', route('profile.edit'), request()->routeIs('profile.edit', 'profile.edit.update')],

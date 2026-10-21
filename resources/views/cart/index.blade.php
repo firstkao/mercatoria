@@ -30,7 +30,7 @@
                     <article class='grid grid-cols-[auto_64px_minmax(0,1fr)] items-start gap-3 rounded-xl border border-border bg-white p-4 sm:grid-cols-[auto_64px_minmax(0,1fr)_auto] sm:items-center'>
                         <input form='cart-checkout-selection' type='checkbox' name='cart_ids[]' value='{{ $cart->id }}' aria-label='Pilih {{ $cart->product->name }}' class='cart-item-check rounded border-border text-primary-600'>
                         @php($cartImage = $cart->variant?->image_path ?? $cart->product->main_image_path)
-                        @if ($cartImage)<img src='{{ \Illuminate\Support\Facades\Storage::url($cartImage) }}' alt='' class='h-16 w-16 rounded-lg object-cover'>@else<div class='h-16 w-16 rounded-lg bg-surface-2'></div>@endif
+                        @if ($cartImage)<div class='protected-image-wrap h-16 w-16 rounded-lg'><img src='{{ \Illuminate\Support\Facades\Storage::url($cartImage) }}' alt='' class='protected-image h-16 w-16 rounded-lg object-cover' draggable='false'><span class='img-shield-overlay' aria-hidden='true'></span></div>@else<div class='h-16 w-16 rounded-lg bg-surface-2'></div>@endif
                         <div class='min-w-0'>
                             <p class='text-xs font-semibold uppercase text-text-muted'>{{ $cart->product->games->first()?->name ?? 'Mercatoria' }}</p>
                             <h2 class='truncate font-semibold'>{{ $cart->product->name }}</h2>
@@ -42,7 +42,7 @@
                                 @csrf @method('PATCH')
                                 <label class='sr-only' for='qty-{{ $cart->id }}'>Jumlah {{ $cart->product->name }}</label>
                                 <input id='qty-{{ $cart->id }}' name='qty' type='number' min='1' max='99' value='{{ $cart->qty }}' data-cart-qty class='w-20 rounded-lg border-border text-sm'>
-                                <span class='font-semibold' data-cart-total data-unit-price='{{ $line['pricing']['final_price'] }}'>{{ format_rupiah($line['pricing']['final_price'] * $cart->qty) }}</span>
+                                <span class='font-semibold' data-cart-total data-unit-price='{{ $line['pricing']['final_price'] }}' data-base-unit-price='{{ $line['pricing']['base_price'] }}'>{{ format_rupiah($line['pricing']['final_price'] * $cart->qty) }}</span>
                                 <button type='submit' class='rounded-lg border border-border px-2 py-1 text-xs'>Simpan</button>
                             </form>
                             <form method='POST' action='{{ route('cart.remove', $cart) }}'>@csrf @method('DELETE')<button type='submit' aria-label='Hapus {{ $cart->product->name }}' class='rounded-lg px-3 py-2 text-red-700 hover:bg-red-50'>🗑️</button></form>
@@ -54,7 +54,7 @@
                     @csrf
                     <label for='customer_note' class='font-semibold'>📝 Catatan untuk Mercatoria (Opsional)</label>
                     <textarea id='customer_note' name='customer_note' rows='3' maxlength='500' placeholder='Contoh: bubble wrap extra, packing rapi, mau bonus A/B' class='mt-2 w-full rounded-lg border-border text-sm'>{{ old('customer_note', $customerNote) }}</textarea>
-                    <div class='mt-2 flex items-center justify-between gap-3'><span class='text-xs text-text-muted'>Maksimal 500 karakter. Catatan ikut tersimpan di pesanan.</span><button type='submit' class='rounded-lg border border-border px-3 py-2 text-sm font-semibold hover:bg-surface-2'>Simpan Catatan</button></div>
+                    <div class='mt-2 flex items-center justify-between gap-3'><span class='text-xs text-text-muted'><span id='customer-note-count'>{{ mb_strlen((string) old('customer_note', $customerNote)) }}</span> / 500 karakter. Catatan ikut tersimpan di pesanan.</span><button type='submit' class='rounded-lg border border-border px-3 py-2 text-sm font-semibold hover:bg-surface-2'>Simpan Catatan</button></div>
                 </form>
             </div>
 
@@ -62,6 +62,8 @@
                 <h2 class='text-lg font-bold'>Ringkasan Belanja</h2>
                 <div class='mt-4 flex justify-between text-sm'><span>Item Terpilih</span><strong><span id='selected-count'>0</span> item</strong></div>
                 <div class='mt-2 flex justify-between text-sm'><span>Subtotal</span><strong id='selected-subtotal'>Rp 0</strong></div>
+                <div class='mt-2 flex justify-between text-sm'><span>Diskon</span><strong id='selected-discount'>Rp 0</strong></div>
+                <div class='mt-3 flex justify-between border-t border-border pt-3 text-base font-bold'><span>TOTAL</span><strong id='selected-total'>Rp 0</strong></div>
                 <p class='mt-3 rounded-lg bg-surface-2 p-3 text-xs text-text-muted'>ℹ️ Harga sudah bersih, termasuk ongkir CN-ID. Tidak ada rincian ongkir atau berat pada keranjang.</p>
                 <button form='cart-checkout-selection' type='submit' data-checkout-selected disabled @if (auth()->user()->hasVerifiedEmail() && ! auth()->user()->hasCompletedProfile()) data-profile-incomplete @endif class='mt-4 w-full rounded-lg bg-[#4FC3F7] px-5 py-3 font-semibold text-white hover:brightness-95 disabled:cursor-not-allowed disabled:opacity-50'>Lanjut ke Checkout</button>
             </aside>
@@ -77,17 +79,34 @@
     const checkoutSelected = document.querySelector('[data-checkout-selected]');
     const selectedCount = document.getElementById('selected-count');
     const selectedSubtotal = document.getElementById('selected-subtotal');
+    const selectedDiscount = document.getElementById('selected-discount');
+    const selectedTotal = document.getElementById('selected-total');
     const removeSelectedForm = document.getElementById('cart-remove-selected');
+    const customerNoteInput = document.getElementById('customer_note');
+    const customerNoteCount = document.getElementById('customer-note-count');
+    const updateCustomerNoteCount = () => {
+        if (customerNoteCount) customerNoteCount.textContent = customerNoteInput.value.length;
+    };
+    customerNoteInput?.addEventListener('input', updateCustomerNoteCount);
+    updateCustomerNoteCount();
     const formatCartPrice = amount => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(amount);
     function updateCartSelection() {
         const selected = cartChecks.filter(input => input.checked);
-        const subtotal = selected.reduce((total, input) => {
+        const totals = selected.reduce((sum, input) => {
             const article = input.closest('article');
             const quantity = Number(article.querySelector('[data-cart-qty]').value || 1);
-            return total + Number(article.querySelector('[data-cart-total]').dataset.unitPrice) * quantity;
-        }, 0);
+            const price = article.querySelector('[data-cart-total]').dataset;
+            const finalPrice = Number(price.unitPrice);
+            const basePrice = Number(price.baseUnitPrice);
+            sum.subtotal += basePrice * quantity;
+            sum.discount += Math.max(0, basePrice - finalPrice) * quantity;
+            sum.total += finalPrice * quantity;
+            return sum;
+        }, { subtotal: 0, discount: 0, total: 0 });
         if (selectedCount) selectedCount.textContent = selected.length;
-        if (selectedSubtotal) selectedSubtotal.textContent = formatCartPrice(subtotal);
+        if (selectedSubtotal) selectedSubtotal.textContent = formatCartPrice(totals.subtotal);
+        if (selectedDiscount) selectedDiscount.textContent = formatCartPrice(totals.discount);
+        if (selectedTotal) selectedTotal.textContent = formatCartPrice(totals.total);
         if (checkoutSelected) checkoutSelected.disabled = selected.length === 0 || checkoutSelected.hasAttribute('data-profile-incomplete');
         if (selectAllCart) selectAllCart.checked = selected.length === cartChecks.length;
     }

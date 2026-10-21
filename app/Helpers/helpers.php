@@ -2,6 +2,7 @@
 
 use App\Models\Order;
 use App\Models\Setting;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
 
@@ -82,5 +83,20 @@ if (! function_exists('format_rupiah')) {
     function format_rupiah($value): string
     {
         return 'Rp '.number_format((float) $value, 0, ',', '.');
+    }
+}
+
+if (! function_exists('format_tanggal_id')) {
+    function format_tanggal_id($date, bool $shortMonth = true, bool $twoDigitYear = false): string
+    {
+        if (! $date) {
+            return '—';
+        }
+        $full = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+        $short = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+        $date = Carbon::parse($date);
+        $month = ($shortMonth ? $short : $full)[$date->month - 1];
+
+        return $date->format('d').' '.$month.' '.($twoDigitYear ? $date->format('y') : $date->format('Y'));
     }
 }

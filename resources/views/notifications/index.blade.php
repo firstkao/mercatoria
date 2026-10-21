@@ -27,12 +27,12 @@
             <li class='flex items-start gap-3 p-4 {{ $notification->is_read ? '' : 'bg-[#E3F2FD]' }}'>
                 <input form='notifications-bulk' type='checkbox' name='notification_ids[]' value='{{ $notification->id }}' class='notification-checkbox mt-2 rounded border-border' aria-label='Pilih notifikasi {{ $notification->title }}'>
                 <form method='POST' action='{{ route('notifications.open', $notification) }}' class='min-w-0 flex-1'>@csrf
-                    <button type='submit' class='flex w-full items-start gap-3 text-left hover:bg-surface-2'><span class='flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-surface-2 text-xl'>{{ $notification->icon ?: '🔔' }}</span><span class='min-w-0 flex-1'><span class='block font-semibold'>{{ $notification->title }}</span><span class='mt-1 block text-sm text-text-muted'>{{ $notification->message }}</span><time class='mt-2 block text-xs text-text-light' datetime='{{ $notification->created_at->toIso8601String() }}'>{{ $notification->created_at->diffForHumans() }}</time></span>@unless ($notification->is_read)<span class='mt-2 h-2 w-2 shrink-0 rounded-full bg-blue-600' aria-label='Belum dibaca'></span>@endunless</button>
+                    <button type='submit' class='flex w-full items-start gap-3 text-left hover:bg-surface-2'><span class='flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-surface-2 text-xl'>{{ $notification->icon ?: '🔔' }}</span><span class='min-w-0 flex-1'><span class='block font-semibold'>{{ $notification->title }}</span><span class='mt-1 block text-sm text-text-muted'>{{ $notification->message }}</span><time class='mt-2 block text-xs text-text-light' datetime='{{ $notification->created_at->toIso8601String() }}'>{{ $notification->created_at->locale('id')->diffForHumans() }}</time></span>@unless ($notification->is_read)<span class='mt-2 h-2 w-2 shrink-0 rounded-full bg-blue-600' aria-label='Belum dibaca'></span>@endunless</button>
                 </form>
             </li>
         @empty<li class='p-8 text-center text-text-muted'>Belum ada notifikasi yang cocok dengan filter ini.</li>@endforelse
     </ul>
-    <div class='mt-5'>{{ $notifications->links() }}</div><p class='mt-4 text-center text-xs text-text-light'>Notifikasi disimpan selama 90 hari.</p>
+    <x-pagination-squares :paginator='$notifications' /><p class='mt-4 text-center text-xs text-text-light'>20 item per halaman · Retensi 90 hari.</p>
 </div>
 @endsection
 

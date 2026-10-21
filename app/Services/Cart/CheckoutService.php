@@ -123,8 +123,9 @@ class CheckoutService
             ['shopee', 'dp'] => round(max(0, $baseTotal * 0.5) * ((float) setting('fee_shopee_dp_percent', 25) / 100), 2),
             default => 0,
         };
-        $feeQris = $paymentMethod === 'qris' && $baseTotal >= (float) setting('qris_threshold', 500000)
-            ? round($baseTotal * ((float) setting('fee_qris_percent', 0.03) / 100), 2)
+        $qrisBase = $netSubtotal + $feeMarketplace;
+        $feeQris = $paymentMethod === 'qris' && $qrisBase >= (float) setting('qris_threshold', 500000)
+            ? round($qrisBase * ((float) setting('fee_qris_percent', 0.03) / 100), 2)
             : 0;
         $total = (int) (ceil(($netSubtotal + $feeMarketplace + $feeQris) / 5000) * 5000);
 

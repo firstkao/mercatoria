@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\Admin\UserMigrationController;
 use App\Models\Spammer;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -14,7 +15,7 @@ class ProfileEditController extends Controller
 {
     public function edit(Request $request): View
     {
-        return view('profile.edit', ['user' => $request->user()]);
+        return view('profile.edit', ['user' => $request->user(), 'provinces' => UserMigrationController::PROVINCES]);
     }
 
     public function update(Request $request): RedirectResponse
@@ -33,7 +34,7 @@ class ProfileEditController extends Controller
             'name' => ['required', 'string', 'min:2', 'max:100'],
             'email' => ['required', 'email', 'max:150', Rule::unique('users', 'email')->ignore($user->id)],
             'no_hp' => ['required', 'string', 'regex:/^628[1-9][0-9]{6,11}$/', Rule::unique('users', 'no_hp')->ignore($user->id)],
-            'provinsi' => ['required', 'string', 'max:100'],
+            'provinsi' => ['required', 'string', Rule::in(UserMigrationController::PROVINCES)],
             'kota' => ['required', 'string', 'max:100'],
             'kecamatan' => ['required', 'string', 'max:100'],
             'kode_pos' => ['required', 'string', 'max:10'],

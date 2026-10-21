@@ -2,13 +2,16 @@
 
 namespace Tests\Feature;
 
+use App\Models\Cart;
 use App\Models\Developer;
 use App\Models\Game;
 use App\Models\MerchCategory;
 use App\Models\Product;
+use App\Models\ProductVariant;
 use App\Models\Store;
 use App\Models\Tag;
 use App\Models\User;
+use App\Models\VariantCombination;
 use Tests\TestCase;
 
 class StoreAndCatalogTest extends TestCase
@@ -378,6 +381,113 @@ class StoreAndCatalogTest extends TestCase
 
         $this->get(route('games.products.show', [$secondGame->slug, $product->slug]))
             ->assertNotFound();
+    }
+
+    public function test_product_detail_shows_customer_requirements_and_variant_lightbox_controls(): void
+    {
+        $developer = Developer::create(['name' => 'Detail Developer', 'slug' => 'detail-developer']);
+        $game = $this->createGame('Detail Game', 'detail-game');
+        $game->developers()->attach($developer);
+        $product = $this->createProduct('Detail Product', 'detail-product', 'DETAIL-001', $game);
+        $product->update([
+            'type' => 'variant',
+            'main_image_path' => 'products/detail-main.webp',
+            'description_image_path' => 'products/detail-long.webp',
+        ]);
+        $product->tags()->attach(Tag::create([
+            'name' => 'PRESALE',
+            'slug' => 'presale',
+            'color' => '#0B1B3A',
+        ]));
+        $variant = ProductVariant::create([
+            'product_id' => $product->id,
+            'sku' => 'DETAIL-VAR-001',
+            'name' => 'Set',
+            'price_rmb' => 90,
+            'availability' => 'tersedia',
+            'image_path' => 'products/detail-variant.webp',
+        ]);
+        VariantCombination::create([
+            'variant_id' => $variant->id,
+            'attribute_key' => 'Tipe',
+            'attribute_value' => 'Set',
+        ]);
+        $customer = User::factory()->create([
+            'role' => 'customer',
+            'referral_code' => 'DETAILREF',
+        ]);
+
+        $response = $this->actingAs($customer)->get(route('games.products.show', [$game->slug, $product->slug]));
+
+        $response->assertOk()
+            ->assertSee('Kuota jelajah katalog kamu tersisa 9 dari 10 produk.')
+            ->assertSee('[Detail Game]')
+            ->assertSee('data-attribute-group="Tipe"', false)
+            ->assertSee('Bagikan produk ini')
+            ->assertSee(route('games.products.show', [$game->slug, $product->slug]).'?ref=DETAILREF', false)
+            ->assertSee('max-w-[800px]', false)
+            ->assertSee('products/detail-long.webp')
+            ->assertSee('product-lightbox-counter', false)
+            ->assertSee('previous-product-lightbox', false)
+            ->assertSee('next-product-lightbox', false)
+            ->assertSee('zoom-product-lightbox', false)
+            ->assertSee('fullscreen-product-lightbox', false)
+            ->assertSee('detail-variant.webp');
+    }
+
+    public function test_related_products_include_same_developer_and_exclude_unrelated_games(): void
+    {
+        $developer = Developer::create(['name' => 'Shared Developer', 'slug' => 'shared-developer']);
+        $game = $this->createGame('Primary Game', 'primary-game');
+        $game->developers()->attach($developer);
+        $product = $this->createProduct('Primary Product', 'primary-product', 'PRIMARY-001', $game);
+
+        $relatedGame = $this->createGame('Related Game', 'related-game');
+        $relatedGame->developers()->attach($developer);
+        $related = $this->createProduct('Same Developer Product', 'same-developer-product', 'RELATED-001', $relatedGame);
+        $unrelatedGame = $this->createGame('Unrelated Game', 'unrelated-game');
+        $unrelated = $this->createProduct('Unrelated Product', 'unrelated-product', 'UNRELATED-001', $unrelatedGame);
+
+        $response = $this->actingAs($this->customer())->get(route('games.products.show', [$game->slug, $product->slug]));
+
+        $response->assertOk()->assertSee('Same Developer Product')
+            ->assertSee('[Related Game]')
+            ->assertSee('w-[calc(40%_-_0.6rem)]', false)
+            ->assertSee('md:w-[calc(25%_-_0.75rem)]', false)
+            ->assertSee('lg:w-[calc(16.666667%_-_0.833333rem)]', false);
+        $this->assertSame([$related->id], $response->viewData('relatedProducts')->pluck('id')->all());
+        $this->assertNotContains($unrelated->id, $response->viewData('relatedProducts')->pluck('id')->all());
+    }
+
+    public function test_cart_summary_shows_discount_and_total_without_internal_price_breakdown(): void
+    {
+        $customer = $this->customer();
+        $game = $this->createGame('Cart Detail Game', 'cart-detail-game');
+        $product = $this->createProduct('Cart Detail Product', 'cart-detail-product', 'CART-DETAIL-001', $game);
+        $product->update([
+            'shipping_cn_btm_idr' => 15000,
+            'shipping_btm_jkt_idr' => 10000,
+            'weight_gram' => 250,
+            'main_image_path' => 'products/cart-detail.webp',
+        ]);
+        Cart::create([
+            'user_id' => $customer->id,
+            'product_id' => $product->id,
+            'qty' => 2,
+        ]);
+
+        $this->actingAs($customer)
+            ->get(route('cart.index'))
+            ->assertOk()
+            ->assertSee('Subtotal')
+            ->assertSee('Diskon')
+            ->assertSee('TOTAL')
+            ->assertSee('selected-subtotal', false)
+            ->assertSee('selected-discount', false)
+            ->assertSee('selected-total', false)
+            ->assertSee('Harga sudah bersih')
+            ->assertSee('img-shield-overlay', false)
+            ->assertDontSee('Berat produk');
     }
 
     public function test_developer_page_lists_products_from_its_active_games(): void
