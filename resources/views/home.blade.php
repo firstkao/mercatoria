@@ -3,6 +3,17 @@
 @section('title', 'Beranda')
 
 @section('content')
+@php
+    $heroSlides ??= \App\Models\HeroSlide::query()->active()->get();
+    $games ??= \App\Models\Game::active()->orderBy('name')->get();
+    $visibleProducts = fn (): \Illuminate\Database\Eloquent\Builder => \App\Models\Product::query()
+        ->active()
+        ->whereHas('games', fn (\Illuminate\Database\Eloquent\Builder $query) => $query->active())
+        ->with(['games', 'tags', 'variants']);
+    $bestOffers ??= $visibleProducts()->bestOffer(5)->get();
+    $newProducts ??= $visibleProducts()->latest()->latest('id')->limit(14)->get();
+@endphp
+
 @if (session('blocked_spammer_ip'))
     <div role="alert" class="mx-auto mt-4 max-w-7xl rounded-lg bg-danger-50 px-4 py-3 text-sm text-danger-700">
         Akses dari alamat jaringan ini dibatasi. Halaman beranda tetap dapat diakses.
