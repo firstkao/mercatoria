@@ -140,4 +140,9 @@ class User extends Authenticatable implements MustVerifyEmail
     {
         return $this->tgl_lahir !== null;
     }
+
+    public function canOrderOrConfirmPayment(): bool
+    {
+        return $this->hasVerifiedEmail() && $this->hasCompletedProfile();
+    }
 }

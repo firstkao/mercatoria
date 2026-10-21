@@ -87,7 +87,9 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile/referrals', [ReferralController::class, 'index'])->name('referrals.index');
     Route::get('/orders/{order}', [OrderController::class, 'show'])->name('orders.show');
     Route::get('/orders/{order}/snapshots/{snapshot}/{image}', [OrderController::class, 'snapshotImage'])->name('orders.snapshots.image');
-    Route::post('/orders/{order}/payment-proof', [OrderController::class, 'uploadProof'])->name('orders.payment-proof');
+    Route::middleware(['ensure.verified', 'ensure.profile'])
+        ->post('/orders/{order}/payment-proof', [OrderController::class, 'uploadProof'])
+        ->name('orders.payment-proof');
     Route::post('/orders/{order}/refunds', [OrderController::class, 'requestRefund'])->name('orders.refunds.store');
     Route::get('/profile/notifications', [UserNotificationController::class, 'index'])->name('notifications.index');
     Route::get('/profile/notifications/unread-count', [UserNotificationController::class, 'unreadCount'])->name('notifications.unread-count');
@@ -145,6 +147,7 @@ Route::prefix('office')->name('office.')->middleware(['auth', 'admin'])->group(f
     Route::delete('products/{product}', [ProductController::class, 'destroy'])->name('products.destroy');
     Route::post('products/{product}/variants', [ProductVariantController::class, 'store'])->name('products.variants.store');
     Route::patch('products/{product}/variants/{variant}/weight', [ProductVariantController::class, 'updateWeight'])->name('products.variants.weight.update');
+    Route::patch('products/{product}/variants/price-rmb', [ProductVariantController::class, 'bulkUpdatePriceRmb'])->name('products.variants.price-rmb.bulk');
     Route::patch('products/{product}/variants/weight', [ProductVariantController::class, 'bulkUpdateWeight'])->name('products.variants.weight.bulk');
     Route::resource('stores', StoreController::class)->except('show');
     Route::resource('users', UserMigrationController::class)->only(['index', 'create', 'store', 'show']);

@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Services\Order\ShippingCalculatorService;
+use App\Services\Product\ProductSearchService;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -112,18 +114,7 @@ class Product extends Model
 
     public function hargaJual(): float
     {
-        $rate = (float) setting('rate_rmb_idr', 2200);
-        $profit = (float) setting('profit_percent', 11);
-
-        $hargaIdr = (float) $this->price_rmb * $rate;
-        $ongkirCnIdr = (float) $this->shipping_cn_rmb * $rate;
-
-        $subtotal = $hargaIdr
-            + $ongkirCnIdr
-            + (float) $this->shipping_cn_btm_idr
-            + (float) $this->shipping_btm_jkt_idr;
-
-        return $subtotal * (1 + $profit / 100);
+        return app(ShippingCalculatorService::class)->calculateItemShipping($this)['base_price_bersih'];
     }
 
     public function hargaSetelahDiskon(): float
@@ -183,9 +174,6 @@ class Product extends Model
 
     public function scopeSearch($query, string $q)
     {
-        return $query->where(function ($sub) use ($q) {
-            $sub->where('name', 'like', "%{$q}%")
-                ->orWhere('sku', 'like', "%{$q}%");
-        });
+        return app(ProductSearchService::class)->search($query, $q);
     }
 }

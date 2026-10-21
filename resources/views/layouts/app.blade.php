@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="id" data-image-protection="{{ filter_var(setting('image_protection_enabled', config('mercatoria.image_protection.enabled', true)), FILTER_VALIDATE_BOOLEAN) ? '1' : '0' }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">

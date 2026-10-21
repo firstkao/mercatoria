@@ -1,6 +1,6 @@
 <?php
 
-use App\Http\Middleware\BlockSpammerIps;
+use App\Http\Middleware\EnforceIpBlacklist;
 use App\Http\Middleware\EnsureAdmin;
 use App\Http\Middleware\EnsureEmailVerified;
 use App\Http\Middleware\EnsureProfileComplete;
@@ -25,7 +25,7 @@ return Application::configure(basePath: dirname(__DIR__))
             at: $trustedProxies,
             headers: Request::HEADER_X_FORWARDED_FOR,
         );
-        $middleware->appendToGroup('web', BlockSpammerIps::class);
+        $middleware->appendToGroup('web', EnforceIpBlacklist::class);
         $middleware->alias([
             'admin' => EnsureAdmin::class,
             'ensure.verified' => EnsureEmailVerified::class,

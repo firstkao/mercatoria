@@ -7,18 +7,29 @@ use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
-class BlockSpammerIps
+class EnforceIpBlacklist
 {
     public function handle(Request $request, Closure $next): Response
     {
         $path = trim($request->path(), '/');
-        if ($path === '' || $path === 'up' || ($path === 'register' && $request->isMethod('POST'))) {
+        $isLoginOrLogout = in_array($path, ['login', 'logout'], true);
+        $isRegisterSubmission = $path === 'register' && $request->isMethod('POST');
+
+        if ($path === '' || $path === 'up' || $isLoginOrLogout || $isRegisterSubmission
+            || $request->attributes->get('is_verified_bot', false)) {
+            return $next($request);
+        }
+
+        $user = $request->user();
+        if ($user?->isCustomer()
+            && in_array($user->customer?->current_state, ['mvp', 'ex', 'ons'], true)) {
             return $next($request);
         }
 
         $ip = $request->ip();
         if ($ip && SpammerIp::query()
             ->where('ip_address', $ip)
+            ->active()
             ->whereHas('spammer', fn ($query) => $query->where('status', 'blocked'))
             ->exists()) {
             return redirect()->route('home')->with('blocked_spammer_ip', true);

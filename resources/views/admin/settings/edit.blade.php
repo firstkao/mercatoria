@@ -61,6 +61,46 @@
         </div>
     </section>
 
+    <section class="rounded-xl border border-border bg-white p-5 md:p-6">
+        <h2 class="text-lg font-semibold text-navy-500">Email</h2>
+        <label class="mt-4 flex items-start gap-3">
+            <input type="hidden" name="pause_customer_emails" value="0">
+            <input type="checkbox" name="pause_customer_emails" value="1" class="mt-1 rounded border-border"
+                   @checked(old('pause_customer_emails', $settings['pause_customer_emails'] ?? '0') == '1')
+                   onchange="if (this.checked && !confirm('Semua email ke customer akan dihentikan. Lanjutkan?')) this.checked = false">
+            <span>
+                <span class="block text-sm font-medium">Stop Kirim Email ke Customer (Mode Maintenance / Testing)</span>
+                <span class="block text-xs text-text-muted">Email ke customer tidak dikirim dan dicatat sebagai suppressed_maintenance. OTP Admin tetap terkirim.</span>
+            </span>
+        </label>
+    </section>
+
+    <section class="rounded-xl border border-border bg-white p-5 md:p-6">
+        <h2 class="text-lg font-semibold text-navy-500">Security — Proteksi Foto</h2>
+        <p class="mt-1 text-sm text-text-muted">Teks tetap bebas disalin. Hanya gambar yang dikunci dan diberi watermark.</p>
+        <div class="mt-4 space-y-3">
+            <label class="flex items-center gap-3 text-sm">
+                <input type="hidden" name="image_protection_enabled" value="0">
+                <input type="checkbox" name="image_protection_enabled" value="1" class="rounded border-border"
+                       @checked(old('image_protection_enabled', $settings['image_protection_enabled'] ?? '1') == '1')>
+                Aktifkan proteksi klik-kanan, drag, dan long-press pada gambar
+            </label>
+            <label class="flex items-center gap-3 text-sm">
+                <input type="hidden" name="image_watermark_enabled" value="0">
+                <input type="checkbox" name="image_watermark_enabled" value="1" class="rounded border-border"
+                       @checked(old('image_watermark_enabled', $settings['image_watermark_enabled'] ?? '1') == '1')>
+                Watermark otomatis pada foto yang diunggah
+            </label>
+            <div class="max-w-xs">
+                <label for="image_watermark_opacity" class="mb-1 block text-sm font-medium">Opacity watermark (%)</label>
+                <input id="image_watermark_opacity" name="image_watermark_opacity" type="number" min="5" max="80"
+                       value="{{ old('image_watermark_opacity', $settings['image_watermark_opacity'] ?? 25) }}"
+                       class="w-full rounded-lg border-border">
+                @error('image_watermark_opacity')<p class="mt-1 text-sm text-danger-500">{{ $message }}</p>@enderror
+            </div>
+        </div>
+    </section>
+
     <div class="flex justify-end">
         <x-button type="submit">Simpan Pengaturan</x-button>
     </div>

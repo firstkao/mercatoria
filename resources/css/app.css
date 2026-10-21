@@ -137,3 +137,22 @@
         padding-inline: 0.25rem;
     }
 }
+
+@layer components {
+    .protected-image-wrap {
+        position: relative;
+    }
+
+    .protected-image-wrap img,
+    img.protected-image {
+        -webkit-user-drag: none;
+        -webkit-touch-callout: none;
+        user-select: none;
+    }
+
+    .img-shield-overlay {
+        position: absolute;
+        inset: 0;
+        background: transparent;
+    }
+}

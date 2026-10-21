@@ -41,8 +41,9 @@ class SettingsSeeder extends Seeder
 
             // ─── STATE ─────────────────────────────────────
             ['key' => 'crush_auto_delete_days', 'value' => '30', 'type' => 'int', 'group' => 'state', 'description' => 'Auto-delete Crush (hari)'],
-            ['key' => 'mvp_to_ex_days', 'value' => '30', 'type' => 'int', 'group' => 'state', 'description' => 'MVP → Ex (hari)'],
-            ['key' => 'ex_to_ons_days', 'value' => '60', 'type' => 'int', 'group' => 'state', 'description' => 'Ex → ONS (hari)'],
+            ['key' => 'mvp_to_ex_days', 'value' => '0', 'type' => 'int', 'group' => 'state', 'description' => 'MVP → Ex (hari)'],
+            ['key' => 'ex_to_ons_days', 'value' => '30', 'type' => 'int', 'group' => 'state', 'description' => 'Ex → ONS (hari)'],
+            ['key' => 'ons_to_blocked_days', 'value' => '60', 'type' => 'int', 'group' => 'state', 'description' => 'ONS → Blocked (hari)'],
             ['key' => 'pickup_timer_days', 'value' => '7', 'type' => 'int', 'group' => 'state', 'description' => 'Timer pickup (hari)'],
             ['key' => 'view_limit', 'value' => '10', 'type' => 'int', 'group' => 'state', 'description' => 'View limit Crush/Ex/ONS'],
 
@@ -68,6 +69,12 @@ class SettingsSeeder extends Seeder
             // ─── SEO & SHARE ───────────────────────────────
             ['key' => 'ga4_measurement_id', 'value' => '', 'type' => 'string', 'group' => 'seo', 'description' => 'GA4 Measurement ID'],
             ['key' => 'share_restrict_to_indonesia', 'value' => '1', 'type' => 'bool', 'group' => 'seo', 'description' => 'Batasi share reward ke IP Indonesia'],
+
+            // ─── EMAIL & IMAGE PROTECTION ──────────────────
+            ['key' => 'pause_customer_emails', 'value' => '0', 'type' => 'bool', 'group' => 'email', 'description' => 'Stop kirim email ke customer saat maintenance/testing. OTP Admin tetap terkirim.'],
+            ['key' => 'image_protection_enabled', 'value' => '1', 'type' => 'bool', 'group' => 'security', 'description' => 'Blokir klik-kanan, drag, dan long-press pada gambar (teks tetap bebas disalin)'],
+            ['key' => 'image_watermark_enabled', 'value' => '1', 'type' => 'bool', 'group' => 'security', 'description' => 'Watermark otomatis pada foto yang diunggah'],
+            ['key' => 'image_watermark_opacity', 'value' => '25', 'type' => 'int', 'group' => 'security', 'description' => 'Opacity watermark (%)'],
 
             // ─── PAGE ──────────────────────────────────────
             ['key' => 'pagination_per_page', 'value' => '30', 'type' => 'int', 'group' => 'page', 'description' => 'Pagination per halaman'],

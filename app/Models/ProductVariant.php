@@ -9,12 +9,13 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class ProductVariant extends Model
 {
     protected $fillable = [
-        'product_id', 'sku', 'name', 'price',
+        'product_id', 'sku', 'name', 'price', 'price_rmb',
         'availability', 'weight_gram', 'image_path',
     ];
 
     protected $casts = [
         'price' => 'decimal:2',
+        'price_rmb' => 'decimal:2',
         'weight_gram' => 'integer',
     ];
 
@@ -48,5 +49,10 @@ class ProductVariant extends Model
     public function effectiveWeight(): int
     {
         return $this->weight_gram ?? $this->product?->effectiveWeight() ?? (int) setting('default_weight_gram', 0);
+    }
+
+    public function effectivePriceRmb(): float
+    {
+        return (float) ($this->price_rmb ?? $this->product?->price_rmb ?? 0);
     }
 }

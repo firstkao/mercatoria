@@ -171,7 +171,7 @@
                         <a href="{{ $productGame ? route('games.products.show', [$productGame->slug, $product->slug]) : route('products.direct', $product->slug) }}"
                            class="block">
                             @if ($product->main_image_path)
-                                <img src="{{ \Illuminate\Support\Facades\Storage::url($product->main_image_path) }}" alt="{{ $product->name }}" loading="lazy" class="aspect-square w-full object-cover">
+                                <x-protected-image :src="\Illuminate\Support\Facades\Storage::url($product->main_image_path)" :alt="$product->name" loading="lazy" class="aspect-square w-full object-cover" />
                             @else
                                 <div class="flex aspect-square items-center justify-center bg-surface-2 text-sm text-text-light">Gambar belum tersedia</div>
                             @endif

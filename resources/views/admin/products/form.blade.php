@@ -218,10 +218,20 @@
         <div x-show="selected.length > 0" x-cloak
              class="sticky top-2 z-20 mt-4 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-primary-200 bg-white p-3 shadow-md">
             <span class="text-sm font-medium"><span x-text="selected.length"></span> varian dipilih</span>
-            <button type="button" x-on:click="$dispatch('open-modal', 'bulk-variant-weight')"
-                    class="rounded-lg bg-navy-500 px-4 py-2 text-sm font-semibold text-white hover:bg-navy-600">
-                Bulk Edit Berat
-            </button>
+            <div class="flex flex-wrap items-center gap-2">
+                <form method="POST" action="{{ route('office.products.variants.price-rmb.bulk', $product) }}" class="flex items-center gap-2">
+                    @csrf
+                    @method('PATCH')
+                    <template x-for="id in selected" :key="id"><input type="hidden" name="selected_variant_ids[]" :value="id"></template>
+                    <input name="price_rmb" type="number" min="0" step="0.01" required placeholder="Harga RMB" aria-label="Harga RMB massal"
+                           class="w-32 rounded-lg border-border text-sm">
+                    <button type="submit" class="rounded-lg border border-border px-4 py-2 text-sm font-semibold hover:bg-surface-2">Bulk Harga RMB</button>
+                </form>
+                <button type="button" x-on:click="$dispatch('open-modal', 'bulk-variant-weight')"
+                        class="rounded-lg bg-navy-500 px-4 py-2 text-sm font-semibold text-white hover:bg-navy-600">
+                    Bulk Edit Berat
+                </button>
+            </div>
         </div>
 
         @if ($product->variants->isNotEmpty())
@@ -238,7 +248,8 @@
                             </th>
                             <th class="px-3 py-2">Varian</th>
                             <th class="px-3 py-2">SKU</th>
-                            <th class="px-3 py-2">Harga</th>
+                            <th class="px-3 py-2">Harga RMB</th>
+                            <th class="px-3 py-2">Harga Bersih (IDR)</th>
                             <th class="px-3 py-2">Berat</th>
                         </tr>
                     </thead>
@@ -253,7 +264,13 @@
                                 </td>
                                 <td class="px-3 py-3 font-medium">{{ $variant->name ?: '—' }}</td>
                                 <td class="px-3 py-3">{{ $variant->sku }}</td>
-                                <td class="px-3 py-3">{{ number_format((float) $variant->price, 2, ',', '.') }}</td>
+                                <td class="px-3 py-3">
+                                    ¥{{ number_format($variant->effectivePriceRmb(), 2, ',', '.') }}
+                                    @if ($variant->price_rmb === null)
+                                        <span class="text-xs text-text-light">(pakai harga produk)</span>
+                                    @endif
+                                </td>
+                                <td class="px-3 py-3">{{ format_rupiah(app(\App\Services\Cart\CartPricingService::class)->calculate($product, $variant)['final_price']) }}</td>
                                 <td class="px-3 py-3" x-data="{ editing: false, weight: @js($variant->weight_gram) }">
                                     <button type="button" x-show="!editing" x-on:click="editing = true; $nextTick(() => $refs.weight.focus())"
                                             class="font-medium hover:text-navy-500">
@@ -296,8 +313,8 @@
             <label class="text-sm">Nama varian
                 <input name="name" maxlength="255" class="mt-1 w-full rounded-lg border-border text-sm" value="{{ old('name') }}">
             </label>
-            <label class="text-sm">Harga
-                <input name="price" type="number" min="0" step="0.01" required class="mt-1 w-full rounded-lg border-border text-sm" value="{{ old('price', 0) }}">
+            <label class="text-sm">Harga (RMB)
+                <input name="price_rmb" type="number" min="0" step="0.01" class="mt-1 w-full rounded-lg border-border text-sm" value="{{ old('price_rmb') }}" placeholder="Kosong = harga produk">
             </label>
             <label class="text-sm">Berat (gram)
                 <input name="weight_gram" type="number" min="1" max="1000000" class="mt-1 w-full rounded-lg border-border text-sm" value="{{ old('weight_gram') }}">

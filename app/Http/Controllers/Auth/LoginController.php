@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\AuthLog;
+use App\Models\Spammer;
+use App\Models\SpammerIp;
 use App\Models\User;
 use App\Services\Notification\ScheduledEmailService;
 use Illuminate\Http\RedirectResponse;
@@ -64,6 +66,28 @@ class LoginController extends Controller
 
             throw ValidationException::withMessages([
                 'email' => "Terlalu banyak percobaan login. Coba lagi dalam {$seconds} detik.",
+            ]);
+        }
+
+        // Layer 1: email permanen di daftar spammer ditolak dari IP mana pun.
+        $blockedSpammer = Spammer::query()
+            ->where('email', $validated['email'])
+            ->where('status', 'blocked')
+            ->first();
+        if ($blockedSpammer) {
+            if ($request->ip()) {
+                $ipRecord = SpammerIp::query()->firstOrNew([
+                    'spammer_id' => $blockedSpammer->id,
+                    'ip_address' => $request->ip(),
+                ]);
+                $ipRecord->attempt_count = $ipRecord->exists ? $ipRecord->attempt_count + 1 : 1;
+                $ipRecord->last_attempt_at = now();
+                $ipRecord->expires_at = now()->addDays((int) config('mercatoria.state.spammer_ip_ttl_days', 30));
+                $ipRecord->save();
+            }
+
+            throw ValidationException::withMessages([
+                'email' => 'Email atau password salah.',
             ]);
         }
 

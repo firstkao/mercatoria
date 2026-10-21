@@ -11,10 +11,13 @@ Alpine.plugin(focus);
 Alpine.plugin(persist);
 Alpine.plugin(collapse);
 
+import { initImageProtection } from './image-protection';
+
 // ─── Expose ke window (biar bisa dipakai inline) ──
 window.Alpine = Alpine;
 
 Alpine.start();
+initImageProtection();
 
 // ─── Global Helpers ────────────────────────
 window.formatRupiah = (value) => {
