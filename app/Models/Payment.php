@@ -20,14 +20,22 @@ class Payment extends Model
     ];
 
     public function order(): BelongsTo
-    { return $this->belongsTo(Order::class); }
+    {
+        return $this->belongsTo(Order::class);
+    }
 
     public function verifiedBy(): BelongsTo
-    { return $this->belongsTo(User::class, 'verified_by'); }
+    {
+        return $this->belongsTo(User::class, 'verified_by');
+    }
 
     public function isVerified(): bool
-    { return $this->status === 'verified'; }
+    {
+        return $this->status === 'verified';
+    }
 
     public function isPending(): bool
-    { return $this->status === 'pending'; }
+    {
+        return $this->status === 'pending';
+    }
 }

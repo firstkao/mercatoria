@@ -6,12 +6,15 @@ use App\Enums\NotificationType;
 use App\Enums\OrderStatus;
 use App\Http\Controllers\Controller;
 use App\Models\Order;
+use App\Models\OrderItemSnapshot;
 use App\Models\Payment;
 use App\Services\Notification\UserNotificationService;
 use App\Services\Order\OrderPaymentService;
 use App\Services\Order\OrderStatusService;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
@@ -48,11 +51,26 @@ class OrderController extends Controller
         return view('admin.orders.index', compact('orders', 'filters'));
     }
 
+    public function packingList(Order $order): Response
+    {
+        $order->load('items.snapshot');
+        $pdf = Pdf::loadView('admin.orders.packing-list', compact('order'))->setPaper('a4');
+
+        return $pdf->stream('packing-list-'.$order->order_no.'.pdf');
+    }
+
     public function show(Order $order): View
     {
         $order->load(['user', 'items.snapshot', 'payments.verifiedBy', 'refunds.processedBy', 'statusLogs.changedBy']);
+        $productIds = $order->items->map(fn ($item) => $item->snapshot?->product_id_audit)->filter()->unique();
+        $orderCounts = OrderItemSnapshot::query()
+            ->join('order_items', 'order_items.id', '=', 'order_item_snapshots.order_item_id')
+            ->whereIn('order_item_snapshots.product_id_audit', $productIds)
+            ->selectRaw('order_item_snapshots.product_id_audit, count(distinct order_items.order_id) as c')
+            ->groupBy('order_item_snapshots.product_id_audit')
+            ->pluck('c', 'product_id_audit');
 
-        return view('admin.orders.show', compact('order'));
+        return view('admin.orders.show', compact('order', 'orderCounts'));
     }
 
     public function updateStatus(Request $request, Order $order): RedirectResponse

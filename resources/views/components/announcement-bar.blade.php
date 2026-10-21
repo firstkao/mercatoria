@@ -8,7 +8,7 @@
             <span>{{ $announcement->text }}</span>
         @endif
         <button type="button" id="dismiss-announcement" aria-label="Tutup pengumuman"
-            class="absolute right-3 top-1/2 -translate-y-1/2 rounded px-2 py-1 hover:bg-white/20">×</button>
+            class="absolute right-3 top-1/2 -translate-y-1/2 rounded px-2 py-1 hover:bg-white/20">✕</button>
     </aside>
     @once
         @push('scripts')

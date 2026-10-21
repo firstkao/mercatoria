@@ -12,7 +12,8 @@ class ExampleTest extends TestCase
         $response = $this->get('/');
 
         $response->assertOk();
-        $response->assertSee('Koleksi merch favoritmu');
+        $response->assertSee('Jelajahi Game Favoritmu');
+        $response->assertSee('Merch Baru');
         $response->assertDontSee('Setup berhasil!');
     }
 }

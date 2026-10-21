@@ -10,8 +10,12 @@ class ProductView extends Model
     protected $fillable = ['user_id', 'product_id', 'ip_address'];
 
     public function user(): BelongsTo
-    { return $this->belongsTo(User::class); }
+    {
+        return $this->belongsTo(User::class);
+    }
 
     public function product(): BelongsTo
-    { return $this->belongsTo(Product::class); }
+    {
+        return $this->belongsTo(Product::class);
+    }
 }

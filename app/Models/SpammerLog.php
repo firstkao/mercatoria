@@ -10,5 +10,7 @@ class SpammerLog extends Model
     protected $fillable = ['spammer_id', 'action', 'ip_address', 'note'];
 
     public function spammer(): BelongsTo
-    { return $this->belongsTo(Spammer::class); }
+    {
+        return $this->belongsTo(Spammer::class);
+    }
 }

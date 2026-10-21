@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\AdminNotification;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
 
@@ -14,6 +15,26 @@ class AdminNotificationController extends Controller
         $notifications = AdminNotification::query()->latest()->paginate(30);
 
         return view('admin.notifications.index', compact('notifications'));
+    }
+
+    public function unreadCount(): JsonResponse
+    {
+        $items = AdminNotification::query()->latest()
+            ->limit((int) config('mercatoria.bell.max_dropdown', 10))->get()
+            ->map(fn (AdminNotification $notification): array => [
+                'id' => $notification->id,
+                'title' => $notification->title,
+                'message' => $notification->message,
+                'is_read' => $notification->is_read,
+                'time' => $notification->created_at->diffForHumans(),
+                'iso' => $notification->created_at->toIso8601String(),
+                'open_url' => route('office.notifications.open', $notification),
+            ])->all();
+
+        return response()->json([
+            'count' => AdminNotification::query()->where('is_read', false)->count(),
+            'items' => $items,
+        ]);
     }
 
     public function markAllRead(): RedirectResponse

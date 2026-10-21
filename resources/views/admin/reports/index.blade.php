@@ -8,7 +8,7 @@
             <h1 class="text-2xl font-bold text-navy-500">Laporan Penjualan</h1>
             <p class="mt-1 text-sm text-text-muted">Pembayaran dihitung saat diverifikasi; penjualan saat pesanan selesai.</p>
         </div>
-        <a href="{{ route('office.reports.customers') }}" class="rounded-lg border border-border px-4 py-2 text-sm font-semibold text-navy-500">Rank Pelanggan</a>
+        <a href="{{ route('office.customers.rank') }}" class="rounded-lg border border-border px-4 py-2 text-sm font-semibold text-navy-500">Rank Pelanggan</a>
     </div>
 
     <form method="GET" class="mt-5 flex flex-wrap items-end gap-3 rounded-xl border border-border bg-white p-4">
@@ -24,12 +24,11 @@
 
     <div class="mt-5 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
         @foreach ([
-            'DP diterima' => $metrics['dp_received'],
-            'Pelunasan diterima' => $metrics['settlements_received'],
-            'Pembayaran penuh diterima' => $metrics['full_payments_received'],
-            'Total penjualan (pesanan selesai)' => $metrics['completed_sales'],
-            'Outstanding DP' => $metrics['outstanding'],
-            'Penerimaan pesanan hangus' => $metrics['forfeited_received'],
+            'Total DP Masuk' => $metrics['dp_received'],
+            'Total Pelunasan' => $metrics['settlements_received'] + $metrics['full_payments_received'],
+            'Total Penjualan Sah (Selesai)' => $metrics['completed_sales'],
+            'Outstanding' => $metrics['outstanding'],
+            'Hangus' => $metrics['forfeited_received'],
         ] as $label => $amount)
             <article class="rounded-xl border border-border bg-white p-5">
                 <p class="text-sm text-text-muted">{{ $label }}</p>

@@ -12,6 +12,8 @@ class ReblockExpiredSpammers extends Command
 {
     protected $signature = 'spammers:recheck-grace';
 
+    protected $aliases = ['spammer:recheck-grace'];
+
     protected $description = 'Reblock spammer entries whose seven-day grace period expired without a purchase';
 
     public function handle(): int

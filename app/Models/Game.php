@@ -15,14 +15,22 @@ class Game extends Model
     protected $casts = ['is_active' => 'boolean'];
 
     public function defaultStore(): BelongsTo
-    { return $this->belongsTo(Store::class, 'default_store_id'); }
+    {
+        return $this->belongsTo(Store::class, 'default_store_id');
+    }
 
     public function developers(): BelongsToMany
-    { return $this->belongsToMany(Developer::class, 'game_developer'); }
+    {
+        return $this->belongsToMany(Developer::class, 'game_developer');
+    }
 
     public function products(): BelongsToMany
-    { return $this->belongsToMany(Product::class, 'product_game'); }
+    {
+        return $this->belongsToMany(Product::class, 'product_game');
+    }
 
     public function scopeActive($query)
-    { return $query->where('is_active', true); }
+    {
+        return $query->where('is_active', true);
+    }
 }

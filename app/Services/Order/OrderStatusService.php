@@ -11,6 +11,7 @@ use App\Models\CoinTransaction;
 use App\Models\Order;
 use App\Models\OrderStatusLog;
 use App\Models\UserVoucher;
+use App\Services\Notification\ScheduledEmailService;
 use App\Services\Notification\UserNotificationService;
 use App\Services\User\ReferralRewardService;
 use Illuminate\Support\Facades\DB;
@@ -73,6 +74,21 @@ class OrderStatusService
                 "Pesanan {$updatedOrder->order_no}: {$newStatus->label()}.",
                 route('orders.show', $updatedOrder),
                 meta: ['order_id' => $updatedOrder->id, 'status' => $newStatus->value],
+            );
+        }
+
+        $emailCode = match ($newStatus) {
+            OrderStatus::SELESAI => 'order_completed',
+            OrderStatus::HANGUS => 'order_hangus',
+            OrderStatus::MENUNGGU_PELUNASAN => 'settlement_reminder',
+            OrderStatus::DANA_DIKEMBALIKAN => null,
+            default => 'order_status_changed',
+        };
+        if ($emailCode) {
+            app(ScheduledEmailService::class)->sendOrder(
+                $updatedOrder,
+                $emailCode,
+                'Update status pesanan '.$updatedOrder->order_no,
             );
         }
 

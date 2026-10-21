@@ -7,6 +7,7 @@ use App\Enums\OrderStatus;
 use App\Enums\UserState;
 use App\Models\Customer;
 use App\Models\OrderStatusLog;
+use App\Services\Notification\ScheduledEmailService;
 use App\Services\Notification\UserNotificationService;
 use Illuminate\Console\Command;
 use Illuminate\Support\Carbon;
@@ -95,6 +96,11 @@ class UpdateCustomerStates extends Command
                         meta: ['old_state' => $oldState->value, 'new_state' => $targetState->value],
                     );
                     $counts['changed']++;
+                    app(ScheduledEmailService::class)->send($user, 'state_changed', 'State akun berubah', [
+                        'nama_user' => $user->name,
+                        'state' => $targetState->label(),
+                        'link' => route('dashboard'),
+                    ]);
                 } elseif ($customer->isDirty('last_order_at')) {
                     $customer->save();
                 }
@@ -131,6 +137,11 @@ class UpdateCustomerStates extends Command
                     meta: ['next_state' => $warningTarget[0]->value],
                 );
                 $counts['warnings']++;
+                app(ScheduledEmailService::class)->send($user, 'state_warning_h7', 'Akun akan berubah state', [
+                    'nama_user' => $user->name,
+                    'state' => $warningTarget[0]->label(),
+                    'link' => route('dashboard'),
+                ]);
             }
         });
 

@@ -6,14 +6,22 @@
 <div class="mx-auto max-w-7xl px-4 py-8">
     <div class="mb-6 flex flex-wrap items-start justify-between gap-4 rounded-xl border border-border bg-white p-6">
         <div>
-            <h1 class="text-2xl font-bold text-text">Dashboard</h1>
+            <h1 class="text-2xl font-bold text-text">Dashboard Pelanggan</h1>
             <p class="mt-1 text-text-muted">Selamat datang, <strong>{{ auth()->user()->name }}</strong></p>
             <div class="mt-3 flex flex-wrap gap-2">
-                <x-badge-state :state="auth()->user()->currentState()" />
+                <x-badge-state :state="auth()->user()" />
+                @if ($tier)<span class='inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold' style='background-color: {{ $tier->color() }}; color: {{ $tier->textColor() }}'>{{ $tier->icon() }} {{ $tier->label() }}</span>@endif
                 <span class="inline-flex items-center rounded-full border border-border px-3 py-1 text-xs text-text-light">
                     Terdaftar: {{ auth()->user()->created_at->format('d M Y') }}
                 </span>
             </div>
+            @if ($remainingViews !== null || $stateDeadline || $whatsappLink)
+                <div class='mt-3 flex flex-wrap items-center gap-3 text-sm text-text-muted'>
+                    @if ($remainingViews !== null)<span>⚠️ Kuota jelajah katalog kamu tersisa {{ $remainingViews }} dari 10 produk.</span>@endif
+                    @if ($stateDeadline)<span>Perubahan status: {{ $stateDeadline->diffForHumans() }}</span>@endif
+                    @if ($whatsappLink)<a href='{{ $whatsappLink }}' class='font-semibold text-green-700 hover:underline'>💬 Hubungi via WhatsApp</a>@endif
+                </div>
+            @endif
         </div>
         <div class="flex items-center gap-3">
             <x-notification-bell />
@@ -33,24 +41,21 @@
                 <h2 class="font-bold uppercase tracking-wide text-amber-900">Tagihan Menunggu</h2>
                 <a href="{{ route('orders.index') }}" class="text-sm font-semibold text-navy-500 hover:underline">Lihat semua</a>
             </div>
-            <ul class="mt-3 divide-y divide-amber-200">
+            <ul class='mt-3 divide-y divide-amber-200'>
                 @foreach ($pendingBills as $bill)
-                    <li class="flex flex-wrap items-center justify-between gap-3 py-3">
+                    <li class='flex flex-wrap items-center justify-between gap-3 py-3'>
                         <div>
-                            <a href="{{ route('orders.show', $bill) }}" class="font-semibold text-navy-500 hover:underline">{{ $bill->order_no }}</a>
-                            <p class="text-sm text-text-muted">
-                                {{ format_rupiah($bill->total) }}
-                                @if ($bill->paidAmount() > 0)
-                                    · sudah dibayar {{ format_rupiah($bill->paidAmount()) }}
-                                @endif
-                            </p>
+                            <a href='{{ route('orders.show', $bill) }}' class='font-semibold text-navy-500 hover:underline'>{{ $bill->order_no }}</a>
+                            <p class='text-sm text-text-muted'>{{ format_rupiah($bill->total) }} · {{ $bill->status_enum->label() }}</p>
                         </div>
-                        @if ($bill->status === \App\Enums\OrderStatus::MENUNGGU_PELUNASAN->value && $bill->pickup_deadline_at)
-                            <span class="text-sm text-amber-900">Batas {{ $bill->pickup_deadline_at->format('d M Y H:i') }}</span>
+                        @if ($bill->status === \App\Enums\OrderStatus::MENUNGGU_PELUNASAN->value)
+                            <div class='text-sm text-amber-900'>
+                                <p>CO {{ ucfirst($bill->platform) }} marketplace · wajib diselesaikan sebelum hangus.</p>
+                                @if ($bill->pickup_deadline_at)<p>⏰ Sisa waktu: {{ now()->diffForHumans($bill->pickup_deadline_at, ['parts' => 2, 'short' => true]) }}</p>@endif
+                            </div>
+                        @else
+                            <a href='{{ route('orders.show', $bill) }}#payment-proof-form' class='rounded-lg bg-[#4FC3F7] px-4 py-2 text-sm font-semibold text-white hover:brightness-95'>Bayar &amp; Unggah Bukti</a>
                         @endif
-                        <a href="{{ route('orders.show', $bill) }}" class="rounded-lg bg-primary-600 px-4 py-2 text-sm font-semibold text-white hover:bg-primary-700">
-                            {{ $bill->status === \App\Enums\OrderStatus::MENUNGGU_PEMBAYARAN->value ? 'Bayar & Unggah Bukti' : 'Lunasi & Ambil Sekarang' }}
-                        </a>
                     </li>
                 @endforeach
             </ul>
@@ -72,9 +77,11 @@
         </a>
         <a href="{{ route('referrals.index') }}" class="rounded-xl border border-border bg-white p-4 hover:bg-surface-2">
             <p class="text-xs uppercase tracking-wide text-text-muted">Teman Diundang</p>
-            <p class="mt-1 text-2xl font-bold">{{ number_format($referralCount) }}</p>
+            <p class="mt-1 text-2xl font-bold">{{ number_format($completedReferrals) }}</p>
         </a>
     </div>
+
+    <x-dashboard-tabs />
 
     <section id="orders" class="overflow-hidden rounded-xl border border-border bg-white">
         <div class="flex flex-wrap items-center justify-between gap-3 border-b border-border p-5">

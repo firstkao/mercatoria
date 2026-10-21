@@ -12,111 +12,118 @@ use Illuminate\View\View;
 
 class SettingsController extends Controller
 {
-    private const OPTIONAL_SETTINGS = [
-        'pause_customer_emails',
-        'image_protection_enabled',
-        'image_watermark_enabled',
-        'image_watermark_opacity',
+    public const TABS = [
+        'umum' => 'Umum',
+        'harga' => 'Harga & Pengiriman',
+        'koin' => 'Koin',
+        'email' => 'Email',
+        'state' => 'State',
+        'security' => 'Security',
+        'seo' => 'SEO',
+        'api' => 'API',
     ];
 
+    /** key => [type, group, description, validation rules]; only keys present in the request are saved. */
     private const SETTINGS = [
-        'ongkir_cn_btm_per_kg' => [
-            'type' => 'int',
-            'group' => 'pricing',
-            'description' => 'Ongkir CN → Batam per kg',
-        ],
-        'ongkir_btm_jkt_per_kg' => [
-            'type' => 'int',
-            'group' => 'pricing',
-            'description' => 'Ongkir Batam → Jakarta per kg',
-        ],
-        'default_weight_gram' => [
-            'type' => 'int',
-            'group' => 'pricing',
-            'description' => 'Default berat produk (gram)',
-        ],
-        'pause_customer_emails' => [
-            'type' => 'bool',
-            'group' => 'email',
-            'description' => 'Stop kirim email ke customer (mode testing/maintenance)',
-        ],
-        'image_protection_enabled' => [
-            'type' => 'bool',
-            'group' => 'security',
-            'description' => 'Proteksi klik-kanan, drag, dan long-press pada gambar',
-        ],
-        'image_watermark_enabled' => [
-            'type' => 'bool',
-            'group' => 'security',
-            'description' => 'Watermark otomatis pada foto yang diunggah',
-        ],
-        'image_watermark_opacity' => [
-            'type' => 'int',
-            'group' => 'security',
-            'description' => 'Opacity watermark (%)',
-        ],
-        'ga4_measurement_id' => [
-            'type' => 'string',
-            'group' => 'seo',
-            'description' => 'GA4 Measurement ID',
-        ],
+        'rate_rmb_idr' => ['float', 'pricing', 'Rate RMB → IDR', ['numeric', 'min:1', 'max:999999']],
+        'profit_percent' => ['float', 'pricing', 'Profit (%)', ['numeric', 'min:0', 'max:1000']],
+        'ongkir_cn_btm_per_kg' => ['int', 'pricing', 'Ongkir CN → Batam per kg', ['integer', 'min:0', 'max:999999999']],
+        'ongkir_btm_jkt_per_kg' => ['int', 'pricing', 'Ongkir Batam → Jakarta per kg', ['integer', 'min:0', 'max:999999999']],
+        'default_weight_gram' => ['int', 'pricing', 'Default berat produk (gram)', ['integer', 'min:0', 'max:999999']],
+        'fee_toco_fp' => ['int', 'pricing', 'Fee Toco Full Payment', ['integer', 'min:0', 'max:999999999']],
+        'fee_toco_dp' => ['int', 'pricing', 'Fee Toco DP', ['integer', 'min:0', 'max:999999999']],
+        'fee_shopee_fp' => ['int', 'pricing', 'Fee Shopee Full Payment', ['integer', 'min:0', 'max:999999999']],
+        'fee_shopee_dp_percent' => ['float', 'pricing', 'Fee Shopee DP (%)', ['numeric', 'min:0', 'max:100']],
+        'fee_qris_percent' => ['float', 'pricing', 'Fee QRIS (%)', ['numeric', 'min:0', 'max:100']],
+        'qris_threshold' => ['int', 'pricing', 'Threshold fee QRIS (Rp)', ['integer', 'min:0', 'max:999999999']],
+        'dp_minimum_percent' => ['int', 'pricing', 'DP minimum (%)', ['integer', 'min:1', 'max:100']],
+        'pause_customer_emails' => ['bool', 'email', 'Stop kirim email ke customer (mode testing/maintenance)', ['boolean']],
+        'notif_admin_payment_proof' => ['bool', 'email', 'Notifikasi email admin saat bukti bayar masuk', ['boolean']],
+        'image_protection_enabled' => ['bool', 'security', 'Proteksi klik-kanan, drag, dan long-press pada gambar', ['boolean']],
+        'image_watermark_enabled' => ['bool', 'security', 'Watermark otomatis pada foto yang diunggah', ['boolean']],
+        'image_watermark_text' => ['string', 'security', 'Teks watermark', ['nullable', 'string', 'max:60']],
+        'image_watermark_pattern' => ['string', 'security', 'Pola watermark', ['in:diagonal_tiled,center,corner']],
+        'image_watermark_opacity' => ['int', 'security', 'Opacity watermark (%)', ['integer', 'min:5', 'max:80']],
+        'image_watermark_heavy_direct' => ['bool', 'security', 'Watermark tebal saat gambar dibuka langsung', ['boolean']],
+        'ga4_measurement_id' => ['string', 'seo', 'GA4 Measurement ID', ['nullable', 'string', 'regex:/\AG-[A-Z0-9]{4,20}\z/']],
     ];
 
-    public function edit(): View
+    public function edit(Request $request): View
     {
+        $tab = array_key_exists((string) $request->query('tab'), self::TABS) ? $request->query('tab') : 'umum';
         $settings = Setting::query()
             ->whereIn('key', array_keys(self::SETTINGS))
             ->pluck('value', 'key');
 
-        return view('admin.settings.edit', compact('settings'));
+        return view('admin.settings.edit', [
+            'settings' => $settings,
+            'tab' => $tab,
+            'tabs' => self::TABS,
+            'emailPaused' => (bool) ($settings->get('pause_customer_emails') ?? false) && $settings->get('pause_customer_emails') !== '0',
+        ]);
     }
 
     public function update(Request $request): RedirectResponse
     {
-        $validated = $request->validate([
-            'ongkir_cn_btm_per_kg' => ['required', 'integer', 'min:0', 'max:999999999'],
-            'ongkir_btm_jkt_per_kg' => ['required', 'integer', 'min:0', 'max:999999999'],
-            'default_weight_gram' => ['required', 'integer', 'min:0', 'max:999999'],
-            'ga4_measurement_id' => ['nullable', 'string', 'regex:/\AG-[A-Z0-9]{4,20}\z/'],
-            'pause_customer_emails' => ['sometimes', 'boolean'],
-            'image_protection_enabled' => ['sometimes', 'boolean'],
-            'image_watermark_enabled' => ['sometimes', 'boolean'],
-            'image_watermark_opacity' => ['sometimes', 'integer', 'min:5', 'max:80'],
-        ]);
+        $rules = ['pause_reason' => ['nullable', 'string', 'max:500']];
+        foreach (self::SETTINGS as $key => [, , , $keyRules]) {
+            $rules[$key] = ['sometimes', ...$keyRules];
+        }
+        $rules['ongkir_cn_btm_per_kg'][] = 'required';
+        $rules['ongkir_btm_jkt_per_kg'][] = 'required';
+        $rules['default_weight_gram'][] = 'required';
+        $validated = $request->validate($rules);
 
-        DB::transaction(function () use ($validated): void {
-            $old = Setting::query()
-                ->whereIn('key', array_keys(self::SETTINGS))
-                ->pluck('value', 'key')
-                ->all();
+        $events = [];
+        DB::transaction(function () use ($validated, &$events): void {
+            $old = Setting::query()->whereIn('key', array_keys(self::SETTINGS))->pluck('value', 'key')->all();
             $new = [];
 
-            foreach (self::SETTINGS as $key => $metadata) {
-                if (! array_key_exists($key, $validated) && in_array($key, self::OPTIONAL_SETTINGS, true)) {
+            foreach (self::SETTINGS as $key => [$type, $group, $description]) {
+                if (! array_key_exists($key, $validated)) {
                     continue;
                 }
                 $value = $validated[$key] ?? '';
-                if ($metadata['type'] === 'bool') {
+                if ($type === 'bool') {
                     $value = $value ? '1' : '0';
                 }
-                $setting = Setting::query()->updateOrCreate(
+                Setting::query()->updateOrCreate(
                     ['key' => $key],
-                    [...$metadata, 'value' => (string) $value],
+                    ['type' => $type, 'group' => $group, 'description' => $description, 'value' => (string) $value],
                 );
-                cache()->forget("setting.{$setting->key}");
+                cache()->forget("setting.{$key}");
                 $new[$key] = (string) $value;
+            }
+
+            $changed = array_filter($new, fn ($v, $k) => ($old[$k] ?? null) !== $v, ARRAY_FILTER_USE_BOTH);
+            $reason = trim((string) ($validated['pause_reason'] ?? ''));
+
+            if (array_key_exists('pause_customer_emails', $changed)) {
+                $enabled = $changed['pause_customer_emails'] === '1';
+                AdminLog::record(
+                    'toggle_customer_email',
+                    Setting::class,
+                    null,
+                    ['pause_customer_emails' => $old['pause_customer_emails'] ?? '0'],
+                    ['pause_customer_emails' => $changed['pause_customer_emails'], 'reason' => $reason],
+                    ($enabled ? 'Admin menghentikan email customer' : 'Admin mengaktifkan kembali email customer')
+                        .($reason !== '' ? ": {$reason}" : '.'),
+                );
+                $events[] = ['name' => 'admin_toggle_customer_email', 'params' => ['enabled' => $enabled]];
             }
 
             AdminLog::record(
                 'settings_updated',
                 Setting::class,
                 null,
-                $old,
+                array_intersect_key($old, $new),
                 $new,
-                'Admin memperbarui pengaturan ongkir dan GA4.',
+                'Admin memperbarui pengaturan: '.(implode(', ', array_keys($changed)) ?: 'tanpa perubahan').'.',
             );
         });
 
-        return back()->with('success', 'Pengaturan pengiriman dan GA4 berhasil disimpan.');
+        $redirect = back()->with('success', 'Pengaturan berhasil disimpan.');
+
+        return $events ? $redirect->with('ga4_events', $events) : $redirect;
     }
 }

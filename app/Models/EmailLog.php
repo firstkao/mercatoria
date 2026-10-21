@@ -15,11 +15,17 @@ class EmailLog extends Model
     protected $casts = ['sent_at' => 'datetime'];
 
     public function template(): BelongsTo
-    { return $this->belongsTo(EmailTemplate::class, 'template_id'); }
+    {
+        return $this->belongsTo(EmailTemplate::class, 'template_id');
+    }
 
     public function isSent(): bool
-    { return $this->status === 'sent'; }
+    {
+        return $this->status === 'sent';
+    }
 
     public function isFailed(): bool
-    { return $this->status === 'failed'; }
+    {
+        return $this->status === 'failed';
+    }
 }

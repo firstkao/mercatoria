@@ -19,8 +19,12 @@ class PaymentMethod extends Model
     }
 
     public function isTransfer(): bool
-    { return $this->type === 'transfer'; }
+    {
+        return $this->type === 'transfer';
+    }
 
     public function isQr(): bool
-    { return $this->type === 'qr'; }
+    {
+        return $this->type === 'qr';
+    }
 }

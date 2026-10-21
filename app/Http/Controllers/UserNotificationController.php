@@ -11,16 +11,44 @@ class UserNotificationController extends Controller
 {
     public function unreadCount(Request $request): JsonResponse
     {
+        $user = $request->user();
+        $notifications = $user->notifications()->latest()->limit(10)->get();
+
         return response()->json([
-            'count' => $request->user()->notifications()->where('is_read', false)->count(),
+            'count' => $user->notifications()->where('is_read', false)->count(),
+            'notifications' => $notifications->map(fn ($notification): array => [
+                'id' => $notification->id,
+                'title' => $notification->title,
+                'message' => $notification->message,
+                'icon' => $notification->icon ?: '🔔',
+                'is_read' => (bool) $notification->is_read,
+                'created_at' => $notification->created_at->toIso8601String(),
+                'created_at_human' => $notification->created_at->diffForHumans(),
+            ])->values(),
         ]);
     }
 
     public function index(Request $request): View
     {
-        $notifications = $request->user()->notifications()->latest()->paginate(30);
+        $filters = $request->validate([
+            'filter' => ['nullable', 'in:all,unread,order,coin,voucher,state,system'],
+            'q' => ['nullable', 'string', 'max:100'],
+            'sort' => ['nullable', 'in:newest,oldest'],
+        ]);
+        $query = $request->user()->notifications()
+            ->when(($filters['filter'] ?? 'all') === 'unread', fn ($builder) => $builder->where('is_read', false))
+            ->when(isset($filters['filter']) && ! in_array($filters['filter'], ['all', 'unread'], true),
+                fn ($builder) => $builder->where('type', $filters['filter']))
+            ->when($filters['q'] ?? null, fn ($builder, string $search) => $builder->where(function ($where) use ($search): void {
+                $where->where('title', 'like', '%'.$search.'%')
+                    ->orWhere('message', 'like', '%'.$search.'%');
+            }));
 
-        return view('notifications.index', compact('notifications'));
+        $notifications = ($filters['sort'] ?? 'newest') === 'oldest'
+            ? $query->oldest()->paginate(20)->withQueryString()
+            : $query->latest()->paginate(20)->withQueryString();
+
+        return view('notifications.index', compact('notifications', 'filters'));
     }
 
     public function markAllRead(Request $request): RedirectResponse
@@ -30,6 +58,25 @@ class UserNotificationController extends Controller
             ->update(['is_read' => true, 'read_at' => now()]);
 
         return back()->with('success', 'Semua notifikasi ditandai sudah dibaca.');
+    }
+
+    public function bulk(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'notification_ids' => ['required', 'array', 'min:1'],
+            'notification_ids.*' => ['required', 'integer', 'distinct'],
+            'action' => ['required', 'in:read,unread,delete'],
+        ]);
+        $notifications = $request->user()->notifications()->whereIn('id', $validated['notification_ids']);
+
+        if ($validated['action'] === 'delete') {
+            $notifications->delete();
+        } else {
+            $read = $validated['action'] === 'read';
+            $notifications->update(['is_read' => $read, 'read_at' => $read ? now() : null]);
+        }
+
+        return back()->with('success', 'Notifikasi terpilih berhasil diperbarui.');
     }
 
     public function open(Request $request, int $notification): RedirectResponse

@@ -143,7 +143,7 @@ class SprintThreeTest extends TestCase
 
         $response = $this->actingAs($admin)->post(route('office.users.store'), [
             ...$this->legacyCustomerData(),
-            'no_hp' => '08123456789',
+            'no_hp' => '0712345',
             'kecamatan' => '',
         ]);
 
@@ -244,14 +244,14 @@ class SprintThreeTest extends TestCase
         $productResponse = $this->actingAs($user)->get(route('products.direct', $product->slug));
         $productResponse->assertOk()->assertSee('Lengkapi profil dulu');
         $this->assertMatchesRegularExpression(
-            '/<button\b(?=[^>]*class="flex-1 rounded-lg bg-primary-600)(?=[^>]*\sdisabled(?:\s|=|>))[^>]*>/s',
+            '/<button\b(?=[^>]*class="flex-1 rounded-lg bg-\[#4FC3F7\])(?=[^>]*\sdisabled(?:\s|=|>))[^>]*>/s',
             $productResponse->getContent(),
         );
 
         $cartResponse = $this->get(route('cart.index'));
         $cartResponse->assertOk()->assertSee('Lengkapi Profil →');
         $this->assertMatchesRegularExpression(
-            '/<button\b(?=[^>]*class="rounded-lg bg-primary-600)(?=[^>]*\sdisabled(?:\s|=|>))[^>]*>/s',
+            '/<button\b(?=[^>]*class=["\']mt-4 w-full rounded-lg bg-\[#4FC3F7\])(?=[^>]*\sdisabled(?:\s|=|>))[^>]*>/s',
             $cartResponse->getContent(),
         );
 
@@ -260,7 +260,7 @@ class SprintThreeTest extends TestCase
             ->assertSee('Buat Pesanan')
             ->assertSee('Lengkapi Profil →');
         $this->assertMatchesRegularExpression(
-            '/<button\b(?=[^>]*class="w-full rounded-lg bg-primary-600)(?=[^>]*\sdisabled(?:\s|=|>))[^>]*>/s',
+            '/<button\b(?=[^>]*class="w-full rounded-lg bg-\[#4FC3F7\])(?=[^>]*\sdisabled(?:\s|=|>))[^>]*>/s',
             $checkoutResponse->getContent(),
         );
 
@@ -269,7 +269,7 @@ class SprintThreeTest extends TestCase
         $response = $this->get(route('products.direct', $product->slug));
         $response->assertOk()->assertDontSee('Lengkapi Profil →');
         $this->assertDoesNotMatchRegularExpression(
-            '/<button\b(?=[^>]*class="flex-1 rounded-lg bg-primary-600)(?=[^>]*\sdisabled(?:\s|=|>))[^>]*>/s',
+            '/<button\b(?=[^>]*class="flex-1 rounded-lg bg-\[#4FC3F7\])(?=[^>]*\sdisabled(?:\s|=|>))[^>]*>/s',
             $response->getContent(),
         );
     }

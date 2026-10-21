@@ -1,10 +1,11 @@
 @extends('layouts.app')
 
-@section('title', 'Checkout')
+@section('title', 'Checkout Pesanan')
 
 @section('content')
-<div class="mx-auto max-w-3xl px-4 py-8">
-    <h1 class="text-2xl font-bold text-navy-500">Checkout</h1>
+<div class="mx-auto max-w-7xl px-4 py-8">
+    <h1 class="text-2xl font-bold text-navy-500">Checkout Pesanan</h1>
+    <section class="mt-5 rounded-xl border border-border bg-white p-5"><h2 class="font-semibold">Alamat Pengiriman</h2><p class="mt-2 font-semibold">{{ auth()->user()->name }} · {{ auth()->user()->no_hp }}</p><p class="text-sm text-text-muted">{{ collect([auth()->user()->alamat_lengkap, auth()->user()->kecamatan, auth()->user()->kota, auth()->user()->provinsi, auth()->user()->kode_pos])->filter()->join(', ') }}</p><a href="{{ route('profile.edit') }}" class="mt-2 inline-block text-sm font-semibold text-navy-500 hover:underline">Ubah di Edit Profil →</a></section>
     @auth
         @if (auth()->user()->hasVerifiedEmail() && ! auth()->user()->hasCompletedProfile())
             <x-profile-banner />
@@ -27,8 +28,7 @@
             </div>
         @endforeach
         <div class="space-y-2 p-4 text-sm">
-            <div class="flex justify-between"><span>Subtotal item + ongkir</span><span>{{ format_rupiah($quote['subtotal']) }}</span></div>
-            <div class="flex justify-between text-text-muted"><span>Ongkir termasuk di subtotal</span><span>{{ format_rupiah($quote['shipping_cost']) }}</span></div>
+            <div class="flex justify-between"><span>Subtotal item</span><span>{{ format_rupiah($quote['subtotal'] - ($quote['discount_amount'] - $quote['coin_discount_amount'] - $quote['voucher_discount_amount'])) }}</span></div>
             @if ($quote['discount_amount'] > 0)
                 @if ($quote['coin_discount_amount'] > 0)
                     <div class="flex justify-between"><span>Diskon koin</span><span>-{{ format_rupiah($quote['coin_discount_amount']) }}</span></div>
@@ -36,12 +36,9 @@
                 @if ($quote['voucher_discount_amount'] > 0)
                     <div class="flex justify-between"><span>Diskon voucher</span><span>-{{ format_rupiah($quote['voucher_discount_amount']) }}</span></div>
                 @endif
-                @if ($quote['discount_amount'] > $quote['coin_discount_amount'] + $quote['voucher_discount_amount'])
-                    <div class="flex justify-between"><span>Diskon produk</span><span>-{{ format_rupiah($quote['discount_amount'] - $quote['coin_discount_amount'] - $quote['voucher_discount_amount']) }}</span></div>
-                @endif
             @endif
-            <div class="flex justify-between"><span>Biaya marketplace &amp; QRIS</span><span>{{ format_rupiah($quote['fee_marketplace'] + $quote['fee_qris']) }}</span></div>
-            <div class="text-xs text-text-muted">Margin layanan {{ number_format($profitPercent, 2, ',', '.') }}% dan pembulatan telah diperhitungkan pada total.</div>
+            <div class="flex justify-between"><span>Fee marketplace</span><span>{{ format_rupiah($quote['fee_marketplace']) }}</span></div>
+            @if ($quote['fee_qris'] > 0)<div class="flex justify-between"><span>Fee QRIS</span><span>{{ format_rupiah($quote['fee_qris']) }}</span></div>@endif
             <div class="flex justify-between border-t border-border pt-3 text-base font-bold"><span>Total dibulatkan</span><span>{{ format_rupiah($quote['total']) }}</span></div>
             @if (old('payment_scheme', request('payment_scheme', 'fp')) === 'dp')
                 <div class="flex justify-between font-semibold"><span>DP 50% yang dibayar</span><span>{{ format_rupiah($quote['dp_amount']) }}</span></div>
@@ -111,12 +108,13 @@
         <input type="hidden" name="payment_scheme" value="{{ request('payment_scheme', 'fp') }}">
         <input type="hidden" name="payment_method" value="{{ request('payment_method', 'bca') }}">
         <input type="hidden" name="use_coins" value="{{ request()->boolean('use_coins') ? 1 : 0 }}">
+        <input type="hidden" name="customer_note" value="{{ $customerNote }}">
         @if (request('user_voucher_id'))
             <input type="hidden" name="user_voucher_id" value="{{ request('user_voucher_id') }}">
         @endif
         <button type="submit"
                 @disabled(auth()->user()->hasVerifiedEmail() && ! auth()->user()->hasCompletedProfile())
-                class="w-full rounded-lg bg-primary-600 px-5 py-3 font-semibold text-white hover:bg-primary-700 disabled:cursor-not-allowed disabled:bg-primary-300 disabled:opacity-50">
+                class="w-full rounded-lg bg-[#4FC3F7] px-5 py-3 font-semibold text-white hover:brightness-95 disabled:cursor-not-allowed disabled:bg-primary-300 disabled:opacity-50">
             Buat Pesanan
         </button>
     </form>

@@ -1,9 +1,12 @@
 <?php
+
 namespace App\Enums;
+
 enum PaymentScheme: string
 {
     case FP = 'fp';
     case DP = 'dp';
+
     public function label(): string
     {
         return match ($this) {

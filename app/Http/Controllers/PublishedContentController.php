@@ -6,12 +6,14 @@ use App\Models\Game;
 use App\Models\Page;
 use App\Models\PreorderPage;
 use App\Services\Content\ContentHtmlSanitizer;
+use App\Services\Security\CrawlerBotService;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class PublishedContentController extends Controller
 {
-    public function show(Request $request, string $slug, ContentHtmlSanitizer $sanitizer): View
+    public function show(Request $request, string $slug, ContentHtmlSanitizer $sanitizer): View|RedirectResponse
     {
         $page = Page::query()->published()->where('slug', $slug)->first();
         if ($page) {
@@ -34,6 +36,12 @@ class PublishedContentController extends Controller
         }
 
         $game = Game::query()->active()->where('slug', $slug)->firstOrFail();
+
+        if (! $request->user() && ! app(CrawlerBotService::class)->isWhitelisted($request)) {
+            $request->session()->put('url.intended', $request->fullUrl());
+
+            return redirect()->route('login');
+        }
 
         return app(CatalogController::class)->showGame($request, $game);
     }

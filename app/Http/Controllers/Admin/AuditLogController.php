@@ -30,8 +30,9 @@ class AuditLogController extends Controller
 
         return view('admin.logs.index', [
             'kind' => 'activity',
+            'actions' => ActivityLog::query()->distinct()->orderBy('action')->pluck('action'),
             'title' => 'Activity Log',
-            'logs' => $logs->latest('id')->paginate(50)->withQueryString(),
+            'logs' => $this->applyGrouping($logs, $filters)->paginate(50)->withQueryString(),
             'filters' => $filters,
         ]);
     }
@@ -51,8 +52,9 @@ class AuditLogController extends Controller
 
         return view('admin.logs.index', [
             'kind' => 'auth',
+            'actions' => AuthLog::query()->distinct()->orderBy('action')->pluck('action'),
             'title' => 'Auth Log',
-            'logs' => $logs->latest('id')->paginate(50)->withQueryString(),
+            'logs' => $this->applyGrouping($logs, $filters)->paginate(50)->withQueryString(),
             'filters' => $filters,
         ]);
     }
@@ -74,8 +76,9 @@ class AuditLogController extends Controller
 
         return view('admin.logs.index', [
             'kind' => 'admin',
+            'actions' => AdminLog::query()->distinct()->orderBy('action')->pluck('action'),
             'title' => 'Admin Log',
-            'logs' => $logs->latest('id')->paginate(50)->withQueryString(),
+            'logs' => $this->applyGrouping($logs, $filters)->paginate(50)->withQueryString(),
             'filters' => $filters,
         ]);
     }
@@ -137,7 +140,18 @@ class AuditLogController extends Controller
             'action' => ['nullable', 'string', 'max:64'],
             'from' => ['nullable', 'date'],
             'to' => ['nullable', 'date', 'after_or_equal:from'],
-        ]) + ['q' => null, 'action' => null, 'from' => null, 'to' => null];
+            'group' => ['nullable', 'boolean'],
+        ]) + ['q' => null, 'action' => null, 'from' => null, 'to' => null, 'group' => false];
+    }
+
+    /** Group mengelompokkan baris milik pelaku/IP yang sama berurutan (sesi). */
+    private function applyGrouping(Builder $query, array $filters): Builder
+    {
+        if ($filters['group']) {
+            $query->orderBy('ip_address');
+        }
+
+        return $query->latest('id');
     }
 
     private function applyDateFilters(Builder $query, array $filters): void

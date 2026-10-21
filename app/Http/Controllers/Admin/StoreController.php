@@ -75,6 +75,20 @@ class StoreController extends Controller
             ->with('success', 'Perubahan store berhasil disimpan.');
     }
 
+    public function bulkDestroy(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'ids' => ['required', 'array', 'min:1'],
+            'ids.*' => ['integer', 'exists:stores,id'],
+        ], ['ids.required' => 'Pilih minimal satu store.']);
+
+        $stores = Store::whereIn('id', $validated['ids'])->get();
+        $stores->each(fn (Store $store) => $this->storeService->delete($store));
+
+        return redirect()->route('office.stores.index')
+            ->with('success', $stores->count().' store berhasil dihapus.');
+    }
+
     public function destroy(Store $store): RedirectResponse
     {
         $this->storeService->delete($store);
@@ -98,9 +112,11 @@ class StoreController extends Controller
             'name.required' => 'Nama store wajib diisi.',
             'name.unique' => 'Nama store sudah digunakan.',
             'min_belanja_rmb.required' => 'Minimum belanja wajib diisi.',
-            'min_belanja_rmb.min' => 'Minimum belanja tidak boleh kurang dari 0.',
+            'min_belanja_rmb.numeric' => 'Minimum belanja harus berupa angka.',
+            'min_belanja_rmb.min' => 'Minimum belanja tidak boleh negatif.',
             'ongkir_rmb.required' => 'Ongkir wajib diisi.',
-            'ongkir_rmb.min' => 'Ongkir tidak boleh kurang dari 0.',
+            'ongkir_rmb.numeric' => 'Ongkir harus berupa angka.',
+            'ongkir_rmb.min' => 'Ongkir tidak boleh negatif.',
         ]);
     }
 }

@@ -52,6 +52,8 @@
 
     <x-toast />
 
+    <x-floating-buttons />
+    <x-edu-modal />
     <x-ga4-tracking />
     @stack('structured-data')
 

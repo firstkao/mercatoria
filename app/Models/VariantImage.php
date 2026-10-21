@@ -10,5 +10,7 @@ class VariantImage extends Model
     protected $fillable = ['variant_id', 'image_path', 'sort_order'];
 
     public function variant(): BelongsTo
-    { return $this->belongsTo(ProductVariant::class, 'variant_id'); }
+    {
+        return $this->belongsTo(ProductVariant::class, 'variant_id');
+    }
 }

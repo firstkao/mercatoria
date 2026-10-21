@@ -3,6 +3,7 @@
 namespace App\Http\Middleware;
 
 use App\Models\SpammerIp;
+use App\Services\Security\CrawlerBotService;
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -16,7 +17,7 @@ class EnforceIpBlacklist
         $isRegisterSubmission = $path === 'register' && $request->isMethod('POST');
 
         if ($path === '' || $path === 'up' || $isLoginOrLogout || $isRegisterSubmission
-            || $request->attributes->get('is_verified_bot', false)) {
+            || app(CrawlerBotService::class)->isWhitelisted($request)) {
             return $next($request);
         }
 

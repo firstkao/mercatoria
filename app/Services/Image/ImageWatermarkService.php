@@ -57,7 +57,7 @@ class ImageWatermarkService
         }
 
         $image = (new ImageManager(new GdDriver))->read($binary);
-        $text = (string) config('mercatoria.image_protection.watermark_text', 'MERCATORIA · mercatoria.id');
+        $text = (string) (setting('image_watermark_text') ?: config('mercatoria.image_protection.watermark_text', 'MERCATORIA · mercatoria.id'));
         $opacity = max(5, min(80, (int) setting('image_watermark_opacity', config('mercatoria.image_protection.watermark_opacity', 25))));
         $alpha = round($opacity / 100, 2);
         $size = max(14, (int) round(min($image->width(), $image->height()) / 14));

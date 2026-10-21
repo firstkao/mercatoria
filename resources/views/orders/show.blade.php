@@ -16,6 +16,7 @@
             <p class="mt-1 text-sm text-text-muted">Dibuat {{ $order->created_at->format('d M Y H:i') }}</p>
         </div>
         <span class="rounded-full px-3 py-1 text-sm font-semibold" style="background-color: {{ $order->status_enum->color() }}">{{ $order->status_enum->label() }}</span>
+        <a href="{{ route('orders.invoice', $order) }}" class="rounded-lg border border-border px-4 py-2 text-sm font-semibold text-navy-500 hover:bg-surface-2">Download Invoice PDF</a>
     </div>
 
     @if (session('success'))
@@ -78,10 +79,10 @@
         </dl>
     </section>
 
-    @if (in_array($order->status, [\App\Enums\OrderStatus::MENUNGGU_PEMBAYARAN->value, \App\Enums\OrderStatus::MENUNGGU_PELUNASAN->value], true))
-        <section class="mt-5 rounded-xl border border-border bg-white p-5">
-            <h2 class="text-lg font-semibold">{{ $order->status === \App\Enums\OrderStatus::MENUNGGU_PELUNASAN->value ? 'Unggah Bukti Pelunasan' : 'Bayar & Unggah Bukti' }}</h2>
-            <p class="mt-1 text-sm text-text-muted">Tagihan saat ini {{ format_rupiah($order->status === \App\Enums\OrderStatus::MENUNGGU_PEMBAYARAN->value && $order->payment_scheme === 'dp' ? min($balanceDue, (float) $order->total / 2) : $balanceDue) }}. File JPG, PNG, atau WebP, maksimal 5 MB.</p>
+    @if ($order->status === \App\Enums\OrderStatus::MENUNGGU_PEMBAYARAN->value)
+        <section id="payment-proof-form" class="mt-5 rounded-xl border border-border bg-white p-5">
+            <h2 class="text-lg font-semibold">Bayar &amp; Unggah Bukti</h2>
+            <p class="mt-1 text-sm text-text-muted">Tagihan saat ini {{ format_rupiah($order->status === \App\Enums\OrderStatus::MENUNGGU_PEMBAYARAN->value && $order->payment_scheme === 'dp' ? min($balanceDue, (float) $order->total / 2) : $balanceDue) }}. File JPG, PNG, atau WebP, maksimal 1 MB.</p>
             @if ($order->payments->contains(fn ($payment) => $payment->is_locked))
                 <p class="mt-3 rounded-lg bg-amber-50 p-3 text-sm text-amber-900">Bukti pembayaran sedang diverifikasi admin.</p>
             @else
@@ -97,7 +98,18 @@
         </section>
     @endif
 
-    <section class="mt-5 rounded-xl border border-border bg-white p-5">
+        @if ($order->status === \App\Enums\OrderStatus::MENUNGGU_PELUNASAN->value)
+        <section class='mt-5 rounded-xl border border-amber-300 bg-amber-50 p-5'>
+            <h2 class='text-lg font-semibold text-amber-900'>Menunggu Pelunasan &amp; Pengambilan</h2>
+            <p class='mt-2 text-sm text-amber-900'>Checkout pesanan di marketplace pilihan ({{ ucfirst($order->platform) }}) untuk menerbitkan resi logistik. Tidak ada tombol pelunasan di web.</p>
+            @if ($order->pickup_deadline_at)
+                <p class='mt-3 text-sm font-semibold text-amber-900'>Wajib checkout sebelum {{ $order->pickup_deadline_at->format('d M Y H:i') }} agar pesanan tidak hangus.</p>
+                <p data-pickup-countdown data-seconds='{{ $order->pickup_remaining_seconds }}' class='mt-1 text-lg font-bold text-amber-900'></p>
+            @endif
+        </section>
+    @endif
+
+<section class="mt-5 rounded-xl border border-border bg-white p-5">
         <h2 class="text-lg font-semibold">Riwayat Status</h2>
         @if ($order->statusLogs->isEmpty())
             <p class="mt-3 text-sm text-text-muted">Belum ada perubahan status.</p>
@@ -143,5 +155,19 @@
                 window.mercatoriaTrack(@js($event['name']), @js($event['params']));
             @endforeach
         }
+    </script>
+    <script>
+        document.querySelectorAll('[data-pickup-countdown]').forEach(counter => {
+            let seconds = Number(counter.dataset.seconds);
+            const update = () => {
+                const days = Math.floor(seconds / 86400);
+                const hours = Math.floor((seconds % 86400) / 3600);
+                const minutes = Math.floor((seconds % 3600) / 60);
+                counter.textContent = 'Sisa waktu: ' + days + ' hari ' + hours + ' jam ' + minutes + ' menit';
+                seconds = Math.max(0, seconds - 1);
+            };
+            update();
+            window.setInterval(update, 1000);
+        });
     </script>
 @endpush

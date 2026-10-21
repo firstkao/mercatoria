@@ -1,11 +1,14 @@
 <?php
+
 namespace App\Enums;
+
 enum RefundStatus: string
 {
     case REQUESTED = 'requested';
     case PROCESSING = 'processing';
     case COMPLETED = 'completed';
     case REJECTED = 'rejected';
+
     public function label(): string
     {
         return match ($this) {

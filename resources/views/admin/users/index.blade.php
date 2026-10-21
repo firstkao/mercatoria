@@ -20,12 +20,13 @@
 </form>
 
 <div class="mt-5 overflow-x-auto rounded-xl border border-border bg-white">
-    <table class="w-full min-w-[720px] text-left text-sm">
+    <table class="w-full min-w-[800px] text-left text-sm">
         <thead class="bg-navy-500 text-white">
             <tr>
                 <th class="px-4 py-3">Customer</th>
                 <th class="px-4 py-3">No. HP</th>
                 <th class="px-4 py-3">Status Email</th>
+                <th class="px-4 py-3">Status Profil</th>
                 <th class="px-4 py-3">Asal</th>
                 <th class="px-4 py-3">Aksi</th>
             </tr>
@@ -39,7 +40,14 @@
                     </th>
                     <td class="px-4 py-3">{{ $user->no_hp ?: '—' }}</td>
                     <td class="px-4 py-3">{{ $user->hasVerifiedEmail() ? 'Terverifikasi' : 'Belum verifikasi' }}</td>
-                    <td class="px-4 py-3">{{ $user->isMigrated() ? 'Migrasi lama' : 'Registrasi baru' }}</td>
+                    <td class="px-4 py-3">{{ $user->tgl_lahir ? 'Lengkap' : 'Belum lengkap' }}</td>
+                    <td class="px-4 py-3">
+                        @if ($user->isMigrated())
+                            <span class="rounded-full bg-[#E3F2FD] px-2 py-1 text-xs font-semibold text-[#1E88E5]">🔄 Migrated</span>
+                        @else
+                            Registrasi baru
+                        @endif
+                    </td>
                     <td class="px-4 py-3">
                         <div class="flex flex-wrap items-center gap-3">
                             <a href="{{ route('office.users.show', $user) }}" class="font-medium text-navy-500 hover:underline">Detail</a>
@@ -55,7 +63,7 @@
                     </td>
                 </tr>
             @empty
-                <tr><td colspan="5" class="px-4 py-8 text-center text-text-muted">Belum ada customer.</td></tr>
+                <tr><td colspan="6" class="px-4 py-8 text-center text-text-muted">Belum ada customer.</td></tr>
             @endforelse
         </tbody>
     </table>

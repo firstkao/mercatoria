@@ -5,6 +5,7 @@
 @section('content')
 <div class="flex flex-wrap items-start justify-between gap-3">
     <div><a href="{{ route('office.orders.index') }}" class="text-sm text-navy-500 hover:underline">← Pesanan</a><h1 class="mt-2 text-2xl font-bold text-navy-500">{{ $order->order_no }}</h1><p class="mt-1 text-sm text-text-muted">{{ $order->customer_name }} · {{ $order->customer_email }} · {{ $order->customer_phone }}</p></div>
+    <a href="{{ route('office.orders.packing-list', $order) }}" target="_blank" class="rounded-lg border border-border px-3 py-2 text-sm font-medium hover:bg-surface-2">📄 Packing List (PDF)</a>
     <span class="rounded-full px-3 py-1 text-sm font-semibold" style="background-color: {{ $order->status_enum->color() }}">{{ $order->status_enum->label() }}</span>
 </div>
 @if (session('success'))<p role="status" class="mt-4 rounded-lg bg-green-50 p-3 text-sm text-green-800">{{ session('success') }}</p>@endif
@@ -25,7 +26,8 @@
                                     <h3 class="font-semibold">{{ $snapshot->product_name }}</h3>
                                     @if ($snapshot->variant_name)<p class="text-sm text-text-muted">{{ $snapshot->variant_name }}</p>@endif
                                     <p class="mt-1 text-sm">{{ $snapshot->qty }} × {{ format_rupiah($snapshot->final_price) }} · Subtotal {{ format_rupiah($snapshot->subtotal) }}</p>
-                                    @if ($snapshot->product_deleted)<span class="mt-1 inline-block rounded bg-gray-100 px-2 py-1 text-xs text-gray-600">Produk telah dihapus</span>@endif
+                                    <p class="mt-1 text-xs text-text-muted">Order Count: {{ $orderCounts[$snapshot->product_id_audit] ?? 0 }}× pernah di-order</p>
+                                    @if ($snapshot->product_deleted)<span class="mt-1 inline-block rounded bg-gray-100 px-2 py-1 text-xs text-gray-600">Produk Asli Telah Dihapus</span>@elseif ($snapshot->product_id_audit)<a href="{{ route('office.products.edit', $snapshot->product_id_audit) }}" class="mt-1 inline-block text-xs text-navy-500 hover:underline">Lihat Produk Asli →</a>@endif
                                 </div>
                             </div>
                             <details class="mt-4 rounded-lg border-l-4 border-[#1E88E5] bg-[#F5F7FA] p-3">

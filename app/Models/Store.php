@@ -15,14 +15,22 @@ class Store extends Model
     ];
 
     public function games(): HasMany
-    { return $this->hasMany(Game::class, 'default_store_id'); }
+    {
+        return $this->hasMany(Game::class, 'default_store_id');
+    }
 
     public function products(): HasMany
-    { return $this->hasMany(Product::class); }
+    {
+        return $this->hasMany(Product::class);
+    }
 
     public function isFreeShipping(): bool
-    { return (float) $this->ongkir_rmb === 0.0; }
+    {
+        return (float) $this->ongkir_rmb === 0.0;
+    }
 
     public function hasMinBelanja(): bool
-    { return (float) $this->min_belanja_rmb > 0; }
+    {
+        return (float) $this->min_belanja_rmb > 0;
+    }
 }

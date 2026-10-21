@@ -15,6 +15,7 @@ use App\Models\Product;
 use App\Models\ProductVariant;
 use App\Models\User;
 use App\Models\UserVoucher;
+use App\Services\Notification\ScheduledEmailService;
 use App\Services\Notification\UserNotificationService;
 use App\Services\Order\OrderItemSnapshotService;
 use Illuminate\Support\Collection;
@@ -116,14 +117,14 @@ class CheckoutService
         $netSubtotal = max(0, $netSubtotal - $voucherDiscount - $coinDiscount);
         $baseTotal = $netSubtotal;
         $feeMarketplace = match ([$platform, $paymentScheme]) {
-            ['toco', 'fp'] => 1,
-            ['toco', 'dp'] => 0,
-            ['shopee', 'fp'] => 109,
-            ['shopee', 'dp'] => round(max(0, $baseTotal * 0.5) * 0.25, 2),
+            ['toco', 'fp'] => (float) setting('fee_toco_fp', 1),
+            ['toco', 'dp'] => (float) setting('fee_toco_dp', 0),
+            ['shopee', 'fp'] => (float) setting('fee_shopee_fp', 109),
+            ['shopee', 'dp'] => round(max(0, $baseTotal * 0.5) * ((float) setting('fee_shopee_dp_percent', 25) / 100), 2),
             default => 0,
         };
-        $feeQris = $paymentMethod === 'qris' && $baseTotal >= 500000
-            ? round($baseTotal * 0.0003, 2)
+        $feeQris = $paymentMethod === 'qris' && $baseTotal >= (float) setting('qris_threshold', 500000)
+            ? round($baseTotal * ((float) setting('fee_qris_percent', 0.03) / 100), 2)
             : 0;
         $total = (int) (ceil(($netSubtotal + $feeMarketplace + $feeQris) / 5000) * 5000);
 
@@ -152,7 +153,7 @@ class CheckoutService
             ]);
         }
 
-        return DB::transaction(function () use ($user, $cartIds, $checkout): Order {
+        $order = DB::transaction(function () use ($user, $cartIds, $checkout): Order {
             DB::table('users')->where('id', $user->id)->lockForUpdate()->first();
             $carts = $user->carts()
                 ->with(['product.store', 'product.games.defaultStore', 'product.tags', 'variant.combinations'])
@@ -221,10 +222,12 @@ class CheckoutService
                 'customer_email' => $user->email,
                 'customer_phone' => $user->no_hp,
                 'customer_address' => $address,
-                'customer_note' => $carts
-                    ->filter(fn (Cart $cart): bool => filled($cart->customer_note))
-                    ->map(fn (Cart $cart): string => "{$cart->product->name}: {$cart->customer_note}")
-                    ->join("\n"),
+                'customer_note' => filled($checkout['customer_note'] ?? null)
+                    ? trim($checkout['customer_note'])
+                    : $carts
+                        ->filter(fn (Cart $cart): bool => filled($cart->customer_note))
+                        ->map(fn (Cart $cart): string => $cart->product->name.': '.$cart->customer_note)
+                        ->join(PHP_EOL),
                 'subtotal' => $subtotal,
                 'discount_amount' => $totals['discount_amount'],
                 'coin_discount_amount' => $totals['coin_discount_amount'],
@@ -294,6 +297,10 @@ class CheckoutService
 
             return $order;
         });
+
+        app(ScheduledEmailService::class)->sendOrder($order, 'order_created', 'Pesanan berhasil dibuat');
+
+        return $order;
     }
 
     /**

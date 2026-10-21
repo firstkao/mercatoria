@@ -12,8 +12,12 @@ class PreorderPage extends Model
     ];
 
     public function isPublished(): bool
-    { return $this->status === 'publish'; }
+    {
+        return $this->status === 'publish';
+    }
 
     public function scopePublished($query)
-    { return $query->where('status', 'publish'); }
+    {
+        return $query->where('status', 'publish');
+    }
 }

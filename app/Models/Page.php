@@ -12,11 +12,17 @@ class Page extends Model
     ];
 
     public function isPublished(): bool
-    { return $this->status === 'publish'; }
+    {
+        return $this->status === 'publish';
+    }
 
     public function isDraft(): bool
-    { return $this->status === 'draft'; }
+    {
+        return $this->status === 'draft';
+    }
 
     public function scopePublished($query)
-    { return $query->where('status', 'publish'); }
+    {
+        return $query->where('status', 'publish');
+    }
 }

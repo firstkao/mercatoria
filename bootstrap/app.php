@@ -4,6 +4,7 @@ use App\Http\Middleware\EnforceIpBlacklist;
 use App\Http\Middleware\EnsureAdmin;
 use App\Http\Middleware\EnsureEmailVerified;
 use App\Http\Middleware\EnsureProfileComplete;
+use App\Http\Middleware\RedirectGuestsToLogin;
 use App\Http\Middleware\VerifyTurnstile;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -31,6 +32,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'ensure.verified' => EnsureEmailVerified::class,
             'ensure.profile' => EnsureProfileComplete::class,
             'turnstile' => VerifyTurnstile::class,
+            'guest.barrier' => RedirectGuestsToLogin::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

@@ -20,8 +20,12 @@ class Referral extends Model
     ];
 
     public function referrer(): BelongsTo
-    { return $this->belongsTo(User::class, 'referrer_id'); }
+    {
+        return $this->belongsTo(User::class, 'referrer_id');
+    }
 
     public function referee(): BelongsTo
-    { return $this->belongsTo(User::class, 'referee_id'); }
+    {
+        return $this->belongsTo(User::class, 'referee_id');
+    }
 }

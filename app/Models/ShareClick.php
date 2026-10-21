@@ -14,11 +14,17 @@ class ShareClick extends Model
     protected $casts = ['reward_given' => 'boolean'];
 
     public function user(): BelongsTo
-    { return $this->belongsTo(User::class); }
+    {
+        return $this->belongsTo(User::class);
+    }
 
     public function product(): BelongsTo
-    { return $this->belongsTo(Product::class); }
+    {
+        return $this->belongsTo(Product::class);
+    }
 
     public function isFromIndonesia(): bool
-    { return $this->country_code === 'ID'; }
+    {
+        return $this->country_code === 'ID';
+    }
 }

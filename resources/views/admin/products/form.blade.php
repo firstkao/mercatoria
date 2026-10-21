@@ -19,7 +19,11 @@
         'id' => (string) $store->id,
         'label' => $store->name.' ('.($store->hasMinBelanja() ? number_format((float) $store->min_belanja_rmb, 2, ',', '.').' RMB' : 'tanpa minimum').' · '.($store->isFreeShipping() ? 'Gratis' : number_format((float) $store->ongkir_rmb, 2, ',', '.').' RMB').')',
     ])->values();
-    $variantData = $product->variants->map(fn ($variant) => [
+    $variantRows = $variants ?? collect();
+    $selectedTagIds = array_map('strval', (array) old('tag_ids', $product->exists ? $product->tags->modelKeys() : []));
+    $selectedMerchIds = array_map('strval', (array) old('merch_category_ids', $product->exists ? $product->merchCategories->modelKeys() : []));
+    $selectedRelatedIds = array_map('strval', (array) old('related_ids', $product->exists ? $product->relatedProducts->modelKeys() : []));
+    $variantData = $variantRows->map(fn ($variant) => [
         'id' => $variant->id,
         'name' => $variant->name ?: $variant->sku,
         'sku' => $variant->sku,
@@ -36,6 +40,7 @@
 
 <form method="POST"
       action="{{ $isEditing ? route('office.products.update', $product) : route('office.products.store') }}"
+      enctype="multipart/form-data"
       class="mt-5 space-y-5"
       x-data="{
           gameDefaults: @js($gameDefaultStores),
@@ -144,6 +149,46 @@
             @error('description')<p class="mt-1 text-sm text-danger-500">{{ $message }}</p>@enderror
         </div>
         <div class="md:col-span-2">
+            <label for="description_image" class="mb-1 block text-sm font-medium">Gambar Deskripsi Panjang</label>
+            @if ($product->description_image_path)
+                <div class="mb-2 flex items-center gap-3" x-data>
+                    <img src="{{ Storage::disk('public')->url($product->description_image_path) }}" alt="Thumbnail gambar deskripsi" class="h-20 w-20 rounded border border-border object-cover object-top">
+                    <button type="button" x-on:click="$dispatch('open-modal', 'description-full')" class="text-sm text-navy-500 hover:underline">Lihat Full</button>
+                </div>
+            @endif
+            <input id="description_image" name="description_image" type="file" accept="image/jpeg,image/png,image/webp" class="w-full text-sm">
+            <p class="mt-1 text-xs text-text-muted">JPG/PNG/WebP, maks 2 MB. {{ $product->description_image_path ? 'Pilih file baru untuk "Ganti Foto".' : '' }}</p>
+            @error('description_image')<p class="mt-1 text-sm text-danger-500">{{ $message }}</p>@enderror
+        </div>
+        <fieldset class="md:col-span-2 rounded-lg border border-border p-4">
+            <legend class="px-2 text-sm font-semibold">Diskon</legend>
+            <div class="grid gap-3 sm:grid-cols-3">
+                <label class="text-sm">Nominal Diskon (Rp)
+                    <input name="discount_amount" type="number" min="0" step="1" value="{{ old('discount_amount', $product->discount_amount) }}" class="mt-1 w-full rounded-lg border-border text-sm">
+                    @error('discount_amount')<span class="mt-1 block text-sm text-danger-500">{{ $message }}</span>@enderror
+                </label>
+                <label class="text-sm">Mulai
+                    <input name="discount_start" type="datetime-local" value="{{ old('discount_start', $product->discount_start?->format('Y-m-d\TH:i')) }}" class="mt-1 w-full rounded-lg border-border text-sm">
+                </label>
+                <label class="text-sm">Berakhir
+                    <input name="discount_end" type="datetime-local" value="{{ old('discount_end', $product->discount_end?->format('Y-m-d\TH:i')) }}" class="mt-1 w-full rounded-lg border-border text-sm">
+                    @error('discount_end')<span class="mt-1 block text-sm text-danger-500">{{ $message }}</span>@enderror
+                </label>
+            </div>
+            <p class="mt-2 text-xs text-text-muted">Diskon tidak boleh lebih besar dari harga jual. Kosongkan untuk tanpa diskon.</p>
+        </fieldset>
+        @if ($isEditing)
+            <div class="md:col-span-2">
+                <label for="related_ids" class="mb-1 block text-sm font-medium">Produk Terkait (maks 12)</label>
+                <select id="related_ids" name="related_ids[]" multiple size="5" class="w-full rounded-lg border-border text-sm">
+                    @foreach ($relatedCandidates as $candidate)
+                        <option value="{{ $candidate->id }}" @selected(in_array((string) $candidate->id, $selectedRelatedIds))>{{ $candidate->name }} ({{ $candidate->sku }})</option>
+                    @endforeach
+                </select>
+                @error('related_ids')<p class="mt-1 text-sm text-danger-500">{{ $message }}</p>@enderror
+            </div>
+        @endif
+        <div class="md:col-span-2">
             <input type="hidden" name="is_active" value="0">
             <label class="inline-flex items-center gap-2 text-sm">
                 <input type="checkbox" name="is_active" value="1" @checked((bool) old('is_active', $product->exists ? $product->is_active : true)) class="rounded border-border text-primary-500 focus:ring-primary-400">
@@ -152,6 +197,41 @@
         </div>
     </section>
     <aside class="space-y-5 lg:sticky lg:top-4 lg:self-start">
+        <section class="rounded-xl border border-border bg-white p-5">
+            <h2 class="text-xs font-bold uppercase tracking-wide text-text-muted">Foto Produk</h2>
+            @if ($product->main_image_path)
+                <img src="{{ Storage::disk('public')->url($product->main_image_path) }}" alt="Foto utama {{ $product->name }}" class="mt-3 h-32 w-32 rounded border border-border object-cover">
+            @endif
+            <label for="main_image" class="sr-only">Foto utama</label>
+            <input id="main_image" name="main_image" type="file" accept="image/jpeg,image/png,image/webp" class="mt-3 w-full text-sm">
+            <p class="mt-1 text-xs text-text-muted">JPG/PNG/WebP, maks 1 MB. Watermark ditambahkan otomatis.</p>
+            @error('main_image')<p class="mt-1 text-sm text-danger-500">{{ $message }}</p>@enderror
+        </section>
+        <section class="rounded-xl border border-border bg-white p-5">
+            <h2 class="text-xs font-bold uppercase tracking-wide text-text-muted">Tag Produk</h2>
+            <div class="mt-3 space-y-1">
+                @forelse ($tags as $tag)
+                    <label class="flex items-center gap-2 text-sm"><input type="checkbox" name="tag_ids[]" value="{{ $tag->id }}" @checked(in_array((string) $tag->id, $selectedTagIds)) class="rounded border-border">{{ $tag->name }}</label>
+                @empty
+                    <p class="text-sm text-text-muted">Belum ada tag.</p>
+                @endforelse
+            </div>
+            <h2 class="mt-4 text-xs font-bold uppercase tracking-wide text-text-muted">Kategori Merch</h2>
+            <div class="mt-3 space-y-1">
+                @forelse ($merchCategories as $category)
+                    <label class="flex items-center gap-2 text-sm"><input type="checkbox" name="merch_category_ids[]" value="{{ $category->id }}" @checked(in_array((string) $category->id, $selectedMerchIds)) class="rounded border-border">{{ $category->name }}</label>
+                @empty
+                    <p class="text-sm text-text-muted">Belum ada kategori.</p>
+                @endforelse
+            </div>
+        </section>
+        @if ($isEditing)
+            <section class="rounded-xl border border-border bg-white p-5">
+                <h2 class="text-xs font-bold uppercase tracking-wide text-text-muted">Order Count</h2>
+                <p class="mt-2 text-2xl font-bold text-navy-500">{{ $ordersCount }}</p>
+                <p class="text-xs text-text-muted">kali pernah di-order</p>
+            </section>
+        @endif
         <section class="rounded-xl border border-border bg-white p-5">
             <h2 class="text-xs font-bold uppercase tracking-wide text-text-muted">Store</h2>
             <div class="mt-3" x-data="{ search: '', stores: @js($storeOptions) }">
@@ -199,7 +279,7 @@
 </form>
 
 @if ($isEditing)
-    <section class="mt-8 rounded-xl border border-border bg-white p-5 md:p-6"
+    <section id="varian" class="mt-8 rounded-xl border border-border bg-white p-5 md:p-6"
              x-data="{ variants: @js($variantData), selected: [], newWeight: '' }">
         <div class="flex flex-wrap items-center justify-between gap-3">
             <div>
@@ -234,7 +314,7 @@
             </div>
         </div>
 
-        @if ($product->variants->isNotEmpty())
+        @if ($variantRows->isNotEmpty())
             <div class="mt-4 overflow-x-auto">
                 <table class="w-full min-w-[640px] text-left text-sm">
                     <thead class="bg-surface-2 text-text-muted">
@@ -254,7 +334,7 @@
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-border">
-                        @foreach ($product->variants as $variant)
+                        @foreach ($variantRows as $variant)
                             <tr>
                                 <td class="px-3 py-3">
                                     <input type="checkbox" value="{{ $variant->id }}" x-model.number="selected"
@@ -304,11 +384,35 @@
             <p class="mt-4 rounded-lg border border-dashed border-border p-5 text-center text-sm text-text-muted">Belum ada varian untuk produk ini.</p>
         @endif
 
-        <form method="POST" action="{{ route('office.products.variants.store', $product) }}"
-              class="mt-6 grid gap-3 border-t border-border pt-5 sm:grid-cols-2 lg:grid-cols-5">
+        {{ $variants->links() }}
+
+        <form method="POST" action="{{ route('office.products.variants.generate', $product) }}" class="mt-6 border-t border-border pt-5">
             @csrf
+            <h3 class="text-sm font-bold text-navy-500">Buat Variasi</h3>
+            <p class="mt-1 text-xs text-text-muted">Isi nilai atribut dipisah koma; semua kombinasi dibuat otomatis (maks 200).</p>
+            <div class="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                @foreach (\App\Http\Controllers\Admin\ProductVariantController::ATTRIBUTES as $key => $label)
+                    <label class="text-sm">{{ $label }}
+                        <input name="values[{{ $key }}]" class="mt-1 w-full rounded-lg border-border text-sm" placeholder="mis. A, B, C" value="{{ old('values.'.$key) }}">
+                    </label>
+                @endforeach
+            </div>
+            @error('values')<p class="mt-2 text-sm text-danger-500">{{ $message }}</p>@enderror
+            <button type="submit" class="mt-3 rounded-lg border border-border px-4 py-2 text-sm font-medium hover:bg-surface-2">Buat Variasi</button>
+        </form>
+
+        <form method="POST" action="{{ route('office.products.variants.store', $product) }}" enctype="multipart/form-data"
+              class="mt-6 grid gap-3 border-t border-border pt-5 sm:grid-cols-2 lg:grid-cols-4">
+            @csrf
+            <h3 class="text-sm font-bold text-navy-500 sm:col-span-2 lg:col-span-4">Tambah Varian Manual</h3>
+            @foreach (\App\Http\Controllers\Admin\ProductVariantController::ATTRIBUTES as $key => $label)
+                <label class="text-sm">{{ $label }}
+                    <input name="attributes[{{ $key }}]" maxlength="100" class="mt-1 w-full rounded-lg border-border text-sm" value="{{ old('attributes.'.$key) }}">
+                </label>
+            @endforeach
             <label class="text-sm">SKU
                 <input name="sku" required maxlength="64" class="mt-1 w-full rounded-lg border-border text-sm" value="{{ old('sku') }}">
+                @error('sku')<span class="mt-1 block text-sm text-danger-500">{{ $message }}</span>@enderror
             </label>
             <label class="text-sm">Nama varian
                 <input name="name" maxlength="255" class="mt-1 w-full rounded-lg border-border text-sm" value="{{ old('name') }}">
@@ -318,6 +422,16 @@
             </label>
             <label class="text-sm">Berat (gram)
                 <input name="weight_gram" type="number" min="1" max="1000000" class="mt-1 w-full rounded-lg border-border text-sm" value="{{ old('weight_gram') }}">
+            </label>
+            <label class="text-sm">Ketersediaan
+                <select name="availability" class="mt-1 w-full rounded-lg border-border text-sm">
+                    <option value="tersedia">Tersedia</option>
+                    <option value="kosong">Kosong</option>
+                </select>
+            </label>
+            <label class="text-sm">Foto (maks 1 MB)
+                <input name="image" type="file" accept="image/jpeg,image/png,image/webp" class="mt-1 w-full text-sm">
+                @error('image')<span class="mt-1 block text-sm text-danger-500">{{ $message }}</span>@enderror
             </label>
             <div class="flex items-end">
                 <button type="submit" class="w-full rounded-lg border border-border px-3 py-2 text-sm font-medium hover:bg-surface-2">Tambah Varian</button>
@@ -360,5 +474,42 @@
             </div>
         </div>
     </section>
+
+    <section class="mt-8 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-danger-500/30 bg-white p-5">
+        <form method="POST" action="{{ route('office.products.duplicate', $product) }}">
+            @csrf
+            <x-button variant="ghost" type="submit">Duplikat Produk</x-button>
+        </form>
+        <x-button variant="danger" type="button" x-data x-on:click="$dispatch('open-modal', 'hard-delete-product')">Hapus Permanen</x-button>
+    </section>
+
+    <x-modal name="hard-delete-product" maxWidth="max-w-md">
+        <form method="POST" action="{{ route('office.products.destroy', $product) }}" class="p-6">
+            @csrf
+            @method('DELETE')
+            <h2 class="text-lg font-bold text-danger-500">⚠️ Hapus Produk Permanen? (HARD DELETE)</h2>
+            <p class="mt-3 text-sm">Produk: <strong>{{ $product->games->first() ? '['.$product->games->first()->name.'] ' : '' }}{{ $product->name }}</strong></p>
+            <div class="mt-3 rounded-lg bg-warning-50 p-3 text-sm text-warning-700">
+                <p class="font-semibold">Produk ini pernah di-order {{ $ordersCount }} kali.</p>
+                <ul class="mt-2 list-disc pl-5">
+                    <li>Produk, varian, dan foto dihapus permanen dan tidak bisa dikembalikan.</li>
+                    <li>Order lama tetap aman karena tersimpan sebagai snapshot.</li>
+                    <li>Produk Asli di detail order akan ditandai "Produk Asli Telah Dihapus".</li>
+                </ul>
+            </div>
+            <div class="mt-5 flex justify-end gap-2">
+                <x-button variant="ghost" type="button" x-on:click="$dispatch('close-modal', 'hard-delete-product')">Batal</x-button>
+                <x-button variant="danger" type="submit">Hapus Permanen</x-button>
+            </div>
+        </form>
+    </x-modal>
+
+    @if ($product->description_image_path)
+        <x-modal name="description-full" maxWidth="max-w-2xl">
+            <div class="max-h-[80vh] overflow-y-auto p-4">
+                <img src="{{ Storage::disk('public')->url($product->description_image_path) }}" alt="Gambar deskripsi lengkap {{ $product->name }}" class="w-full">
+            </div>
+        </x-modal>
+    @endif
 @endif
 @endsection

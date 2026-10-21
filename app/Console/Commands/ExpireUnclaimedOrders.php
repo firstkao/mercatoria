@@ -11,6 +11,8 @@ class ExpireUnclaimedOrders extends Command
 {
     protected $signature = 'orders:hangus-expired';
 
+    protected $aliases = ['order:hangus-expired'];
+
     protected $description = 'Mark orders past their pickup deadline as expired without refund.';
 
     public function handle(OrderStatusService $statuses): int

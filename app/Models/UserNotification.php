@@ -2,9 +2,9 @@
 
 namespace App\Models;
 
+use App\Enums\NotificationType;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use App\Enums\NotificationType;
 
 class UserNotification extends Model
 {
@@ -20,10 +20,14 @@ class UserNotification extends Model
     ];
 
     public function user(): BelongsTo
-    { return $this->belongsTo(User::class); }
+    {
+        return $this->belongsTo(User::class);
+    }
 
     public function getTypeEnumAttribute(): NotificationType
-    { return NotificationType::from($this->type); }
+    {
+        return NotificationType::from($this->type);
+    }
 
     public function markAsRead(): void
     {
