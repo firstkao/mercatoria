@@ -28,6 +28,7 @@ class OrderController extends Controller
             ->latest()
             ->paginate(15);
         $pendingBills = $user->orders()
+            ->with('payments')
             ->whereIn('status', [OrderStatus::MENUNGGU_PEMBAYARAN->value, OrderStatus::MENUNGGU_PELUNASAN->value])
             ->latest()
             ->get();
@@ -85,7 +86,7 @@ class OrderController extends Controller
     public function uploadProof(Request $request, int $order): RedirectResponse
     {
         $validated = $request->validate([
-            'proof' => ['required', 'image', 'mimes:jpg,jpeg,png,webp', 'max:1024'],
+            'proof' => ['required', 'image', 'mimes:jpg,jpeg,png', 'max:1024'],
         ]);
         $order = $request->user()->orders()->findOrFail($order);
         $this->payments->uploadProof($order, $validated['proof']);

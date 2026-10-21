@@ -45,6 +45,23 @@
     $initialBasePrice = $selectedVariant['base_price'] ?? $productPricing['base_price'];
     $initialFinalPrice = $selectedVariant['final_price'] ?? $productPricing['final_price'];
     $initialImage = $selectedVariant['image'] ?? ($product->main_image_path ? \Illuminate\Support\Facades\Storage::url($product->main_image_path) : null);
+    $lightboxImages = collect();
+    if ($product->main_image_path) {
+        $lightboxImages->push([
+            'url' => \Illuminate\Support\Facades\Storage::url($product->main_image_path),
+            'alt' => $product->name,
+        ]);
+    }
+    foreach ($product->variants as $variant) {
+        if ($variant->image_path) {
+            $lightboxImages->push([
+                'url' => \Illuminate\Support\Facades\Storage::url($variant->image_path),
+                'alt' => $product->name.' — '.$variant->name,
+            ]);
+        }
+    }
+    $lightboxImages = $lightboxImages->unique('url')->values();
+    $initialLightboxIndex = $lightboxImages->search(fn ($image) => $image['url'] === $initialImage) ?: 0;
     $requiresVariant = $product->type === 'variant';
 @endphp
 <div class="min-h-screen bg-[#F5F7FA] py-6 sm:py-8">
@@ -233,12 +250,28 @@
                 <h2 class="text-xl font-bold text-navy-500">Produk Terkait</h2>
                 <div class="mt-4 flex snap-x gap-4 overflow-x-auto pb-4">
                     @foreach ($relatedProducts as $relatedProduct)
-                        <a href="{{ route('products.direct', $relatedProduct->slug) }}" class="w-[40%] shrink-0 snap-start overflow-hidden rounded-xl border border-border bg-white hover:shadow-sm sm:w-[30%] lg:w-[16%]">
-                            @if ($relatedProduct->main_image_path)
-                                <img src="{{ \Illuminate\Support\Facades\Storage::url($relatedProduct->main_image_path) }}" alt="{{ $relatedProduct->name }}" class="aspect-square w-full bg-surface-2 object-cover" loading="lazy" draggable="false">
-                            @else
-                                <div class="flex aspect-square items-center justify-center bg-surface-2 text-xs text-text-muted">Gambar belum tersedia</div>
-                            @endif
+                        <a href="{{ route('products.direct', $relatedProduct->slug) }}" class="w-[calc(40%_-_0.6rem)] shrink-0 snap-start overflow-hidden rounded-xl border border-border bg-white hover:shadow-sm md:w-[calc(25%_-_0.75rem)] lg:w-[calc(16.666667%_-_0.833333rem)]">
+                            <div class="relative">
+                                @if ($relatedProduct->main_image_path)
+                                    <div class="protected-image-wrap">
+                                        <img src="{{ \Illuminate\Support\Facades\Storage::url($relatedProduct->main_image_path) }}" alt="{{ $relatedProduct->name }}" class="protected-image aspect-square w-full bg-surface-2 object-cover" loading="lazy" draggable="false">
+                                        <span class="img-shield-overlay" aria-hidden="true"></span>
+                                    </div>
+                                @else
+                                    <div class="flex aspect-square items-center justify-center bg-surface-2 text-xs text-text-muted">Gambar belum tersedia</div>
+                                @endif
+                                <div class="pointer-events-none absolute inset-x-2 top-2 flex flex-wrap gap-1">
+                                    @foreach ($relatedProduct->tags as $tag)
+                                        @if (in_array(strtoupper($tag->name), ['PRESALE', 'LIMITED'], true))
+                                            <span class="rounded-full bg-[#0B1B3A] px-2 py-1 text-[10px] font-bold text-white">{{ strtoupper($tag->name) }}</span>
+                                        @endif
+                                    @endforeach
+                                    @if ($relatedProduct->hasActiveDiscount())
+                                        <span class="rounded-full bg-[#E53935] px-2 py-1 text-[10px] font-bold text-white">DISKON</span>
+                                    @endif
+                                </div>
+                                <span class="pointer-events-none absolute bottom-2 left-2 rounded bg-white/90 px-2 py-1 text-[10px] font-bold uppercase text-navy-500">[{{ $relatedProduct->games->first()?->name ?? 'Mercatoria' }}]</span>
+                            </div>
                             <div class="p-3"><span class="line-clamp-2 block text-sm font-medium text-navy-500">{{ $relatedProduct->name }}</span><span class="mt-2 block text-sm font-bold text-primary-700">{{ $relatedProduct->display_price }}</span></div>
                         </a>
                     @endforeach
@@ -249,10 +282,17 @@
 </div>
 @if ($initialImage)
     <dialog id="product-lightbox" class="max-h-[92vh] max-w-[92vw] rounded-xl bg-transparent p-0 backdrop:bg-black/80">
-        <div class="relative flex max-h-[92vh] max-w-[92vw] items-center justify-center">
-            <button type="button" id="close-product-lightbox" class="absolute right-3 top-3 z-10 flex h-10 w-10 items-center justify-center rounded-full bg-white text-xl shadow" aria-label="Tutup gambar">×</button>
-            <img id="product-lightbox-image" src="{{ $initialImage }}" alt="{{ $product->name }}" class="protected-image max-h-[90vh] max-w-[90vw] object-contain" draggable="false">
+        <div class="relative flex max-h-[92vh] max-w-[92vw] items-center justify-center overflow-auto">
+            <span id="product-lightbox-counter" class="absolute left-3 top-3 z-10 rounded-full bg-white px-3 py-2 text-sm font-semibold shadow">{{ $initialLightboxIndex + 1 }} / {{ $lightboxImages->count() }}</span>
+            <div class="absolute right-3 top-3 z-10 flex gap-2">
+                <button type="button" id="zoom-product-lightbox" class="flex h-10 w-10 items-center justify-center rounded-full bg-white text-lg shadow" aria-label="Perbesar gambar">⌕</button>
+                <button type="button" id="fullscreen-product-lightbox" class="flex h-10 w-10 items-center justify-center rounded-full bg-white text-lg shadow" aria-label="Tampilkan layar penuh">⛶</button>
+                <button type="button" id="close-product-lightbox" class="flex h-10 w-10 items-center justify-center rounded-full bg-white text-xl shadow" aria-label="Tutup gambar">×</button>
+            </div>
+            <button type="button" id="previous-product-lightbox" @disabled($lightboxImages->count() < 2) class="absolute left-3 top-1/2 z-10 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-white text-xl shadow disabled:opacity-40" aria-label="Gambar sebelumnya">←</button>
+            <img id="product-lightbox-image" src="{{ $initialImage }}" alt="{{ $product->name }}" class="protected-image max-h-[90vh] max-w-[90vw] object-contain transition-transform" draggable="false">
             <span class="img-shield-overlay" aria-hidden="true"></span>
+            <button type="button" id="next-product-lightbox" @disabled($lightboxImages->count() < 2) class="absolute right-3 top-1/2 z-10 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-white text-xl shadow disabled:opacity-40" aria-label="Gambar berikutnya">→</button>
         </div>
     </dialog>
 @endif
@@ -261,9 +301,15 @@
 @push('scripts')
     <script>
         const productVariants = @js($variantData);
+        const lightboxImages = @js($lightboxImages).map(image => ({
+            ...image,
+            url: new URL(image.url, window.location.href).href
+        }));
         const mainImage = document.getElementById('product-primary-image');
         const lightboxImage = document.getElementById('product-lightbox-image');
         const lightbox = document.getElementById('product-lightbox');
+        const lightboxCounter = document.getElementById('product-lightbox-counter');
+        let currentLightboxIndex = @js($initialLightboxIndex);
         const groups = [...document.querySelectorAll('[data-attribute-group]')];
         const optionButtons = [...document.querySelectorAll('[data-variant-option]')];
         const productForm = document.getElementById('product-add-form');
@@ -277,12 +323,22 @@
             if (Object.keys(initialVariant.attributes).length === 0) selectedOptions.Varian = initialVariant.name;
         }
 
+        const setLightboxImage = index => {
+            if (!lightboxImage || lightboxImages.length === 0) return;
+            currentLightboxIndex = (index + lightboxImages.length) % lightboxImages.length;
+            const image = lightboxImages[currentLightboxIndex];
+            lightboxImage.src = image.url;
+            lightboxImage.alt = image.alt;
+            lightboxCounter.textContent = `${currentLightboxIndex + 1} / ${lightboxImages.length}`;
+        };
         const setVariantImage = url => {
-            if (!mainImage || !lightboxImage) return;
+            if (!mainImage) return;
             const imageUrl = url || initialImageUrl;
             mainImage.src = imageUrl;
-            lightboxImage.src = imageUrl;
+            const imageIndex = lightboxImages.findIndex(image => image.url === new URL(imageUrl, window.location.href).href);
+            if (imageIndex >= 0) setLightboxImage(imageIndex);
         };
+        setLightboxImage(currentLightboxIndex);
         const formatPrice = amount => new Intl.NumberFormat('id-ID', {
             style: 'currency', currency: 'IDR', maximumFractionDigits: 0
         }).format(amount);
@@ -375,6 +431,20 @@
         document.getElementById('open-product-lightbox')?.addEventListener('click', openLightbox);
         document.getElementById('product-lightbox-button')?.addEventListener('click', openLightbox);
         document.getElementById('close-product-lightbox')?.addEventListener('click', () => lightbox?.close());
+        document.getElementById('previous-product-lightbox')?.addEventListener('click', () => setLightboxImage(currentLightboxIndex - 1));
+        document.getElementById('next-product-lightbox')?.addEventListener('click', () => setLightboxImage(currentLightboxIndex + 1));
+        document.getElementById('zoom-product-lightbox')?.addEventListener('click', event => {
+            const zoomed = lightboxImage.classList.toggle('scale-150');
+            lightboxImage.classList.toggle('cursor-zoom-out', zoomed);
+            event.currentTarget.setAttribute('aria-label', zoomed ? 'Perkecil gambar' : 'Perbesar gambar');
+        });
+        document.getElementById('fullscreen-product-lightbox')?.addEventListener('click', async () => {
+            if (document.fullscreenElement) {
+                await document.exitFullscreen();
+            } else if (lightbox?.requestFullscreen) {
+                await lightbox.requestFullscreen();
+            }
+        });
         lightbox?.addEventListener('click', event => {
             if (event.target === lightbox) lightbox.close();
         });

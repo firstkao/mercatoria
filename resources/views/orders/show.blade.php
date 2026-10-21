@@ -7,6 +7,8 @@
     $verifiedAmount = $order->paidAmount();
     $balanceDue = max(0, (float) $order->total - $verifiedAmount);
     $refundAmount = (float) $order->refunds->whereIn('status', ['requested', 'processing', 'completed'])->sum('amount');
+    $lastRejectedPayment = $order->payments->where('status', 'rejected')->sortByDesc('updated_at')->first();
+    $reuploadDeadline = $lastRejectedPayment?->updated_at?->copy()->addHours(24);
 @endphp
 <div class="mx-auto max-w-5xl px-4 py-8">
     <a href="{{ route('orders.index') }}" class="text-sm font-medium text-navy-500 hover:underline">← Pesanan Saya</a>
@@ -30,8 +32,19 @@
         <aside id="note-from-admin" class="mt-4 rounded-xl border-l-4 border-primary-500 bg-blue-50 p-4">
             <h2 class="font-semibold">Catatan dari Mercatoria</h2>
             <p class="mt-1 whitespace-pre-line text-sm">{{ $order->note_to_customer }}</p>
+            @if ($order->note_to_customer_updated_at)<p class="mt-2 text-xs text-text-muted">Diupdate {{ $order->note_to_customer_updated_at->format('d M Y H:i') }}</p>@endif
         </aside>
     @endif
+
+    <section class="mt-5 rounded-xl border border-border bg-white p-5">
+        <h2 class="text-lg font-semibold">Informasi Pemesan &amp; Pengiriman</h2>
+        <dl class="mt-3 grid gap-3 text-sm sm:grid-cols-2">
+            <div><dt class="text-text-muted">Nama</dt><dd class="font-medium">{{ $order->customer_name }}</dd></div>
+            <div><dt class="text-text-muted">Nomor HP</dt><dd class="font-medium">{{ $order->customer_phone }}</dd></div>
+            <div class="sm:col-span-2"><dt class="text-text-muted">Alamat Pengiriman</dt><dd class="font-medium">{{ $order->customer_address }}</dd></div>
+            @if ($order->referral_source)<div class="sm:col-span-2"><dt class="text-text-muted">Sumber referral</dt><dd class="font-medium">{{ $order->referral_source }}</dd></div>@endif
+        </dl>
+    </section>
 
     <section class="mt-5 rounded-xl border border-border bg-white">
         <h2 class="border-b border-border p-4 text-lg font-semibold">Rincian Pesanan</h2>
@@ -82,15 +95,20 @@
     @if ($order->status === \App\Enums\OrderStatus::MENUNGGU_PEMBAYARAN->value)
         <section id="payment-proof-form" class="mt-5 rounded-xl border border-border bg-white p-5">
             <h2 class="text-lg font-semibold">Bayar &amp; Unggah Bukti</h2>
-            <p class="mt-1 text-sm text-text-muted">Tagihan saat ini {{ format_rupiah($order->status === \App\Enums\OrderStatus::MENUNGGU_PEMBAYARAN->value && $order->payment_scheme === 'dp' ? min($balanceDue, (float) $order->total / 2) : $balanceDue) }}. File JPG, PNG, atau WebP, maksimal 1 MB.</p>
+            <p class="mt-1 text-sm text-text-muted">Tagihan saat ini {{ format_rupiah($order->status === \App\Enums\OrderStatus::MENUNGGU_PEMBAYARAN->value && $order->payment_scheme === 'dp' ? min($balanceDue, (float) $order->total / 2) : $balanceDue) }}. File JPG atau PNG, maksimal 1 MB.</p>
             @if ($order->payments->contains(fn ($payment) => $payment->is_locked))
                 <p class="mt-3 rounded-lg bg-amber-50 p-3 text-sm text-amber-900">Bukti pembayaran sedang diverifikasi admin.</p>
+            @elseif ($lastRejectedPayment && $reuploadDeadline?->isPast())
+                <p class="mt-3 rounded-lg bg-amber-50 p-3 text-sm text-amber-900">Batas 24 jam untuk unggah ulang bukti telah berakhir. Hubungi admin untuk bantuan.</p>
             @else
+                @if ($lastRejectedPayment)
+                    <p class="mt-3 rounded-lg bg-amber-50 p-3 text-sm text-amber-900">Bukti sebelumnya ditolak: {{ $lastRejectedPayment->rejection_reason }}. Unggah ulang sebelum {{ $reuploadDeadline?->format('d M Y H:i') }}.</p>
+                @endif
                 <form method="POST" action="{{ route('orders.payment-proof', $order) }}" enctype="multipart/form-data" class="mt-4 flex flex-wrap items-end gap-3">
                     @csrf
                     <div class="flex-1">
                         <label for="proof" class="mb-1 block text-sm font-medium">Bukti pembayaran</label>
-                        <input id="proof" name="proof" type="file" accept="image/jpeg,image/png,image/webp" required class="w-full rounded-lg border border-border p-2 text-sm">
+                        <input id="proof" name="proof" type="file" accept="image/jpeg,image/png" required class="w-full rounded-lg border border-border p-2 text-sm">
                     </div>
                     <button type="submit" class="rounded-lg bg-primary-600 px-4 py-2.5 font-semibold text-white hover:bg-primary-700">Kirim Bukti</button>
                 </form>
@@ -102,8 +120,13 @@
         <section class='mt-5 rounded-xl border border-amber-300 bg-amber-50 p-5'>
             <h2 class='text-lg font-semibold text-amber-900'>Menunggu Pelunasan &amp; Pengambilan</h2>
             <p class='mt-2 text-sm text-amber-900'>Checkout pesanan di marketplace pilihan ({{ ucfirst($order->platform) }}) untuk menerbitkan resi logistik. Tidak ada tombol pelunasan di web.</p>
+            <dl class="mt-3 space-y-1 text-sm text-amber-950">
+                <div class="flex justify-between gap-4"><dt>Sisa pelunasan</dt><dd class="font-semibold">{{ format_rupiah($balanceDue) }}</dd></div>
+                <div class="flex justify-between gap-4"><dt>Fee marketplace saat CO</dt><dd class="font-semibold">{{ format_rupiah($order->fee_marketplace) }}</dd></div>
+                <div class="flex justify-between gap-4 border-t border-amber-300 pt-1"><dt>Nominal CO marketplace</dt><dd class="font-bold">{{ format_rupiah($balanceDue + (float) $order->fee_marketplace) }}</dd></div>
+            </dl>
             @if ($order->pickup_deadline_at)
-                <p class='mt-3 text-sm font-semibold text-amber-900'>Wajib checkout sebelum {{ $order->pickup_deadline_at->format('d M Y H:i') }} agar pesanan tidak hangus.</p>
+                <p class='mt-3 text-sm font-semibold text-amber-900'>Wajib checkout sebelum {{ $order->pickup_deadline_at->format('d M Y H:i') }}. Lewat 7 hari pesanan otomatis hangus tanpa refund.</p>
                 <p data-pickup-countdown data-seconds='{{ $order->pickup_remaining_seconds }}' class='mt-1 text-lg font-bold text-amber-900'></p>
             @endif
         </section>

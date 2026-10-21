@@ -28,10 +28,7 @@ class OrderPaymentService
 
     public function uploadProof(Order $order, UploadedFile $proof): Payment
     {
-        if (! in_array($order->status, [
-            OrderStatus::MENUNGGU_PEMBAYARAN->value,
-            OrderStatus::MENUNGGU_PELUNASAN->value,
-        ], true)) {
+        if ($order->status !== OrderStatus::MENUNGGU_PEMBAYARAN->value) {
             throw ValidationException::withMessages(['proof' => 'Pesanan ini belum dapat menerima bukti pembayaran.']);
         }
 
@@ -45,6 +42,7 @@ class OrderPaymentService
         ])->exists()) {
             throw ValidationException::withMessages(['proof' => 'Pesanan sedang dalam proses refund dan tidak dapat menerima pembayaran baru.']);
         }
+        $this->assertReuploadWindow($order);
 
         $verifiedAmount = (float) $order->payments()->where('status', 'verified')->sum('amount');
         $amount = max(0, (float) $order->total - $verifiedAmount);
@@ -58,8 +56,9 @@ class OrderPaymentService
         }
 
         $disk = Storage::disk('local');
-        $directory = "payment-proofs/{$order->order_no}";
-        $filename = "{$order->order_no}-".($isDownPayment ? 'dp' : ($verifiedAmount > 0 ? 'settlement' : 'full')).'-'.strtolower($order->payment_method).'-'.Str::uuid().'.'.$proof->extension();
+        $directory = "payment-proofs/{$order->order_no}/".Str::uuid();
+        $paymentType = $isDownPayment ? 'dp' : ($verifiedAmount > 0 ? 'settlement' : 'full');
+        $filename = "{$order->order_no} - {$paymentType} - ".strtolower($order->payment_method).'.'.$proof->extension();
         $path = $disk->putFileAs($directory, $proof, $filename);
         if (! $path) {
             throw new RuntimeException('Gagal menyimpan bukti pembayaran.');
@@ -68,10 +67,7 @@ class OrderPaymentService
         try {
             return DB::transaction(function () use ($order, $amount, $path, $isDownPayment): Payment {
                 $lockedOrder = Order::query()->lockForUpdate()->findOrFail($order->id);
-                if (! in_array($lockedOrder->status, [
-                    OrderStatus::MENUNGGU_PEMBAYARAN->value,
-                    OrderStatus::MENUNGGU_PELUNASAN->value,
-                ], true)
+                if ($lockedOrder->status !== OrderStatus::MENUNGGU_PEMBAYARAN->value
                     || $lockedOrder->payments()->where('is_locked', true)->exists()
                     || $lockedOrder->refunds()->whereIn('status', [
                         RefundStatus::REQUESTED->value,
@@ -79,9 +75,10 @@ class OrderPaymentService
                     ])->exists()) {
                     throw ValidationException::withMessages(['proof' => 'Tagihan berubah atau bukti lain sedang diverifikasi.']);
                 }
+                $this->assertReuploadWindow($lockedOrder);
 
                 $payment = $lockedOrder->payments()->create([
-                    'type' => $isDownPayment ? 'dp' : ($lockedOrder->status === OrderStatus::MENUNGGU_PELUNASAN->value ? 'settlement' : 'full'),
+                    'type' => $isDownPayment ? 'dp' : 'full',
                     'amount' => $amount,
                     'method' => $lockedOrder->payment_method,
                     'proof_path' => $path,
@@ -236,5 +233,19 @@ class OrderPaymentService
             'Bukti bayar ditolak',
             ['alasan' => $reason],
         );
+    }
+
+    private function assertReuploadWindow(Order $order): void
+    {
+        $lastRejected = $order->payments()
+            ->where('status', 'rejected')
+            ->latest('updated_at')
+            ->first();
+
+        if ($lastRejected?->updated_at?->addHours(24)->isPast()) {
+            throw ValidationException::withMessages([
+                'proof' => 'Batas 24 jam untuk mengunggah ulang bukti pembayaran telah berakhir. Hubungi admin untuk bantuan.',
+            ]);
+        }
     }
 }

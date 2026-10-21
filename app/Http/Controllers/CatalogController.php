@@ -238,21 +238,37 @@ class CatalogController extends Controller
             $remainingViews = max(0, 10 - $viewed);
         }
 
-        $developerIds = $product->games->flatMap(fn (Game $productGame) => $productGame->developers->modelKeys())->unique();
-        $relatedProducts = Product::query()
-            ->active()
-            ->where('id', '!=', $product->id)
-            ->when($game, fn (Builder $query) => $query->whereHas(
-                'games',
-                fn (Builder $gameQuery) => $gameQuery->whereKey($game->id),
-            ), fn (Builder $query) => $query->whereHas(
-                'games.developers',
-                fn (Builder $developerQuery) => $developerQuery->whereKey($developerIds),
-            ))
-            ->with(['games', 'variants'])
-            ->inRandomOrder()
-            ->limit(6)
-            ->get();
+        $relatedGame = $game
+            ? $product->games->firstWhere('id', $game->id)
+            : $product->games->first();
+        $developerIds = $relatedGame?->developers->modelKeys() ?? [];
+        $relatedProducts = collect();
+
+        if ($relatedGame || $developerIds !== []) {
+            $relatedProducts = Product::query()
+                ->active()
+                ->where('id', '!=', $product->id)
+                ->where(function (Builder $query) use ($relatedGame, $developerIds): void {
+                    if ($relatedGame) {
+                        $query->whereHas('games', fn (Builder $gameQuery) => $gameQuery
+                            ->whereKey($relatedGame->id)
+                            ->where('is_active', true));
+                    }
+
+                    if ($developerIds !== []) {
+                        $method = $relatedGame ? 'orWhereHas' : 'whereHas';
+                        $query->{$method}('games', fn (Builder $gameQuery) => $gameQuery
+                            ->where('is_active', true)
+                            ->whereHas('developers', fn (Builder $developerQuery) => $developerQuery
+                                ->whereIn('developers.id', $developerIds)
+                                ->where('developers.is_active', true)));
+                    }
+                })
+                ->with(['games', 'tags', 'variants'])
+                ->inRandomOrder()
+                ->limit(6)
+                ->get();
+        }
 
         return view('catalog.show', compact('product', 'game', 'relatedProducts', 'remainingViews'));
     }

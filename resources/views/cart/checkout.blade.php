@@ -5,6 +5,8 @@
 @section('content')
 <div class="mx-auto max-w-7xl px-4 py-8">
     <h1 class="text-2xl font-bold text-navy-500">Checkout Pesanan</h1>
+    <div class="mt-5 grid gap-6 lg:grid-cols-[minmax(0,1fr)_22rem]">
+        <div class="space-y-5 lg:col-span-2">
     <section class="mt-5 rounded-xl border border-border bg-white p-5"><h2 class="font-semibold">Alamat Pengiriman</h2><p class="mt-2 font-semibold">{{ auth()->user()->name }} · {{ auth()->user()->no_hp }}</p><p class="text-sm text-text-muted">{{ collect([auth()->user()->alamat_lengkap, auth()->user()->kecamatan, auth()->user()->kota, auth()->user()->provinsi, auth()->user()->kode_pos])->filter()->join(', ') }}</p><a href="{{ route('profile.edit') }}" class="mt-2 inline-block text-sm font-semibold text-navy-500 hover:underline">Ubah di Edit Profil →</a></section>
     @auth
         @if (auth()->user()->hasVerifiedEmail() && ! auth()->user()->hasCompletedProfile())
@@ -14,7 +16,8 @@
     @if ($errors->any())
         <div role="alert" class="mt-4 rounded-lg bg-red-50 p-3 text-sm text-red-800">{{ $errors->first() }}</div>
     @endif
-    <div class="mt-5 divide-y divide-border rounded-xl border border-border bg-white">
+        </div>
+    <div class="mt-5 divide-y divide-border rounded-xl border border-border bg-white lg:col-start-2 lg:row-start-2">
         @foreach ($lines as $line)
             <div class="flex items-start justify-between gap-4 p-4">
                 <div>
@@ -42,11 +45,12 @@
             <div class="flex justify-between border-t border-border pt-3 text-base font-bold"><span>Total dibulatkan</span><span>{{ format_rupiah($quote['total']) }}</span></div>
             @if (old('payment_scheme', request('payment_scheme', 'fp')) === 'dp')
                 <div class="flex justify-between font-semibold"><span>DP 50% yang dibayar</span><span>{{ format_rupiah($quote['dp_amount']) }}</span></div>
+                <div class="flex justify-between"><span>Sisa CO di {{ ucfirst(request('platform', 'toco')) }}</span><span>{{ format_rupiah(max(0, $quote['total'] - $quote['dp_amount'])) }}</span></div>
             @endif
         </div>
     </div>
 
-    <form method="GET" action="{{ route('cart.checkout') }}" class="mt-6 space-y-5 rounded-xl border border-border bg-white p-5">
+    <form method="GET" action="{{ route('cart.checkout') }}" class="mt-6 space-y-5 rounded-xl border border-border bg-white p-5 lg:col-start-1 lg:row-start-2">
         @foreach ($cartIds as $cartId)
             <input type="hidden" name="cart_ids[]" value="{{ $cartId }}">
         @endforeach
@@ -99,7 +103,7 @@
         </button>
     </form>
 
-    <form method="POST" action="{{ route('cart.place-order') }}" class="mt-4 rounded-xl border border-border bg-white p-5">
+    <form method="POST" action="{{ route('cart.place-order') }}" class="mt-4 rounded-xl border border-border bg-white p-5 lg:col-start-2 lg:row-start-3">
         @csrf
         @foreach ($cartIds as $cartId)
             <input type="hidden" name="cart_ids[]" value="{{ $cartId }}">
@@ -118,11 +122,21 @@
             Buat Pesanan
         </button>
     </form>
+    </div>
 </div>
 @endsection
 
 @push('scripts')
     <script>
+        const checkoutCoins = document.querySelector('input[name="use_coins"]');
+        const checkoutVoucher = document.getElementById('user_voucher_id');
+        checkoutCoins?.addEventListener('change', () => {
+            if (checkoutCoins.checked && checkoutVoucher) checkoutVoucher.value = '';
+        });
+        checkoutVoucher?.addEventListener('change', () => {
+            if (checkoutVoucher.value && checkoutCoins) checkoutCoins.checked = false;
+        });
+
         if (typeof window.mercatoriaTrack === 'function') {
             window.mercatoriaTrack('begin_checkout', {
                 currency: 'IDR',

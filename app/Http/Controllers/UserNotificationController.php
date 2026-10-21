@@ -9,6 +9,14 @@ use Illuminate\View\View;
 
 class UserNotificationController extends Controller
 {
+    private const FILTER_TYPES = [
+        'order' => ['order', 'payment', 'order_note'],
+        'coin' => ['coin', 'referral', 'birthday'],
+        'voucher' => ['voucher', 'gift'],
+        'state' => ['state'],
+        'system' => ['system', 'cart'],
+    ];
+
     public function unreadCount(Request $request): JsonResponse
     {
         $user = $request->user();
@@ -23,7 +31,7 @@ class UserNotificationController extends Controller
                 'icon' => $notification->icon ?: '🔔',
                 'is_read' => (bool) $notification->is_read,
                 'created_at' => $notification->created_at->toIso8601String(),
-                'created_at_human' => $notification->created_at->diffForHumans(),
+                'created_at_human' => $notification->created_at->locale('id')->diffForHumans(),
             ])->values(),
         ]);
     }
@@ -38,7 +46,7 @@ class UserNotificationController extends Controller
         $query = $request->user()->notifications()
             ->when(($filters['filter'] ?? 'all') === 'unread', fn ($builder) => $builder->where('is_read', false))
             ->when(isset($filters['filter']) && ! in_array($filters['filter'], ['all', 'unread'], true),
-                fn ($builder) => $builder->where('type', $filters['filter']))
+                fn ($builder) => $builder->whereIn('type', self::FILTER_TYPES[$filters['filter']]))
             ->when($filters['q'] ?? null, fn ($builder, string $search) => $builder->where(function ($where) use ($search): void {
                 $where->where('title', 'like', '%'.$search.'%')
                     ->orWhere('message', 'like', '%'.$search.'%');
