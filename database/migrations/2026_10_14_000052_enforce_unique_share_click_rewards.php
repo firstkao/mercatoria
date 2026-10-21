@@ -9,7 +9,12 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('share_clicks', function (Blueprint $table): void {
-            $table->dropIndex('share_unique');
+            // Hanya hapus index 'share_unique' jika index tersebut benar-benar ada di database
+            if (Schema::hasIndex('share_clicks', 'share_unique')) {
+                $table->dropIndex('share_unique');
+            }
+
+            // Tambahkan unique index yang baru
             $table->unique(['user_id', 'product_id', 'ip_address'], 'share_clicks_unique');
         });
     }
@@ -17,7 +22,11 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('share_clicks', function (Blueprint $table): void {
-            $table->dropUnique('share_clicks_unique');
+            // Lakukan hal yang sama untuk fungsi rollback (down) agar aman jika di-rollback berkali-kali
+            if (Schema::hasIndex('share_clicks', 'share_clicks_unique')) {
+                $table->dropUnique('share_clicks_unique');
+            }
+
             $table->index(['user_id', 'product_id', 'ip_address'], 'share_unique');
         });
     }
