@@ -11,6 +11,7 @@ use App\Models\Customer;
 use App\Models\Order;
 use App\Models\OrderStatusLog;
 use App\Models\Payment;
+use App\Services\Notification\ScheduledEmailService;
 use App\Services\Notification\UserNotificationService;
 use App\Services\User\ReferralRewardService;
 use Illuminate\Http\UploadedFile;
@@ -106,6 +107,13 @@ class OrderPaymentService
                     'meta' => ['order_id' => $lockedOrder->id, 'payment_id' => $payment->id],
                 ]);
 
+                app(ScheduledEmailService::class)->sendToAdmins('admin_payment_notification', 'Pembayaran baru masuk', [
+                    'nama_user' => (string) $lockedOrder->user?->name,
+                    'no_order' => $lockedOrder->order_no,
+                    'total' => 'Rp '.number_format((float) $payment->amount, 0, ',', '.'),
+                    'link' => route('office.orders.show', $lockedOrder),
+                ]);
+
                 return $payment;
             });
         } catch (\Throwable $exception) {
@@ -183,6 +191,7 @@ class OrderPaymentService
         });
 
         $this->referralRewards->onFirstPayment($userId);
+        app(ScheduledEmailService::class)->sendOrder($payment->order, 'payment_verified', 'Pembayaran terverifikasi');
     }
 
     public function reject(Payment $payment, int $adminId, string $reason): void
@@ -220,5 +229,12 @@ class OrderPaymentService
                 meta: ['order_id' => $order->id, 'payment_id' => $payment->id],
             );
         });
+
+        app(ScheduledEmailService::class)->sendOrder(
+            Order::query()->findOrFail($payment->order_id),
+            'payment_rejected',
+            'Bukti bayar ditolak',
+            ['alasan' => $reason],
+        );
     }
 }

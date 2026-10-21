@@ -1,9 +1,11 @@
 <?php
+
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration {
+return new class extends Migration
+{
     public function up(): void
     {
         Schema::create('order_item_snapshots', function (Blueprint $table) {
@@ -54,5 +56,9 @@ return new class extends Migration {
             $table->index(['snapshot_at']);
         });
     }
-    public function down(): void { Schema::dropIfExists('order_item_snapshots'); }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('order_item_snapshots');
+    }
 };

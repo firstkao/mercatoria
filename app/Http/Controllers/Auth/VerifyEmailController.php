@@ -3,8 +3,10 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Services\Notification\ScheduledEmailService;
 use Illuminate\Auth\Events\Verified;
 use Illuminate\Foundation\Auth\EmailVerificationRequest;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -29,6 +31,10 @@ class VerifyEmailController extends Controller
 
         if (! $user->hasVerifiedEmail() && $user->markEmailAsVerified()) {
             event(new Verified($user));
+            app(ScheduledEmailService::class)->send($user, 'welcome', 'Selamat datang di Mercatoria', [
+                'nama_user' => $user->name,
+                'link' => route('home'),
+            ]);
         }
 
         $user->crush()->update([
@@ -42,6 +48,14 @@ class VerifyEmailController extends Controller
         }
 
         return redirect()->route('dashboard')->with('status', 'Email berhasil diverifikasi.');
+    }
+
+    // Modal edukasi cara belanja: tampil 1x seumur hidup
+    public function markEduModalSeen(Request $request): JsonResponse
+    {
+        $request->user()->forceFill(['has_seen_edu_modal' => true])->save();
+
+        return response()->json(['ok' => true]);
     }
 
     // Kirim (ulang) link verifikasi

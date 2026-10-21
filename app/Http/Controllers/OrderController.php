@@ -2,12 +2,15 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\OrderStatus;
 use App\Services\Order\OrderPaymentService;
 use App\Services\Order\RefundService;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class OrderController extends Controller
@@ -19,12 +22,17 @@ class OrderController extends Controller
 
     public function index(Request $request): View
     {
-        $orders = $request->user()->orders()
+        $user = $request->user();
+        $orders = $user->orders()
             ->with(['items.snapshot', 'payments'])
             ->latest()
             ->paginate(15);
+        $pendingBills = $user->orders()
+            ->whereIn('status', [OrderStatus::MENUNGGU_PEMBAYARAN->value, OrderStatus::MENUNGGU_PELUNASAN->value])
+            ->latest()
+            ->get();
 
-        return view('orders.index', compact('orders'));
+        return view('orders.index', compact('orders', 'pendingBills'));
     }
 
     public function show(Request $request, int $order): View
@@ -63,10 +71,21 @@ class OrderController extends Controller
         return view('orders.show', compact('order', 'ga4Events'));
     }
 
+    public function invoice(Request $request, int $order): Response
+    {
+        $order = $request->user()->orders()
+            ->with(['items.snapshot', 'user.customer'])
+            ->findOrFail($order);
+
+        return Pdf::loadView('orders.invoice', compact('order'))
+            ->setPaper('a4')
+            ->download($order->order_no.'-invoice.pdf');
+    }
+
     public function uploadProof(Request $request, int $order): RedirectResponse
     {
         $validated = $request->validate([
-            'proof' => ['required', 'image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
+            'proof' => ['required', 'image', 'mimes:jpg,jpeg,png,webp', 'max:1024'],
         ]);
         $order = $request->user()->orders()->findOrFail($order);
         $this->payments->uploadProof($order, $validated['proof']);

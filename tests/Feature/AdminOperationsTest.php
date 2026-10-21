@@ -22,7 +22,7 @@ class AdminOperationsTest extends TestCase
         $this->actingAs($admin)->get(route('office.logs.activity', ['q' => 'Viewed']))
             ->assertOk()->assertSee('Viewed item');
         $this->get(route('office.logs.auth', ['action' => 'login_failed']))
-            ->assertOk()->assertSee('failed@example.com')->assertSee('bg-red-50');
+            ->assertOk()->assertSee('failed@example.com')->assertSee('#FFEBEE');
         $this->get(route('office.logs.admin', ['q' => 'Updated']))
             ->assertOk()->assertSee('Updated item');
 

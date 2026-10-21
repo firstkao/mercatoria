@@ -52,7 +52,8 @@ class DocV46SyncTest extends TestCase
         $this->assertSame($variant->id, $service->matchedVariant($product, 'Tartaglia')?->id);
         $this->assertNull($service->matchedVariant($product, 'genshin'));
 
-        $this->get(route('catalog.search', ['q' => 'Tartaglia']))
+        $this->actingAs(User::factory()->create(['role' => 'customer']))
+            ->get(route('catalog.search', ['q' => 'Tartaglia']))
             ->assertOk()
             ->assertSee('🎯 Varian: Tartaglia', false)
             ->assertSee('variant='.$variant->id, false);
@@ -95,7 +96,7 @@ class DocV46SyncTest extends TestCase
 
         $ip->update(['expires_at' => now()->subMinute()]);
         auth()->logout();
-        $this->withServerVariables(['REMOTE_ADDR' => '10.0.0.9'])->get('/catalog')->assertOk();
+        $this->withServerVariables(['REMOTE_ADDR' => '10.0.0.9'])->get('/catalog')->assertRedirect(route('login'));
         $this->assertNotNull($game);
     }
 

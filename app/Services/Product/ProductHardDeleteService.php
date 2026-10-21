@@ -4,8 +4,8 @@ namespace App\Services\Product;
 
 use App\Models\Product;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 
 class ProductHardDeleteService
 {
@@ -49,7 +49,7 @@ class ProductHardDeleteService
                     } catch (\Throwable $e) {
                         $result['failed']++;
                         $result['errors'][$product->id] = $e->getMessage();
-                        Log::error("Bulk delete failed", [
+                        Log::error('Bulk delete failed', [
                             'product_id' => $product->id,
                             'error' => $e->getMessage(),
                         ]);
@@ -62,7 +62,9 @@ class ProductHardDeleteService
 
     protected function safeDeleteFile(?string $path): void
     {
-        if (empty($path)) return;
+        if (empty($path)) {
+            return;
+        }
         $disk = Storage::disk('public');
         if ($disk->exists($path)) {
             $disk->delete($path);

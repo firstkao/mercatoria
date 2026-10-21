@@ -20,6 +20,12 @@
         </form>
     </div>
 
+    <div class="mt-4 rounded-lg border border-info-500/30 bg-info-50 p-4 text-sm text-info-700">
+        ℹ️ Spammer HANYA untuk akun Crush (3x daftar tanpa belanja / manual ban).
+        Customer pasif (Blocked) BUKAN spammer, namun sama-sama berlaku batas maksimal 2x Unblock (Tier Gold/Platinum tidak jadi tameng).
+        IP di riwayat otomatis kedaluwarsa 30 hari setelah percobaan terakhir.
+    </div>
+
     @if ($errors->any())
         <div role="alert" class="mt-4 rounded-lg border border-danger-200 bg-danger-50 p-4 text-sm text-danger-700">
             <ul class="list-inside list-disc">
@@ -73,10 +79,10 @@
             <table class="w-full min-w-[760px] text-left text-sm">
                 <thead class="bg-surface-2 text-xs uppercase text-text-muted">
                     <tr>
-                        <th class="px-4 py-3">Email / HP</th>
+                        <th class="px-4 py-3">Email &amp; HP</th>
                         <th class="px-4 py-3">Alasan</th>
                         <th class="px-4 py-3">Status</th>
-                        <th class="px-4 py-3">IP &amp; Attempt</th>
+                        <th class="px-4 py-3">Multi-IP</th>
                         <th class="px-4 py-3">Grace period</th>
                         <th class="px-4 py-3">Aksi</th>
                     </tr>
@@ -97,16 +103,22 @@
                                     {{ $spammer->isBlocked() ? 'Diblokir' : 'Watchlist' }}
                                 </span>
                             </td>
-                            <td class="px-4 py-3">
-                                @forelse ($spammer->ips as $ip)
-                                    <div>{{ $ip->ip_address }} <span class="text-text-light">({{ $ip->attempt_count }}x)</span></div>
-                                @empty
+                            <td class="px-4 py-3" x-data="{ open: false }">
+                                @if ($spammer->ips->isEmpty())
                                     <span class="text-text-light">Belum ada IP tercatat</span>
-                                @endforelse
+                                @else
+                                    <span>{{ $spammer->ips->count() }} IP</span>
+                                    <button type="button" x-on:click="open = !open" :aria-expanded="open" class="ml-1 text-xs text-navy-500 hover:underline">[Lihat IP]</button>
+                                    <div x-show="open" x-cloak class="mt-1 text-xs">
+                                        @foreach ($spammer->ips as $ip)
+                                            <div>{{ $ip->ip_address }} <span class="text-text-light">({{ $ip->attempt_count }}x)</span></div>
+                                        @endforeach
+                                    </div>
+                                @endif
                             </td>
                             <td class="px-4 py-3">
                                 {{ $spammer->unblocked_until?->format('d M Y H:i') ?? '—' }}
-                                <div class="text-xs text-text-light">Dibuka {{ $spammer->unblock_count }}/2 kali</div>
+                                <div class="text-xs text-text-light">Unblock {{ $spammer->unblock_count }} / 2x</div>
                             </td>
                             <td class="px-4 py-3">
                                 @if ($spammer->isBlocked() && $spammer->unblock_count < 2)
@@ -117,6 +129,15 @@
                                     </form>
                                 @elseif ($spammer->unblock_count >= 2)
                                     <span class="text-xs text-text-light">Blokir permanen</span>
+                                @endif
+                                @php($customer = $spammer->isBlocked() ? \App\Models\User::query()->where('role', 'customer')->where(fn ($q) => $q->where('email', $spammer->email)->orWhere('no_hp', $spammer->no_hp))->first() : null)
+                                @if ($customer)
+                                    <form method="POST" action="{{ route('office.users.forever-delete', $customer) }}" class="mt-2"
+                                          onsubmit="return confirm('Forever Delete akun {{ $customer->email }}? Tindakan ini tidak bisa dibatalkan.')">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button class="rounded-lg border border-danger-500 px-3 py-2 text-xs font-semibold text-danger-500 hover:bg-danger-50">Forever Delete</button>
+                                    </form>
                                 @endif
                             </td>
                         </tr>

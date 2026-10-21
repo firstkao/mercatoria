@@ -2,9 +2,9 @@
 
 namespace App\Models;
 
+use App\Enums\RefundStatus;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use App\Enums\RefundStatus;
 
 class Refund extends Model
 {
@@ -19,11 +19,17 @@ class Refund extends Model
     ];
 
     public function order(): BelongsTo
-    { return $this->belongsTo(Order::class); }
+    {
+        return $this->belongsTo(Order::class);
+    }
 
     public function processedBy(): BelongsTo
-    { return $this->belongsTo(User::class, 'processed_by'); }
+    {
+        return $this->belongsTo(User::class, 'processed_by');
+    }
 
     public function getStatusEnumAttribute(): RefundStatus
-    { return RefundStatus::from($this->status); }
+    {
+        return RefundStatus::from($this->status);
+    }
 }

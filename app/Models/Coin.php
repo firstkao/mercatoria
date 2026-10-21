@@ -10,5 +10,7 @@ class Coin extends Model
     protected $fillable = ['user_id', 'balance'];
 
     public function user(): BelongsTo
-    { return $this->belongsTo(User::class); }
+    {
+        return $this->belongsTo(User::class);
+    }
 }

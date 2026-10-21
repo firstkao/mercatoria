@@ -17,182 +17,176 @@
 @endpush
 
 @section('content')
-<section class="bg-surface-2">
-    <div class="mx-auto max-w-7xl px-4 py-8">
-        <nav aria-label="Breadcrumb" class="mb-3 text-sm text-text-muted">
-            <a href="{{ route('home') }}" class="hover:text-navy-500">Beranda</a>
-            <span aria-hidden="true"> / </span>
-            <a href="{{ route('catalog.index') }}" class="hover:text-navy-500">Katalog</a>
-            @if ($game)
-                <span aria-hidden="true"> / </span><span>{{ $game->name }}</span>
-            @endif
-            @if ($category)
-                <span aria-hidden="true"> / </span><span>{{ $category->name }}</span>
-            @endif
-            @if ($developer)
-                <span aria-hidden="true"> / </span><span>{{ $developer->name }}</span>
-            @endif
-        </nav>
-        <h1 class="text-3xl font-bold text-navy-500">{{ $title }}</h1>
-        @if ($game?->description)
-            <p class="mt-2 max-w-3xl text-text-muted">{{ $game->description }}</p>
-        @elseif ($developer?->description)
-            <p class="mt-2 max-w-3xl text-text-muted">{{ $developer->description }}</p>
-        @endif
+@php
+    $activeSort = $filters['sort'] ?? 'default';
+    $sortOptions = ['default' => 'Pengurutan standar', 'price_asc' => 'Termurah', 'price_desc' => 'Termahal', 'popular' => 'Terpopuler', 'latest' => 'Terbaru', 'name' => 'A-Z'];
+    $currentMin = (int) ($filters['min_price'] ?? $priceMin);
+    $currentMax = (int) ($filters['max_price'] ?? $priceMax);
+    $sectionLabel = $developer ? 'Developer' : 'Produk';
+    $selectClass = 'w-full border-border text-xs';
+@endphp
+<div class="bg-surface-2">
+<form method="GET" action="{{ url()->current() }}" id="catalog-form" class="mx-auto grid max-w-[1200px] gap-6 px-4 py-6 md:px-6 lg:grid-cols-[270px_minmax(0,1fr)] lg:px-8">
+    @if ($search)
+        <input type="hidden" name="q" value="{{ $search }}">
+    @endif
 
-        <form method="GET" action="{{ route('catalog.search') }}" class="mt-5 flex max-w-2xl gap-2">
-            <label for="catalog-search" class="sr-only">Cari produk atau SKU</label>
-            <input id="catalog-search" name="q" value="{{ $search }}" type="search" maxlength="100"
-                   placeholder="Cari merchandise atau SKU..."
-                   class="min-w-0 flex-1 rounded-lg border-border bg-white focus:border-primary-400 focus:ring-primary-400">
-            <x-button type="submit">Cari</x-button>
-        </form>
+    <div class="space-y-4">
+        <div id="filter-sheet" class="fixed inset-0 z-50 hidden bg-black/40 lg:static lg:z-auto lg:block lg:bg-transparent" data-filter-sheet>
+            <div class="absolute inset-x-0 bottom-0 max-h-[85vh] space-y-4 overflow-y-auto bg-surface-2 p-4 lg:static lg:max-h-none lg:overflow-visible lg:bg-transparent lg:p-0">
+                <div class="flex items-center justify-between lg:hidden">
+                    <h2 class="font-bold">Filter &amp; Kategori</h2>
+                    <button type="button" data-filter-close class="px-2 text-xl" aria-label="Tutup filter">✕</button>
+                </div>
+
+                <section class="border border-border bg-white p-4" aria-labelledby="game-category-title">
+                    <h2 id="game-category-title" class="border-b border-border pb-2 text-sm font-bold text-[#111]">Kategori Game</h2>
+                    <ul class="mt-3 space-y-1.5 text-[12.5px]">
+                        @forelse ($games as $catalogGame)
+                            <li>
+                                <a href="{{ route('games.show', $catalogGame->slug) }}"
+                                    @class(['flex justify-between gap-2 hover:text-primary-400', 'font-bold text-primary-400' => $game?->is($catalogGame), 'text-text' => ! $game?->is($catalogGame)])>
+                                    <span>{{ $catalogGame->name }}</span>
+                                    <span class="text-text-light">({{ $catalogGame->products_count }})</span>
+                                </a>
+                            </li>
+                        @empty
+                            <li class="text-text-light">Belum ada game.</li>
+                        @endforelse
+                    </ul>
+
+                    <h3 class="mt-4 border-t border-border pt-3 text-sm font-bold text-[#111]">Kategori Merch &amp; Tag</h3>
+                    <div class="mt-2 space-y-2">
+                        <select name="category" aria-label="Kategori Merch" data-auto-submit class="{{ $selectClass }}">
+                            <option value="">Semua Merch</option>
+                            @foreach ($categories as $merchCategory)
+                                <option value="{{ $merchCategory->slug }}" @selected(($filters['category'] ?? '') === $merchCategory->slug)>{{ $merchCategory->name }}</option>
+                            @endforeach
+                        </select>
+                        <select name="tag" aria-label="Tag" data-auto-submit class="{{ $selectClass }}">
+                            <option value="">Semua Tag</option>
+                            @foreach ($tags as $tag)
+                                <option value="{{ $tag->slug }}" @selected(($filters['tag'] ?? '') === $tag->slug)>{{ $tag->name }}</option>
+                            @endforeach
+                        </select>
+                        <select name="availability" aria-label="Ketersediaan" data-auto-submit class="{{ $selectClass }}">
+                            <option value="">Semua Ketersediaan</option>
+                            <option value="tersedia" @selected(($filters['availability'] ?? '') === 'tersedia')>Tersedia</option>
+                            <option value="kosong" @selected(($filters['availability'] ?? '') === 'kosong')>Kosong</option>
+                        </select>
+                    </div>
+                </section>
+
+                <section class="border border-border bg-white p-4" aria-labelledby="price-filter-title">
+                    <h2 id="price-filter-title" class="border-b border-border pb-2 text-sm font-bold text-[#111]">Filter Harga</h2>
+                    <div class="mt-4" data-price-slider data-min="{{ $priceMin }}" data-max="{{ $priceMax }}">
+                        <div class="relative h-6">
+                            <div class="absolute inset-x-0 top-1/2 h-1 -translate-y-1/2 bg-border"></div>
+                            <input type="range" data-range-low min="{{ $priceMin }}" max="{{ $priceMax }}" step="1000" value="{{ $currentMin }}" aria-label="Harga minimum"
+                                class="pointer-events-none absolute inset-0 h-6 w-full appearance-none bg-transparent [&::-moz-range-thumb]:pointer-events-auto [&::-moz-range-thumb]:h-4 [&::-moz-range-thumb]:w-4 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:border-0 [&::-moz-range-thumb]:bg-primary-300 [&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-primary-300">
+                            <input type="range" data-range-high min="{{ $priceMin }}" max="{{ $priceMax }}" step="1000" value="{{ $currentMax }}" aria-label="Harga maksimum"
+                                class="pointer-events-none absolute inset-0 h-6 w-full appearance-none bg-transparent [&::-moz-range-thumb]:pointer-events-auto [&::-moz-range-thumb]:h-4 [&::-moz-range-thumb]:w-4 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:border-0 [&::-moz-range-thumb]:bg-primary-300 [&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-primary-300">
+                        </div>
+                        <input type="hidden" name="min_price" data-price-min-input value="{{ $currentMin }}">
+                        <input type="hidden" name="max_price" data-price-max-input value="{{ $currentMax }}">
+                        <div class="mt-2 flex justify-between text-xs text-text-muted">
+                            <span data-price-low-label>Rp{{ number_format($currentMin, 0, ',', '.') }}</span>
+                            <span data-price-high-label>Rp{{ number_format($currentMax, 0, ',', '.') }}</span>
+                        </div>
+                    </div>
+                    <button type="submit" class="mt-3 block w-full bg-primary-300 py-2 text-xs font-bold uppercase tracking-wide text-white hover:bg-primary-400">Terapkan</button>
+                </section>
+            </div>
+        </div>
+
+        <div class="hidden lg:block">
+            @include('catalog.partials.side-widgets', ['suffix' => 'desktop'])
+        </div>
     </div>
-</section>
 
-<div class="mx-auto grid max-w-7xl gap-8 px-4 py-8 lg:grid-cols-[240px_minmax(0,1fr)]">
-    <aside class="space-y-5">
-        <section class="rounded-xl border border-border bg-white p-4">
-            <h2 class="font-semibold">Game</h2>
-            <ul class="mt-3 space-y-2 text-sm">
-                @forelse ($games as $catalogGame)
-                    <li>
-                        <a href="{{ route('games.show', $catalogGame) }}" class="flex justify-between gap-2 text-text-muted hover:text-navy-500">
-                            <span>{{ $catalogGame->name }}</span>
-                            <span class="text-text-light">{{ $catalogGame->products_count }}</span>
-                        </a>
-                    </li>
-                @empty
-                    <li class="text-sm text-text-light">Belum ada game.</li>
-                @endforelse
-            </ul>
-        </section>
-
-        @if ($developers->isNotEmpty())
-            <section class="rounded-xl border border-border bg-white p-4">
-                <h2 class="font-semibold">Developer</h2>
-                <ul class="mt-3 space-y-2 text-sm">
-                    @foreach ($developers as $catalogDeveloper)
-                        <li>
-                            <a href="{{ route('developers.show', $catalogDeveloper->slug) }}" class="text-text-muted hover:text-navy-500">
-                                {{ $catalogDeveloper->name }}
-                            </a>
-                        </li>
-                    @endforeach
-                </ul>
-            </section>
-        @endif
-
-        @if ($bestOffers->isNotEmpty())
-            <section class="rounded-xl border border-border bg-white p-4">
-                <h2 class="font-semibold">Penawaran Terbaik</h2>
-                <ul class="mt-3 space-y-3 text-sm">
-                    @foreach ($bestOffers as $offer)
-                        <li>
-                            <a href="{{ route('products.direct', $offer->slug) }}" class="font-medium text-navy-500 hover:underline">{{ $offer->name }}</a>
-                            <p class="text-text-muted">{{ $offer->display_price }}</p>
-                        </li>
-                    @endforeach
-                </ul>
-            </section>
-        @endif
-    </aside>
-
-    <section>
-        <form method="GET" action="{{ url()->current() }}" class="mb-5 grid gap-3 rounded-xl border border-border bg-white p-4 sm:grid-cols-2 xl:grid-cols-7">
-            @if ($search)
-                <input type="hidden" name="q" value="{{ $search }}">
+    <div class="min-w-0 bg-white p-4 md:p-6">
+        <header class="text-center">
+            <h1 class="text-2xl font-bold text-[#111]">{{ $title }}</h1>
+            <nav aria-label="Breadcrumb" class="mt-1 text-xs text-text-muted">
+                <a href="{{ route('home') }}" class="hover:text-primary-400">Beranda</a>
+                <span aria-hidden="true">»</span>
+                <a href="{{ $developer ? route('home') : route('catalog.index') }}" class="hover:text-primary-400">{{ $sectionLabel }}</a>
+                <span aria-hidden="true">»</span>
+                <span>{{ $title }}</span>
+            </nav>
+            @if ($game?->description)
+                <p class="mx-auto mt-2 max-w-3xl text-sm text-text-muted">{{ $game->description }}</p>
+            @elseif ($developer?->description)
+                <p class="mx-auto mt-2 max-w-3xl text-sm text-text-muted">{{ $developer->description }}</p>
             @endif
-            <div>
-                <label for="sort" class="mb-1 block text-xs font-medium text-text-muted">Urutkan</label>
-                <select id="sort" name="sort" class="w-full rounded-lg border-border text-sm">
-                    <option value="latest" @selected(($filters['sort'] ?? 'latest') === 'latest')>Terbaru</option>
-                    <option value="price_asc" @selected(($filters['sort'] ?? '') === 'price_asc')>Termurah</option>
-                    <option value="price_desc" @selected(($filters['sort'] ?? '') === 'price_desc')>Termahal</option>
-                    <option value="popular" @selected(($filters['sort'] ?? '') === 'popular')>Terpopuler</option>
-                    <option value="name" @selected(($filters['sort'] ?? '') === 'name')>Abjad</option>
-                </select>
-            </div>
-            <div>
-                <label for="tag" class="mb-1 block text-xs font-medium text-text-muted">Tag</label>
-                <select id="tag" name="tag" class="w-full rounded-lg border-border text-sm">
-                    <option value="">Semua tag</option>
-                    @foreach ($tags as $tag)
-                        <option value="{{ $tag->slug }}" @selected(($filters['tag'] ?? '') === $tag->slug)>{{ $tag->name }}</option>
-                    @endforeach
-                </select>
-            </div>
-            <div>
-                <label for="category" class="mb-1 block text-xs font-medium text-text-muted">Kategori</label>
-                <select id="category" name="category" class="w-full rounded-lg border-border text-sm">
-                    <option value="">Semua kategori</option>
-                    @foreach ($categories as $merchCategory)
-                        <option value="{{ $merchCategory->slug }}" @selected(($filters['category'] ?? '') === $merchCategory->slug)>{{ $merchCategory->name }}</option>
-                    @endforeach
-                </select>
-            </div>
-            <div>
-                <label for="availability" class="mb-1 block text-xs font-medium text-text-muted">Ketersediaan</label>
-                <select id="availability" name="availability" class="w-full rounded-lg border-border text-sm">
-                    <option value="">Semua</option>
-                    <option value="tersedia" @selected(($filters['availability'] ?? '') === 'tersedia')>Tersedia</option>
-                    <option value="kosong" @selected(($filters['availability'] ?? '') === 'kosong')>Kosong</option>
-                </select>
-            </div>
-            <div>
-                <label for="min_price" class="mb-1 block text-xs font-medium text-text-muted">Harga minimum (Rp)</label>
-                <input id="min_price" name="min_price" type="number" min="0" step="1000" value="{{ $filters['min_price'] ?? '' }}"
-                       class="w-full rounded-lg border-border text-sm">
-            </div>
-            <div>
-                <label for="max_price" class="mb-1 block text-xs font-medium text-text-muted">Harga maksimum (Rp)</label>
-                <input id="max_price" name="max_price" type="number" min="0" step="1000" value="{{ $filters['max_price'] ?? '' }}"
-                       class="w-full rounded-lg border-border text-sm">
-            </div>
-            <div class="flex items-end">
-                <x-button type="submit" variant="ghost" class="w-full">Terapkan Filter</x-button>
-            </div>
-        </form>
+        </header>
 
-        <p class="mb-4 text-sm text-text-muted">
-            Menampilkan {{ $products->firstItem() ?? 0 }}–{{ $products->lastItem() ?? 0 }} dari {{ $products->total() }} hasil
-        </p>
+        <div class="mt-5 flex flex-wrap items-center justify-between gap-3 text-sm">
+            <p class="text-text-muted">Menampilkan {{ $products->firstItem() ?? 0 }}–{{ $products->lastItem() ?? 0 }} dari {{ $products->total() }} hasil</p>
+            <div class="flex items-center gap-2">
+                <button type="button" data-filter-open class="border border-border px-3 py-1.5 text-xs lg:hidden">☰ Filter &amp; Kategori</button>
+                <label for="sort" class="sr-only">Pengurutan</label>
+                <select id="sort" name="sort" data-auto-submit class="border-border text-xs">
+                    @foreach ($sortOptions as $value => $label)
+                        <option value="{{ $value }}" @selected($activeSort === $value)>{{ $label }}</option>
+                    @endforeach
+                </select>
+            </div>
+        </div>
 
         @if ($products->isEmpty())
-            <div class="rounded-xl border border-dashed border-border bg-white px-6 py-12 text-center">
+            <div class="mt-6 border border-dashed border-border px-6 py-12 text-center">
                 <h2 class="text-lg font-semibold">Produk belum tersedia</h2>
-                <p class="mt-1 text-sm text-text-muted">Coba ubah kata kunci atau filter pencarian.</p>
+                <p class="mt-1 text-sm text-text-muted">Coba ubah filter atau pilih kategori game lain.</p>
             </div>
         @else
-            <div class="grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-4">
+            <div class="mt-5 grid grid-cols-2 gap-4 md:grid-cols-4 lg:grid-cols-6" data-catalog-grid>
                 @foreach ($products as $product)
-                    @php($productGame = $product->games->first())
-                    <article class="overflow-hidden rounded-xl border border-border bg-white transition hover:shadow-md">
-                        <a href="{{ $productGame ? route('games.products.show', [$productGame->slug, $product->slug]) : route('products.direct', $product->slug) }}"
-                           class="block">
-                            @if ($product->main_image_path)
-                                <x-protected-image :src="\Illuminate\Support\Facades\Storage::url($product->main_image_path)" :alt="$product->name" loading="lazy" class="aspect-square w-full object-cover" />
-                            @else
-                                <div class="flex aspect-square items-center justify-center bg-surface-2 text-sm text-text-light">Gambar belum tersedia</div>
-                            @endif
-                            <div class="p-3">
-                                @if ($product->tags->isNotEmpty())
-                                    <span class="mb-2 inline-block rounded-full px-2 py-0.5 text-xs font-semibold" style="background-color: {{ $product->tags->first()->color }}20; color: {{ $product->tags->first()->color }}">
-                                        {{ $product->tags->first()->name }}
-                                    </span>
-                                @endif
-                                <h2 class="line-clamp-2 min-h-10 font-medium text-text">{{ $product->name }}</h2>
-                                <p class="mt-2 font-semibold text-navy-500">{{ $product->display_price }}</p>
-                                <p class="mt-1 text-xs {{ $product->availability === 'tersedia' ? 'text-success-700' : 'text-text-muted' }}">
-                                    {{ $product->availability === 'tersedia' ? 'Tersedia' : 'Stok kosong' }}
-                                </p>
-                            </div>
-                        </a>
-                    </article>
+                    <x-product-card :product="$product" />
                 @endforeach
             </div>
-            <div class="mt-6">{{ $products->links() }}</div>
+            <x-pagination-squares :paginator="$products" />
         @endif
-    </section>
+    </div>
+
+    <div class="lg:hidden">
+        @include('catalog.partials.side-widgets', ['suffix' => 'mobile'])
+    </div>
+</form>
 </div>
 @endsection
+
+@push('scripts')
+    <script>
+        (() => {
+            const form = document.getElementById('catalog-form');
+            if (!form) return;
+            form.querySelectorAll('[data-auto-submit]').forEach(field => field.addEventListener('change', () => form.requestSubmit()));
+
+            const sheet = form.querySelector('[data-filter-sheet]');
+            form.querySelector('[data-filter-open]')?.addEventListener('click', () => sheet.classList.remove('hidden'));
+            form.querySelector('[data-filter-close]')?.addEventListener('click', () => sheet.classList.add('hidden'));
+
+            const slider = form.querySelector('[data-price-slider]');
+            if (!slider) return;
+            const low = slider.querySelector('[data-range-low]');
+            const high = slider.querySelector('[data-range-high]');
+            const minInput = slider.querySelector('[data-price-min-input]');
+            const maxInput = slider.querySelector('[data-price-max-input]');
+            const format = value => 'Rp' + Number(value).toLocaleString('id-ID');
+            const sync = () => {
+                if (Number(low.value) > Number(high.value)) [low.value, high.value] = [high.value, low.value];
+                minInput.value = low.value;
+                maxInput.value = high.value;
+                slider.querySelector('[data-price-low-label]').textContent = format(low.value);
+                slider.querySelector('[data-price-high-label]').textContent = format(high.value);
+            };
+            low.addEventListener('input', sync);
+            high.addEventListener('input', sync);
+            form.addEventListener('submit', () => {
+                if (minInput.value === slider.dataset.min) minInput.disabled = true;
+                if (maxInput.value === slider.dataset.max) maxInput.disabled = true;
+            });
+        })();
+    </script>
+@endpush

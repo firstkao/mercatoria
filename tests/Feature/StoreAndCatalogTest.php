@@ -82,8 +82,8 @@ class StoreAndCatalogTest extends TestCase
             ->get(route('office.stores.create'))
             ->assertOk()
             ->assertSee('Preview Perhitungan')
-            ->assertSee('Produk 58 RMB')
-            ->assertSee('Produk 150 RMB');
+            ->assertSee('Contoh: produk harga 58 RMB dengan store ini')
+            ->assertSee('Contoh: produk harga 150 RMB');
     }
 
     public function test_store_validation_rejects_missing_names_and_negative_amounts(): void
@@ -154,11 +154,13 @@ class StoreAndCatalogTest extends TestCase
     {
         $admin = User::factory()->create(['role' => 'admin']);
         $store = Store::create(['name' => 'Game Default', 'min_belanja_rmb' => 100, 'ongkir_rmb' => 7]);
+        $developer = Developer::create(['name' => 'Game Dev', 'slug' => 'game-dev']);
 
         $response = $this->actingAs($admin)->post(route('office.games.store'), [
             'name' => 'Store Selector Game',
             'slug' => 'store-selector-game',
             'default_store_id' => $store->id,
+            'developer_ids' => [$developer->id],
             'is_active' => '1',
         ]);
 
@@ -182,7 +184,7 @@ class StoreAndCatalogTest extends TestCase
             ->assertSee('Default Store')
             ->assertSee('default-store-search')
             ->assertSee('Game Form Store')
-            ->assertSee('+ Store Baru');
+            ->assertSee('+ Tambah Store Baru');
     }
 
     public function test_product_can_select_a_store_or_use_the_game_default(): void
@@ -240,7 +242,7 @@ class StoreAndCatalogTest extends TestCase
             ->assertOk()
             ->assertSee('Ciutkan navigasi admin')
             ->assertSee('Stores (Tier Ongkir)')
-            ->assertSee('bg-primary-600');
+            ->assertSee('bg-primary-300');
     }
 
     public function test_store_product_filter_includes_direct_and_game_default_products(): void
@@ -309,7 +311,9 @@ class StoreAndCatalogTest extends TestCase
         $this->createProduct('Available Figure', 'available-figure', 'FIG-001', $game);
         $this->createProduct('Hidden Figure', 'hidden-figure', 'FIG-002', $game, active: false);
 
-        $response = $this->get(route('catalog.index'));
+        $this->get(route('catalog.index'))->assertRedirect(route('login'));
+
+        $response = $this->actingAs($this->customer())->get(route('catalog.index'));
 
         $response->assertOk()
             ->assertSee('Available Figure')
@@ -322,7 +326,7 @@ class StoreAndCatalogTest extends TestCase
         $game = $this->createGame('Search Game', 'search-game');
         $this->createProduct('Special Charm', 'special-charm', 'SKU-SEARCH-42', $game);
 
-        $response = $this->get(route('catalog.search', ['q' => 'SKU-SEARCH-42']));
+        $response = $this->actingAs($this->customer())->get(route('catalog.search', ['q' => 'SKU-SEARCH-42']));
 
         $response->assertOk()->assertSee('Special Charm');
     }
@@ -338,11 +342,11 @@ class StoreAndCatalogTest extends TestCase
         $available->tags()->attach($tag);
         $this->createProduct('Regular Figure', 'regular-figure', 'FIG-REGULAR', $game);
 
-        $response = $this->get(route('games.show', $game->slug).'?tag=limited&category=figure&availability=tersedia');
+        $response = $this->actingAs($this->customer())->get(route('games.show', $game->slug).'?tag=limited&category=figure&availability=tersedia');
 
         $response->assertOk()
-            ->assertSee('Limited Figure')
-            ->assertDontSee('Regular Figure');
+            ->assertSee('Limited Figure');
+        $this->assertSame([$available->id], $response->viewData('products')->pluck('id')->all());
     }
 
     public function test_catalog_price_sort_and_max_filter_use_display_price_after_discount(): void
@@ -355,7 +359,7 @@ class StoreAndCatalogTest extends TestCase
         $free = $this->createProduct('Free Price Product', 'free-price-product', 'PRICE-003', $game);
         $free->update(['price_rmb' => 0]);
 
-        $response = $this->get(route('catalog.index').'?sort=price_asc&max_price=0');
+        $response = $this->actingAs($this->customer())->get(route('catalog.index').'?sort=price_asc&max_price=0');
 
         $response->assertOk()
             ->assertViewHas('filters.max_price')
@@ -383,11 +387,16 @@ class StoreAndCatalogTest extends TestCase
         $game->developers()->attach($developer);
         $this->createProduct('Developer Product', 'developer-product', 'DEV-001', $game);
 
-        $response = $this->get(route('developers.show', $developer->slug));
+        $response = $this->actingAs($this->customer())->get(route('developers.show', $developer->slug));
 
         $response->assertOk()
             ->assertSee('Example Developer')
             ->assertSee('Developer Product');
+    }
+
+    private function customer(): User
+    {
+        return User::factory()->create(['role' => 'customer']);
     }
 
     private function createGame(string $name, string $slug, ?Store $store = null): Game

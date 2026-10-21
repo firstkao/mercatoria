@@ -1,9 +1,11 @@
 <?php
+
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration {
+return new class extends Migration
+{
     public function up(): void
     {
         Schema::create('variant_combinations', function (Blueprint $table) {
@@ -15,5 +17,9 @@ return new class extends Migration {
             $table->index(['variant_id', 'attribute_key']);
         });
     }
-    public function down(): void { Schema::dropIfExists('variant_combinations'); }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('variant_combinations');
+    }
 };

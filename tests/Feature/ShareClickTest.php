@@ -47,8 +47,9 @@ class ShareClickTest extends TestCase
             'REMOTE_ADDR' => '203.0.113.20',
             'HTTP_X_FORWARDED_FOR' => '198.51.100.20',
         ];
-        $this->withServerVariables($server)->get($url)->assertOk();
-        $this->withServerVariables($server)->get($url)->assertOk();
+        $visitor = User::factory()->create();
+        $this->actingAs($visitor)->withServerVariables($server)->get($url)->assertOk();
+        $this->actingAs($visitor)->withServerVariables($server)->get($url)->assertOk();
 
         $click = ShareClick::query()->sole();
         $this->assertSame('ID', $click->country_code);
@@ -83,7 +84,7 @@ class ShareClickTest extends TestCase
             'ref' => $referrer->referral_code,
         ]);
 
-        $this->get($url)->assertOk();
+        $this->actingAs(User::factory()->create())->get($url)->assertOk();
         $this->assertDatabaseHas('share_clicks', [
             'user_id' => $referrer->id,
             'product_id' => $product->id,
@@ -111,7 +112,7 @@ class ShareClickTest extends TestCase
             'ref' => $referrer->referral_code,
         ]);
 
-        $this->get($url)->assertOk();
+        $this->actingAs(User::factory()->create())->get($url)->assertOk();
 
         $this->assertDatabaseHas('share_clicks', [
             'user_id' => $referrer->id,

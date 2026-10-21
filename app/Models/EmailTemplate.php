@@ -17,10 +17,14 @@ class EmailTemplate extends Model
     ];
 
     public function logs(): HasMany
-    { return $this->hasMany(EmailLog::class, 'template_id'); }
+    {
+        return $this->hasMany(EmailLog::class, 'template_id');
+    }
 
     public function isActive(): bool
-    { return $this->is_active === true; }
+    {
+        return $this->is_active === true;
+    }
 
     public static function getByCode(string $code): ?self
     {

@@ -10,7 +10,7 @@ class LaunchSmokeTest extends TestCase
     {
         $this->get('/up')->assertOk();
         $this->get(route('home'))->assertOk();
-        $this->get(route('catalog.index'))->assertOk();
+        $this->get(route('catalog.index'))->assertRedirect(route('login'));
         $this->get(route('register'))->assertOk();
         $this->get(route('login'))->assertOk();
 

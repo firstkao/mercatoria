@@ -6,136 +6,137 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', 'Admin') — Mercatoria</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+    @if (session()->has('ga4_events'))
+        <x-ga4-tracking />
+    @endif
 </head>
-<body class="min-h-screen bg-surface text-text antialiased">
-    <header class="border-b border-border bg-white">
-        <div class="mx-auto flex max-w-7xl items-center justify-between px-4 py-3">
-            <a href="{{ route('office.stores.index') }}" class="text-xl font-bold text-navy-500">Mercatoria Admin</a>
-            <div class="relative hidden w-full max-w-md px-4 md:block">
+<body class="min-h-screen bg-[#F8F9FA] text-text antialiased"
+      x-data="{ collapsed: false, drawer: false, searchOpen: false }">
+    @php
+        $emailsPaused = filter_var(setting('pause_customer_emails', config('mercatoria.mail_control.pause_customer_emails', false)), FILTER_VALIDATE_BOOLEAN);
+        $menu = [
+            ['📊', 'Dashboard', [
+                ['Dashboard', 'office.dashboard', ['office.dashboard']],
+                ['Activity Log', 'office.logs.activity', ['office.logs.activity']],
+                ['Auth Log', 'office.logs.auth', ['office.logs.auth']],
+                ['Admin Log', 'office.logs.admin', ['office.logs.admin']],
+            ]],
+            ['📦', 'Produk', [
+                ['Semua Produk', 'office.products.index', ['office.products.*']],
+                ['Kategori Merch', 'office.merch-categories.index', ['office.merch-categories.*']],
+                ['Tag', 'office.tags.index', ['office.tags.*']],
+                ['Stores (Tier Ongkir)', 'office.stores.index', ['office.stores.*']],
+            ]],
+            ['🎮', 'Katalog', [
+                ['Game', 'office.games.index', ['office.games.*']],
+                ['Developer', 'office.developers.index', ['office.developers.*']],
+            ]],
+            ['🛒', 'Transaksi', [
+                ['Orders', 'office.orders.index', ['office.orders.*']],
+                ['Verifikasi Pembayaran', 'office.payments.index', ['office.payments.*']],
+                ['Refunds', 'office.refunds.index', ['office.refunds.*']],
+                ['Voucher', 'office.vouchers.index', ['office.vouchers.*']],
+            ]],
+            ['👥', 'Pengguna', [
+                ['Users', 'office.users.index', ['office.users.*']],
+                ['Spammers', 'office.spammers.index', ['office.spammers.*']],
+            ]],
+            ['📄', 'Konten', [
+                ['Pages CMS', 'office.pages.index', ['office.pages.*']],
+                ['Email Templates', 'office.email-templates.index', ['office.email-templates.*']],
+                ['Preorder Builder', 'office.preorder-pages.index', ['office.preorder-pages.*']],
+                ['Announcement Bar', 'office.announcements.index', ['office.announcements.*']],
+                ['Hero Carousel', 'office.hero-slides.index', ['office.hero-slides.*']],
+            ]],
+            ['🔍', 'SEO', [
+                ['SEO', 'office.seo.edit', ['office.seo.*']],
+            ]],
+            ['📈', 'Laporan', [
+                ['Reports', 'office.reports.index', ['office.reports.index']],
+            ]],
+            ['🏆', 'Pelanggan', [
+                ['Rank Pelanggan', 'office.customers.rank', ['office.customers.*', 'office.reports.customers']],
+            ]],
+            ['⚙️', 'Settings', [
+                ['Settings', 'office.settings.edit', ['office.settings.*']],
+            ]],
+        ];
+    @endphp
+    <header class="sticky top-0 z-40 flex h-14 items-center gap-2 border-b border-border bg-white px-3 md:gap-3 md:px-4">
+        <button type="button" x-on:click="drawer = !drawer" aria-label="Buka navigasi admin"
+                class="rounded-lg p-2 text-xl md:hidden">☰</button>
+        <a href="{{ route('office.dashboard') }}" class="text-base font-bold text-navy-500 md:hidden">MERCATORIA</a>
+        <div class="absolute inset-x-0 top-14 border-b border-border bg-white p-2 md:static md:block md:flex-1 md:border-0 md:p-0"
+             :class="searchOpen ? 'block' : 'hidden md:block'">
+            <div class="relative md:max-w-md">
                 <label for="admin-search" class="sr-only">Cari produk, pesanan, atau customer</label>
                 <input id="admin-search" type="search" autocomplete="off"
                     data-search-url="{{ route('office.search') }}"
                     class="w-full rounded-lg border border-border px-3 py-2 text-sm"
-                    placeholder="Cari produk, pesanan, customer...">
-                <div id="admin-search-results" class="absolute left-4 right-4 top-full z-20 mt-1 hidden max-h-96 overflow-y-auto rounded-lg border border-border bg-white shadow-lg"
+                    placeholder="🔍 Cari Produk/Order/User...">
+                <div id="admin-search-results" class="absolute left-0 right-0 top-full z-20 mt-1 hidden max-h-96 overflow-y-auto rounded-lg border border-border bg-white shadow-lg"
                     role="listbox" aria-label="Hasil pencarian admin"></div>
             </div>
-            <div class="flex items-center gap-4 text-sm">
-                <x-admin-notification-bell />
-                <span class="hidden text-text-muted sm:inline">{{ auth()->user()->name }}</span>
-                <a href="{{ route('home') }}" class="text-navy-500 hover:underline">Lihat toko</a>
-                <form method="POST" action="{{ route('logout') }}">
-                    @csrf
-                    <button type="submit" class="text-danger-500 hover:underline">Keluar</button>
-                </form>
+        </div>
+        <div class="ml-auto flex items-center gap-2 text-sm md:gap-4">
+            @if ($emailsPaused)
+                <a href="{{ route('office.settings.edit', ['tab' => 'email']) }}" role="status"
+                   class="hidden items-center gap-1 rounded-full bg-danger-500 px-3 py-1 text-xs font-semibold text-white sm:inline-flex">
+                    🔇 EMAIL CUSTOMER: OFF (Mode Testing) · Aktifkan →
+                </a>
+            @endif
+            <button type="button" x-on:click="searchOpen = !searchOpen" aria-label="Cari" class="rounded-lg p-2 text-lg md:hidden">🔍</button>
+            <a href="{{ route('home') }}" class="hidden text-navy-500 hover:underline md:inline">🌐 Lihat Frontend</a>
+            <x-admin-notification-bell />
+            <div x-data="{ open: false }" @click.outside="open = false" class="relative">
+                <button type="button" x-on:click="open = !open" :aria-expanded="open" aria-label="Menu profil"
+                        class="flex items-center gap-1 rounded-lg p-2 hover:bg-surface-2">
+                    <span aria-hidden="true">👤</span><span class="hidden text-text-muted sm:inline">{{ auth()->user()->name }}</span><span aria-hidden="true">▾</span>
+                </button>
+                <div x-show="open" x-cloak class="absolute right-0 z-50 mt-2 w-48 rounded-lg border border-border bg-white py-1 shadow-lg">
+                    <a href="{{ route('home') }}" class="block px-4 py-2 hover:bg-surface-2 md:hidden">🌐 Lihat Frontend</a>
+                    <form method="POST" action="{{ route('logout') }}">
+                        @csrf
+                        <button type="submit" class="block w-full px-4 py-2 text-left text-danger-500 hover:bg-surface-2">Keluar</button>
+                    </form>
+                </div>
             </div>
         </div>
     </header>
+    @if ($emailsPaused)
+        <a href="{{ route('office.settings.edit', ['tab' => 'email']) }}" role="status"
+           class="block bg-danger-500 px-4 py-2 text-center text-xs font-semibold text-white sm:hidden">
+            🔇 EMAIL CUSTOMER: OFF (Mode Testing) · Aktifkan →
+        </a>
+    @endif
 
-    <div class="mx-auto grid max-w-7xl gap-6 px-4 py-6 md:grid-cols-[var(--admin-sidebar-width)_minmax(0,1fr)]"
-         x-data="{ collapsed: false }"
-         :style="collapsed ? '--admin-sidebar-width: 56px' : '--admin-sidebar-width: 240px'">
-        <aside>
-            <nav aria-label="Navigasi admin" class="rounded-xl border border-border bg-white p-4"
-                 :class="collapsed ? 'admin-sidebar-collapsed md:p-2' : 'md:p-4'">
-                <div class="mb-3 flex justify-end">
-                    <button type="button" x-on:click="collapsed = !collapsed"
-                            :aria-label="collapsed ? 'Perluas navigasi admin' : 'Ciutkan navigasi admin'"
-                            class="hidden rounded-lg border border-border px-2 py-1 text-sm text-text-muted hover:bg-surface-2 md:block">
-                        <span x-show="!collapsed" aria-hidden="true">←</span>
-                        <span x-show="collapsed" x-cloak aria-hidden="true">→</span>
-                    </button>
-                </div>
-                <p x-show="!collapsed" class="mb-2 text-xs font-semibold uppercase tracking-wide text-text-light">Produk</p>
-                <a href="{{ route('office.games.index') }}"
-                   aria-label="Game" title="Game"
-                   @class(['flex items-center gap-3 rounded-lg border-l-4 px-3 py-2 text-sm', 'border-white bg-primary-600 font-semibold text-white' => request()->routeIs('office.games.*'), 'border-transparent text-text-muted hover:bg-surface-2' => ! request()->routeIs('office.games.*')])>
-                    <span aria-hidden="true">🎮</span><span x-show="!collapsed">Game</span>
-                </a>
-                <a href="{{ route('office.products.index') }}"
-                   aria-label="Produk" title="Produk"
-                   @class(['flex items-center gap-3 rounded-lg border-l-4 px-3 py-2 text-sm', 'border-white bg-primary-600 font-semibold text-white' => request()->routeIs('office.products.*'), 'border-transparent text-text-muted hover:bg-surface-2' => ! request()->routeIs('office.products.*')])>
-                    <span aria-hidden="true">📦</span><span x-show="!collapsed">Produk</span>
-                </a>
-                <a href="{{ route('office.stores.index') }}"
-                   aria-label="Stores (Tier Ongkir)" title="Stores (Tier Ongkir)"
-                   @class(['flex items-center gap-3 rounded-lg border-l-4 px-3 py-2 text-sm', 'border-white bg-primary-600 font-semibold text-white' => request()->routeIs('office.stores.*'), 'border-transparent text-text-muted hover:bg-surface-2' => ! request()->routeIs('office.stores.*')])>
-                    <span aria-hidden="true">🏪</span><span x-show="!collapsed">Stores (Tier Ongkir)</span>
-                </a>
-                <p x-show="!collapsed" class="mb-2 mt-5 text-xs font-semibold uppercase tracking-wide text-text-light">Transaksi</p>
-                <a href="{{ route('office.orders.index') }}"
-                   aria-label="Pesanan &amp; Pembayaran" title="Pesanan &amp; Pembayaran"
-                   @class(['flex items-center gap-3 rounded-lg border-l-4 px-3 py-2 text-sm', 'border-white bg-primary-600 font-semibold text-white' => request()->routeIs('office.orders.*', 'office.payments.*', 'office.refunds.*'), 'border-transparent text-text-muted hover:bg-surface-2' => ! request()->routeIs('office.orders.*', 'office.payments.*', 'office.refunds.*')])>
-                    <span aria-hidden="true">🛒</span><span x-show="!collapsed">Pesanan &amp; Pembayaran</span>
-                </a>
-                <p x-show="!collapsed" class="mb-2 mt-5 text-xs font-semibold uppercase tracking-wide text-text-light">Customer</p>
-                <a href="{{ route('office.users.index') }}"
-                   aria-label="Customer &amp; Migrasi" title="Customer &amp; Migrasi"
-                   @class(['flex items-center gap-3 rounded-lg border-l-4 px-3 py-2 text-sm', 'border-white bg-primary-600 font-semibold text-white' => request()->routeIs('office.users.*'), 'border-transparent text-text-muted hover:bg-surface-2' => ! request()->routeIs('office.users.*')])>
-                    <span aria-hidden="true">👥</span><span x-show="!collapsed">Customer &amp; Migrasi</span>
-                </a>
-                <a href="{{ route('office.spammers.index') }}"
-                   aria-label="Spammer" title="Spammer"
-                   @class(['flex items-center gap-3 rounded-lg border-l-4 px-3 py-2 text-sm', 'border-white bg-primary-600 font-semibold text-white' => request()->routeIs('office.spammers.*'), 'border-transparent text-text-muted hover:bg-surface-2' => ! request()->routeIs('office.spammers.*')])>
-                    <span aria-hidden="true">🚫</span><span x-show="!collapsed">Spammer</span>
-                </a>
-                <p x-show="!collapsed" class="mb-2 mt-5 text-xs font-semibold uppercase tracking-wide text-text-light">Konten &amp; laporan</p>
-                <a href="{{ route('office.pages.index') }}"
-                   aria-label="Halaman" title="Halaman"
-                   @class(['flex items-center gap-3 rounded-lg border-l-4 px-3 py-2 text-sm', 'border-white bg-primary-600 font-semibold text-white' => request()->routeIs('office.pages.*'), 'border-transparent text-text-muted hover:bg-surface-2' => ! request()->routeIs('office.pages.*')])>
-                    <span aria-hidden="true">📄</span><span x-show="!collapsed">Halaman</span>
-                </a>
-                <a href="{{ route('office.preorder-pages.index') }}"
-                   aria-label="Preorder" title="Preorder"
-                   @class(['flex items-center gap-3 rounded-lg border-l-4 px-3 py-2 text-sm', 'border-white bg-primary-600 font-semibold text-white' => request()->routeIs('office.preorder-pages.*'), 'border-transparent text-text-muted hover:bg-surface-2' => ! request()->routeIs('office.preorder-pages.*')])>
-                    <span aria-hidden="true">🧩</span><span x-show="!collapsed">Preorder</span>
-                </a>
-                <a href="{{ route('office.vouchers.index') }}"
-                   aria-label="Voucher" title="Voucher"
-                   @class(['flex items-center gap-3 rounded-lg border-l-4 px-3 py-2 text-sm', 'border-white bg-primary-600 font-semibold text-white' => request()->routeIs('office.vouchers.*'), 'border-transparent text-text-muted hover:bg-surface-2' => ! request()->routeIs('office.vouchers.*')])>
-                    <span aria-hidden="true">🎟️</span><span x-show="!collapsed">Voucher</span>
-                </a>
-                <a href="{{ route('office.announcements.index') }}"
-                   aria-label="Announcement Bar" title="Announcement Bar"
-                   @class(['flex items-center gap-3 rounded-lg border-l-4 px-3 py-2 text-sm', 'border-white bg-primary-600 font-semibold text-white' => request()->routeIs('office.announcements.*'), 'border-transparent text-text-muted hover:bg-surface-2' => ! request()->routeIs('office.announcements.*')])>
-                    <span aria-hidden="true">📣</span><span x-show="!collapsed">Announcement Bar</span>
-                </a>
-                <a href="{{ route('office.hero-slides.index') }}"
-                   aria-label="Hero Carousel" title="Hero Carousel"
-                   @class(['flex items-center gap-3 rounded-lg border-l-4 px-3 py-2 text-sm', 'border-white bg-primary-600 font-semibold text-white' => request()->routeIs('office.hero-slides.*'), 'border-transparent text-text-muted hover:bg-surface-2' => ! request()->routeIs('office.hero-slides.*')])>
-                    <span aria-hidden="true">🖼️</span><span x-show="!collapsed">Hero Carousel</span>
-                </a>
-                <a href="{{ route('office.email-templates.index') }}"
-                   aria-label="Template Email" title="Template Email"
-                   @class(['flex items-center gap-3 rounded-lg border-l-4 px-3 py-2 text-sm', 'border-white bg-primary-600 font-semibold text-white' => request()->routeIs('office.email-templates.*'), 'border-transparent text-text-muted hover:bg-surface-2' => ! request()->routeIs('office.email-templates.*')])>
-                    <span aria-hidden="true">✉️</span><span x-show="!collapsed">Template Email</span>
-                </a>
-                <a href="{{ route('office.reports.index') }}"
-                   aria-label="Laporan &amp; Rank" title="Laporan &amp; Rank"
-                   @class(['flex items-center gap-3 rounded-lg border-l-4 px-3 py-2 text-sm', 'border-white bg-primary-600 font-semibold text-white' => request()->routeIs('office.reports.*'), 'border-transparent text-text-muted hover:bg-surface-2' => ! request()->routeIs('office.reports.*')])>
-                    <span aria-hidden="true">📊</span><span x-show="!collapsed">Laporan &amp; Rank</span>
-                </a>
-                <a href="{{ route('office.seo.edit') }}"
-                   aria-label="SEO" title="SEO"
-                   @class(['flex items-center gap-3 rounded-lg border-l-4 px-3 py-2 text-sm', 'border-white bg-primary-600 font-semibold text-white' => request()->routeIs('office.seo.*'), 'border-transparent text-text-muted hover:bg-surface-2' => ! request()->routeIs('office.seo.*')])>
-                    <span aria-hidden="true">🔍</span><span x-show="!collapsed">SEO</span>
-                </a>
-                <p x-show="!collapsed" class="mb-2 mt-5 text-xs font-semibold uppercase tracking-wide text-text-light">Pengaturan</p>
-                <a href="{{ route('office.settings.edit') }}"
-                   aria-label="Pengaturan" title="Pengaturan"
-                   @class(['flex items-center gap-3 rounded-lg border-l-4 px-3 py-2 text-sm', 'border-white bg-primary-600 font-semibold text-white' => request()->routeIs('office.settings.*'), 'border-transparent text-text-muted hover:bg-surface-2' => ! request()->routeIs('office.settings.*')])>
-                    <span aria-hidden="true">⚙️</span><span x-show="!collapsed">Pengaturan</span>
-                </a>
-                <p x-show="!collapsed" class="mb-2 mt-5 text-xs font-semibold uppercase tracking-wide text-text-light">Operasional</p>
-                <a href="{{ route('office.logs.activity') }}"
-                   aria-label="Audit Log" title="Audit Log"
-                   @class(['flex items-center gap-3 rounded-lg border-l-4 px-3 py-2 text-sm', 'border-white bg-primary-600 font-semibold text-white' => request()->routeIs('office.logs.*'), 'border-transparent text-text-muted hover:bg-surface-2' => ! request()->routeIs('office.logs.*')])>
-                    <span aria-hidden="true">🧾</span><span x-show="!collapsed">Audit Log</span>
-                </a>
+    <div class="md:flex">
+        <div x-show="drawer" x-cloak x-on:click="drawer = false" class="fixed inset-0 z-20 bg-black/40 md:hidden"></div>
+        <aside class="fixed inset-y-14 left-0 z-30 w-60 shrink-0 overflow-y-auto border-r border-border bg-white transition-transform md:sticky md:top-14 md:h-[calc(100vh-3.5rem)] md:translate-x-0"
+               :class="[drawer ? 'translate-x-0' : '-translate-x-full', collapsed ? 'md:w-14' : 'md:w-60']">
+            <nav aria-label="Navigasi admin" class="p-3" :class="collapsed ? 'admin-sidebar-collapsed md:p-2' : ''">
+                <p class="mb-3 px-2 text-sm font-bold text-navy-500" x-show="!collapsed">🌐 MERCATORIA</p>
+                @foreach ($menu as [$groupIcon, $groupLabel, $items])
+                    <p x-show="!collapsed" class="mb-1 mt-4 px-2 text-xs font-semibold uppercase tracking-wide text-text-light">{{ $groupIcon }} {{ $groupLabel }}</p>
+                    @foreach ($items as [$label, $routeName, $patterns])
+                        @php $active = request()->routeIs(...$patterns); @endphp
+                        <a href="{{ route($routeName) }}" aria-label="{{ $label }}" title="{{ $label }}"
+                           @if ($active) aria-current="page" @endif
+                           @class(['flex items-center gap-3 rounded-lg border-l-4 px-3 py-2 text-sm', 'border-white bg-primary-300 font-semibold text-white' => $active, 'border-transparent text-text-muted hover:bg-surface-2' => ! $active])>
+                            <span aria-hidden="true">{{ $groupIcon }}</span><span x-show="!collapsed">{{ $label }}</span>
+                        </a>
+                    @endforeach
+                @endforeach
+                <button type="button" x-on:click="collapsed = !collapsed"
+                        :aria-label="collapsed ? 'Perluas navigasi admin' : 'Ciutkan navigasi admin'"
+                        class="mt-4 hidden w-full rounded-lg border border-border px-2 py-1 text-sm text-text-muted hover:bg-surface-2 md:block">
+                    <span x-show="!collapsed">← Collapse</span>
+                    <span x-show="collapsed" x-cloak aria-hidden="true">→</span>
+                </button>
             </nav>
         </aside>
 
-        <main class="min-w-0">
+        <main class="min-w-0 flex-1 p-4 md:p-6">
             @if (session('success'))
                 <x-alert type="success" class="mb-4">{{ session('success') }}</x-alert>
             @endif

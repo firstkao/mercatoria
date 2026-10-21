@@ -38,6 +38,19 @@ class RegisterController extends Controller
             'no_hp' => $this->normalizePhone((string) $request->input('no_hp')),
         ]);
 
+        // Buyer Protection (PRD 11): dicek sebelum validasi unique agar alert khusus tampil
+        $emailInput = (string) $request->input('email');
+        $phoneInput = (string) $request->input('no_hp');
+        $existingCustomer = Customer::whereHas('user', function (Builder $query) use ($emailInput, $phoneInput): void {
+            $query->where('email', $emailInput)->orWhere('no_hp', $phoneInput);
+        })->exists();
+
+        if ($existingCustomer) {
+            return back()->withInput()->with('buyer_protection', true)->withErrors([
+                'email' => 'Email atau No HP ini sudah pernah belanja. Silakan login atau reset password.',
+            ]);
+        }
+
         $validated = $request->validate([
             'name' => ['required', 'string', 'min:2', 'max:100'],
             'email' => ['required', 'string', 'email', 'max:150', Rule::unique('users', 'email')],
@@ -76,16 +89,6 @@ class RegisterController extends Controller
         ]);
 
         $noHp = $validated['no_hp'];
-        $existingCustomer = Customer::whereHas('user', function (Builder $query) use ($validated, $noHp): void {
-            $query->where('email', $validated['email'])
-                ->orWhere('no_hp', $noHp);
-        })->exists();
-
-        if ($existingCustomer) {
-            return back()->withInput()->withErrors([
-                'email' => 'Email atau No HP ini sudah pernah belanja. Silakan login atau reset password.',
-            ]);
-        }
 
         $matchingSpammers = fn () => Spammer::query()
             ->where(function (Builder $query) use ($validated, $noHp): void {

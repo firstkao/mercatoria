@@ -15,7 +15,9 @@ class ActivityLog extends Model
     protected $casts = ['metadata' => 'array'];
 
     public function user(): BelongsTo
-    { return $this->belongsTo(User::class); }
+    {
+        return $this->belongsTo(User::class);
+    }
 
     public static function record(string $action, ?string $description = null, array $metadata = []): self
     {

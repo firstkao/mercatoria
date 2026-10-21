@@ -8,6 +8,13 @@ return [
         'cs_email' => 'cs@mercatoria.id',
         'security_email' => 'security@mercatoria.id',
         'info_email' => 'info@mercatoria.id',
+        'wa_admin' => env('STORE_WA_ADMIN', '6281234567890'),
+        'social' => [
+            'instagram' => env('STORE_SOCIAL_INSTAGRAM', 'https://www.instagram.com/mercatoria.id'),
+            'facebook' => env('STORE_SOCIAL_FACEBOOK', 'https://www.facebook.com/mercatoria.id'),
+            'x' => env('STORE_SOCIAL_X', 'https://x.com/mercatoria_id'),
+            'threads' => env('STORE_SOCIAL_THREADS', 'https://www.threads.net/@mercatoria.id'),
+        ],
     ],
 
     'order' => [

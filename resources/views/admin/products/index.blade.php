@@ -31,11 +31,22 @@
         <x-button href="{{ route('office.products.create') }}" class="mt-4">Tambah Produk</x-button>
     </div>
 @else
-    <form id="bulk-delete-products" method="POST" action="{{ route('office.products.bulk-destroy') }}" class="mt-5 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-red-200 bg-red-50 p-4">
+<div x-data="{
+        single: { url: '', name: '', orders: 0 },
+        bulk: { count: 0, ordered: 0 },
+        openBulk(event) {
+            event.preventDefault();
+            const selected = [...document.querySelectorAll('[form=bulk-delete-products][name=\'product_ids[]\']:checked')];
+            if (!selected.length) { alert('Pilih minimal satu produk.'); return; }
+            this.bulk = { count: selected.length, ordered: selected.filter(i => Number(i.dataset.orderCount) > 0).length };
+            this.$dispatch('open-modal', 'hard-delete-bulk');
+        }
+    }">
+    <form id="bulk-delete-products" method="POST" x-ref="bulkForm" action="{{ route('office.products.bulk-destroy') }}" class="mt-5 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-red-200 bg-red-50 p-4">
         @csrf
         @method('DELETE')
         <p class="text-sm text-red-900">Penghapusan bersifat permanen. Snapshot order terdahulu akan tetap tersimpan.</p>
-        <button type="submit" data-bulk-delete-confirm class="rounded-lg bg-red-700 px-4 py-2 text-sm font-semibold text-white hover:bg-red-800">Hapus produk terpilih</button>
+        <button type="submit" x-on:click="openBulk($event)" class="rounded-lg bg-red-700 px-4 py-2 text-sm font-semibold text-white hover:bg-red-800">Hapus produk terpilih</button>
     </form>
     <div class="mt-5 overflow-x-auto rounded-xl border border-border bg-white">
         <table class="w-full min-w-[720px] text-left text-sm">
@@ -71,11 +82,8 @@
                         <td class="px-4 py-4">
                             <div class="flex items-center gap-3">
                                 <a href="{{ route('office.products.edit', $product) }}" class="font-medium text-navy-500 hover:underline">Edit</a>
-                                <form method="POST" action="{{ route('office.products.destroy', $product) }}" data-single-delete-confirm data-product-name="{{ $product->name }}" data-order-count="{{ $product->order_items_count }}">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="font-medium text-red-700 hover:underline">Hapus</button>
-                                </form>
+                                <button type="button" class="font-medium text-red-700 hover:underline"
+                                        x-on:click="single = { url: @js(route('office.products.destroy', $product)), name: @js(($product->games->first() ? '['.$product->games->first()->name.'] ' : '').$product->name), orders: {{ $product->order_items_count }} }; $dispatch('open-modal', 'hard-delete-single')">Hapus</button>
                             </div>
                         </td>
                     </tr>
@@ -84,30 +92,36 @@
         </table>
     </div>
     <div class="mt-5">{{ $products->links() }}</div>
-    <script>
-        document.querySelectorAll('[data-single-delete-confirm]').forEach((form) => {
-            form.addEventListener('submit', (event) => {
-                const name = form.dataset.productName;
-                const count = form.dataset.orderCount;
-                if (!window.confirm(`Hapus permanen "${name}"? Produk ini memiliki ${count} item order terdahulu. Snapshot order tetap tersimpan; file gambar produk akan dihapus.`)) {
-                    event.preventDefault();
-                }
-            });
-        });
 
-        document.querySelector('[data-bulk-delete-confirm]')?.addEventListener('click', (event) => {
-            const selected = [...document.querySelectorAll('[form="bulk-delete-products"][name="product_ids[]"]:checked')];
-            if (selected.length === 0) {
-                event.preventDefault();
-                window.alert('Pilih minimal satu produk.');
-                return;
-            }
-            const orderCount = selected.reduce((sum, item) => sum + Number(item.dataset.orderCount), 0);
-            const names = selected.map((item) => item.dataset.productName).join(', ');
-            if (!window.confirm(`Hapus permanen ${selected.length} produk (${names})? Ada ${orderCount} item order terdahulu. Snapshot tetap tersimpan; file gambar produk akan dihapus.`)) {
-                event.preventDefault();
-            }
-        });
-    </script>
+    <x-modal name="hard-delete-single" maxWidth="max-w-md">
+        <form method="POST" :action="single.url">
+            @csrf
+            @method('DELETE')
+            <h2 class="text-lg font-bold text-danger-500">⚠️ Hapus Produk Permanen? (HARD DELETE)</h2>
+            <p class="mt-3 text-sm">Produk: <strong x-text="single.name"></strong></p>
+            <div class="mt-3 rounded-lg bg-warning-50 p-3 text-sm text-warning-700">
+                <p class="font-semibold">Produk ini pernah di-order <span x-text="single.orders"></span> kali.</p>
+                <ul class="mt-2 list-disc pl-5">
+                    <li>Produk, varian, dan foto dihapus permanen dan tidak bisa dikembalikan.</li>
+                    <li>Order lama tetap aman karena tersimpan sebagai snapshot.</li>
+                    <li>Produk Asli di detail order ditandai "Produk Asli Telah Dihapus".</li>
+                </ul>
+            </div>
+            <div class="mt-5 flex justify-end gap-2">
+                <x-button variant="ghost" type="button" x-on:click="$dispatch('close-modal', 'hard-delete-single')">Batal</x-button>
+                <x-button variant="danger" type="submit">Hapus Permanen</x-button>
+            </div>
+        </form>
+    </x-modal>
+
+    <x-modal name="hard-delete-bulk" maxWidth="max-w-md">
+        <h2 class="text-lg font-bold text-danger-500">Hapus <span x-text="bulk.count"></span> Produk Terpilih Secara Permanen?</h2>
+        <p class="mt-3 text-sm"><span x-text="bulk.ordered"></span> di antaranya pernah di-order. Order lama tetap aman sebagai snapshot; produk, varian, dan foto tidak bisa dikembalikan.</p>
+        <div class="mt-5 flex justify-end gap-2">
+            <x-button variant="ghost" type="button" x-on:click="$dispatch('close-modal', 'hard-delete-bulk')">Batal</x-button>
+            <x-button variant="danger" type="button" x-on:click="$refs.bulkForm.submit()">Hapus Semua Permanen</x-button>
+        </div>
+    </x-modal>
+</div>
 @endif
 @endsection

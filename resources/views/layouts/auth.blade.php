@@ -9,10 +9,11 @@
 </head>
 <body class="flex min-h-screen items-center justify-center bg-surface p-4">
 
-    <main class="w-full max-w-md">
-        <div class="mb-8 text-center">
-            <a href="{{ route('home') }}" class="text-3xl font-bold text-navy-500">Mercatoria</a>
-            <p class="text-sm text-gray-500 mt-2">@yield('subtitle', '')</p>
+    <main class="w-full @yield('width', 'max-w-md')">
+        <div class="mb-6 text-center">
+            <a href="{{ route('home') }}" class="text-3xl font-bold text-navy-500">[M] MERCATORIA</a>
+            <h1 class="mt-3 text-lg font-semibold text-text">@yield('heading')</h1>
+            <p class="mt-1 text-sm text-text-muted">@yield('subtitle', '')</p>
         </div>
 
         <div class="rounded-xl border border-border bg-white p-6 shadow-md md:p-8">

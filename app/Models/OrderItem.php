@@ -11,16 +11,24 @@ class OrderItem extends Model
     protected $fillable = ['order_id', 'product_id', 'variant_id', 'qty'];
 
     public function order(): BelongsTo
-    { return $this->belongsTo(Order::class); }
+    {
+        return $this->belongsTo(Order::class);
+    }
 
     public function product(): BelongsTo
-    { return $this->belongsTo(Product::class); }
+    {
+        return $this->belongsTo(Product::class);
+    }
 
     public function variant(): BelongsTo
-    { return $this->belongsTo(ProductVariant::class, 'variant_id'); }
+    {
+        return $this->belongsTo(ProductVariant::class, 'variant_id');
+    }
 
     public function snapshot(): HasOne
-    { return $this->hasOne(OrderItemSnapshot::class); }
+    {
+        return $this->hasOne(OrderItemSnapshot::class);
+    }
 
     public function productStillExists(): bool
     {
@@ -29,8 +37,12 @@ class OrderItem extends Model
     }
 
     public function getDisplayNameAttribute(): string
-    { return $this->snapshot?->product_name ?? '(Produk dihapus)'; }
+    {
+        return $this->snapshot?->product_name ?? '(Produk dihapus)';
+    }
 
     public function getDisplayPriceAttribute(): float
-    { return (float) ($this->snapshot?->final_price ?? 0); }
+    {
+        return (float) ($this->snapshot?->final_price ?? 0);
+    }
 }

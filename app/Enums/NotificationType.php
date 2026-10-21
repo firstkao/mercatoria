@@ -1,5 +1,7 @@
 <?php
+
 namespace App\Enums;
+
 enum NotificationType: string
 {
     case ORDER = 'order';
@@ -13,6 +15,7 @@ enum NotificationType: string
     case BIRTHDAY = 'birthday';
     case SYSTEM = 'system';
     case ORDER_NOTE = 'order_note';
+
     public function icon(): string
     {
         return match ($this) {

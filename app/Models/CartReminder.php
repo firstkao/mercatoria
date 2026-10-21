@@ -12,5 +12,7 @@ class CartReminder extends Model
     protected $casts = ['last_sent_at' => 'datetime'];
 
     public function user(): BelongsTo
-    { return $this->belongsTo(User::class); }
+    {
+        return $this->belongsTo(User::class);
+    }
 }

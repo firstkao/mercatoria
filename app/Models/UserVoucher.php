@@ -12,14 +12,22 @@ class UserVoucher extends Model
     protected $casts = ['used_at' => 'datetime'];
 
     public function user(): BelongsTo
-    { return $this->belongsTo(User::class); }
+    {
+        return $this->belongsTo(User::class);
+    }
 
     public function voucher(): BelongsTo
-    { return $this->belongsTo(Voucher::class); }
+    {
+        return $this->belongsTo(Voucher::class);
+    }
 
     public function order(): BelongsTo
-    { return $this->belongsTo(Order::class); }
+    {
+        return $this->belongsTo(Order::class);
+    }
 
     public function isActive(): bool
-    { return $this->status === 'active'; }
+    {
+        return $this->status === 'active';
+    }
 }

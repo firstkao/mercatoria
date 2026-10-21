@@ -4,13 +4,16 @@ use App\Http\Controllers\Admin\AdminNotificationController;
 use App\Http\Controllers\Admin\AdminSearchController;
 use App\Http\Controllers\Admin\AnnouncementController;
 use App\Http\Controllers\Admin\AuditLogController;
+use App\Http\Controllers\Admin\CatalogTaxonomyController;
 use App\Http\Controllers\Admin\ContentPageController;
 use App\Http\Controllers\Admin\CustomerGiftController;
+use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Admin\EmailTemplateController;
 use App\Http\Controllers\Admin\GameController;
 use App\Http\Controllers\Admin\HeroSlideController;
 use App\Http\Controllers\Admin\LegacyOrderImportController;
 use App\Http\Controllers\Admin\OrderController as AdminOrderController;
+use App\Http\Controllers\Admin\PaymentVerificationController;
 use App\Http\Controllers\Admin\PreorderPageController;
 use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\ProductVariantController;
@@ -31,24 +34,21 @@ use App\Http\Controllers\Auth\VerifyEmailController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\CatalogController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\HomeController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ProfileCompleteController;
+use App\Http\Controllers\ProfileEditController;
 use App\Http\Controllers\PublishedContentController;
 use App\Http\Controllers\ReferralController;
 use App\Http\Controllers\SeoSettingsController;
 use App\Http\Controllers\SitemapController;
 use App\Http\Controllers\UserNotificationController;
 use App\Http\Controllers\WalletController;
-use App\Models\HeroSlide;
 use Illuminate\Support\Facades\Route;
 use Spatie\Honeypot\ProtectAgainstSpam;
 
 // ─── Public Routes ──────────────────────────────
-Route::get('/', function () {
-    return view('home', [
-        'heroSlides' => HeroSlide::query()->active()->get(),
-    ]);
-})->name('home');
+Route::get('/', HomeController::class)->name('home');
 
 // ─── Guest Routes (belum login) ─────────────────
 Route::middleware('guest')->group(function () {
@@ -78,13 +78,22 @@ Route::middleware('guest')->group(function () {
 // ─── Auth Routes (udah login) ───────────────────
 Route::middleware('auth')->group(function () {
     Route::get('/cart', [CartController::class, 'index'])->name('cart.index');
+    Route::post('/profile/edu-modal/seen', [VerifyEmailController::class, 'markEduModalSeen'])->name('edu-modal.seen');
     Route::post('/cart', [CartController::class, 'add'])->name('cart.add');
     Route::patch('/cart/{cart}', [CartController::class, 'update'])->name('cart.update');
+    Route::delete('/cart/selected', [CartController::class, 'removeSelected'])->name('cart.remove-selected');
     Route::delete('/cart/{cart}', [CartController::class, 'remove'])->name('cart.remove');
+    Route::post('/cart/note', [CartController::class, 'updateNote'])->name('cart.note');
     Route::get('/checkout', [CartController::class, 'checkout'])->name('cart.checkout');
     Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');
     Route::get('/profile/wallet', [WalletController::class, 'index'])->name('wallet.index');
     Route::get('/profile/referrals', [ReferralController::class, 'index'])->name('referrals.index');
+    Route::get('/profile/koin', [WalletController::class, 'index'])->name('wallet.coins');
+    Route::get('/profile/undang', [ReferralController::class, 'index'])->name('referrals.invite');
+    Route::get('/profile/edit', [ProfileEditController::class, 'edit'])->name('profile.edit');
+    Route::put('/profile/edit', [ProfileEditController::class, 'update'])->name('profile.edit.update');
+    Route::get('/profile', fn () => redirect()->route('dashboard'))->name('profile.show');
+    Route::get('/orders/{order}/invoice', [OrderController::class, 'invoice'])->name('orders.invoice');
     Route::get('/orders/{order}', [OrderController::class, 'show'])->name('orders.show');
     Route::get('/orders/{order}/snapshots/{snapshot}/{image}', [OrderController::class, 'snapshotImage'])->name('orders.snapshots.image');
     Route::middleware(['ensure.verified', 'ensure.profile'])
@@ -94,6 +103,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile/notifications', [UserNotificationController::class, 'index'])->name('notifications.index');
     Route::get('/profile/notifications/unread-count', [UserNotificationController::class, 'unreadCount'])->name('notifications.unread-count');
     Route::post('/profile/notifications/read-all', [UserNotificationController::class, 'markAllRead'])->name('notifications.read-all');
+    Route::post('/profile/notifications/bulk', [UserNotificationController::class, 'bulk'])->name('notifications.bulk');
     Route::post('/profile/notifications/{notification}/open', [UserNotificationController::class, 'open'])->name('notifications.open');
     Route::middleware(['ensure.verified', 'ensure.profile'])->post(
         '/checkout',
@@ -121,13 +131,22 @@ Route::middleware('auth')->group(function () {
 });
 
 Route::prefix('office')->name('office.')->middleware(['auth', 'admin'])->group(function () {
+    Route::get('/', AdminDashboardController::class)->name('dashboard');
     Route::get('search', AdminSearchController::class)->name('search');
+    foreach (['merch-categories', 'tags', 'developers'] as $taxonomy) {
+        Route::get($taxonomy, [CatalogTaxonomyController::class, 'index'])->defaults('type', $taxonomy)->name("{$taxonomy}.index");
+        Route::post($taxonomy, [CatalogTaxonomyController::class, 'store'])->defaults('type', $taxonomy)->name("{$taxonomy}.store");
+        Route::delete("{$taxonomy}/{id}", [CatalogTaxonomyController::class, 'destroy'])->whereNumber('id')->defaults('type', $taxonomy)->name("{$taxonomy}.destroy");
+    }
+    Route::get('payments', [PaymentVerificationController::class, 'index'])->name('payments.index');
+    Route::get('customers/rank', [ReportsController::class, 'customers'])->name('customers.rank');
     Route::get('activity-logs', [AuditLogController::class, 'activity'])->name('logs.activity');
     Route::get('auth-logs', [AuditLogController::class, 'auth'])->name('logs.auth');
     Route::get('admin-logs', [AuditLogController::class, 'admin'])->name('logs.admin');
     Route::get('logs/{kind}/export', [AuditLogController::class, 'export'])->name('logs.export');
     Route::get('orders', [AdminOrderController::class, 'index'])->name('orders.index');
     Route::get('orders/{order}', [AdminOrderController::class, 'show'])->whereNumber('order')->name('orders.show');
+    Route::get('orders/{order}/packing-list', [AdminOrderController::class, 'packingList'])->whereNumber('order')->name('orders.packing-list');
     Route::patch('orders/bulk-status', [AdminOrderController::class, 'bulkUpdateStatus'])->name('orders.bulk-status');
     Route::patch('orders/{order}/status', [AdminOrderController::class, 'updateStatus'])->name('orders.status');
     Route::patch('orders/{order}/note', [AdminOrderController::class, 'sendNote'])->name('orders.note');
@@ -139,6 +158,7 @@ Route::prefix('office')->name('office.')->middleware(['auth', 'admin'])->group(f
     Route::get('settings', [AdminSettingsController::class, 'edit'])->name('settings.edit');
     Route::patch('settings', [AdminSettingsController::class, 'update'])->name('settings.update');
     Route::get('notifications', [AdminNotificationController::class, 'index'])->name('notifications.index');
+    Route::get('notifications/unread-count', [AdminNotificationController::class, 'unreadCount'])->name('notifications.unread-count');
     Route::post('notifications/read-all', [AdminNotificationController::class, 'markAllRead'])->name('notifications.read-all');
     Route::post('notifications/{notification}/open', [AdminNotificationController::class, 'open'])->name('notifications.open');
     Route::resource('games', GameController::class)->except(['show', 'destroy']);
@@ -146,9 +166,14 @@ Route::prefix('office')->name('office.')->middleware(['auth', 'admin'])->group(f
     Route::delete('products/bulk', [ProductController::class, 'bulkDestroy'])->name('products.bulk-destroy');
     Route::delete('products/{product}', [ProductController::class, 'destroy'])->name('products.destroy');
     Route::post('products/{product}/variants', [ProductVariantController::class, 'store'])->name('products.variants.store');
+    Route::post('products/{product}/variants/generate', [ProductVariantController::class, 'generate'])->name('products.variants.generate');
+    Route::patch('products/{product}/variants/changes', [ProductVariantController::class, 'saveChanges'])->name('products.variants.changes');
+    Route::patch('products/{product}/variants/{variant}', [ProductVariantController::class, 'update'])->whereNumber('variant')->name('products.variants.update');
+    Route::post('products/{product}/duplicate', [ProductController::class, 'duplicate'])->name('products.duplicate');
     Route::patch('products/{product}/variants/{variant}/weight', [ProductVariantController::class, 'updateWeight'])->name('products.variants.weight.update');
     Route::patch('products/{product}/variants/price-rmb', [ProductVariantController::class, 'bulkUpdatePriceRmb'])->name('products.variants.price-rmb.bulk');
     Route::patch('products/{product}/variants/weight', [ProductVariantController::class, 'bulkUpdateWeight'])->name('products.variants.weight.bulk');
+    Route::delete('stores/bulk', [StoreController::class, 'bulkDestroy'])->name('stores.bulk-destroy');
     Route::resource('stores', StoreController::class)->except('show');
     Route::resource('users', UserMigrationController::class)->only(['index', 'create', 'store', 'show']);
     Route::get('orders/create', [LegacyOrderImportController::class, 'create'])->name('orders.create');
@@ -162,6 +187,7 @@ Route::prefix('office')->name('office.')->middleware(['auth', 'admin'])->group(f
     Route::get('reports', [ReportsController::class, 'index'])->name('reports.index');
     Route::get('reports/customers/export', [ReportsController::class, 'exportCustomers'])->name('reports.customers.export');
     Route::get('reports/customers', [ReportsController::class, 'customers'])->name('reports.customers');
+    Route::get('customers/rank', [ReportsController::class, 'customers'])->name('customers.rank');
     Route::resource('vouchers', VoucherController::class)->except('show');
     Route::resource('hero-slides', HeroSlideController::class)->except('show');
     Route::resource('announcements', AnnouncementController::class)->except('show');
@@ -175,12 +201,16 @@ Route::prefix('office')->name('office.')->middleware(['auth', 'admin'])->group(f
     Route::patch('seo', [SeoSettingsController::class, 'update'])->name('seo.update');
 });
 
-Route::get('/catalog', [CatalogController::class, 'index'])->name('catalog.index');
-Route::get('/search', [CatalogController::class, 'search'])->name('catalog.search');
 Route::get('/sitemap.xml', SitemapController::class)->name('sitemap');
-Route::get('/developer/{developer:slug}', [CatalogController::class, 'showDeveloper'])->name('developers.show');
-Route::get('/product/{product:slug}', [CatalogController::class, 'showProduct'])->name('products.direct');
-Route::get('/{game:slug}/kategori/{category:slug}', [CatalogController::class, 'showCategory'])->name('games.categories.show');
-Route::get('/{game:slug}/{product:slug}', [CatalogController::class, 'showProductInGame'])->name('games.products.show');
+
+// Guest Barrier (PRD 7.2): guest manusia diarahkan ke /login, crawler resmi dikecualikan (PRD 8.8).
+Route::middleware('guest.barrier')->group(function () {
+    Route::get('/catalog', [CatalogController::class, 'index'])->name('catalog.index');
+    Route::get('/search', [CatalogController::class, 'search'])->name('catalog.search');
+    Route::get('/developer/{developer:slug}', [CatalogController::class, 'showDeveloper'])->name('developers.show');
+    Route::get('/product/{product:slug}', [CatalogController::class, 'showProduct'])->name('products.direct');
+    Route::get('/{game:slug}/kategori/{category:slug}', [CatalogController::class, 'showCategory'])->name('games.categories.show');
+    Route::get('/{game:slug}/{product:slug}', [CatalogController::class, 'showProductInGame'])->name('games.products.show');
+});
 Route::get('/{slug}', [PublishedContentController::class, 'show'])->where('slug', '[A-Za-z0-9-]+')->name('content.show');
 Route::get('/{game:slug}', [CatalogController::class, 'showGame'])->name('games.show');

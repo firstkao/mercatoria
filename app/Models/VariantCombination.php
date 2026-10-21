@@ -10,5 +10,7 @@ class VariantCombination extends Model
     protected $fillable = ['variant_id', 'attribute_key', 'attribute_value'];
 
     public function variant(): BelongsTo
-    { return $this->belongsTo(ProductVariant::class, 'variant_id'); }
+    {
+        return $this->belongsTo(ProductVariant::class, 'variant_id');
+    }
 }

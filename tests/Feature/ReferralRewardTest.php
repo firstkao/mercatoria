@@ -102,9 +102,9 @@ class ReferralRewardTest extends TestCase
 
         $this->actingAs($user)->get(route('wallet.index'))
             ->assertOk()
-            ->assertSee('1.500 koin')
+            ->assertSee('1.500')
             ->assertSee('Voucher wallet')
-            ->assertSee('Akan Kedaluwarsa');
+            ->assertSee('Akan Expired');
         $this->get(route('referrals.index'))
             ->assertOk()
             ->assertSee('INVITE321')

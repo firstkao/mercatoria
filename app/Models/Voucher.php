@@ -23,20 +23,33 @@ class Voucher extends Model
     ];
 
     public function userVouchers(): HasMany
-    { return $this->hasMany(UserVoucher::class); }
+    {
+        return $this->hasMany(UserVoucher::class);
+    }
 
     public function isValid(): bool
     {
-        if (! $this->is_active) return false;
+        if (! $this->is_active) {
+            return false;
+        }
         $now = now();
-        if ($this->valid_from && $now->lt($this->valid_from)) return false;
-        if ($this->valid_until && $now->gt($this->valid_until)) return false;
+        if ($this->valid_from && $now->lt($this->valid_from)) {
+            return false;
+        }
+        if ($this->valid_until && $now->gt($this->valid_until)) {
+            return false;
+        }
+
         return true;
     }
 
     public function isPercent(): bool
-    { return $this->type === 'percent'; }
+    {
+        return $this->type === 'percent';
+    }
 
     public function isNominal(): bool
-    { return $this->type === 'nominal'; }
+    {
+        return $this->type === 'nominal';
+    }
 }

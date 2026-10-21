@@ -40,7 +40,7 @@ class PageSeeder extends Seeder
                     'title' => $page['title'],
                     'content' => $page['content'],
                     'status' => 'publish',
-                    'meta_title' => $page['title'] . ' — Mercatoria',
+                    'meta_title' => $page['title'].' — Mercatoria',
                     'meta_description' => substr(strip_tags($page['content']), 0, 160),
                 ]
             );

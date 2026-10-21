@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\ActivityLog;
+use App\Models\Customer;
 use App\Models\User;
 use App\Services\Notification\ScheduledEmailService;
 use App\Services\Security\TurnstileService;
@@ -175,6 +176,47 @@ class AuthFlowTest extends TestCase
         $this->assertDatabaseCount('users', 0);
     }
 
+    public function test_register_page_has_two_column_form_and_login_page_uses_black_auth_button(): void
+    {
+        $this->get(route('register', ['ref' => 'INVITE123']))
+            ->assertOk()
+            ->assertSee('md:grid-cols-2', false)
+            ->assertSee('Akun baru hanya bisa membuka 10 detail produk')
+            ->assertSee('bg-black', false)
+            ->assertSee('value="INVITE123"', false);
+        $this->get(route('login'))->assertOk()->assertSee('bg-black', false)->assertSee('Masuk ke Akun Mercatoria Kamu');
+    }
+
+    public function test_buyer_protection_alert_is_shown_for_existing_customer(): void
+    {
+        $user = User::factory()->create(['no_hp' => '628123456789']);
+        Customer::create(['user_id' => $user->id, 'current_state' => 'mvp', 'tier' => 'silver']);
+
+        $this->from(route('register'))->post(route('register'), [
+            ...$this->validRegistrationData(),
+            ...$this->honeypotFields(),
+            'email' => $user->email,
+        ])->assertRedirect(route('register'))->assertSessionHas('buyer_protection');
+
+        $this->get(route('register'))->assertSee('sudah terdaftar sebagai Pelanggan')->assertSee('Masuk ke Akun Lama');
+    }
+
+    public function test_education_modal_shows_once_after_verification(): void
+    {
+        $user = User::factory()->create(['has_seen_edu_modal' => false]);
+
+        $this->actingAs($user)->get(route('dashboard'))->assertSee('Baru di Mercatoria?');
+        $this->actingAs($user)->postJson(route('edu-modal.seen'))->assertOk();
+        $this->actingAs($user)->get(route('dashboard'))->assertDontSee('Baru di Mercatoria?');
+    }
+
+    public function test_navbar_differs_for_guest_and_user_and_floating_buttons_exist(): void
+    {
+        $this->get(route('home'))->assertSee('Pre-order Baru')->assertSee('Developer')->assertSee('wa.me', false)->assertDontSee('Keranjang');
+        $user = User::factory()->create(['has_seen_edu_modal' => true]);
+        $this->actingAs($user)->get(route('dashboard'))->assertSee('Keranjang')->assertSee('Kembali ke atas');
+    }
+
     public function test_login_authenticates_user_and_records_successful_attempt(): void
     {
         $user = User::factory()->create();
@@ -225,7 +267,7 @@ class AuthFlowTest extends TestCase
         $this->assertTrue($admin->fresh()->admin_otp_expires_at->isFuture());
 
         $this->post(route('admin.otp.verify'), ['otp' => $otp])
-            ->assertRedirect(route('dashboard'));
+            ->assertRedirect(route('office.dashboard'));
         $this->assertAuthenticatedAs($admin);
         $this->assertNull($admin->fresh()->admin_otp);
 

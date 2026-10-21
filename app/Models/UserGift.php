@@ -12,15 +12,32 @@ class UserGift extends Model
     ];
 
     public function user(): BelongsTo
-    { return $this->belongsTo(User::class); }
+    {
+        return $this->belongsTo(User::class);
+    }
 
     public function admin(): BelongsTo
-    { return $this->belongsTo(User::class, 'admin_id'); }
+    {
+        return $this->belongsTo(User::class, 'admin_id');
+    }
 
     public function voucher(): BelongsTo
-    { return $this->belongsTo(Voucher::class); }
+    {
+        return $this->belongsTo(Voucher::class);
+    }
 
-    public function isCoin(): bool { return $this->type === 'coin'; }
-    public function isVoucher(): bool { return $this->type === 'voucher'; }
-    public function isGiftBox(): bool { return $this->type === 'gift_box'; }
+    public function isCoin(): bool
+    {
+        return $this->type === 'coin';
+    }
+
+    public function isVoucher(): bool
+    {
+        return $this->type === 'voucher';
+    }
+
+    public function isGiftBox(): bool
+    {
+        return $this->type === 'gift_box';
+    }
 }

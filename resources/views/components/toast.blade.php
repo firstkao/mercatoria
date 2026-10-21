@@ -6,7 +6,7 @@
 @endphp
 
 @if ($msg || $error)
-    <div x-data="{ show: true }" x-init="setTimeout(() => show = false, 5000)"
+    <div x-data="{ show: true }" x-init="setTimeout(() => show = false, 3000)"
          x-show="show" x-transition
          class="fixed right-4 top-20 z-50 max-w-sm rounded-lg px-4 py-3 text-sm text-white shadow-lg {{ $error ? 'bg-danger-500' : 'bg-success-500' }}"
          role="alert" aria-live="assertive">

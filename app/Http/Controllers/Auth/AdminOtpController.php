@@ -29,7 +29,11 @@ class AdminOtpController extends Controller
             return redirect()->route('login')->withErrors(['email' => 'Kode OTP kedaluwarsa. Silakan login kembali.']);
         }
 
-        return view('auth.admin-otp', ['email' => $user->email]);
+        return view('auth.admin-otp', [
+            'email' => $user->email,
+            'expiresAt' => $user->admin_otp_expires_at,
+            'securityEmail' => config('mercatoria.store.security_email'),
+        ]);
     }
 
     public function verify(Request $request): RedirectResponse
@@ -79,7 +83,7 @@ class AdminOtpController extends Controller
         $request->session()->regenerate();
         AuthLog::record('admin_login_success', $user->email, null, $user->id);
 
-        return redirect()->intended(route('dashboard'))
+        return redirect()->intended(route('office.dashboard'))
             ->with('ga4_events', [['name' => 'login', 'params' => ['method' => 'email_otp']]]);
     }
 

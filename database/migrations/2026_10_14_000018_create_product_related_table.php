@@ -1,9 +1,11 @@
 <?php
+
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration {
+return new class extends Migration
+{
     public function up(): void
     {
         Schema::create('product_related', function (Blueprint $table) {
@@ -15,5 +17,9 @@ return new class extends Migration {
             $table->unique(['product_id', 'related_id']);
         });
     }
-    public function down(): void { Schema::dropIfExists('product_related'); }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('product_related');
+    }
 };

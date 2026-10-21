@@ -35,7 +35,9 @@ class CartController extends Controller
                 : null,
         ]);
 
-        return view('cart.index', compact('lines'));
+        $customerNote = (string) $request->session()->get('cart_customer_note', '');
+
+        return view('cart.index', compact('lines', 'customerNote'));
     }
 
     public function add(Request $request): RedirectResponse
@@ -124,6 +126,27 @@ class CartController extends Controller
         return redirect()->route('cart.index')->with('success', 'Produk dihapus dari keranjang.');
     }
 
+    public function removeSelected(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'cart_ids' => ['required', 'array', 'min:1'],
+            'cart_ids.*' => ['required', 'integer', 'distinct'],
+        ]);
+        $deleted = $request->user()->carts()->whereIn('id', $validated['cart_ids'])->delete();
+
+        return redirect()->route('cart.index')->with('success', $deleted.' item dihapus dari keranjang.');
+    }
+
+    public function updateNote(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'customer_note' => ['nullable', 'string', 'max:500'],
+        ]);
+        $request->session()->put('cart_customer_note', trim((string) ($validated['customer_note'] ?? '')));
+
+        return redirect()->route('cart.index')->with('success', 'Catatan pembelian berhasil disimpan.');
+    }
+
     public function checkout(Request $request): View
     {
         $validated = $request->validate([
@@ -169,7 +192,9 @@ class CartController extends Controller
                 && empty($item->voucher->scope));
         $profitPercent = (float) setting('profit_percent', 11);
 
-        return view('cart.checkout', compact('lines', 'cartIds', 'quote', 'profitPercent', 'userVouchers', 'coinBalance'));
+        $customerNote = (string) $request->session()->get('cart_customer_note', '');
+
+        return view('cart.checkout', compact('lines', 'cartIds', 'quote', 'profitPercent', 'userVouchers', 'coinBalance', 'customerNote'));
     }
 
     public function placeOrder(Request $request): RedirectResponse
@@ -182,9 +207,12 @@ class CartController extends Controller
             'payment_method' => ['required', 'in:bca,qris,shopeepay'],
             'use_coins' => ['nullable', 'boolean'],
             'user_voucher_id' => ['nullable', 'integer'],
+            'customer_note' => ['nullable', 'string', 'max:500'],
         ]);
         $cartIds = $this->checkout->validatedCartIds($validated);
+        $validated['customer_note'] = $validated['customer_note'] ?? $request->session()->get('cart_customer_note');
         $order = $this->checkout->placeOrder($request->user(), $cartIds, $validated);
+        $request->session()->forget('cart_customer_note');
         $order->load('items.snapshot');
         $items = $order->items->map(fn ($item): array => [
             'item_id' => $item->snapshot->product_sku,

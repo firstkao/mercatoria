@@ -8,83 +8,86 @@
         Akses dari alamat jaringan ini dibatasi. Halaman beranda tetap dapat diakses.
     </div>
 @endif
-@if (isset($heroSlides) && $heroSlides->isNotEmpty())
-    <section id="hero-carousel" class="relative w-full overflow-hidden bg-surface-2" aria-label="Promo pilihan Mercatoria">
-        <div class="relative aspect-[2/1] max-h-[560px] min-h-48 md:aspect-[3/1]">
-            @foreach ($heroSlides as $index => $slide)
-                <div data-hero-slide class="absolute inset-0 {{ $index === 0 ? '' : 'hidden' }}">
-                    @if ($slide->link_url)
-                        <a href="{{ $slide->link_url }}" class="block h-full">
-                            <img src="{{ Storage::disk('public')->url($slide->image_path) }}" alt="{{ $slide->title ?: 'Promo Mercatoria' }}"
-                                class="h-full w-full object-cover" @if ($index > 0) loading="lazy" @endif>
-                        </a>
-                    @else
-                        <img src="{{ Storage::disk('public')->url($slide->image_path) }}" alt="{{ $slide->title ?: 'Promo Mercatoria' }}"
-                            class="h-full w-full object-cover" @if ($index > 0) loading="lazy" @endif>
-                    @endif
-                </div>
-            @endforeach
-        </div>
-        @if ($heroSlides->count() > 1)
-            <button type="button" data-hero-prev aria-label="Slide sebelumnya"
-                class="absolute left-3 top-1/2 -translate-y-1/2 rounded-full bg-black/50 px-3 py-2 text-white hover:bg-black/70">‹</button>
-            <button type="button" data-hero-next aria-label="Slide berikutnya"
-                class="absolute right-3 top-1/2 -translate-y-1/2 rounded-full bg-black/50 px-3 py-2 text-white hover:bg-black/70">›</button>
-            <div class="absolute bottom-4 left-0 right-0 flex justify-center gap-2">
+
+<div class="mx-auto w-full max-w-[1200px] px-4 md:px-6 lg:px-8">
+    @if ($heroSlides->isNotEmpty())
+        <section id="hero-carousel" class="group relative mb-6 mt-6 overflow-hidden bg-surface-2" aria-label="Promo pilihan Mercatoria">
+            <div class="relative aspect-video md:aspect-[2/1]">
                 @foreach ($heroSlides as $index => $slide)
-                    <button type="button" data-hero-dot="{{ $index }}" aria-label="Ke slide {{ $index + 1 }}"
-                        @class(['h-2.5 w-2.5 rounded-full border border-white', 'bg-white' => $index === 0, 'bg-white/40' => $index !== 0])></button>
+                    <div data-hero-slide class="absolute inset-0 {{ $index === 0 ? '' : 'hidden' }}">
+                        @php($slideImage = Storage::disk('public')->url($slide->image_path))
+                        @if ($slide->link_url)
+                            <a href="{{ $slide->link_url }}" class="block h-full">
+                                <img src="{{ $slideImage }}" alt="{{ $slide->title ?: 'Promo Mercatoria' }}" class="h-full w-full object-cover" @if ($index > 0) loading="lazy" @endif>
+                            </a>
+                        @else
+                            <img src="{{ $slideImage }}" alt="{{ $slide->title ?: 'Promo Mercatoria' }}" class="h-full w-full object-cover" @if ($index > 0) loading="lazy" @endif>
+                        @endif
+                    </div>
+                @endforeach
+            </div>
+            @if ($heroSlides->count() > 1)
+                <button type="button" data-hero-prev aria-label="Slide sebelumnya"
+                    class="absolute left-3 top-1/2 -translate-y-1/2 rounded-full bg-white/50 px-3 py-1 text-2xl text-black opacity-70 transition hover:bg-white/80 group-hover:opacity-100">‹</button>
+                <button type="button" data-hero-next aria-label="Slide berikutnya"
+                    class="absolute right-3 top-1/2 -translate-y-1/2 rounded-full bg-white/50 px-3 py-1 text-2xl text-black opacity-70 transition hover:bg-white/80 group-hover:opacity-100">›</button>
+                <div class="absolute bottom-3 left-0 right-0 flex justify-center gap-2">
+                    @foreach ($heroSlides as $index => $slide)
+                        <button type="button" data-hero-dot="{{ $index }}" aria-label="Ke slide {{ $index + 1 }}"
+                            @class(['h-2.5 w-2.5 rounded-full border border-white', 'bg-white' => $index === 0, 'bg-white/40' => $index !== 0])></button>
+                    @endforeach
+                </div>
+            @endif
+        </section>
+    @else
+        <div class="h-6"></div>
+    @endif
+    <hr class="border-t border-[#E0E0E0]">
+
+    <section id="game-favorit" class="py-8" aria-labelledby="game-favorit-title">
+        <h2 id="game-favorit-title" class="text-center text-[26px] font-bold text-[#111]">Jelajahi Game Favoritmu</h2>
+        <p class="mb-6 mt-2 text-center text-[13px] text-text-muted">Temukan merchandise eksklusif dari game favoritmu dan lihat koleksi lengkapnya di setiap kategori</p>
+        @if ($games->isEmpty())
+            <p class="text-center text-sm text-text-muted">Belum ada game aktif.</p>
+        @else
+            <div class="grid grid-cols-2 gap-4 md:grid-cols-4 lg:grid-cols-6">
+                @foreach ($games as $game)
+                    <a href="{{ route('games.show', $game->slug) }}" data-game-card class="group relative block aspect-square overflow-hidden bg-surface-2">
+                        @if ($game->logo_path)
+                            <img src="{{ Storage::disk('public')->url($game->logo_path) }}" alt="{{ $game->name }}" loading="lazy"
+                                class="h-full w-full object-cover transition duration-200 group-hover:scale-[1.03]">
+                        @endif
+                        <span class="absolute bottom-3 left-1/2 w-[82%] -translate-x-1/2 bg-white/90 px-2 py-1.5 text-center text-[10.5px] font-bold uppercase leading-tight text-[#111]">{{ $game->name }}</span>
+                    </a>
                 @endforeach
             </div>
         @endif
     </section>
-@endif
-<section class="bg-surface-2">
-    <div class="mx-auto grid max-w-7xl gap-10 px-4 py-16 md:grid-cols-2 md:items-center md:py-24">
-        <div>
-            <p class="mb-4 text-sm font-semibold uppercase tracking-[0.18em] text-navy-500">
-                Merchandise IP Cina, lebih mudah
-            </p>
-            <h1 class="max-w-2xl text-4xl font-bold leading-tight text-text md:text-5xl">
-                Koleksi merch favoritmu. Urusan belinya, biar kami bantu.
-            </h1>
-            <p class="mt-5 max-w-xl text-lg text-text-muted">
-                Mercatoria membantu penggemar di Indonesia menemukan dan membeli merchandise game, anime, donghua, dan novel dari Tiongkok.
-            </p>
-            <div class="mt-8 flex flex-wrap gap-3">
-                <x-button variant="ghost" href="{{ route('catalog.index') }}">Jelajahi katalog</x-button>
-                <x-button href="{{ route('register') }}">Mulai belanja</x-button>
-                <x-button variant="ghost" href="{{ route('login') }}">Masuk ke akun</x-button>
+
+    @if ($bestOffers->isNotEmpty())
+        <section id="penawaran-terbaik" class="pb-8" aria-labelledby="penawaran-title">
+            <h2 id="penawaran-title" class="mb-5 text-center text-lg font-bold uppercase text-[#212121]">Penawaran Terbaik</h2>
+            <div class="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-5">
+                @foreach ($bestOffers as $offer)
+                    <x-product-card :product="$offer" :discount="true" />
+                @endforeach
             </div>
-        </div>
+        </section>
+    @endif
 
-        <div class="rounded-2xl border border-border bg-white p-6 shadow-sm md:p-8">
-            <h2 class="text-xl font-semibold text-navy-500">Belanja lintas negara, tanpa ribet</h2>
-            <ul class="mt-5 space-y-4 text-sm text-text-muted">
-                <li class="flex gap-3">
-                    <span class="font-bold text-success-500" aria-hidden="true">✓</span>
-                    <span>Katalog terkurasi untuk menemukan merchandise berdasarkan IP favorit.</span>
-                </li>
-                <li class="flex gap-3">
-                    <span class="font-bold text-success-500" aria-hidden="true">✓</span>
-                    <span>Pembayaran lokal dan informasi harga dalam Rupiah.</span>
-                </li>
-                <li class="flex gap-3">
-                    <span class="font-bold text-success-500" aria-hidden="true">✓</span>
-                    <span>Proses pembelian dan pengiriman dibantu oleh Mercatoria.</span>
-                </li>
-            </ul>
-        </div>
-    </div>
-</section>
-
-<section class="mx-auto max-w-7xl px-4 py-14 text-center">
-    <h2 class="text-2xl font-bold text-text">Mulai dari fandom favoritmu</h2>
-    <p class="mx-auto mt-3 max-w-2xl text-text-muted">
-        Buat akun untuk mengikuti perjalanan pesanan dan mendapat kabar seputar koleksi terbaru.
-    </p>
-    <x-button href="{{ route('register') }}" class="mt-6">Buat akun Mercatoria</x-button>
-</section>
+    <section id="merch-baru" class="pb-12 pt-2" aria-labelledby="merch-baru-title">
+        <h2 id="merch-baru-title" class="mb-5 mt-10 text-center text-lg font-bold uppercase text-[#212121]">Merch Baru</h2>
+        @if ($newProducts->isEmpty())
+            <p class="text-center text-sm text-text-muted">Belum ada produk.</p>
+        @else
+            <div class="grid grid-cols-2 gap-3.5 md:grid-cols-5 lg:grid-cols-7">
+                @foreach ($newProducts as $product)
+                    <x-product-card :product="$product" />
+                @endforeach
+            </div>
+        @endif
+    </section>
+</div>
 @endsection
 
 @push('scripts')
@@ -119,7 +122,7 @@
                 const distance = event.changedTouches[0].clientX - touchStart;
                 if (Math.abs(distance) > 40) { show(index + (distance < 0 ? 1 : -1)); start(); }
             }, { passive: true });
-            start();
+            if (slides.length > 1) start();
         })();
         if (typeof window.mercatoriaTrack === 'function') {
             window.mercatoriaTrack('view_home');

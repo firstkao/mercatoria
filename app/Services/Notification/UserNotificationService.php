@@ -2,8 +2,8 @@
 
 namespace App\Services\Notification;
 
-use App\Models\UserNotification;
 use App\Enums\NotificationType;
+use App\Models\UserNotification;
 
 class UserNotificationService
 {

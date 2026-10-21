@@ -15,7 +15,9 @@ class VisitorTracking extends Model
     protected $casts = ['first_visit_at' => 'datetime'];
 
     public function user(): BelongsTo
-    { return $this->belongsTo(User::class); }
+    {
+        return $this->belongsTo(User::class);
+    }
 
     public static function track(
         string $sessionId,

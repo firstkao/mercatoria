@@ -27,14 +27,14 @@ class ProfileCompleteController extends Controller
         }
 
         $data = $request->validate([
-            'tgl_lahir'  => ['required', 'date', 'after:1900-01-01', 'before_or_equal:today'],
+            'tgl_lahir' => ['required', 'date', 'after:1900-01-01', 'before_or_equal:today'],
             'konfirmasi' => ['required', 'in:YAKIN'],
         ], [
-            'tgl_lahir.required'        => 'Tanggal lahir wajib diisi.',
-            'tgl_lahir.date'            => 'Format tanggal tidak valid.',
-            'tgl_lahir.after'           => 'Tanggal lahir tidak valid.',
+            'tgl_lahir.required' => 'Tanggal lahir wajib diisi.',
+            'tgl_lahir.date' => 'Format tanggal tidak valid.',
+            'tgl_lahir.after' => 'Tanggal lahir tidak valid.',
             'tgl_lahir.before_or_equal' => 'Tanggal lahir tidak boleh di masa depan.',
-            'konfirmasi.in'             => 'Ketik YAKIN untuk konfirmasi.',
+            'konfirmasi.in' => 'Ketik YAKIN untuk konfirmasi.',
         ]);
 
         $user->update(['tgl_lahir' => $data['tgl_lahir']]);

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Enums\UserState;
 use App\Http\Controllers\Controller;
+use App\Models\ActivityLog;
 use App\Models\AdminLog;
 use App\Models\Customer;
 use App\Models\Spammer;
@@ -14,10 +15,13 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 class UserMigrationController extends Controller
 {
+    public const PROVINCES = ['Aceh', 'Sumatera Utara', 'Sumatera Barat', 'Riau', 'Kepulauan Riau', 'Jambi', 'Bengkulu', 'Sumatera Selatan', 'Kepulauan Bangka Belitung', 'Lampung', 'Banten', 'DKI Jakarta', 'Jawa Barat', 'Jawa Tengah', 'DI Yogyakarta', 'Jawa Timur', 'Bali', 'Nusa Tenggara Barat', 'Nusa Tenggara Timur', 'Kalimantan Barat', 'Kalimantan Tengah', 'Kalimantan Selatan', 'Kalimantan Timur', 'Kalimantan Utara', 'Sulawesi Utara', 'Gorontalo', 'Sulawesi Tengah', 'Sulawesi Barat', 'Sulawesi Selatan', 'Sulawesi Tenggara', 'Maluku', 'Maluku Utara', 'Papua', 'Papua Barat', 'Papua Selatan', 'Papua Tengah', 'Papua Pegunungan', 'Papua Barat Daya'];
+
     public function index(Request $request): View
     {
         $filters = $request->validate([
@@ -66,7 +70,7 @@ class UserMigrationController extends Controller
 
     public function create(): View
     {
-        return view('admin.users.create');
+        return view('admin.users.create', ['provinces' => self::PROVINCES]);
     }
 
     public function store(Request $request): RedirectResponse
@@ -74,14 +78,14 @@ class UserMigrationController extends Controller
         $request->merge([
             'name' => trim((string) $request->input('name')),
             'email' => Str::lower(trim((string) $request->input('email'))),
-            'no_hp' => trim((string) $request->input('no_hp')),
+            'no_hp' => $this->normalizePhone((string) $request->input('no_hp')),
         ]);
 
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email', 'max:255', 'unique:users,email'],
             'no_hp' => ['required', 'string', 'regex:/^62[0-9]{8,13}$/', 'unique:users,no_hp'],
-            'provinsi' => ['required', 'string', 'max:255'],
+            'provinsi' => ['required', 'string', Rule::in(self::PROVINCES)],
             'kota' => ['required', 'string', 'max:255'],
             'kecamatan' => ['required', 'string', 'max:255'],
             'alamat_lengkap' => ['required', 'string', 'max:2000'],
@@ -108,7 +112,14 @@ class UserMigrationController extends Controller
             ->with('success', 'Customer lama berhasil dimigrasikan. Lanjutkan dengan memasukkan order lamanya.');
     }
 
-    public function show(User $user): View
+    private function normalizePhone(string $phone): string
+    {
+        $digits = preg_replace('/\D+/', '', $phone) ?? '';
+
+        return str_starts_with($digits, '0') ? '62'.substr($digits, 1) : $digits;
+    }
+
+    public function show(Request $request, User $user): View
     {
         abort_unless($user->role === 'customer', 404);
         $blockedSpammer = Spammer::query()
@@ -123,19 +134,31 @@ class UserMigrationController extends Controller
             ->orderBy('code')
             ->get();
 
-        return view('admin.users.show', compact('user', 'blockedSpammer', 'vouchers'));
+        $tab = in_array($request->query('tab'), ['orders', 'koin', 'log'], true) ? $request->query('tab') : 'overview';
+        $tabData = match ($tab) {
+            'orders' => ['orders' => $user->orders()->latest()->limit(20)->get()],
+            'koin' => [
+                'coinBalance' => (int) ($user->coin?->balance ?? 0),
+                'coinTransactions' => $user->coinTransactions()->latest('id')->limit(20)->get(),
+            ],
+            'log' => ['logs' => ActivityLog::query()->where('user_id', $user->id)->latest('id')->limit(20)->get()],
+            default => [],
+        };
+
+        return view('admin.users.show', ['user' => $user, 'blockedSpammer' => $blockedSpammer, 'vouchers' => $vouchers, 'tab' => $tab] + $tabData);
     }
 
-    public function forceResetPassword(User $user): RedirectResponse
+    public function forceResetPassword(Request $request, User $user): RedirectResponse
     {
         abort_unless($user->role === 'customer', 404);
+        $note = $request->validate(['note' => ['nullable', 'string', 'max:500']])['note'] ?? null;
 
         $log = AdminLog::record(
             'force_password_reset',
             User::class,
             $user->id,
             new: ['status' => 'requested'],
-            description: 'Admin mengirim link reset password untuk customer.',
+            description: 'Admin mengirim link reset password untuk customer.'.($note ? ' Catatan: '.$note : ''),
         );
         $status = Password::sendResetLink(['email' => $user->email]);
         $log->update(['new_value' => ['status' => $status]]);

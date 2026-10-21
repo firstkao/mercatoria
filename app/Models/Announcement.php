@@ -18,16 +18,24 @@ class Announcement extends Model
 
     public function isActiveNow(): bool
     {
-        if (! $this->is_active) return false;
+        if (! $this->is_active) {
+            return false;
+        }
         $now = now();
-        if ($this->starts_at && $now->lt($this->starts_at)) return false;
-        if ($this->ends_at && $now->gt($this->ends_at)) return false;
+        if ($this->starts_at && $now->lt($this->starts_at)) {
+            return false;
+        }
+        if ($this->ends_at && $now->gt($this->ends_at)) {
+            return false;
+        }
+
         return true;
     }
 
     public function scopeActiveNow($query)
     {
         $now = now();
+
         return $query->where('is_active', true)
             ->where(function ($q) use ($now) {
                 $q->whereNull('starts_at')->orWhere('starts_at', '<=', $now);
