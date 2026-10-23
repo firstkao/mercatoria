@@ -55,10 +55,11 @@
   <div class="subtitle">Product Requirements Document</div>
   <div class="meta">
     <p><strong>Versi:</strong> 4.6 (FINAL — Patched &amp; Aligned)</p>
-    <p><strong>Tanggal:</strong> 21 Oktober 2026</p>
-    <p><strong>Referensi Selaras:</strong> Design Spec v3.0 · Skema DB v1.4 · Backlog v1.5 · Struktur Folder v1.1</p>
+    <p><strong>Tanggal:</strong> 22 Oktober 2026</p>
+    <p><strong>Referensi Selaras:</strong> Design Spec v3.0 · Skema DB v1.4 · Backlog v1.5 · Struktur Folder v1.1 · Tutorial Sprint 0 v1.1</p>
     <p><strong>Status:</strong> Siap Development</p>
-    <p><strong>Tech Stack:</strong> Laravel + MySQL</p>
+    <p><strong>Tech Stack:</strong> <strong>Laravel 13.x + PHP 8.5 + MySQL 8.0 + Redis 7</strong></p>
+    <p><strong>Infrastruktur Server:</strong> <strong>VPS Hostinger KVM 1</strong> (1 vCPU · 4 GB RAM · 50 GB NVMe · 4 TB BW) + <strong>CloudPanel v2</strong> (Nginx + PHP 8.5-FPM Isolated Site User)</p>
     <p><strong>Domain:</strong> mercatoria.id</p>
     <p><strong>Admin URL:</strong> /office</p>
     <p><strong>Platform:</strong> Web only (semi-auto, no API)</p>
@@ -123,7 +124,7 @@
 <h1>1. Ringkasan Produk</h1>
 <p><strong>Mercatoria</strong> adalah web marketplace B2C yang membantu penggemar IP Cina (game, anime, donghua, novel) membeli merchandise resmi &amp; fanmade dari Tiongkok — tanpa harus paham Mandarin, punya akun Taobao/Weidian, atau mengurus pengiriman internasional sendiri.</p>
 <p>Mercatoria berperan sebagai <strong>perantara + katalog terkurasi per IP</strong>, menangani pembelian, konsolidasi, dan pengiriman ke pembeli.</p>
-<p><strong>Platform:</strong> Web only, semi-otomatis. <strong>Timezone:</strong> WIB (GMT+7).</p>
+<p><strong>Platform &amp; Infrastruktur:</strong> Web only, semi-otomatis, berjalan di atas <strong>VPS Hostinger KVM 1 (CloudPanel v2 · Nginx · PHP 8.5-FPM · Laravel 13.x · MySQL 8.0 · Redis 7)</strong>. <strong>Timezone:</strong> WIB (<code>Asia/Jakarta</code>, GMT+7).</p>
 
 <h3>Email Resmi</h3>
 <table>
@@ -644,7 +645,7 @@ Ex / ONS / Blocked
   <tr><td><strong>2. Scoped Image Shield (Anti Klik-Kanan, Drag &amp; Long-Press Foto)</strong></td><td>• Event listener JavaScript hanya mencegat <code>contextmenu</code> (klik kanan) dan <code>dragstart</code> <strong>khusus jika targetnya adalah elemen gambar (<code>&lt;img&gt;</code>, <code>&lt;canvas&gt;</code>, atau <code>.protected-image-wrap</code>)</strong> dan memunculkan toast peringatan: <em>"🔒 Gambar dilindungi hak cipta Mercatoria."</em><br>
   • CSS khusus pada gambar: <code>-webkit-user-drag: none; user-select: none; -webkit-touch-callout: none;</code> (mematikan popup <em>"Save Image / Simpan Gambar"</em> saat foto ditekan lama di browser HP iOS/Android).<br>
   • Setiap gambar dilapisi elemen transparan (<code>.img-shield-overlay</code>) sehingga klik kanan atau <em>tap-hold</em> tidak pernah menyentuh tag <code>&lt;img&gt;</code> secara langsung.</td></tr>
-  <tr><td><strong>3. Server-Side Burned Watermark (<code>intervention/image</code> v3)</strong></td><td>• Saat Admin mengupload foto produk utama, foto varian, dan gambar deskripsi panjang, <code>ImageWatermarkService</code> menyimpan file master asli di folder privat (<code>storage/app/private/originals/</code>) dan men-generate versi publik yang <strong>sudah menyatu (<em>baked-in</em>) dengan watermark berulang/diagonal semi-transparan <code>MERCATORIA · mercatoria.id</code></strong>.<br>
+  <tr><td><strong>3. Server-Side Burned Watermark (<code>intervention/image:^3.11</code> di PHP 8.5)</strong></td><td>• Saat Admin mengupload foto produk utama, foto varian, dan gambar deskripsi panjang, <code>ImageWatermarkService</code> menyimpan file master asli di folder privat (<code>storage/app/private/originals/</code>) dan men-generate versi publik yang <strong>sudah menyatu (<em>baked-in</em>) dengan watermark berulang/diagonal semi-transparan <code>MERCATORIA · mercatoria.id</code></strong>.<br>
   • Dengan teknik <em>server-side burned watermark</em> ini, meskipun pencuri memaksa mengambil foto lewat <em>Screenshot / Snipping Tool</em> atau membongkar <em>Inspect Element (Network Tab)</em>, file gambar yang terambil tetap memiliki watermark permanen Mercatoria.</td></tr>
   <tr><td><strong>4. Anti-Hotlink &amp; Heavy Watermark Decoy pada Direct URL</strong></td><td>Jika seseorang mencoba membuka URL file gambar secara langsung di tab baru browser (tanpa <code>Referer</code> halaman <code>mercatoria.id</code>) atau melakukan <em>hotlinking</em> dari website lain, server otomatis menolak akses atau menyajikan gambar dengan <strong>Heavy Watermark Penuh di Tengah Gambar (<em>"© MERCATORIA.ID — DO NOT STEAL"</em>)</strong>.</td></tr>
 </table>
@@ -1879,10 +1880,10 @@ Alasan: audit trail lengkap. Kalau ada komplain "kenapa ongkir gede?", admin bis
 
 <h1>29. SEO</h1>
 <table>
-  <tr><th>Paket</th><th>Fungsi</th></tr>
-  <tr><td><code>rankbeam/laravel-seo</code> atau <code>elegantly/laravel-seo</code></td><td>Meta tags, canonical, Open Graph, JSON-LD</td></tr>
-  <tr><td><code>spatie/laravel-sitemap</code></td><td>Auto-generate sitemap.xml</td></tr>
-  <tr><td><code>fuelviews/laravel-robots-txt</code></td><td>Kelola robots.txt</td></tr>
+  <tr><th>Paket / Komponen (Kompatibel Laravel 13 &amp; PHP 8.5)</th><th>Fungsi</th></tr>
+  <tr><td><code>App\Services\Seo\SeoMetaService</code> + <code>spatie/laravel-sluggable:^3.7</code></td><td>Meta tags dinamis, canonical URL, Open Graph, Twitter Card, &amp; JSON-LD Schema tanpa ketergantungan paket SEO lama yang belum mendukung Laravel 13</td></tr>
+  <tr><td><code>spatie/laravel-sitemap:^7.3</code></td><td>Auto-generate <code>sitemap.xml</code> terjadwal setiap hari via Laravel 13 Scheduler (<code>routes/console.php</code>)</td></tr>
+  <tr><td>Static/Dynamic <code>public/robots.txt</code></td><td>Kelola aturan <code>Disallow</code> untuk route sensitif (<code>/office</code>, <code>/cart</code>, <code>/checkout</code>, <code>/profile</code>, <code>/orders</code>)</td></tr>
 </table>
 
 <h3>Meta Tags Dinamis</h3>
@@ -1927,24 +1928,26 @@ Alasan: audit trail lengkap. Kalau ada komplain "kenapa ongkir gede?", admin bis
   <tr><td><strong>Bebas Copy Teks, Kunci Download Foto + Watermark</strong> <span class="new">v4.6</span></td><td><strong>User bebas blok &amp; copy-paste kalimat/kata di seluruh web, tetapi klik-kanan/drag/save foto diblokir + setiap foto produk/varian/deskripsi memiliki watermark permanen Mercatoria.</strong></td></tr>
 </table>
 
-<h1>31. Non-Functional Requirements</h1>
+<h1>31. Non-Functional Requirements <span class="rev">REV v4.6 — VPS KVM 1 + PHP 8.5 + Laravel 13</span></h1>
 <ul>
-  <li>Performa: katalog load &lt; 3 detik</li>
-  <li>Keamanan: HTTPS, RBAC, audit log, enkripsi bukti, Cloudflare Turnstile</li>
-  <li>Skalabilitas: 200–300 user aktif, 30–50 koneksi/hari</li>
-  <li>Compliance: UU PDP Indonesia</li>
-  <li>Bahasa: Indonesia</li>
-  <li>Timezone: WIB (GMT+7)</li>
-  <li>UI mobile &amp; desktop dibedakan</li>
-  <li>Stack: Laravel + MySQL + queue + storage</li>
-  <li>Image: intervention/image v3 + WebP</li>
-  <li>SEO: rankbeam/laravel-seo + spatie/laravel-sitemap + Open Graph</li>
-  <li>Analytics: GA4 only (tanpa GTM)</li>
-  <li>Web only (semi-auto, no API publik)</li>
-  <li>Tidak ada guest checkout</li>
-  <li>Activity log retention 30 hari (auto-purge)</li>
-  <li>Notifikasi user retention 90 hari (auto-purge)</li>
-  <li>Snapshot order item retention: PERMANEN</li>
+  <li><strong>Infrastruktur Server:</strong> <strong>VPS Hostinger KVM 1</strong> (1 vCPU Core · 4 GB RAM + 2 GB Swap · 50 GB NVMe SSD · 4 TB Bandwidth) yang dikelola dengan <strong>CloudPanel v2</strong> di atas Ubuntu 24.04 LTS.</li>
+  <li><strong>Core Tech Stack:</strong> <strong>Laravel 13.x</strong> + <strong>PHP 8.5-FPM</strong> (dengan OPcache + JIT aktif &amp; Isolated Site User <code>mercatoria</code>) + <strong>Nginx</strong> + <strong>MySQL 8.0</strong> + <strong>Redis 7</strong> (untuk Cache, Session, &amp; Queue Worker agar 1 vCPU KVM 1 tetap ringan dan responsif).</li>
+  <li><strong>Performa:</strong> Waktu muat katalog &lt; 3 detik (dibantu PHP 8.5 JIT, Redis Cache, &amp; gambar WebP).</li>
+  <li><strong>Keamanan:</strong> HTTPS (Let's Encrypt auto-renew di CloudPanel), RBAC (<code>spatie/laravel-permission:^6.10</code>), audit log, enkripsi bukti, Cloudflare Turnstile (<code>ryangjchandler/laravel-cloudflare-turnstile:^1.1</code> / custom rule Laravel 13), Honeypot (<code>spatie/laravel-honeypot:^4.5</code>), serta 2FA Email OTP Admin.</li>
+  <li><strong>Skalabilitas:</strong> 200–300 user aktif · 30–50 koneksi/hari (sangat optimal pada profil 4 GB RAM KVM 1).</li>
+  <li><strong>Compliance &amp; Lokalisasi:</strong> UU PDP Indonesia · Bahasa Indonesia (<code>APP_LOCALE=id</code>) · Timezone WIB (<code>Asia/Jakarta</code>, GMT+7) terkunci di level OS Linux, PHP 8.5, MySQL 8.0 (<code>+07:00</code>), dan Laravel 13.</li>
+  <li><strong>UI Responsif:</strong> Tampilan Desktop (≥1024px), Tablet (768–1023px), dan Mobile (&lt;768px) dibedakan secara proporsional menggunakan Blade + Livewire 3.6 + Alpine.js 3.14 + Tailwind CSS 3.4 (Vite 5/6).</li>
+  <li><strong>Image Processing &amp; Watermark:</strong> <code>intervention/image:^3.11</code> (Driver GD/Imagick PHP 8.5 dengan dukungan penuh WebP) untuk kompresi otomatis, pembuatan watermark diagonal berulang, dan salinan gambar snapshot.</li>
+  <li><strong>PDF &amp; Export Spreadsheet:</strong> <code>barryvdh/laravel-dompdf:^3.1</code> (Invoice &amp; Packing List PDF A4 tanpa alamat) dan <code>maatwebsite/excel:^3.1.68|^4.0</code> (kompatibel penuh dengan PHP 8.5 &amp; Laravel 13 untuk export CSV/XLSX Laporan &amp; Rank Pelanggan).</li>
+  <li><strong>SEO &amp; Analytics:</strong> <code>SeoMetaService</code> + <code>spatie/laravel-sitemap:^7.3</code> + <code>spatie/laravel-sluggable:^3.7</code> + Open Graph + JSON-LD · Analytics menggunakan <strong>GA4 only</strong> (tanpa GTM).</li>
+  <li><strong>Kebijakan Retensi Data &amp; Disk 50 GB NVMe:</strong>
+    <ul>
+      <li><code>activity_logs</code>, <code>auth_logs</code>, <code>admin_logs</code>: retensi <strong>30 hari</strong> (auto-purge harian 03:00 WIB).</li>
+      <li><code>user_notifications</code>: retensi <strong>90 hari</strong> (auto-purge harian 03:30 WIB).</li>
+      <li>File bukti transfer (<code>storage/app/public/payments/</code>): otomatis dihapus saat order berstatus <code>Selesai</code>, <code>Dana Dikembalikan</code>, atau <code>Hangus</code>.</li>
+      <li>Snapshot order item (<code>storage/app/public/order-snapshots/</code>): retensi <strong>PERMANEN</strong> (~200 KB/item).</li>
+    </ul>
+  </li>
 </ul>
 
 <h1>32. Risiko &amp; Mitigasi <span class="rev">REV v4.4</span></h1>
@@ -1978,6 +1981,8 @@ Alasan: audit trail lengkap. Kalau ada komplain "kenapa ongkir gede?", admin bis
   <tr style="background:#FFF3E0;"><td><strong>Store tier salah setup</strong> <span class="new">v4.4</span></td><td><strong>Validasi: min_belanja &gt; 0 (kalau ongkir &gt; 0). Preview perhitungan ongkir di form produk.</strong></td></tr>
   <tr style="background:#FFF3E0;"><td><strong>Pencurian foto produk, varian &amp; gambar deskripsi panjang hasil kurasi Admin oleh pihak lain</strong> <span class="new">v4.6</span></td><td><strong>3-Layer Image Protection: Scoped JS/CSS Image Shield (tanpa mematikan copy teks) + Transparent Overlay + Server-Side Burned Watermark (<code>intervention/image</code> v3) &amp; Anti-Hotlink.</strong></td></tr>
   <tr style="background:#FFF3E0;"><td><strong>Email testing/percobaan saat maintenance terkirim ke inbox customer asli</strong> <span class="new">v4.6</span></td><td><strong>Global Toggle "Stop Kirim Email ke Customer" (<code>pause_customer_emails</code>) di <code>/office/settings</code> Tab Email + banner pengingat di Topbar Admin. Sistem tetap jalan &amp; mencatat ke <code>email_logs</code> (status <code>suppressed</code>) tanpa mengirim email ke customer.</strong></td></tr>
+  <tr style="background:#E8F5E9;"><td><strong>Beban CPU/RAM pada VPS Hostinger KVM 1 (1 vCPU · 4 GB RAM) saat proses watermark gambar panjang atau export PDF/Excel bersamaan</strong> <span class="new">v4.6</span></td><td><strong>Aktifkan Swap 2 GB di Ubuntu, gunakan Redis 7 (bawaan CloudPanel) untuk Cache/Session/Queue, batasi Supervisor Queue Worker <code>numprocs=2</code>, dan gunakan PHP 8.5-FPM <code>pm = ondemand</code> (<code>max_children = 15</code>) + OPcache JIT.</strong></td></tr>
+  <tr style="background:#E8F5E9;"><td><strong>Kompatibilitas package pihak ketiga pada PHP 8.5 &amp; Laravel 13.x</strong> <span class="new">v4.6</span></td><td><strong>Kunci versi minimal package yang sudah rilis dukungan PHP 8.5 &amp; Laravel 13: <code>maatwebsite/excel:^3.1.68|^4.0</code> (PhpSpreadsheet ≥1.30.2/v2+), <code>barryvdh/laravel-dompdf:^3.1</code>, <code>intervention/image:^3.11</code>, <code>livewire/livewire:^3.6</code>, dan <code>larastan/larastan:^3.0</code>.</strong></td></tr>
 </table>
 
 <h1>33. Timeline</h1>
@@ -2102,44 +2107,51 @@ admin_notifications, visitor_tracking, settings</pre>
 /office/activity-logs, /office/auth-logs, /office/admin-logs
 /office/customers/rank, /office/reports, /office/settings</pre>
 
-<h1>37. Integrasi &amp; Hosting</h1>
+<h1>37. Integrasi &amp; Hosting (VPS Hostinger KVM 1 + CloudPanel v2 + PHP 8.5 + Laravel 13) <span class="rev">REV v4.6</span></h1>
 <table>
-  <tr><th>Layanan</th><th>Tool</th></tr>
-  <tr><td>Payment</td><td>Manual (BCA/QRIS/ShopeePay)</td></tr>
-  <tr><td>Email security / notifikasi / CS</td><td>Hostinger SMTP (3 email)</td></tr>
-  <tr><td>Analytics</td><td>GA4 only</td></tr>
-  <tr><td>Security</td><td>Cloudflare Turnstile</td></tr>
-  <tr><td>2FA Admin</td><td>Email OTP</td></tr>
-  <tr><td>Image</td><td>intervention/image v3 + WebP</td></tr>
-  <tr><td>SEO</td><td>rankbeam/laravel-seo + spatie/laravel-sitemap + Open Graph</td></tr>
-  <tr><td>Activity Log</td><td>spatie/laravel-activitylog (opsional)</td></tr>
-  <tr><td>Preorder Builder</td><td>GrapesJS</td></tr>
-  <tr><td>Logistik</td><td>Toco / Shopee (manual)</td></tr>
-  <tr><td>Invoice PDF</td><td>barryvdh/laravel-dompdf</td></tr>
-  <tr><td>Bell Notifikasi User</td><td>Custom Laravel Notification + polling AJAX 60 detik</td></tr>
-  <tr><td>Geo-IP (Share)</td><td>stevebauman/location (country detection)</td></tr>
+  <tr><th>Layanan / Komponen</th><th>Spesifikasi &amp; Versi Tool (Kompatibel PHP 8.5 + Laravel 13.x)</th></tr>
+  <tr><td><strong>Server &amp; Panel</strong></td><td><strong>VPS Hostinger KVM 1</strong> (1 vCPU · 4 GB RAM + 2 GB Swap · 50 GB NVMe · Ubuntu 24.04 LTS) dengan <strong>CloudPanel v2</strong> (Nginx + MySQL 8.0 + Redis 7 + SSL Let's Encrypt)</td></tr>
+  <tr><td><strong>Runtime &amp; Framework</strong></td><td><strong>PHP 8.5-FPM &amp; CLI</strong> (<code>/usr/bin/php8.5</code>, Site User terisolasi: <code>mercatoria</code>) + <strong>Laravel 13.x</strong> (<code>laravel/framework:^13.0</code>)</td></tr>
+  <tr><td><strong>Path Proyek Produksi</strong></td><td><code>/home/mercatoria/htdocs/mercatoria.id</code> (Document Root Nginx: <code>/home/mercatoria/htdocs/mercatoria.id/public</code>)</td></tr>
+  <tr><td><strong>Cache, Session &amp; Queue</strong></td><td><strong>Redis 7</strong> (bawaan CloudPanel v2) + <strong>Supervisor Queue Worker</strong> (<code>numprocs=2</code> berjalan sebagai user <code>mercatoria</code>)</td></tr>
+  <tr><td><strong>UI &amp; Interaktivitas</strong></td><td><code>livewire/livewire:^3.6</code> + <code>blade-ui-kit/blade-heroicons:^2.5</code> + Alpine.js 3.14 + Tailwind CSS 3.4 + Vite 5/6</td></tr>
+  <tr><td><strong>Payment</strong></td><td>Manual terverifikasi Admin (Bank BCA / QRIS / ShopeePay)</td></tr>
+  <tr><td><strong>Email Security / Notifikasi / CS</strong></td><td>Hostinger SMTP port <code>465 (SSL)</code> dengan 3 akun resmi (<code>security@</code>, <code>info@</code>, <code>cs@mercatoria.id</code>) + Global Kill-Switch <code>SuppressCustomerEmailWhenPaused</code></td></tr>
+  <tr><td><strong>Analytics</strong></td><td>GA4 only (tanpa GTM)</td></tr>
+  <tr><td><strong>Security &amp; Anti-Bot</strong></td><td>Cloudflare Turnstile (<code>ryangjchandler/laravel-cloudflare-turnstile:^1.1</code> / Custom Rule Laravel 13) + <code>spatie/laravel-honeypot:^4.5</code> + <code>spatie/laravel-permission:^6.10</code></td></tr>
+  <tr><td><strong>2FA Admin</strong></td><td>Email OTP 6 digit (berlaku 5 menit, dikirim via <code>security@mercatoria.id</code>)</td></tr>
+  <tr><td><strong>Image &amp; Watermark</strong></td><td><code>intervention/image:^3.11</code> (Driver GD/Imagick PHP 8.5 + WebP) untuk kompresi, auto-watermark diagonal, &amp; copy gambar snapshot</td></tr>
+  <tr><td><strong>SEO &amp; Slug</strong></td><td><code>SeoMetaService</code> + <code>spatie/laravel-sitemap:^7.3</code> + <code>spatie/laravel-sluggable:^3.7</code> + Open Graph + JSON-LD</td></tr>
+  <tr><td><strong>Activity Log &amp; Backup</strong></td><td>Tabel audit kustom (<code>activity_logs</code>, <code>auth_logs</code>, <code>admin_logs</code>) + <code>spatie/laravel-activitylog:^4.9</code> + <code>spatie/laravel-backup:^9.2</code></td></tr>
+  <tr><td><strong>Preorder Builder</strong></td><td>GrapesJS (<code>grapesjs@^0.21.10</code> + <code>grapesjs-preset-webpage</code>)</td></tr>
+  <tr><td><strong>Logistik Lokal</strong></td><td>Toco / Shopee (CO pelunasan &amp; resi logistik di marketplace)</td></tr>
+  <tr><td><strong>Invoice &amp; Packing List PDF</strong></td><td><code>barryvdh/laravel-dompdf:^3.1</code> (Kompatibel PHP 8.5 &amp; Laravel 13, A4 tanpa alamat)</td></tr>
+  <tr><td><strong>Export Laporan &amp; Rank</strong></td><td><code>maatwebsite/excel:^3.1.68|^4.0</code> (Mendukung PHP 8.5 &amp; Laravel 13 tanpa konflik PhpSpreadsheet)</td></tr>
+  <tr><td><strong>Bell Notifikasi User</strong></td><td>Custom Laravel 13 Notification + polling AJAX 60 detik (Visibility API aware)</td></tr>
+  <tr><td><strong>Geo-IP (Share Produk ID Only)</strong></td><td><code>stevebauman/location:^7.4</code> (Deteksi <code>countryCode === 'ID'</code> untuk reward 5 koin share link)</td></tr>
 </table>
 
-<h3>Schedule Job di Hostinger</h3>
-<pre>Cron Job 1 — Laravel Scheduler (wajib):
-Command: /usr/bin/php /home/u[username]/domains/mercatoria.id/public_html/artisan schedule:run >> /dev/null 2>&1
+<h3>Schedule Job &amp; Queue Worker di VPS Hostinger KVM 1 (CloudPanel + PHP 8.5 + Laravel 13)</h3>
+<pre>1. Cron Job di Tab "Cron Jobs" CloudPanel (Site User: mercatoria — Setiap Menit):
+* * * * * /usr/bin/php8.5 /home/mercatoria/htdocs/mercatoria.id/artisan schedule:run &gt;&gt; /dev/null 2&gt;&amp;1
 
-Cron Job 2 — Queue Worker (opsional):
-Minute: */5
-Command: /usr/bin/php .../artisan queue:work --stop-when-empty >> /dev/null 2>&1
+2. Supervisor Queue Worker (/etc/supervisor/conf.d/mercatoria-worker.conf — Real-time Background Job):
+command=/usr/bin/php8.5 /home/mercatoria/htdocs/mercatoria.id/artisan queue:work redis --sleep=3 --tries=3 --max-time=3600
+user=mercatoria
+numprocs=2
 
-Scheduled Tasks:
-- log:purge                → tiap hari 03:00 WIB
-- notification:purge       → tiap hari 03:30 WIB
-- user:update-state        → tiap hari 02:00 WIB
-- user:purge-crush         → tiap hari 04:00 WIB
-- cart:send-reminder       → tiap 30 menit
-- coin:expiry-notify       → tiap hari
-- user:birthday-bonus      → tiap hari
-- order:hangus-expired     → tiap hari
-- spammer:recheck-grace    → tiap hari
-- customer:update-tier     → tiap hari 02:30 WIB
-- sitemap:generate         → tiap hari</pre>
+3. Daftar 11 Scheduled Tasks di Laravel 13 (Didefinisikan di routes/console.php dengan Timezone Asia/Jakarta):
+- user:update-state        → tiap hari 02:00 WIB (Transisi Ex → ONS → Blocked &amp; notif H-7)
+- customer:update-tier     → tiap hari 02:30 WIB (Evaluasi Tier Silver / Gold / Platinum)
+- log:purge                → tiap hari 03:00 WIB (Hapus activity/auth/admin log &gt; 30 hari)
+- notification:purge       → tiap hari 03:30 WIB (Hapus user_notifications &gt; 90 hari)
+- user:purge-crush         → tiap hari 04:00 WIB (Hard delete akun Crush &gt; 30 hari tanpa order)
+- order:hangus-expired     → tiap hari 05:00 WIB (Ubah order Menunggu Pelunasan &gt; 7 hari ke Hangus + hapus file bukti)
+- spammer:recheck-grace    → tiap hari 05:30 WIB (Re-block akun yang gagal order dalam 7 hari grace period)
+- user:birthday-bonus      → tiap hari 06:00 WIB (Kirim 5.000 koin + voucher ulang tahun Rp 25.000)
+- coin:expiry-notify       → tiap hari 07:00 WIB (Notifikasi koin/voucher H-30, H-7, H-1 sebelum expired)
+- sitemap:generate         → tiap hari 01:00 WIB (Update public/sitemap.xml)
+- cart:send-reminder       → tiap 30 menit (Kirim pengingat keranjang via Bell + Email info@)</pre>
 
 <h1>38. GA4 Events</h1>
 <h3>User</h3>
@@ -3124,8 +3136,8 @@ Rp 660.000
 <hr>
 <p style="text-align: center; color: #666; margin-top: 40px;">
 <strong>— End of Document —</strong><br>
-PRD Mercatoria v4.6 FINAL · 21 Oktober 2026<br>
-Fondasi data 100% siap coding
+PRD Mercatoria v4.6 FINAL · 22 Oktober 2026<br>
+VPS Hostinger KVM 1 (CloudPanel v2) · PHP 8.5 · Laravel 13.x · MySQL 8.0 · Redis 7 — Fondasi 100% Siap Coding
 </p>
 
 </body>

@@ -66,12 +66,12 @@
 <div class="cover">
   <h1>BACKLOG MVP v1.5</h1>
   <div class="meta">
-    <p><strong>Versi:</strong> 1.5 (FINAL — Selaras Penuh)</p>
-    <p><strong>Tanggal:</strong> 21 Oktober 2026</p>
-    <p><strong>Referensi PRD:</strong> v4.6 FINAL</p>
-    <p><strong>Referensi Skema DB:</strong> v1.4 FINAL</p>
+    <p><strong>Versi:</strong> 1.5 (FINAL — Selaras Penuh VPS Hostinger KVM 1 + PHP 8.5 + Laravel 13.x)</p>
+    <p><strong>Tanggal:</strong> 22 Oktober 2026</p>
+    <p><strong>Referensi PRD:</strong> v4.6 FINAL (VPS Hostinger KVM 1 · CloudPanel v2 · PHP 8.5 · Laravel 13.x)</p>
+    <p><strong>Referensi Skema DB:</strong> v1.4 FINAL · <strong>Struktur Folder:</strong> v1.1 FINAL · <strong>Tutorial Sprint 0:</strong> v1.1 FINAL</p>
     <p><strong>Referensi Design Spec:</strong> v3.0 FINAL (di file v2.3)</p>
-    <p><strong>Referensi Struktur Folder:</strong> v1.1 FINAL</p>
+    <p><strong>Target Infrastruktur &amp; Stack:</strong> <strong>VPS Hostinger KVM 1</strong> (1 vCPU · 4 GB RAM + 2 GB Swap · 50 GB NVMe · CloudPanel v2) + <strong>PHP 8.5-FPM</strong> + <strong>Laravel 13.x</strong> + <strong>MySQL 8.0</strong> + <strong>Redis 7</strong></p>
     <p><strong>Total Epic:</strong> 18 (sama)</p>
     <p><strong>Total Story:</strong> 240 (+5 dari v1.4 · +17 dari v1.2)</p>
     <p><strong>Total Task:</strong> 718 (+18 dari v1.4 · +56 dari v1.2)</p>
@@ -94,6 +94,7 @@
     <li>Total SP per Sprint</li>
     <li>EPIC-03: Story Baru — Migrasi User Lama</li>
     <li>Total SP Update v1.3 → v1.5 &amp; EPIC-10 Smart Scoped IP Ban</li>
+    <li><strong>EPIC-01 (Sprint 0) &amp; Penyesuaian Package Laravel 13.x + PHP 8.5 di Seluruh Epic</strong> <span class="badge-new">NEW v1.5</span></li>
   </ol>
 </div>
 
@@ -139,25 +140,25 @@
 
 <table>
   <tr><th>Epic ID</th><th>Nama Epic</th><th>Story</th><th>Task</th><th>Total SP</th><th>v1.3 SP</th><th>Delta</th></tr>
-  <tr><td>EPIC-01</td><td>Foundation &amp; Setup</td><td>8</td><td>24</td><td>34</td><td>34</td><td>—</td></tr>
-  <tr><td>EPIC-02</td><td>Design System &amp; Layout Global</td><td>11</td><td>34</td><td>50</td><td>50</td><td>—</td></tr>
-  <tr style="background:#F1F8E9;"><td>EPIC-03</td><td>User System &amp; Authentication</td><td>23 <span class="badge-new">+4</span></td><td>66 <span class="badge-new">+10</span></td><td>108</td><td>94</td><td>+14</td></tr>
-  <tr style="background:#F1F8E9;"><td>EPIC-04</td><td>Produk &amp; Katalog</td><td>26 <span class="badge-new">+4</span></td><td>80 <span class="badge-new">+12</span></td><td>121</td><td>121</td><td>—</td></tr>
-  <tr><td>EPIC-05</td><td>Cart &amp; Checkout</td><td>12</td><td>36</td><td>58</td><td>58</td><td>—</td></tr>
-  <tr style="background:#F1F8E9;"><td>EPIC-06</td><td>Order, Payment &amp; Refund</td><td>32 <span class="badge-new">+3</span></td><td>100 <span class="badge-new">+8</span></td><td>158</td><td>158</td><td>—</td></tr>
-  <tr><td>EPIC-07</td><td>Koin, Referral &amp; Voucher</td><td>14</td><td>42</td><td>66</td><td>66</td><td>—</td></tr>
-  <tr><td>EPIC-08</td><td>Dashboard User</td><td>16</td><td>48</td><td>74</td><td>74</td><td>—</td></tr>
-  <tr><td>EPIC-09</td><td>Bell Notifikasi User</td><td>12</td><td>38</td><td>60</td><td>60</td><td>—</td></tr>
-  <tr><td>EPIC-10</td><td>Spammer, Security &amp; Logging</td><td>14</td><td>42</td><td>72</td><td>72</td><td>—</td></tr>
-  <tr style="background:#F1F8E9;"><td>EPIC-11</td><td>Admin Panel — Core &amp; Dashboard</td><td>13 <span class="badge-new">+1</span></td><td>40 <span class="badge-new">+4</span></td><td>61</td><td>61</td><td>—</td></tr>
-  <tr><td>EPIC-12</td><td>Admin Panel — Produk &amp; Katalog</td><td>12</td><td>36</td><td>58</td><td>58</td><td>—</td></tr>
-  <tr><td>EPIC-13</td><td>Admin Panel — Transaksi</td><td>16</td><td>50</td><td>80</td><td>80</td><td>—</td></tr>
-  <tr><td>EPIC-14</td><td>Admin Panel — User &amp; Spammer</td><td>11</td><td>33</td><td>51</td><td>51</td><td>—</td></tr>
-  <tr><td>EPIC-15</td><td>Admin Panel — Konten</td><td>12</td><td>36</td><td>56</td><td>56</td><td>—</td></tr>
-  <tr><td>EPIC-16</td><td>Admin Panel — Laporan, Rank &amp; SEO</td><td>10</td><td>30</td><td>48</td><td>48</td><td>—</td></tr>
-  <tr><td>EPIC-17</td><td>SEO, Performance &amp; GA4</td><td>9</td><td>28</td><td>42</td><td>42</td><td>—</td></tr>
-  <tr><td>EPIC-18</td><td>Integrasi, Deployment &amp; Launch</td><td>8</td><td>26</td><td>40</td><td>40</td><td>—</td></tr>
-  <tr style="background:#E3F2FD;font-weight:bold;"><td colspan="2">TOTAL</td><td>235</td><td>700</td><td>1.233</td><td>1.219</td><td>+14</td></tr>
+  <tr style="background:#FFF8E1;"><td>EPIC-01</td><td>Foundation &amp; Setup (VPS Hostinger KVM 1 + CloudPanel v2 + PHP 8.5 + Laravel 13) <span class="badge-rev">REV v1.5</span></td><td>8</td><td>24</td><td>34</td><td>34</td><td>—</td></tr>
+  <tr><td>EPIC-02</td><td>Design System &amp; Layout Global (Tailwind 3.4 + Blade Heroicons ^2.5)</td><td>11</td><td>34</td><td>50</td><td>50</td><td>—</td></tr>
+  <tr style="background:#F1F8E9;"><td>EPIC-03</td><td>User System &amp; Authentication (Turnstile ^1.1 + Honeypot ^4.5 + Migrasi User)</td><td>23 <span class="badge-new">+4</span></td><td>66 <span class="badge-new">+10</span></td><td>108</td><td>94</td><td>+14</td></tr>
+  <tr style="background:#F1F8E9;"><td>EPIC-04</td><td>Produk &amp; Katalog (Intervention Image ^3.11 PHP 8.5 + Sluggable ^3.7 + Deep Search)</td><td>28 <span class="badge-new">+6</span></td><td>88 <span class="badge-new">+20</span></td><td>131</td><td>121</td><td>+10</td></tr>
+  <tr><td>EPIC-05</td><td>Cart &amp; Checkout (Livewire ^3.6 + Redis Cart Reminder)</td><td>12</td><td>36</td><td>58</td><td>58</td><td>—</td></tr>
+  <tr style="background:#F1F8E9;"><td>EPIC-06</td><td>Order, Payment, Snapshot &amp; PDF (DomPDF ^3.1 PHP 8.5 + Shipping Calc)</td><td>32 <span class="badge-new">+3</span></td><td>100 <span class="badge-new">+8</span></td><td>158</td><td>158</td><td>—</td></tr>
+  <tr><td>EPIC-07</td><td>Koin, Referral &amp; Voucher (Stevebauman Location ^7.4 Geo-IP ID)</td><td>14</td><td>42</td><td>66</td><td>66</td><td>—</td></tr>
+  <tr><td>EPIC-08</td><td>Dashboard User (Livewire ^3.6 4-Tab Layout)</td><td>16</td><td>48</td><td>74</td><td>74</td><td>—</td></tr>
+  <tr><td>EPIC-09</td><td>Bell Notifikasi User (Laravel 13 Notification + Polling 60s)</td><td>12</td><td>38</td><td>60</td><td>60</td><td>—</td></tr>
+  <tr style="background:#F1F8E9;"><td>EPIC-10</td><td>Spammer, Security &amp; Logging (Smart Scoped IP Ban + Activitylog ^4.9)</td><td>16 <span class="badge-new">+2</span></td><td>48 <span class="badge-new">+6</span></td><td>80</td><td>72</td><td>+8</td></tr>
+  <tr style="background:#F1F8E9;"><td>EPIC-11</td><td>Admin Panel — Core, Settings Ongkir &amp; Kill-Switch Email</td><td>14 <span class="badge-new">+2</span></td><td>44 <span class="badge-new">+8</span></td><td>64</td><td>61</td><td>+3</td></tr>
+  <tr><td>EPIC-12</td><td>Admin Panel — Produk &amp; Katalog (Livewire ^3.6 Bulk Edit + Hard Delete)</td><td>12</td><td>36</td><td>58</td><td>58</td><td>—</td></tr>
+  <tr><td>EPIC-13</td><td>Admin Panel — Transaksi (DomPDF ^3.1 Packing List + Maatwebsite Excel ^3.1.68|^4.0)</td><td>16</td><td>50</td><td>80</td><td>80</td><td>—</td></tr>
+  <tr><td>EPIC-14</td><td>Admin Panel — User &amp; Spammer (Forever Delete + Force Reset/Verify)</td><td>11</td><td>33</td><td>51</td><td>51</td><td>—</td></tr>
+  <tr><td>EPIC-15</td><td>Admin Panel — Konten (GrapesJS Preorder Builder + 27 Email Template)</td><td>12</td><td>36</td><td>56</td><td>56</td><td>—</td></tr>
+  <tr><td>EPIC-16</td><td>Admin Panel — Laporan, Rank &amp; SEO (Maatwebsite Excel ^3.1.68|^4.0 PHP 8.5)</td><td>10</td><td>30</td><td>48</td><td>48</td><td>—</td></tr>
+  <tr><td>EPIC-17</td><td>SEO, Performance &amp; GA4 (Spatie Sitemap ^7.3 + OPcache JIT PHP 8.5)</td><td>9</td><td>28</td><td>42</td><td>42</td><td>—</td></tr>
+  <tr><td>EPIC-18</td><td>Integrasi, Backup &amp; Launch (Spatie Backup ^9.2 + Supervisor Redis KVM 1)</td><td>8</td><td>26</td><td>40</td><td>40</td><td>—</td></tr>
+  <tr style="background:#E3F2FD;font-weight:bold;"><td colspan="2">TOTAL (v1.5 FINAL)</td><td>240</td><td>718</td><td>1.254</td><td>1.219</td><td>+35</td></tr>
 </table>
 
 <h1>3. Sprint Planning Update</h1>
@@ -317,7 +318,7 @@
 </ul>
 <p><strong>Tasks (5 SP):</strong></p>
 <ul class="task-list">
-  <li>[BE] Buat <code>ImageWatermarkService</code> dengan <code>intervention/image</code> v3 (tiled diagonal watermark + backup original di private disk)</li>
+  <li>[BE] Buat <code>ImageWatermarkService</code> dengan <code>intervention/image:^3.11</code> pada PHP 8.5 (Driver GD/Imagick WebP + tiled diagonal watermark + backup original di private disk)</li>
   <li>[FE] Buat komponen Blade <code>&lt;x-protected-image&gt;</code> dengan overlay transparan &amp; script <code>image-protection.js</code> (hanya cegat gambar, biarkan copy teks bebas)</li>
   <li>[FE/BE] Tambah pengaturan toggle proteksi &amp; opacity watermark di <code>/office/settings</code> tab Security</li>
   <li>[QA] Test di Desktop &amp; Mobile: pastikan copy-paste kalimat/kata lancar 100%, klik-kanan/drag/long-press foto terblokir, dan hasil screenshot/inspect memiliki watermark</li>
@@ -553,10 +554,11 @@
 
 <h1>8. Definition of Done (Updated)</h1>
 
-<h3>8.1 Code Quality (Sama)</h3>
+<h3>8.1 Code Quality &amp; Kompatibilitas PHP 8.5 + Laravel 13.x <span class="badge-rev">REV v1.5</span></h3>
 <ul>
-  <li>✅ Code lolos Laravel Pint</li>
-  <li>✅ Code lolos Larastan level 5</li>
+  <li>✅ Code berjalan bersih di <strong>PHP 8.5</strong> (<code>/usr/bin/php8.5</code>) dan <strong>Laravel 13.x</strong> (<code>laravel/framework:^13.0</code>) tanpa <em>deprecation notice</em></li>
+  <li>✅ Code lolos <strong>Laravel Pint (<code>laravel/pint:^1.20</code>)</strong> dan <strong>Larastan v3 (<code>larastan/larastan:^3.0</code>, PHPStan 2.x)</strong> level 5</li>
+  <li>✅ Seluruh middleware kustom terdaftar di <code>bootstrap/app.php</code> dan seluruh jadwal Cron terdaftar di <code>routes/console.php</code> (standar arsitektur Laravel 13)</li>
   <li>✅ Tidak ada <code>dd()</code>, <code>dump()</code>, <code>var_dump()</code> tertinggal</li>
 </ul>
 
@@ -830,13 +832,53 @@
 <strong>Sprint 3 naik dari 112 SP → 126 SP</strong> setelah tambahan EPIC-03 (Migrasi User Lama, +14 SP). Sprint 5 tetap jadi sprint terpadat (136 SP). <strong>Rekomendasi:</strong> tambah 1 dev part-time di Sprint 3 &amp; 5, atau extend sprint 3 jadi 3 minggu.
 </div>
 
+<h1>12. EPIC-01 (Sprint 0) &amp; Penyesuaian Package Laravel 13.x + PHP 8.5 di Seluruh Epic <span class="badge-new">NEW v1.5</span></h1>
+
+<div class="epic-box-new">
+<h3>EPIC-01 — Foundation &amp; Pre-Setup VPS Hostinger KVM 1 (CloudPanel v2 + PHP 8.5 + Laravel 13.x)</h3>
+<p><strong>Tujuan:</strong> Menyiapkan server produksi &amp; staging pada <strong>VPS Hostinger KVM 1</strong> (1 vCPU · 4 GB RAM + 2 GB Swap · 50 GB NVMe) menggunakan <strong>CloudPanel v2</strong>, <strong>PHP 8.5-FPM</strong>, <strong>Laravel 13.x</strong>, <strong>MySQL 8.0</strong>, dan <strong>Redis 7</strong>, serta memastikan ke-15 package Composer berjalan 100% kompatibel di PHP 8.5 tanpa konflik dependency.</p>
+<p><strong>Total:</strong> 8 Story · 24 Task · 34 SP (Sprint 0 — Detail langkah demi langkah tersedia di dokumen <em>Tutorial Sprint 0 v1.1 FINAL</em>)</p>
+</div>
+
+<h3>12.1 Rincian 8 Story pada EPIC-01 (Sprint 0: 34 SP)</h3>
+<table>
+  <tr><th>Story ID</th><th>Nama Story</th><th>Task</th><th>SP</th><th>Deliverable Teknis (VPS KVM 1 + PHP 8.5 + Laravel 13)</th></tr>
+  <tr><td><code>EPIC-01-01</code></td><td>Provisioning VPS Hostinger KVM 1, CloudPanel v2, Timezone WIB &amp; Swap 2 GB</td><td>3</td><td>5</td><td>OS Ubuntu 24.04 + CloudPanel v2 aktif di port <code>8443</code>, Timezone Linux &amp; MySQL <code>+07:00</code> (WIB), Swap 2 GB aktif, MySQL 8.0 dituning untuk RAM 4 GB (<code>innodb_buffer_pool_size=1G</code>), dan Redis 7 aktif.</td></tr>
+  <tr><td><code>EPIC-01-02</code></td><td>Setup PHP Site <code>mercatoria.id</code>, Tuning PHP 8.5-FPM &amp; Database MySQL 8.0</td><td>3</td><td>5</td><td>Site User terisolasi <code>mercatoria</code> (<code>/home/mercatoria/htdocs/mercatoria.id</code>), PHP <strong>8.5-FPM</strong> dengan <code>opcache.jit=1255</code>, <code>pm=ondemand</code> (<code>max_children=15</code>), ekstensi <code>gd</code>/<code>imagick</code> WebP &amp; <code>redis</code> aktif, serta DB <code>mercatoria_db</code> siap.</td></tr>
+  <tr><td><code>EPIC-01-03</code></td><td>Inisialisasi Laravel 13.x, Struktur Folder v1.1 &amp; Bootstrap Middleware</td><td>3</td><td>3</td><td>Instalasi <code>laravel/laravel:^13.0</code> via <code>/usr/bin/php8.5</code>, pembuatan struktur folder kustom, registrasi 10 middleware di <code>bootstrap/app.php</code>, RateLimiter di <code>AppServiceProvider.php</code>, serta <code>helpers.php</code> &amp; <code>RealIpHelper.php</code>.</td></tr>
+  <tr><td><code>EPIC-01-04</code></td><td>Instalasi 15 Paket Composer (Kompatibel PHP 8.5 &amp; Laravel 13) + 10 Paket NPM</td><td>3</td><td>5</td><td>Instalasi seluruh library Composer versi terbaru yang mendukung PHP 8.5 &amp; Laravel 13 + publikasi config vendor + setup Tailwind CSS Design Spec v3.0 &amp; <code>npm run build</code>.</td></tr>
+  <tr><td><code>EPIC-01-05</code></td><td>Konfigurasi <code>.env</code> Production (Redis), <code>config/mercatoria.php</code> &amp; 3 SMTP</td><td>3</td><td>3</td><td>Setup <code>.env</code> dengan <code>CACHE_STORE=redis</code>, <code>SESSION_DRIVER=redis</code>, <code>QUEUE_CONNECTION=redis</code>, 3 mailer SMTP Hostinger (<code>security@</code>, <code>info@</code>, <code>cs@</code>), dan file <code>config/mercatoria.php</code> lengkap.</td></tr>
+  <tr><td><code>EPIC-01-06</code></td><td>Setup Storage Publik, Folder Permanen <code>order-snapshots</code> &amp; Privat <code>originals</code></td><td>3</td><td>3</td><td>Pembuatan struktur <code>storage/app/public/order-snapshots</code> (retensi permanen), <code>storage/app/private/originals</code> (master foto sebelum watermark), dan <code>/usr/bin/php8.5 artisan storage:link</code>.</td></tr>
+  <tr><td><code>EPIC-01-07</code></td><td>Eksekusi 50+ Migration Skema DB v1.4, Index Deep Search Varian &amp; 8 Seeder</td><td>3</td><td>5</td><td>Eksekusi <code>/usr/bin/php8.5 artisan migrate --seed</code> mencakup tabel <code>stores</code>, <code>price_rmb</code> varian, index <code>product_variants_name_search_idx</code>, Smart Scoped IP Ban, &amp; 8 Seeder awal.</td></tr>
+  <tr><td><code>EPIC-01-08</code></td><td>SSL Let's Encrypt, Vhost Anti-Hotlink, Jadwal <code>routes/console.php</code> &amp; Supervisor</td><td>3</td><td>5</td><td>SSL Let's Encrypt auto-renew, aturan Nginx Anti-Hotlink + <code>client_max_body_size 15M</code>, 11 jadwal Cron di <code>routes/console.php</code> dieksekusi oleh <code>/usr/bin/php8.5 artisan schedule:run</code>, &amp; Supervisor Redis Worker (<code>numprocs=2</code>).</td></tr>
+</table>
+
+<h3>12.2 Matriks Dampak Perubahan ke PHP 8.5 &amp; Laravel 13.x terhadap Fitur &amp; Package di Backlog</h3>
+<div class="note-info">
+<strong>Penting untuk Tim Developer:</strong> Pergantian ke <strong>PHP 8.5 + Laravel 13.x</strong> berdampak langsung pada versi minimal package Composer dan struktur file inti Laravel (tidak lagi memakai <code>app/Http/Kernel.php</code> atau <code>app/Console/Kernel.php</code>). Tabel di bawah ini adalah acuan wajib saat mengerjakan Story di EPIC-02 s/d EPIC-18:
+</div>
+
+<table>
+  <tr><th>Package Composer / Komponen</th><th>Versi Lama (L11 / PHP 8.2)</th><th>Versi Baru Wajib (L13 / PHP 8.5)</th><th>Epic &amp; Fitur yang Terpengaruh</th><th>Catatan Teknis &amp; Alasan Perubahan</th></tr>
+  <tr><td><code>laravel/framework</code></td><td><code>^11.0</code></td><td><strong><code>^13.0</code></strong> (PHP <code>^8.5</code>)</td><td>Seluruh Epic (EPIC-01 s/d EPIC-18)</td><td>Rilis resmi Laravel 13 mendukung penuh PHP 8.5. Seluruh registrasi middleware &amp; exception terpusat di <code>bootstrap/app.php</code>, dan seluruh jadwal Cron didefinisikan di <code>routes/console.php</code>.</td></tr>
+  <tr><td><code>maatwebsite/excel</code></td><td><code>^3.1</code></td><td><strong><code>^3.1.68</code> atau <code>^4.0</code></strong></td><td><strong>EPIC-13</strong> (Export Order), <strong>EPIC-14</strong> (Export User), <strong>EPIC-16</strong> (Export Laporan Penjualan &amp; Rank Pelanggan)</td><td><strong>Sangat Krusial di PHP 8.5:</strong> Versi di bawah <code>3.1.68</code> mengunci <code>phpoffice/phpspreadsheet &lt;= 1.30.2</code> yang gagal diinstal di PHP 8.5. Wajib minimal <code>^3.1.68</code> atau <code>^4.0</code> yang sudah mendukung Laravel 13 &amp; PHP 8.5.</td></tr>
+  <tr><td><code>barryvdh/laravel-dompdf</code></td><td><code>^3.0</code></td><td><strong><code>^3.1</code></strong></td><td><strong>EPIC-06</strong> (Invoice PDF User &amp; Admin), <strong>EPIC-13</strong> (Packing List PDF Gudang)</td><td>Rilis <code>v3.1.0+</code> menambahkan dukungan resmi untuk <code>illuminate/* ^13.0</code> dan memperbaiki <em>deprecation warning</em> properti dinamis pada PHP 8.5 saat me-render PDF A4.</td></tr>
+  <tr><td><code>intervention/image</code></td><td><code>^3.7</code></td><td><strong><code>^3.11</code></strong></td><td><strong>EPIC-04-27</strong> (<code>ImageWatermarkService</code>), <strong>EPIC-06-24</strong> (Copy Snapshot Image), <strong>EPIC-06</strong> (Upload Bukti Bayar)</td><td>Versi <code>^3.11</code> kompatibel penuh dengan ekstensi <code>php8.5-gd</code> &amp; <code>php8.5-imagick</code> di CloudPanel untuk memproses kompresi WebP dan burn-in watermark diagonal berulang tanpa kebocoran memori di KVM 1.</td></tr>
+  <tr><td><code>livewire/livewire</code></td><td><code>^3.5</code></td><td><strong><code>^3.6</code></strong> (atau <code>^4.0</code>)</td><td><strong>EPIC-04-26</strong> (Bulk Edit Varian), <strong>EPIC-05</strong> (Cart Interaktif), <strong>EPIC-08</strong> (Dashboard Tab), <strong>EPIC-09</strong> (Bell Notifikasi), <strong>EPIC-12/13</strong> (Tabel Admin)</td><td>Mendukung container &amp; komponen Blade Laravel 13 serta serialisasi state komponen di PHP 8.5.</td></tr>
+  <tr><td><code>ryangjchandler/laravel-cloudflare-turnstile</code></td><td><code>^1.0</code></td><td><strong><code>^1.1</code></strong> (atau Custom Rule <code>Http::asForm()</code>)</td><td><strong>EPIC-03</strong> (Login &amp; Register Customer), <strong>EPIC-10 / EPIC-11</strong> (Login 2FA Admin <code>/office</code>)</td><td>Pastikan memakai rilis terbaru yang mendukung Laravel 13, atau gunakan <code>VerifyTurnstile</code> middleware/rule via <code>Illuminate\Support\Facades\Http</code> ke endpoint <code>challenges.cloudflare.com/turnstile/v0/siteverify</code>.</td></tr>
+  <tr><td><code>spatie/laravel-sitemap</code> &amp; <code>spatie/laravel-sluggable</code></td><td><code>^7.0</code> &amp; <code>^3.6</code></td><td><strong><code>^7.3</code> &amp; <code>^3.7</code></strong></td><td><strong>EPIC-04</strong> (Auto-slug Produk &amp; Game), <strong>EPIC-15</strong> (Slug Halaman CMS), <strong>EPIC-17</strong> (Auto-generate <code>sitemap.xml</code>)</td><td>Sudah mendukung Laravel 13; untuk Meta Tags, Open Graph, &amp; JSON-LD gunakan <code>App\Services\Seo\SeoMetaService</code> internal agar tidak terhambat package SEO pihak ketiga yang belum update ke Laravel 13.</td></tr>
+  <tr><td><code>stevebauman/location</code></td><td><code>^7.0</code></td><td><strong><code>^7.4</code></strong></td><td><strong>EPIC-07</strong> (Share Produk +5 Koin khusus IP Indonesia)</td><td>Kompatibel dengan Laravel 13 &amp; PHP 8.5 untuk mendeteksi <code>$position-&gt;countryCode === 'ID'</code> menggunakan IP asli dari <code>RealIpHelper</code>.</td></tr>
+  <tr><td><code>spatie/laravel-activitylog</code>, <code>spatie/laravel-backup</code>, <code>spatie/laravel-permission</code>, <code>spatie/laravel-honeypot</code></td><td><code>^4.8</code>, <code>^9.0</code>, <code>^6.9</code>, <code>^4.5</code></td><td><strong><code>^4.9</code>, <code>^9.2</code>, <code>^6.10</code>, <code>^4.5</code></strong></td><td><strong>EPIC-03</strong> (Honeypot Auth), <strong>EPIC-10</strong> (Activity/Admin Log), <strong>EPIC-18</strong> (Auto-Backup DB &amp; Storage)</td><td>Seluruh keluarga package Spatie pada versi tersebut telah menyertakan dukungan <code>illuminate/support: ^13.0</code> dan PHP 8.5.</td></tr>
+  <tr><td><code>larastan/larastan</code>, <code>laravel/pint</code>, <code>phpunit/phpunit</code></td><td><code>^2.9</code>, <code>^1.17</code>, <code>^11.0</code></td><td><strong><code>^3.0</code>, <code>^1.20</code>, <code>^11.5|^12.0</code></strong></td><td><strong>EPIC-01</strong> &amp; <strong>Definition of Done (Bab 8)</strong> untuk seluruh Sprint 1–12</td><td>Larastan <code>^3.0</code> (berbasis PHPStan 2.x) dan Pint <code>^1.20</code> wajib digunakan agar static analysis &amp; code formatting mengenali sintaks PHP 8.5 dan struktur Laravel 13.</td></tr>
+</table>
+
 <hr>
 <p style="text-align: center; color: #666; margin-top: 40px;">
 <strong>— End of Document —</strong><br>
-Backlog MVP Mercatoria v1.5 FINAL · 21 Oktober 2026<br>
-18 Epic · 235 Story · 700 Task · 1.233 Story Points · 14 Minggu<br>
-<strong>+12 Story baru · +38 Task · +54 SP dari v1.2</strong><br>
-Store Concept · Berat Produk · Bulk Edit · Shipping Calculator · Migrasi User Lama
+Backlog MVP Mercatoria v1.5 FINAL · 22 Oktober 2026<br>
+18 Epic · 240 Story · 718 Task · 1.254 Story Points · 14 Minggu<br>
+<strong>Selaras Penuh dengan VPS Hostinger KVM 1 (CloudPanel v2) · PHP 8.5 · Laravel 13.x · MySQL 8.0 · Redis 7</strong><br>
+Store Concept · Berat &amp; Harga RMB Varian · Deep Variant Search · Watermark Foto · Smart Scoped IP Ban · Migrasi User Lama
 </p>
 
 </body>

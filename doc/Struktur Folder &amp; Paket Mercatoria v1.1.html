@@ -73,8 +73,9 @@
     <p><strong>Versi:</strong> 1.1 (FINAL — Selaras Penuh)</p>
     <p><strong>Tanggal:</strong> 21 Oktober 2026</p>
     <p><strong>Referensi:</strong> PRD v4.6 FINAL · Design Spec v3.0 FINAL · Backlog v1.5 · Skema DB v1.4</p>
-    <p><strong>Framework:</strong> Laravel 11.x – 13.x (Mendukung Penuh Laravel 13 Terbaru)</p>
-    <p><strong>PHP:</strong> 8.2+ (Rekomendasi PHP 8.4 / 8.5 untuk Laravel 13)</p>
+    <p><strong>Server &amp; Panel:</strong> VPS Hostinger KVM 1 (1 vCPU · 4 GB RAM · 50 GB NVMe) + CloudPanel v2</p>
+    <p><strong>Framework:</strong> <strong>Laravel 13.x</strong> (Arsitektur <code>bootstrap/app.php</code> &amp; <code>routes/console.php</code>)</p>
+    <p><strong>PHP:</strong> <strong>PHP 8.5</strong> (<code>/usr/bin/php8.5</code> + OPcache + JIT)</p>
     <p><strong>Database:</strong> MySQL 8.0+</p>
     <p><strong>Frontend:</strong> Blade + Alpine.js + Livewire 3 + Tailwind CSS 3</p>
     <p><strong>Build:</strong> Vite 5</p>
@@ -438,11 +439,8 @@ Dokumen ini bahas <strong>dapur</strong> (folder) dan <strong>alat</strong> (pak
 │   ├── ProductPolicy.php
 │   └── UserPolicy.php
 │
-├── <span class="dir">Providers/</span>                 <span class="cmt"># Service Provider</span>
-│   ├── AppServiceProvider.php
-│   ├── AuthServiceProvider.php
-│   ├── EventServiceProvider.php
-│   └── RouteServiceProvider.php
+├── <span class="dir">Providers/</span>                 <span class="cmt"># Service Provider (Laravel 13 hanya pakai AppServiceProvider;</span>
+│   └── AppServiceProvider.php     <span class="cmt">#   Middleware di bootstrap/app.php &amp; Event Listener auto-discovered)</span>
 │
 ├── <span class="dir">Repositories/</span>              <span class="cmt"># Repository pattern (opsional)</span>
 │   ├── ProductRepository.php
@@ -834,50 +832,51 @@ Dokumen ini bahas <strong>dapur</strong> (folder) dan <strong>alat</strong> (pak
     <span class="str">"type"</span>: <span class="str">"project"</span>,
     <span class="str">"description"</span>: <span class="str">"Marketplace merch IP Cina — Mercatoria"</span>,
     <span class="str">"require"</span>: {
-        <span class="str">"php"</span>: <span class="str">"^8.2"</span>,
-        <span class="str">"laravel/framework"</span>: <span class="str">"^11.0"</span>,
-        <span class="str">"laravel/tinker"</span>: <span class="str">"^2.9"</span>,
+        <span class="str">"php"</span>: <span class="str">"^8.5"</span>,
+        <span class="str">"laravel/framework"</span>: <span class="str">"^13.0"</span>,
+        <span class="str">"laravel/tinker"</span>: <span class="str">"^2.10"</span>,
 
-        <span class="cmt">// ─── UI &amp; Frontend ─────────────────────────────</span>
-        <span class="str">"livewire/livewire"</span>: <span class="str">"^3.5"</span>,
-        <span class="str">"blade-ui-kit/blade-heroicons"</span>: <span class="str">"^2.3"</span>,
+        <span class="cmt">// ─── UI &amp; Frontend (Laravel 13 + PHP 8.5 Ready) ─</span>
+        <span class="str">"livewire/livewire"</span>: <span class="str">"^3.6"</span>,
+        <span class="str">"blade-ui-kit/blade-heroicons"</span>: <span class="str">"^2.5"</span>,
 
-        <span class="cmt">// ─── Image Processing ───────────────────────────</span>
-        <span class="str">"intervention/image"</span>: <span class="str">"^3.7"</span>,
+        <span class="cmt">// ─── Image Processing (Auto-Watermark WebP) ─────</span>
+        <span class="str">"intervention/image"</span>: <span class="str">"^3.11"</span>,
 
-        <span class="cmt">// ─── PDF Generation ─────────────────────────────</span>
-        <span class="str">"barryvdh/laravel-dompdf"</span>: <span class="str">"^3.0"</span>,
+        <span class="cmt">// ─── PDF Generation (Validated PHP 8.5) ─────────</span>
+        <span class="str">"barryvdh/laravel-dompdf"</span>: <span class="str">"^3.1"</span>,
 
-        <span class="cmt">// ─── Excel / CSV Export ─────────────────────────</span>
-        <span class="str">"maatwebsite/excel"</span>: <span class="str">"^3.1"</span>,
+        <span class="cmt">// ─── Excel / CSV Export (Validated PHP 8.5) ─────</span>
+        <span class="str">"maatwebsite/excel"</span>: <span class="str">"^3.1.68|^4.0"</span>,
 
         <span class="cmt">// ─── SEO ────────────────────────────────────────</span>
-        <span class="str">"spatie/laravel-sitemap"</span>: <span class="str">"^7.0"</span>,
-        <span class="str">"spatie/laravel-sluggable"</span>: <span class="str">"^3.6"</span>,
+        <span class="str">"spatie/laravel-sitemap"</span>: <span class="str">"^7.3"</span>,
+        <span class="str">"spatie/laravel-sluggable"</span>: <span class="str">"^3.7"</span>,
+        <span class="str">"elegantly/laravel-seo"</span>: <span class="str">"^1.0"</span>,
 
         <span class="cmt">// ─── Security ───────────────────────────────────</span>
-        <span class="str">"ryangjchandler/laravel-cloudflare-turnstile"</span>: <span class="str">"^1.0"</span>,
-        <span class="str">"spatie/laravel-honeypot"</span>: <span class="str">"^4.5"</span>,
+        <span class="str">"ryangjchandler/laravel-cloudflare-turnstile"</span>: <span class="str">"^1.1|^2.0"</span>,
+        <span class="str">"spatie/laravel-honeypot"</span>: <span class="str">"^4.6"</span>,
 
         <span class="cmt">// ─── Geolocation ────────────────────────────────</span>
-        <span class="str">"stevebauman/location"</span>: <span class="str">"^7.0"</span>,
+        <span class="str">"stevebauman/location"</span>: <span class="str">"^7.5"</span>,
 
         <span class="cmt">// ─── Activity Log ───────────────────────────────</span>
-        <span class="str">"spatie/laravel-activitylog"</span>: <span class="str">"^4.8"</span>,
+        <span class="str">"spatie/laravel-activitylog"</span>: <span class="str">"^4.10"</span>,
 
         <span class="cmt">// ─── Utilities ──────────────────────────────────</span>
-        <span class="str">"spatie/laravel-backup"</span>: <span class="str">"^9.0"</span>,
-        <span class="str">"spatie/laravel-permission"</span>: <span class="str">"^6.9"</span>,
+        <span class="str">"spatie/laravel-backup"</span>: <span class="str">"^9.2"</span>,
+        <span class="str">"spatie/laravel-permission"</span>: <span class="str">"^6.16"</span>,
         <span class="str">"guzzlehttp/guzzle"</span>: <span class="str">"^7.9"</span>
     },
     <span class="str">"require-dev"</span>: {
-        <span class="str">"fakerphp/faker"</span>: <span class="str">"^1.23"</span>,
-        <span class="str">"laravel/pint"</span>: <span class="str">"^1.17"</span>,
-        <span class="str">"larastan/larastan"</span>: <span class="str">"^2.9"</span>,
-        <span class="str">"laravel/pail"</span>: <span class="str">"^1.1"</span>,
-        <span class="str">"laravel/sail"</span>: <span class="str">"^1.30"</span>,
-        <span class="str">"nunomaduro/collision"</span>: <span class="str">"^8.4"</span>,
-        <span class="str">"phpunit/phpunit"</span>: <span class="str">"^11.0"</span>
+        <span class="str">"fakerphp/faker"</span>: <span class="str">"^1.24"</span>,
+        <span class="str">"laravel/pint"</span>: <span class="str">"^1.20"</span>,
+        <span class="str">"larastan/larastan"</span>: <span class="str">"^3.0"</span>,
+        <span class="str">"laravel/pail"</span>: <span class="str">"^1.2"</span>,
+        <span class="str">"laravel/sail"</span>: <span class="str">"^1.41"</span>,
+        <span class="str">"nunomaduro/collision"</span>: <span class="str">"^8.6"</span>,
+        <span class="str">"phpunit/phpunit"</span>: <span class="str">"^11.5|^12.0"</span>
     },
     <span class="str">"autoload"</span>: {
         <span class="str">"psr-4"</span>: {
@@ -1238,7 +1237,7 @@ public function latest()
 <strong>— End of Document —</strong><br>
 Struktur Folder &amp; Paket Mercatoria v1.1 FINAL · 21 Oktober 2026<br>
 15 Paket Composer · 10 Paket NPM · 50 Migration · 30 Model<br>
-Laravel 11 · PHP 8.2 · MySQL 8 · Blade + Alpine + Livewire + Tailwind
+VPS Hostinger KVM 1 (CloudPanel v2) · Laravel 13.x · PHP 8.5 · MySQL 8.0 · Redis 7 · Blade + Alpine + Livewire + Tailwind
 </p>
 
 </body>

@@ -5,6 +5,7 @@ use App\Models\Setting;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
+use Throwable; // <-- Tambahan import Throwable agar aman dari error
 
 if (! function_exists('setting')) {
     /**
