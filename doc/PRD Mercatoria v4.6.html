@@ -2216,17 +2216,17 @@ numprocs=2
 </ul>
 
 <h3>39.7 Auto-Purge</h3>
-<p><code>php artisan log:purge</code> — hapus log &gt; 30 hari, tiap hari jam 03:00 WIB</p>
-<p><code>php artisan notification:purge</code> — hapus notifikasi user &gt; 90 hari, tiap hari jam 03:30 WIB</p>
+<p><code>/usr/bin/php8.5 artisan log:purge</code> — hapus log &gt; 30 hari, tiap hari jam 03:00 WIB</p>
+<p><code>/usr/bin/php8.5 artisan notification:purge</code> — hapus notifikasi user &gt; 90 hari, tiap hari jam 03:30 WIB</p>
 
 <h3>39.8 Scheduled Job: State Update</h3>
-<p><code>php artisan user:update-state</code> — Loop semua Customer, hitung state, update, kirim notif H-7. Tiap hari jam 02:00 WIB.</p>
+<p><code>/usr/bin/php8.5 artisan user:update-state</code> — Loop semua Customer, hitung state, update, kirim notif H-7. Tiap hari jam 02:00 WIB.</p>
 
 <h3>39.9 Scheduled Job: Auto-Delete Crush</h3>
-<p><code>php artisan user:purge-crush</code> — Loop semua Crush, cek 30 hari, HARD DELETE. Tiap hari jam 04:00 WIB.</p>
+<p><code>/usr/bin/php8.5 artisan user:purge-crush</code> — Loop semua Crush, cek 30 hari, HARD DELETE. Tiap hari jam 04:00 WIB.</p>
 
 <h3>39.10 Scheduled Job: Order Hangus</h3>
-<p><code>php artisan order:hangus-expired</code> — Loop order dengan status "Menunggu Pelunasan" &gt; 7 hari, ubah ke "Hangus", kirim notif, auto-delete bukti. Tiap hari jam 05:00 WIB.</p>
+<p><code>/usr/bin/php8.5 artisan order:hangus-expired</code> — Loop order dengan status "Menunggu Pelunasan" &gt; 7 hari, ubah ke "Hangus", kirim notif, auto-delete bukti. Tiap hari jam 05:00 WIB.</p>
 
 <h1>40. Home Layout &amp; UI Components</h1>
 <h3>40.1 Announcement Bar</h3>

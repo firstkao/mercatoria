@@ -65,6 +65,8 @@
     <p><strong>Versi:</strong> 1.4 (FINAL — Selaras Penuh)</p>
     <p><strong>Tanggal:</strong> 21 Oktober 2026</p>
     <p><strong>Referensi:</strong> PRD v4.6 FINAL · Design Spec v3.0 FINAL · Backlog MVP v1.5 · Struktur Folder v1.1</p>
+    <p><strong>Server &amp; Stack:</strong> VPS Hostinger KVM 1 (CloudPanel v2) · PHP 8.5 · Laravel 13.x · MySQL 8.0 · Redis 7</p>
+    <p><strong>Infrastruktur &amp; Stack:</strong> <strong>VPS Hostinger KVM 1 (CloudPanel v2) · PHP 8.5 (<code>/usr/bin/php8.5</code>) · Laravel 13.x · MySQL 8.0 · Redis 7</strong></p>
     <p><strong>Status:</strong> Fondasi 100% Siap Coding (0 Inconsistency)</p>
   </div>
 </div>
@@ -932,24 +934,24 @@
 
 <h3>15.1 Migration Test</h3>
 <ul>
-  <li>✅ <code>php artisan migrate</code> jalan tanpa error</li>
+  <li>✅ <code>/usr/bin/php8.5 artisan migrate</code> jalan tanpa error</li>
   <li>✅ Tabel <code>stores</code> kebentuk</li>
   <li>✅ Kolom <code>games.default_store_id</code> ada</li>
   <li>✅ Kolom <code>products.store_id</code> + <code>weight_gram</code> ada</li>
   <li>✅ Kolom <code>product_variants.weight_gram</code> ada</li>
   <li>✅ Kolom snapshot 6 field baru ada</li>
-  <li>✅ <code>php artisan migrate:rollback</code> jalan (test rollback)</li>
+  <li>✅ <code>/usr/bin/php8.5 artisan migrate:rollback</code> jalan (test rollback)</li>
 </ul>
 
 <h3>15.2 Seeder Test</h3>
 <ul>
-  <li>✅ <code>php artisan db:seed --class=StoreSeeder</code> jalan</li>
+  <li>✅ <code>/usr/bin/php8.5 artisan db:seed --class=StoreSeeder</code> jalan</li>
   <li>✅ 3 store default kebentuk</li>
-  <li>✅ <code>php artisan db:seed --class=SettingsSeeder</code> update 3 setting baru</li>
+  <li>✅ <code>/usr/bin/php8.5 artisan db:seed --class=SettingsSeeder</code> update 3 setting baru</li>
 </ul>
 
 <h3>15.3 Model Test (tinker)</h3>
-<pre>php artisan tinker
+<pre>/usr/bin/php8.5 artisan tinker
 
 <span class="cmt">// Test Store model</span>
 &gt;&gt;&gt; <span class="cls">App\Models\Store</span>::<span class="fn">count</span>();  <span class="cmt">// 3</span>

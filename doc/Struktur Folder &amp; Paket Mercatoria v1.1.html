@@ -162,7 +162,7 @@ Dokumen ini bahas <strong>dapur</strong> (folder) dan <strong>alat</strong> (pak
 ├── .env                            <span class="cmt"># Konfigurasi environment (RAHASIA!)</span>
 ├── .env.example                    <span class="cmt"># Contoh .env (untuk tim)</span>
 ├── .gitignore                      <span class="cmt"># File yang gak di-push ke Git</span>
-├── artisan                         <span class="cmt"># CLI Laravel (php artisan ...)</span>
+├── artisan                         <span class="cmt"># CLI Laravel (/usr/bin/php8.5 artisan ...)</span>
 ├── composer.json                   <span class="cmt"># Daftar paket PHP</span>
 ├── composer.lock                   <span class="cmt"># Versi paket PHP terkunci</span>
 ├── package.json                    <span class="cmt"># Daftar paket JS</span>
@@ -522,7 +522,7 @@ Dokumen ini bahas <strong>dapur</strong> (folder) dan <strong>alat</strong> (pak
   <tr><td><span class="pill pill-dev">DEV</span> <code>app/Notifications/</code></td><td>Notifikasi Laravel</td><td>OrderStatusChangedNotification.php</td></tr>
   <tr><td><span class="pill pill-ui">UI</span> <code>app/Livewire/</code></td><td>Komponen real-time</td><td>NotificationBell.php</td></tr>
   <tr><td><span class="pill pill-ui">UI</span> <code>app/View/Components/</code></td><td>Komponen Blade reusable</td><td>Button.php, Modal.php</td></tr>
-  <tr><td><span class="pill pill-ops">OPS</span> <code>app/Console/Commands/</code></td><td>Perintah CLI (<code>php artisan ...</code>)</td><td>UpdateUserState.php</td></tr>
+  <tr><td><span class="pill pill-ops">OPS</span> <code>app/Console/Commands/</code></td><td>Perintah CLI (<code>/usr/bin/php8.5 artisan ...</code>)</td><td>UpdateUserState.php</td></tr>
   <tr><td><span class="pill pill-test">TEST</span> <code>tests/</code></td><td>Testing otomatis</td><td>OrderTest.php</td></tr>
 </table>
 
@@ -890,14 +890,14 @@ Dokumen ini bahas <strong>dapur</strong> (folder) dan <strong>alat</strong> (pak
     },
     <span class="str">"scripts"</span>: {
         <span class="str">"post-autoload-dump"</span>: [
-            <span class="str">"@php artisan package:discover --ansi"</span>
+            <span class="str">"@/usr/bin/php8.5 artisan package:discover --ansi"</span>
         ],
         <span class="str">"post-update-cmd"</span>: [
-            <span class="str">"@php artisan vendor:publish --tag=laravel-assets --ansi --force"</span>
+            <span class="str">"@/usr/bin/php8.5 artisan vendor:publish --tag=laravel-assets --ansi --force"</span>
         ],
         <span class="str">"lint"</span>: <span class="str">"./vendor/bin/pint"</span>,
         <span class="str">"analyze"</span>: <span class="str">"./vendor/bin/phpstan analyse"</span>,
-        <span class="str">"test"</span>: <span class="str">"@php artisan test"</span>
+        <span class="str">"test"</span>: <span class="str">"@/usr/bin/php8.5 artisan test"</span>
     }
 }</pre>
 
@@ -1193,15 +1193,15 @@ public function latest()
 <h3>16.1 Command Penting</h3>
 <table>
   <tr><th>Command</th><th>Fungsi</th></tr>
-  <tr><td><code>php artisan serve</code></td><td>Jalankan server development</td></tr>
+  <tr><td><code>/usr/bin/php8.5 artisan serve</code></td><td>Jalankan server development</td></tr>
   <tr><td><code>npm run dev</code></td><td>Jalankan Vite (watch CSS/JS)</td></tr>
-  <tr><td><code>php artisan migrate</code></td><td>Jalankan migration DB</td></tr>
-  <tr><td><code>php artisan db:seed</code></td><td>Isi data default</td></tr>
-  <tr><td><code>php artisan migrate:fresh --seed</code></td><td>Reset DB + isi ulang (HATI-HATI!)</td></tr>
-  <tr><td><code>php artisan make:model Product</code></td><td>Bikin model baru</td></tr>
-  <tr><td><code>php artisan make:controller ...</code></td><td>Bikin controller</td></tr>
-  <tr><td><code>php artisan make:migration ...</code></td><td>Bikin migration</td></tr>
-  <tr><td><code>php artisan test</code></td><td>Jalankan test</td></tr>
+  <tr><td><code>/usr/bin/php8.5 artisan migrate</code></td><td>Jalankan migration DB</td></tr>
+  <tr><td><code>/usr/bin/php8.5 artisan db:seed</code></td><td>Isi data default</td></tr>
+  <tr><td><code>/usr/bin/php8.5 artisan migrate:fresh --seed</code></td><td>Reset DB + isi ulang (HATI-HATI!)</td></tr>
+  <tr><td><code>/usr/bin/php8.5 artisan make:model Product</code></td><td>Bikin model baru</td></tr>
+  <tr><td><code>/usr/bin/php8.5 artisan make:controller ...</code></td><td>Bikin controller</td></tr>
+  <tr><td><code>/usr/bin/php8.5 artisan make:migration ...</code></td><td>Bikin migration</td></tr>
+  <tr><td><code>/usr/bin/php8.5 artisan test</code></td><td>Jalankan test</td></tr>
   <tr><td><code>./vendor/bin/pint</code></td><td>Auto-format kode</td></tr>
   <tr><td><code>./vendor/bin/phpstan analyse</code></td><td>Cek error kode</td></tr>
 </table>
@@ -1210,14 +1210,14 @@ public function latest()
 <ol>
   <li>Buka 2 terminal:
     <ul>
-      <li>Terminal 1: <code>php artisan serve</code></li>
+      <li>Terminal 1: <code>/usr/bin/php8.5 artisan serve</code></li>
       <li>Terminal 2: <code>npm run dev</code></li>
     </ul>
   </li>
   <li>Buka browser: <code>http://localhost:8000</code></li>
   <li>Edit kode → auto reload (Vite HMR)</li>
-  <li>Kalau ubah migration → <code>php artisan migrate</code></li>
-  <li>Kalau ubah config → <code>php artisan config:clear</code></li>
+  <li>Kalau ubah migration → <code>/usr/bin/php8.5 artisan migrate</code></li>
+  <li>Kalau ubah config → <code>/usr/bin/php8.5 artisan config:clear</code></li>
 </ol>
 
 <h3>16.3 Yang Jangan Dilakukan</h3>
@@ -1225,7 +1225,7 @@ public function latest()
 <ul>
   <li>❌ Jangan edit <code>vendor/</code> atau <code>node_modules/</code></li>
   <li>❌ Jangan commit <code>.env</code> (rahasia!)</li>
-  <li>❌ Jangan <code>php artisan migrate:fresh</code> di production</li>
+  <li>❌ Jangan <code>/usr/bin/php8.5 artisan migrate:fresh</code> di production</li>
   <li>❌ Jangan taruh logic bisnis di Controller (pakai Service)</li>
   <li>❌ Jangan query DB di View Blade (pakai Controller)</li>
   <li>❌ Jangan hardcode credential di kode (pakai <code>.env</code> + <code>config/</code>)</li>
