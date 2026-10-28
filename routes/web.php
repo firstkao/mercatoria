@@ -12,6 +12,7 @@ use App\Http\Controllers\Admin\PaymentController as AdminPaymentController;
 use App\Http\Controllers\Admin\ProductController as AdminProductController;
 use App\Http\Controllers\Admin\ReportController as AdminReportController;
 use App\Http\Controllers\Admin\SettingsController as AdminSettingsController;
+use App\Http\Controllers\Admin\SplitBoxBatchController as AdminSplitBoxBatchController;
 use App\Http\Controllers\Admin\StoreController as AdminStoreController;
 use App\Http\Controllers\Admin\TagController as AdminTagController;
 use App\Http\Controllers\Admin\UserController as AdminUserController;
@@ -129,6 +130,8 @@ Route::middleware(['auth', 'admin'])->prefix('office')->name('office.')->group(f
     Route::get('/settings', [AdminSettingsController::class, 'index'])->name('settings.index');
     Route::post('/settings', [AdminSettingsController::class, 'update'])->name('settings.update');
     Route::get('/reports', [AdminReportController::class, 'index'])->name('reports.index');
+    Route::post('/split-box-batches/{split_box_batch}/close-refund', [AdminSplitBoxBatchController::class, 'closeRefund'])
+        ->name('split-box-batches.close-refund');
     Route::get('/admin-logs', [AdminLogController::class, 'admin'])->name('admin-logs');
     Route::get('/auth-logs', [AdminLogController::class, 'auth'])->name('auth-logs');
     Route::get('/activity-logs', [AdminLogController::class, 'activity'])->name('activity-logs');

@@ -129,6 +129,9 @@ class ProductController extends Controller
         return redirect()->route('office.products.edit', $product)->with('status', 'Varian dibuat.');
     }
 
+    /**
+     * @param  array<int, int>  $ids
+     */
     public function bulkWeight(Request $request, Product $product): RedirectResponse
     {
         $data = $request->validate([

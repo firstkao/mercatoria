@@ -40,6 +40,9 @@
                                     @if ($item->variant)
                                         <p class="text-xs text-gray-500">Varian: {{ $item->variant->name }}</p>
                                     @endif
+                                    @if ($item->bundle_group_id)
+                                        <p class="text-[11px] text-violet-500">Paket Split Box</p>
+                                    @endif
                                     <p class="text-[11px] text-gray-400">[{{ $item->product->game->name }}]</p>
                                 </td>
                                 <td class="px-4 py-3">{{ format_rp($pricing['final_price_bersih']) }}</td>

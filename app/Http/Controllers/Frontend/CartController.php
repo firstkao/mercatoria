@@ -52,7 +52,14 @@ class CartController extends Controller
     {
         abort_unless($cart->user_id === $request->user()->id, 403);
 
-        $cart->delete();
+        // PRD 49.9: hapus 1 karakter = hapus seluruh bundle (anti-curang syarat pair).
+        if ($cart->bundle_group_id) {
+            Cart::where('bundle_group_id', $cart->bundle_group_id)
+                ->where('user_id', $request->user()->id)
+                ->delete();
+        } else {
+            $cart->delete();
+        }
 
         return redirect()->route('cart.index');
     }

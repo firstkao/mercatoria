@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Product extends Model
 {
@@ -39,6 +40,7 @@ class Product extends Model
         'availability',
         'is_active',
         'sold_count',
+        'is_split_box',
     ];
 
     protected function casts(): array
@@ -51,6 +53,7 @@ class Product extends Model
             'discount_end' => 'date',
             'is_active' => 'boolean',
             'sold_count' => 'integer',
+            'is_split_box' => 'boolean',
         ];
     }
 
@@ -77,6 +80,11 @@ class Product extends Model
     public function variants(): HasMany
     {
         return $this->hasMany(ProductVariant::class);
+    }
+
+    public function splitBox(): HasOne
+    {
+        return $this->hasOne(SplitBox::class);
     }
 
     /**

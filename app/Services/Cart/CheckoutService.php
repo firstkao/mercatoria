@@ -7,10 +7,13 @@ use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\OrderItemSnapshot;
 use App\Models\OrderStatus;
+use App\Models\SplitBoxSlot;
 use App\Models\User;
 use App\Models\UserVoucher;
 use App\Services\Order\ShippingCalculatorService;
+use App\Services\SplitBox\SplitBoxService;
 use App\Services\User\CoinWalletService;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
@@ -52,6 +55,8 @@ class CheckoutService
                 'pricing' => $this->shipping->calculateItemShipping($cart->product, $cart->variant),
             ]);
 
+            $this->validateSplitBoxPairs($carts);
+
             $subtotal = (float) $lines->sum(fn ($line) => $line['pricing']['final_price_bersih'] * $line['cart']->qty);
 
             [$discountType, $discountAmount, $coinSpent, $userVoucher] = $this->resolveDiscount($user, $data, $subtotal);
@@ -89,28 +94,38 @@ class CheckoutService
             ]);
 
             foreach ($lines as $line) {
+                $cart = $line['cart'];
+                $splitSlot = $cart->variant_id
+                    ? SplitBoxSlot::where('variant_id', $cart->variant_id)->first()
+                    : null;
+
                 $item = OrderItem::create([
                     'order_id' => $order->id,
-                    'product_id' => $line['cart']->product_id,
-                    'variant_id' => $line['cart']->variant_id,
-                    'qty' => $line['cart']->qty,
+                    'product_id' => $cart->product_id,
+                    'variant_id' => $cart->variant_id,
+                    'qty' => $cart->qty,
+                    'bundle_group_id' => $cart->bundle_group_id,
+                    'split_box_slot_id' => $splitSlot?->id,
                 ]);
 
                 OrderItemSnapshot::create([
                     'order_item_id' => $item->id,
-                    'product_id_audit' => $line['cart']->product_id,
-                    'variant_id_audit' => $line['cart']->variant_id,
-                    'product_name' => $line['cart']->product->name,
-                    'product_sku' => $line['cart']->product->sku,
-                    'variant_name' => $line['cart']->variant?->name,
-                    'variant_sku' => $line['cart']->variant?->sku,
+                    'product_id_audit' => $cart->product_id,
+                    'variant_id_audit' => $cart->variant_id,
+                    'item_type' => $cart->variant_id ? 'variant' : 'single',
+                    'bundle_group_id' => $cart->bundle_group_id,
+                    'split_role' => $splitSlot?->split_role,
+                    'product_name' => $cart->product->name,
+                    'product_sku' => $cart->product->sku,
+                    'variant_name' => $cart->variant?->name,
+                    'variant_sku' => $cart->variant?->sku,
                     'base_price' => $line['pricing']['base_price_bersih'],
                     'discount_amount' => $line['pricing']['discount_amount'],
                     'final_price' => $line['pricing']['final_price_bersih'],
-                    'qty' => $line['cart']->qty,
-                    'subtotal' => $line['pricing']['final_price_bersih'] * $line['cart']->qty,
-                    'product_image_path' => $line['cart']->product->image_path,
-                    'variant_image_path' => $line['cart']->variant?->image_path,
+                    'qty' => $cart->qty,
+                    'subtotal' => $line['pricing']['final_price_bersih'] * $cart->qty,
+                    'product_image_path' => $cart->product->image_path,
+                    'variant_image_path' => $cart->variant?->image_path,
                     'weight_gram' => $line['pricing']['weight_gram'],
                     'store_name' => $line['pricing']['store_name'],
                     'ongkir_lokal_cn_idr' => $line['pricing']['ongkir_lokal_cn_idr'],
@@ -133,6 +148,36 @@ class CheckoutService
 
             return $order;
         });
+    }
+
+    /**
+     * Validasi pair Split Box per bundle (PRD 49.2 / 49.9 — dijalankan ulang di checkout).
+     *
+     * @param  Collection<int, Cart>  $carts
+     */
+    private function validateSplitBoxPairs($carts): void
+    {
+        $bundles = $carts->filter(fn (Cart $cart) => $cart->bundle_group_id)->groupBy('bundle_group_id');
+
+        $splitBoxService = app(SplitBoxService::class);
+
+        foreach ($bundles as $bundleId => $bundleCarts) {
+            $lines = [];
+
+            foreach ($bundleCarts as $cart) {
+                $slot = SplitBoxSlot::where('variant_id', $cart->variant_id)->first();
+
+                if ($slot) {
+                    $lines[] = ['slot' => $slot, 'qty' => $cart->qty];
+                }
+            }
+
+            if ($lines !== [] && ! $splitBoxService->validatePair($lines)) {
+                throw ValidationException::withMessages([
+                    'cart_item_ids' => 'Syarat pair Split Box belum terpenuhi (Hot butuh pasangan Normal).',
+                ]);
+            }
+        }
     }
 
     /**

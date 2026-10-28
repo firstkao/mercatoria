@@ -23,6 +23,8 @@ class Order extends Model
 
     public const DISCOUNT_VOUCHER = 'voucher';
 
+    public const CANCEL_SLOT_SOLD = 'slot_sold';
+
     protected $fillable = [
         'user_id',
         'no_order',
@@ -42,6 +44,7 @@ class Order extends Model
         'fee_co_marketplace',
         'customer_note',
         'admin_note',
+        'cancel_reason',
         'hangus_at',
         'pickup_deadline_at',
         'payment_deadline_at',

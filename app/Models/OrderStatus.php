@@ -58,6 +58,7 @@ enum OrderStatus: string
                 self::PembayaranDiterima->value,
                 self::MenungguPembayaran->value,
                 self::PembayaranGagal->value,
+                self::DanaDikembalikan->value,
             ],
             self::PembayaranDiterima->value => [
                 self::SedangDiproses->value,

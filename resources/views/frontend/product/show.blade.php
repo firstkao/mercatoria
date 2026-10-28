@@ -52,7 +52,9 @@
                 <p class="mt-1 text-xs text-gray-500">Harga bersih — sudah termasuk ongkir CN-ID &amp; bea.</p>
             </div>
 
-            @if ($product->variants->isNotEmpty())
+            @if ($product->is_split_box && $product->splitBox)
+                <livewire:split-box-picker :product="$product" />
+            @elseif ($product->variants->isNotEmpty())
                 <div class="mt-6">
                     <h2 class="text-sm font-semibold">Pilih Varian</h2>
                     <div class="mt-2 grid grid-cols-3 gap-2 sm:grid-cols-4">

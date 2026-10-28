@@ -6,6 +6,7 @@ use App\Models\Order;
 use App\Models\OrderStatus;
 use App\Models\Payment;
 use App\Models\User;
+use App\Services\SplitBox\SplitBoxService;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
@@ -52,6 +53,18 @@ class PaymentProofService
             'status' => Payment::STATUS_PENDING,
             'uploaded_at' => now(),
         ]);
+
+        // PRD 49.6–49.7: kunci slot Split Box SEBELUM status Ditahan (sinkron, atomik).
+        // Gagal → order batal otomatis slot_sold → forfeit koin/voucher (pintu (e)).
+        $locked = app(SplitBoxService::class)->lockSlotsForOrder($order);
+
+        if (! $locked) {
+            $order->update(['cancel_reason' => Order::CANCEL_SLOT_SOLD]);
+
+            $statuses->changeStatus($order, OrderStatus::PembayaranGagal, 'system', 'slot_sold');
+
+            return $payment;
+        }
 
         $statuses->changeStatus($order, OrderStatus::Ditahan, 'user', 'Bukti bayar diunggah');
 

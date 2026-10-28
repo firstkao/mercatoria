@@ -7,6 +7,7 @@ use App\Models\Order;
 use App\Models\OrderStatus;
 use App\Models\OrderStatusLog;
 use App\Models\User;
+use App\Services\SplitBox\SplitBoxService;
 use App\Services\User\CoinWalletService;
 use App\Services\User\DiscountForfeitureService;
 
@@ -72,6 +73,15 @@ class OrderStatusService
     {
         if (in_array($toValue, [OrderStatus::PembayaranGagal->value, OrderStatus::Hangus->value], true)) {
             $this->forfeiture->forfeitUnpaidCheckoutDiscounts($order);
+        }
+
+        // PRD 49.6: slot dilepas saat reject / gagal / refund — TIDAK saat Hangus.
+        if (in_array($toValue, [
+            OrderStatus::MenungguPembayaran->value,
+            OrderStatus::PembayaranGagal->value,
+            OrderStatus::DanaDikembalikan->value,
+        ], true)) {
+            app(SplitBoxService::class)->releaseSlotsForOrder($order);
         }
 
         if ($toValue === OrderStatus::PembayaranDiterima->value) {

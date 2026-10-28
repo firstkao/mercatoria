@@ -125,6 +125,8 @@
     </form>
 
     @if ($product->exists)
+        <livewire:split-box-manager :product="$product" />
+
         <div class="mt-6 rounded-xl bg-white p-6 shadow-sm ring-1 ring-gray-100">
             <h2 class="text-sm font-semibold">Varian</h2>
 
