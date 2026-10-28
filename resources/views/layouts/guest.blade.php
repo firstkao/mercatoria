@@ -63,7 +63,6 @@
 
                 <a href="{{ route('home') }}" class="flex flex-col items-center justify-center no-underline">
                     <img src="{{ asset('logo.png') }}" alt="Mercatoria" class="h-10 w-auto" width="1608" height="494">
-                    <span class="mt-1 font-mono text-[8px] uppercase tracking-[0.22em] text-ink/50">Merch &amp; Collectibles Store</span>
                 </a>
 
                 <div class="flex items-center justify-end gap-3">
@@ -139,7 +138,6 @@
 
                 <a href="{{ route('home') }}" class="flex flex-col items-center no-underline">
                     <img src="{{ asset('logo.png') }}" alt="Mercatoria" class="h-9 w-auto" width="1608" height="494">
-                    <span class="mt-0.5 font-mono text-[7px] uppercase tracking-[0.18em] text-ink/50">Merch &amp; Collectibles Store</span>
                 </a>
 
                 <a href="{{ route('login') }}" class="flex h-10 w-10 items-center justify-center text-[#333]" aria-label="Masuk">
@@ -175,7 +173,6 @@
                 <div>
                     <a href="{{ route('home') }}" class="inline-flex flex-col items-start no-underline">
                         <img src="{{ asset('logo.png') }}" alt="Mercatoria" class="h-10 w-auto" width="1608" height="494">
-                        <span class="mt-2 font-mono text-[9px] uppercase tracking-[0.22em] text-[#B0B3C5]">Merch &amp; Collectibles Store</span>
                     </a>
 
                     {{-- Sosmed — urutan IG, FB, X, Threads, WA (spec 4.6) --}}
@@ -281,7 +278,7 @@
         {{-- Bottom Copyright Bar (4.4.5) --}}
         <div class="border-t border-white/[0.08]">
             <div class="mx-auto flex max-w-[1200px] flex-wrap items-center justify-between gap-3 px-4 py-[18px] text-[11px] text-[#888]">
-                <p>&copy; 2026 MERCATORIA</p>
+                <p>&copy; 2022 MERCATORIA</p>
                 <div class="flex items-center gap-4">
                     <p>Powered by MERCATORIA</p>
                     <a href="#top" class="inline-flex h-7 w-7 items-center justify-center rounded border border-white/15 text-[#B0B3C5] transition-colors hover:border-white/35 hover:text-white" aria-label="Kembali ke atas">
