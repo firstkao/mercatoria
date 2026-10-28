@@ -6,7 +6,7 @@
     <div class="rounded-2xl bg-white p-8 shadow-sm ring-1 ring-gray-100">
         <h1 class="text-2xl font-semibold">Lupa Kata Sandi?</h1>
         <p class="mt-1 text-sm text-gray-500">
-            Masukkan email kamu. Link reset kata sandi akan dikirim dari security@mercatoria.id.
+            Masukkan email yang terdaftar, dan kami akan mengirimkan tautan untuk mengatur ulang kata sandimu.
         </p>
 
         <form method="POST" action="{{ route('password.email') }}" class="mt-6 space-y-5">
@@ -35,7 +35,7 @@
             </button>
 
             <p class="text-center text-sm text-gray-600">
-                <a href="{{ route('login') }}" class="font-medium text-black underline">Kembali ke halaman Masuk</a>
+                <a href="{{ route('login') }}" class="font-medium text-link underline decoration-link/35 underline-offset-4 transition-colors hover:text-ink hover:decoration-ink">Kembali ke halaman Masuk</a>
             </p>
         </form>
     </div>

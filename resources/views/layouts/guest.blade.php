@@ -91,8 +91,6 @@
                     <a href="{{ route('login') }}" class="text-[#333] transition-colors hover:text-[#4FC3F7]" aria-label="Masuk">
                         <x-icons.user width="18" height="18" />
                     </a>
-                    <a href="{{ route('login') }}" class="text-[13px] font-medium text-[#333] transition-colors hover:text-[#4FC3F7]">Masuk</a>
-                    <a href="{{ route('register') }}" class="rounded-[20px] border border-[#E0E0E0] px-3.5 py-1.5 text-[12px] font-semibold text-[#212121] transition-colors hover:border-[#333]">Daftar</a>
                 </div>
             </div>
 
@@ -127,11 +125,6 @@
                                     </a>
                                 @endforeach
                             @endisset
-                        </div>
-
-                        <div class="mt-1 border-t border-[#EAEAEA] pt-1">
-                            <a href="{{ route('login') }}" class="block px-4 py-2.5 text-[13px] font-medium text-[#333]">Masuk</a>
-                            <a href="{{ route('register') }}" class="block px-4 py-2.5 text-[13px] font-medium text-[#333]">Daftar</a>
                         </div>
                     </div>
                 </details>
@@ -170,13 +163,13 @@
         <div class="mx-auto max-w-[1200px] px-4 py-14">
             <div class="grid gap-10 md:grid-cols-2 lg:grid-cols-3">
                 {{-- Kolom 1: Brand & Marketplace --}}
-                <div>
-                    <a href="{{ route('home') }}" class="inline-flex flex-col items-start no-underline">
+                <div class="flex flex-col items-center">
+                    <a href="{{ route('home') }}" class="inline-flex flex-col items-center no-underline">
                         <img src="{{ asset('logo.png') }}" alt="Mercatoria" class="h-10 w-auto" width="1608" height="494">
                     </a>
 
                     {{-- Sosmed — urutan IG, FB, X, Threads, WA (spec 4.6) --}}
-                    <div class="mt-5 flex items-center justify-center gap-4">
+                    <div class="mt-6 flex items-center justify-center gap-4">
                         <a href="{{ setting('url_instagram', '#') }}" class="text-[#B0B3C5] transition-colors hover:text-[#4FC3F7]" aria-label="Instagram">
                             <x-icons.instagram width="18" height="18" />
                         </a>
@@ -194,7 +187,7 @@
                         </a>
                     </div>
 
-                    <div class="mt-5 flex flex-wrap items-center justify-center gap-3">
+                    <div class="mt-6 flex flex-wrap items-center justify-center gap-3">
                         <a href="{{ setting('url_toco', '#') }}" class="inline-flex items-center gap-1.5 rounded-[20px] border border-white/25 px-4 py-1.5 text-[11px] font-bold text-white transition-colors hover:border-white/50">
                             TOCO
                             <x-icons.arrow-right width="12" height="12" />
@@ -257,18 +250,15 @@
                             </span>
                         </summary>
                         <ul class="mt-3.5 space-y-0 text-[12px] leading-[1.8]">
-                            @foreach ([
-                                'Blacklist' => '/blacklist',
-                                'Cara Belanja' => '/cara-belanja',
-                                'Kebijakan Privasi' => '/kebijakan-privasi',
-                                'Reseller' => '/reseller',
-                                'Tanya Jawab Umum' => '/tanya-jawab-umum',
-                                'Tentang Kami' => '/tentang-kami',
-                            ] as $label => $href)
-                                <li>
-                                    <a href="{{ $href }}" class="text-[#B0B3C5] transition-colors hover:text-[#4FC3F7]">{{ $label }}</a>
-                                </li>
-                            @endforeach
+                            @isset($footerPages)
+                                @foreach ($footerPages as $page)
+                                    <li>
+                                        <a href="{{ data_get($page, 'url') ?? (data_get($page, 'slug') ? url(data_get($page, 'slug')) : '#') }}" class="text-[#B0B3C5] transition-colors hover:text-[#4FC3F7]">
+                                            {{ data_get($page, 'name') }}
+                                        </a>
+                                    </li>
+                                @endforeach
+                            @endisset
                         </ul>
                     </details>
                 </div>
