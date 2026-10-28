@@ -1,5 +1,7 @@
 <?php
 
+use App\Models\Product;
+use App\Models\Store;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -44,7 +46,42 @@ expect()->extend('toBeOne', function () {
 |
 */
 
-function something()
+/**
+ * Produk dengan harga tayang final Rp 255.000 (contoh PRD 20.7: 58 RMB, 500g, store 100/7).
+ */
+function productFinal255(): Product
 {
-    // ..
+    $store = Store::factory()->create(['min_belanja_rmb' => 100, 'ongkir_rmb' => 7]);
+
+    return Product::factory()->create([
+        'price_rmb' => 58,
+        'weight_gram' => 500,
+        'store_id' => $store->id,
+    ]);
+}
+
+/**
+ * Produk dengan harga tayang final Rp 85.000 (modal 75.000 → +11% → CEILING).
+ */
+function productFinal85(): Product
+{
+    return Product::factory()->create([
+        'price_rmb' => 25,
+        'weight_gram' => 0,
+        'store_id' => null,
+    ]);
+}
+
+/**
+ * Payload default POST /checkout (harga selalu dihitung ulang di server).
+ */
+function checkoutPayload(array $overrides = []): array
+{
+    return array_merge([
+        'platform' => 'toco',
+        'scheme' => 'fp',
+        'payment_method' => 'bca',
+        'discount_type' => 'none',
+        'customer_note' => 'bubble wrap extra',
+    ], $overrides);
 }

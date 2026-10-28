@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Order;
 use App\Models\Setting;
 use App\Models\User;
 use Illuminate\Support\Facades\Cache;
@@ -63,5 +64,29 @@ if (! function_exists('generate_referral_code')) {
         } while (User::where('referral_code', $code)->exists());
 
         return $code;
+    }
+}
+
+if (! function_exists('generate_order_number')) {
+    /**
+     * Nomor order format MER-{5}-{4} (PRD 17.8 — contoh MER-J79NR-0004).
+     * Bagian akhir = nomor urut harian; huruf acak tanpa I/O/0/1 agar mudah dibaca.
+     */
+    function generate_order_number(): string
+    {
+        $alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+
+        do {
+            $sequence = Order::whereDate('created_at', today())->count() + 1;
+            $code = '';
+
+            for ($i = 0; $i < 5; $i++) {
+                $code .= $alphabet[random_int(0, strlen($alphabet) - 1)];
+            }
+
+            $no = 'MER-'.$code.'-'.str_pad((string) $sequence, 4, '0', STR_PAD_LEFT);
+        } while (Order::where('no_order', $no)->exists());
+
+        return $no;
     }
 }

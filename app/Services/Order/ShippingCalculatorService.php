@@ -130,4 +130,69 @@ class ShippingCalculatorService
             'final_price_bersih' => $finalPriceBersih,
         ];
     }
+
+    /**
+     * Total order di checkout (PRD 20.6) — TANPA CEILING lagi.
+     * Harga item sudah fix (dibulatkan sekali di calculateItemShipping).
+     *
+     * @param  array<int, array{final_price_bersih: float|int, qty: int}>  $items
+     * @return array{
+     *     subtotal: float,
+     *     discount: float,
+     *     total_barang: float,
+     *     fee_qris: float,
+     *     tagihan_web: float,
+     *     estimasi_co_marketplace?: float,
+     *     fee_co_marketplace?: float
+     * }
+     */
+    public function calculateCheckoutTotal(
+        array $items,
+        float $discount = 0,
+        string $scheme = 'fp',
+        string $platform = 'toco',
+        string $method = 'bca'
+    ): array {
+        $subtotal = (float) collect($items)->sum(fn ($i) => $i['final_price_bersih'] * $i['qty']);
+        $totalBarang = max(0, $subtotal - $discount);
+        $feeQris = ($method === 'qris' && $totalBarang >= 500000)
+            ? $totalBarang * 0.0003
+            : 0.0;
+
+        if ($scheme === 'dp') {
+            $dp = $totalBarang * 0.5;
+            $sisa = $totalBarang - $dp;
+            $shopeePercent = ((float) setting('fee_shopee_dp', 25)) / 100;
+
+            return [
+                'subtotal' => $subtotal,
+                'discount' => $discount,
+                'total_barang' => $totalBarang,
+                'fee_qris' => $feeQris,
+                'tagihan_web' => $dp + $feeQris,
+                'estimasi_co_marketplace' => $platform === 'shopee'
+                    ? $sisa * (1 + $shopeePercent)
+                    : $sisa + (float) setting('fee_toco_dp', 0),
+            ];
+        }
+
+        return [
+            'subtotal' => $subtotal,
+            'discount' => $discount,
+            'total_barang' => $totalBarang,
+            'fee_qris' => $feeQris,
+            'tagihan_web' => $totalBarang + $feeQris,
+            'fee_co_marketplace' => (float) ($platform === 'shopee'
+                ? setting('fee_shopee_fp', 109)
+                : setting('fee_toco_fp', 1)),
+        ];
+    }
+
+    /**
+     * Maksimal diskon koin = 5% dari subtotal (PRD 9.3 / 20.6), dibulatkan ke bawah.
+     */
+    public function maxCoinDiscount(float $subtotal): float
+    {
+        return floor($subtotal * 0.05);
+    }
 }

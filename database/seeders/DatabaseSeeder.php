@@ -16,6 +16,7 @@ class DatabaseSeeder extends Seeder
             SettingsSeeder::class,
             StoreSeeder::class,
             MerchCategorySeeder::class,
+            PaymentMethodSeeder::class,
         ]);
     }
 }
