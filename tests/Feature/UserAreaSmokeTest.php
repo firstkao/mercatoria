@@ -1,6 +1,8 @@
 <?php
 
 use App\Models\Cart;
+use App\Models\Developer;
+use App\Models\Game;
 use App\Models\User;
 
 /**
@@ -47,4 +49,17 @@ test('bell notifikasi menautkan placeholder menyusul', function () {
     $html = $this->actingAs($user)->get('/dashboard')->getContent();
 
     expect($html)->toContain(route('coming-soon'));
+});
+
+test('navbar game dan developer mengarah ke route katalog asli', function () {
+    $user = User::factory()->create();
+    $game = Game::factory()->create(['slug' => 'genshin-impact', 'name' => 'Genshin Impact', 'is_active' => true]);
+    $developer = Developer::factory()->create(['slug' => 'mihoyo', 'name' => 'miHoYo', 'is_active' => true]);
+
+    $html = $this->actingAs($user)->get('/dashboard')->getContent();
+
+    expect($html)->toContain(route('catalog.game', $game->slug))
+        ->and($html)->toContain(route('catalog.developer', $developer->slug))
+        ->and($html)->toContain('Genshin Impact')
+        ->and($html)->toContain('miHoYo');
 });

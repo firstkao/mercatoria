@@ -11,8 +11,31 @@
         <div class="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-3">
             <div class="flex items-center gap-4 text-sm font-medium">
                 <a href="/" class="hover:text-black">Beranda</a>
-                <a href="{{ route('coming-soon') }}" class="text-gray-500 hover:text-black">Game</a>
-                <a href="{{ route('coming-soon') }}" class="text-gray-500 hover:text-black">Developer</a>
+
+                <details class="relative">
+                    <summary class="cursor-pointer list-none text-gray-500 hover:text-black">Game ▾</summary>
+                    <div class="absolute left-0 top-full z-20 mt-2 w-48 rounded-lg border border-gray-100 bg-white py-2 shadow-lg">
+                        @forelse ($navGames as $navGame)
+                            <a href="{{ route('catalog.game', $navGame->slug) }}"
+                               class="block px-4 py-1.5 text-gray-700 hover:bg-gray-50">{{ $navGame->name }}</a>
+                        @empty
+                            <a href="{{ route('coming-soon') }}" class="block px-4 py-1.5 text-gray-400">Menyusul</a>
+                        @endforelse
+                    </div>
+                </details>
+
+                <details class="relative">
+                    <summary class="cursor-pointer list-none text-gray-500 hover:text-black">Developer ▾</summary>
+                    <div class="absolute left-0 top-full z-20 mt-2 w-48 rounded-lg border border-gray-100 bg-white py-2 shadow-lg">
+                        @forelse ($navDevelopers as $navDeveloper)
+                            <a href="{{ route('catalog.developer', $navDeveloper->slug) }}"
+                               class="block px-4 py-1.5 text-gray-700 hover:bg-gray-50">{{ $navDeveloper->name }}</a>
+                        @empty
+                            <a href="{{ route('coming-soon') }}" class="block px-4 py-1.5 text-gray-400">Menyusul</a>
+                        @endforelse
+                    </div>
+                </details>
+
                 <a href="{{ route('coming-soon') }}" class="text-gray-500 hover:text-black">Pre-order Baru</a>
             </div>
 

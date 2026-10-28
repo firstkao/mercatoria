@@ -2,9 +2,12 @@
 
 namespace App\Providers;
 
+use App\Models\Developer;
+use App\Models\Game;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -28,6 +31,17 @@ class AppServiceProvider extends ServiceProvider
 
         RateLimiter::for('register', function (Request $request): Limit {
             return Limit::perMinute(3)->by($request->ip());
+        });
+
+        // Navbar dropdown Game / Developer → route katalog (PRD 7.2).
+        View::composer('layouts.app', function ($view): void {
+            $view->with(
+                'navGames',
+                Game::where('is_active', true)->orderBy('name')->get(['id', 'name', 'slug'])
+            )->with(
+                'navDevelopers',
+                Developer::where('is_active', true)->orderBy('name')->get(['id', 'name', 'slug'])
+            );
         });
     }
 }
