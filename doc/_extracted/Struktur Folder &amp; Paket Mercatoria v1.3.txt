@@ -1,0 +1,1476 @@
+
+
+Struktur Folder & Paket — Mercatoria v1.3 FINAL
+
+
+STRUKTUR FOLDER & PAKET
+
+
+Mercatoria — Laravel Project Structure
+
+
+
+
+Versi: 1.3 (FINAL — Selaras Penuh + Split Box)
+
+
+Tanggal: 26 Oktober 2026
+
+
+Referensi: PRD v4.8 FINAL · Design Spec v3.2 FINAL · Backlog v1.7 · Skema DB v1.6
+
+
+Server & Panel: VPS Hostinger KVM 1 (1 vCPU · 4 GB RAM · 50 GB NVMe) + CloudPanel v2
+
+
+Framework: Laravel 13.x (Arsitektur bootstrap/app.php & routes/console.php)
+
+
+PHP: PHP 8.5 (/usr/bin/php8.5 + OPcache + JIT)
+
+
+Database: MySQL 8.0+
+
+
+Frontend: Blade + Alpine.js + Livewire 3 + Tailwind CSS 3
+
+
+Build: Vite 5
+
+
+Total Paket Composer: 15 produksi + 7 dev
+
+
+Total Paket NPM: 17
+
+
+
+
+Daftar Isi
+
+
+
+
+Overview — Kenapa Struktur Ini Penting?
+
+
+Folder Tree Lengkap (Root)
+
+
+Folder app/ — Detail
+
+
+Folder resources/ — Detail
+
+
+Folder database/ — Detail
+
+
+Folder routes/ — Detail
+
+
+Folder config/ — Detail
+
+
+Folder public/ & storage/
+
+
+Folder tests/ — Detail
+
+
+composer.json — Paket PHP
+
+
+package.json — Paket JS
+
+
+Konvensi Naming
+
+
+Alur Request (Route → Controller → Service)
+
+
+Alur Response
+
+
+File Konfigurasi Kustom
+
+
+Tips Development
+
+
+
+Perubahan v1.2 → v1.3: fitur Split Box, Progress Tier, dan Denda Keterlambatan. Ditambah 10 migration (total 67), 4 model (total 50), SplitRole, SplitBoxService, LatePenaltyService, listener tier/slot, komponen Livewire SplitBoxPicker dan TierProgress, perintah splitbox:check-batches. Ikon UI memakai SVG Flaticon lewat komponen <x-icon> di resources/svg/icons/; paket blade-heroicons dihapus (paket Composer produksi jadi 15).
+
+Perubahan v1.1 → v1.2: paket Composer disamakan dengan PRD v4.7 & Backlog v1.6 (honeypot ^4.5, location ^7.4, activitylog ^4.9, permission ^6.10; elegantly/laravel-seo dihapus karena SEO lewat SeoMetaService internal; turnstile ^1.1). Hitungan paket, migration (57), dan model (46) dikoreksi. Ditambah public/images/icons/ untuk SVG brand, config rate_rmb_idr = 3000, dan penegasan pembulatan hanya di harga item.
+
+1. Overview — Kenapa Struktur Ini Penting?
+
+1.1 Analogi Gampang
+
+Bayangin bikin kue. Ada 3 hal yang harus disiapkan dulu:
+
+
+Dapur — tempat masak (folder)
+
+
+Alat — mixer, oven, cetakan (paket/library)
+
+
+Bahan — tepung, telur, gula (database)
+
+Dokumen ini bahas dapur (folder) dan alat (paket). Bahannya (database) udah di dokumen Skema DB.
+
+1.2 Kenapa Laravel Pakai Struktur Folder?
+
+Laravel itu framework. Dia punya aturan main — kalau kamu ikutin, dia bakal kerja otomatis. Contoh:
+
+
+File di app/Models/ → otomatis jadi Model yang bisa connect ke DB
+
+
+File di app/Http/Controllers/ → otomatis bisa handle request dari URL
+
+
+File di resources/views/ → otomatis bisa jadi halaman web
+
+Kalau kamu taruh file di tempat yang salah, Laravel gak tahu itu apa.
+
+1.3 Yang Perlu Dipahami Pemula
+
+
+IstilahArti Gampang
+
+
+FolderLemari / ruangan tempat nyimpan file
+
+
+File1 dokumen kode (misal: 1 file = 1 kelas PHP)
+
+
+ComposerAlat beli library PHP (kayak App Store untuk kode)
+
+
+NPMAlat beli library JavaScript
+
+
+BladeBahasa template Laravel (HTML + PHP)
+
+
+Alpine.jsBikin halaman interaktif (tombol, dropdown)
+
+
+LivewireBikin halaman real-time tanpa reload (kayak React, tapi PHP)
+
+
+TailwindBikin tampilan cepat pakai class (misal: bg-blue-500)
+
+
+ViteAlat build CSS + JS biar cepat
+
+2. Folder Tree Lengkap (Root)
+
+Root Project — Mercatoria
+
+mercatoria/
+├── app/                          # Kode utama aplikasi (backend)
+├── bootstrap/                   # File startup Laravel (jangan diubah manual)
+├── config/                       # File konfigurasi (DB, mail, dll)
+├── database/                     # Migration, Seeder, Factory
+├── lang/                         # File bahasa (id/en)
+├── node_modules/                 # Library JS (auto-generated, jangan diedit)
+├── public/                       # Folder publik (index.php, asset, upload)
+├── resources/                    # View, CSS, JS (frontend)
+├── routes/                       # Definisi URL / routing
+├── storage/                      # File upload, cache, log
+├── tests/                        # Unit test, feature test
+├── vendor/                       # Library PHP (auto-generated, jangan diedit)
+│
+├── .env                            # Konfigurasi environment (RAHASIA!)
+├── .env.example                    # Contoh .env (untuk tim)
+├── .gitignore                      # File yang gak di-push ke Git
+├── artisan                         # CLI Laravel (/usr/bin/php8.5 artisan ...)
+├── composer.json                   # Daftar paket PHP
+├── composer.lock                   # Versi paket PHP terkunci
+├── package.json                    # Daftar paket JS
+├── package-lock.json               # Versi paket JS terkunci
+├── phpunit.xml                     # Config testing
+├── README.md                       # Dokumentasi project
+├── tailwind.config.js              # Config Tailwind CSS
+├── vite.config.js                  # Config Vite (build tool)
+└── .editorconfig                   # Config editor (indentasi, dll)
+
+Perhatian: Folder vendor/ dan node_modules/ itu auto-generated. Jangan pernah diedit manual, dan jangan di-push ke Git (sudah masuk .gitignore). Kalau hilang, tinggal jalankan composer install + npm install.
+
+3. Folder app/ — Detail
+
+app/ — Detail Struktur
+
+app/
+├── Actions/                    # Single-purpose action classes (opsional)
+│   ├── Order/
+│   │   ├── CreateOrderAction.php
+│   │   ├── CancelOrderAction.php
+│   │   └── CompleteOrderAction.php
+│   ├── Product/
+│   │   ├── CreateProductAction.php
+│   │   └── HardDeleteProductAction.php
+│   └── User/
+│       └── RegisterUserAction.php
+│
+├── Casts/                     # Custom cast untuk attribute model
+│   └── MoneyCast.php
+│
+├── Console/                    # CLI command kustom
+│   └── Commands/
+│       ├── PurgeLogs.php
+│       ├── PurgeNotifications.php
+│       ├── UpdateUserState.php
+│       ├── PurgeCrush.php
+│       ├── CancelExpiredOrders.php
+│       ├── SendCartReminders.php
+│       ├── NotifyCoinExpiry.php
+│       ├── BirthdayBonus.php
+│       ├── RecheckSpammerGrace.php
+│       ├── UpdateCustomerTier.php
+│       └── CheckSplitBoxBatches.php   # v1.3 splitbox:check-batches (08:30 WIB)
+│
+├── Enums/                     # PHP Enum (v4.3 baru)
+│   ├── OrderStatus.php
+│   ├── PaymentScheme.php
+│   ├── PaymentMethod.php
+│   ├── PaymentType.php
+│   ├── RefundStatus.php
+│   ├── UserState.php
+│   ├── TierLevel.php
+│   ├── CoinSource.php
+│   ├── NotificationType.php
+│   ├── SpammerReason.php
+│   ├── VisitorType.php
+│   └── SplitRole.php   # v1.3 normal | hot_1 | hot_2
+│
+├── Events/                    # Event (sesuatu yang terjadi)
+│   ├── OrderCreated.php
+│   ├── OrderStatusChanged.php
+│   ├── OrderCompleted.php
+│   ├── OrderHangus.php
+│   ├── PaymentUploaded.php
+│   ├── PaymentVerified.php
+│   ├── RefundRequested.php
+│   ├── SnapshotCreated.php
+│   ├── UserRegistered.php
+│   ├── UserStateChanged.php
+│   ├── CoinEarned.php
+│   ├── VoucherReceived.php
+│   └── ProductDeleted.php
+│
+├── Exceptions/                # Custom exception
+│   ├── Handler.php
+│   ├── InsufficientStockException.php
+│   ├── InvalidOrderTransitionException.php
+│   ├── SnapshotCreationFailedException.php
+│   └── SlotUnavailableException.php   # v1.3
+│
+├── Exports/                   # Excel/CSV export (Maatwebsite)
+│   ├── OrdersExport.php
+│   ├── UsersExport.php
+│   ├── ProductsExport.php
+│   └── SalesReportExport.php
+│
+├── Helpers/                   # Helper functions
+│   ├── helpers.php
+│   ├── RealIpHelper.php
+│   └── OrderNumberHelper.php
+│
+├── Http/                      # Semua yang berhubungan dengan HTTP request
+│   ├── Controllers/
+│   │   ├── Controller.php                # Base controller
+│   │   ├── Frontend/                    # Controller untuk user
+│   │   │   ├── HomeController.php
+│   │   │   ├── CatalogController.php
+│   │   │   ├── ProductController.php
+│   │   │   ├── SearchController.php
+│   │   │   ├── CartController.php
+│   │   │   ├── CheckoutController.php
+│   │   │   ├── OrderController.php
+│   │   │   ├── InvoiceController.php
+│   │   │   ├── DashboardController.php
+│   │   │   ├── CoinController.php
+│   │   │   ├── ReferralController.php
+│   │   │   ├── ProfileController.php
+│   │   │   ├── NotificationController.php
+│   │   │   ├── PageController.php
+│   │   │   └── ShareController.php
+│   │   ├── Auth/                        # Login, register
+│   │   │   ├── LoginController.php
+│   │   │   ├── RegisterController.php
+│   │   │   ├── ForgotPasswordController.php
+│   │   │   ├── ResetPasswordController.php
+│   │   │   └── VerifyEmailController.php
+│   │   ├── Admin/                       # Admin panel (/office)
+│   │   │   ├── DashboardController.php
+│   │   │   ├── ProductController.php
+│   │   │   ├── GameController.php
+│   │   │   ├── DeveloperController.php
+│   │   │   ├── MerchCategoryController.php
+│   │   │   ├── TagController.php
+│   │   │   ├── StoreController.php              # v1.1 CRUD Tier Ongkir Toko CN
+│   │   │   ├── OrderController.php
+│   │   │   ├── PaymentController.php
+│   │   │   ├── RefundController.php
+│   │   │   ├── VoucherController.php
+│   │   │   ├── UserController.php
+│   │   │   ├── SpammerController.php
+│   │   │   ├── PageController.php
+│   │   │   ├── EmailTemplateController.php
+│   │   │   ├── PreorderController.php
+│   │   │   ├── SeoController.php
+│   │   │   ├── ReportController.php
+│   │   │   ├── RankController.php
+│   │   │   ├── SettingsController.php
+│   │   │   ├── ActivityLogController.php
+│   │   │   ├── AuthLogController.php
+│   │   │   ├── AdminLogController.php
+│   │   │   └── HeroSlideController.php
+│   │   └── Api/                         # API internal (polling bell, dll)
+│   │       └── NotificationController.php
+│   ├── Middleware/
+│   │   ├── Authenticate.php
+│   │   ├── EnsureUserIsLoggedIn.php       # Guest Barrier
+│   │   ├── EnsureEmailVerifiedForOrder.php # v1.1 Gate Verif Email (Order & Konfirmasi Bayar)
+│   │   ├── EnsureProfileComplete.php      # v1.1 Gate Tgl Lahir (Order & Konfirmasi Bayar)
+│   │   ├── EnsureUserIsAdmin.php
+│   │   ├── DetectBotCrawler.php
+│   │   ├── EnforceIpBlacklist.php         # v1.1 Smart Scoped IP + Device Ban (TTL 30h)
+│   │   ├── VerifyTurnstile.php
+│   │   ├── LogUserActivity.php
+│   │   └── SetTimezone.php
+│   ├── Requests/                       # Form Request (validasi)
+│   │   ├── Auth/
+│   │   │   ├── LoginRequest.php
+│   │   │   └── RegisterRequest.php
+│   │   ├── Frontend/
+│   │   │   ├── AddToCartRequest.php
+│   │   │   ├── CheckoutRequest.php
+│   │   │   ├── UploadPaymentRequest.php
+│   │   │   └── UpdateProfileRequest.php
+│   │   └── Admin/
+│   │       ├── StoreProductRequest.php
+│   │       ├── UpdateProductRequest.php
+│   │       ├── BulkDeleteProductRequest.php
+│   │       ├── StoreVoucherRequest.php
+│   │       ├── UpdateOrderStatusRequest.php
+│   │       ├── SendNoteToCustomerRequest.php
+│   │       └── InjectOrderRequest.php
+│   └── Resources/                     # API Resource (JSON response)
+│       ├── ProductResource.php
+│       ├── OrderResource.php
+│       └── NotificationResource.php
+│
+├── Jobs/                      # Background job (queue)
+│   ├── CopySnapshotImageJob.php
+│   ├── SendOrderEmailJob.php
+│   ├── SendNotificationJob.php
+│   ├── PurgeOldLogsJob.php
+│   └── GenerateSitemapJob.php
+│
+├── Listeners/                 # Listener event
+│   ├── SuppressCustomerEmailWhenPaused.php    # v1.1 Stop Email Customer saat Maintenance/Testing
+│   ├── SendOrderCreatedEmail.php
+│   ├── CreateSnapshotOnCheckout.php
+│   ├── GiveCoinOnOrderCompleted.php
+│   ├── SendNotificationOnOrderStatusChanged.php
+│   ├── NotifyAdminOnPaymentUploaded.php
+│   ├── UpdateUserStateOnOrderCompleted.php
+│   ├── SyncTierOnOrderStatusChanged.php   # v1.3 tier saat Sedang Diproses + reversal (ganti UpdateTierOnOrderCompleted)
+│   ├── LockSplitSlotsOnPaymentUploaded.php   # v1.3 SINKRON: kunci slot saat bukti bayar diupload
+│   └── ReleaseSplitSlots.php               # v1.3 lepas slot: bukti ditolak / gagal / refund
+│
+├── Livewire/                  # Komponen Livewire
+│   ├── Frontend/
+│   │   ├── CartItem.php
+│   │   ├── ProductVariantSelector.php
+│   │   ├── NotificationBell.php
+│   │   ├── SearchBox.php
+│   │   ├── SplitBoxPicker.php   # v1.3
+│   │   └── TierProgress.php   # v1.3
+│   └── Admin/
+│       ├── ProductTable.php
+│       ├── OrderTable.php
+│       ├── UserTable.php
+│       └── SplitBoxManager.php   # v1.3 config box, kloter, tutup + refund
+│
+├── Mail/                      # Mailable class
+│   ├── VerifyEmailMail.php
+│   ├── ResetPasswordMail.php
+│   ├── OrderCreatedMail.php
+│   ├── OrderStatusChangedMail.php
+│   ├── PaymentVerifiedMail.php
+│   ├── CoinEarnedMail.php
+│   └── AdminPaymentNotificationMail.php
+│
+├── Models/                    # Eloquent Model (dari Skema DB)
+│   ├── User.php
+│   ├── Crush.php
+│   ├── Customer.php
+│   ├── Store.php                   # v1.1 Tier Ongkir Lokal CN
+│   ├── Developer.php
+│   ├── Game.php
+│   ├── Product.php
+│   ├── ProductVariant.php
+│   ├── VariantCombination.php
+│   ├── VariantImage.php
+│   ├── ProductImage.php
+│   ├── MerchCategory.php
+│   ├── Tag.php
+│   ├── Cart.php
+│   ├── CartReminder.php
+│   ├── Order.php
+│   ├── OrderItem.php
+│   ├── OrderItemSnapshot.php       # v4.3
+│   ├── OrderStatusLog.php
+│   ├── Payment.php
+│   ├── Refund.php
+│   ├── Coin.php
+│   ├── CoinTransaction.php
+│   ├── Voucher.php
+│   ├── UserVoucher.php
+│   ├── Referral.php
+│   ├── ShareClick.php
+│   ├── ProductView.php
+│   ├── UserNotification.php
+│   ├── AdminNotification.php
+│   ├── UserGift.php
+│   ├── Spammer.php
+│   ├── SpammerIp.php
+│   ├── SpammerLog.php
+│   ├── ActivityLog.php
+│   ├── AuthLog.php
+│   ├── AdminLog.php
+│   ├── PaymentMethod.php
+│   ├── EmailTemplate.php
+│   ├── EmailLog.php
+│   ├── Page.php
+│   ├── PreorderPage.php
+│   ├── HeroSlide.php
+│   ├── Announcement.php
+│   ├── VisitorTracking.php
+│   ├── Setting.php
+│   ├── SplitBox.php
+│   ├── SplitBoxSlot.php
+│   ├── SplitBoxBatch.php
+│   └── SplitBoxBatchSlot.php
+│
+├── Notifications/             # Laravel Notification
+│   ├── OrderStatusChangedNotification.php
+│   ├── CoinEarnedNotification.php
+│   ├── NoteToCustomerNotification.php
+│   └── AdminNewOrderNotification.php
+│
+├── Observers/                 # Model Observer
+│   ├── ProductObserver.php
+│   ├── OrderObserver.php
+│   └── UserObserver.php
+│
+├── Policies/                  # Authorization policy
+│   ├── OrderPolicy.php
+│   ├── ProductPolicy.php
+│   └── UserPolicy.php
+│
+├── Providers/                 # Service Provider (Laravel 13 hanya pakai AppServiceProvider;
+│   └── AppServiceProvider.php     #   Middleware di bootstrap/app.php & Event Listener auto-discovered)
+│
+├── Repositories/              # Repository pattern (opsional)
+│   ├── ProductRepository.php
+│   └── OrderRepository.php
+│
+├── Rules/                     # Custom validation rule
+│   ├── PhoneNumberRule.php
+│   └── UniqueVoucherCodeRule.php
+│
+├── Services/                  # Business logic
+│   ├── Order/
+│   │   ├── OrderItemSnapshotService.php     # v4.3
+│   │   ├── ShippingCalculatorService.php    # v1.1 Ongkir Per-Varian RMB & Harga Bersih
+│   │   ├── OrderNumberService.php
+│   │   ├── OrderStatusService.php
+│   │   ├── OrderHangusService.php
+│   │   └── LatePenaltyService.php   # v1.3 denda keterlambatan CO (Rp 1.000/hari)
+│   ├── Product/
+│   │   ├── StoreService.php                  # v1.1 CRUD Store Tier Ongkir
+│   │   ├── ProductSearchService.php          # v1.1 Deep Search (Nama Produk + Nama Varian)
+│   │   ├── ImageWatermarkService.php         # v1.1 Auto-Watermark Foto Produk/Varian/Deskripsi
+│   │   ├── ProductHardDeleteService.php      # v4.3
+│   │   ├── ProductPriceService.php
+│   │   └── ProductCategoryService.php
+│   ├── Payment/
+│   │   ├── PaymentVerificationService.php
+│   │   ├── PriceCalculatorService.php          # v1.2 Total checkout tanpa CEILING; fee QRIS/marketplace live
+│   │   └── RefundService.php
+│   ├── User/
+│   │   ├── UserStateService.php
+│   │   ├── UserTierService.php
+│   │   └── SpammerDetectionService.php
+│   ├── Coin/
+│   │   ├── CoinService.php
+│   │   └── ReferralService.php
+│   ├── Notification/
+│   │   ├── UserNotificationService.php
+│   │   └── AdminNotificationService.php
+│   ├── Bot/
+│   │   └── BotCrawlerDetectorService.php
+│   ├── Seo/
+│   │   └── SeoMetaService.php
+│   ├── Geo/
+│   │   └── GeoIpService.php
+│   └── Split/
+│       └── SplitBoxService.php   # v1.3 pair, kunci slot, FIFO, auto-open kloter
+│
+├── Support/                   # Helper classes
+│   ├── Money.php
+│   └── Timezone.php
+│
+├── Traits/                    # Reusable trait
+│   ├── LogsActivity.php
+│   ├── LogsAdminActivity.php
+│   ├── HasReferralCode.php
+│   └── HasFullName.php
+│
+└── View/                      # View Component
+    └── Components/
+        ├── BadgeRole.php
+        ├── BadgeTier.php
+        ├── Button.php
+        ├── Alert.php
+        ├── Modal.php
+        └── Toast.php
+
+Catatan: Folder Actions/, Repositories/, Support/ itu opsional. Kalau tim kamu kecil (1-2 orang), bisa skip dan taruh semua logic di Services/ aja. Saya include biar lengkap, tapi jangan bingung kalau gak semua dipakai.
+
+3.1 Penjelasan Folder Kunci
+
+
+FolderFungsiContoh File
+
+
+CORE app/Models/Representasi tabel DBUser.php, Order.php
+
+
+CORE app/Http/Controllers/Handle request dari URLHomeController.php
+
+
+CORE app/Services/Business logic (perhitungan, validasi kompleks)PriceCalculatorService.php
+
+
+CORE app/Enums/Enum untuk status, tipe, stateOrderStatus.php
+
+
+CORE app/Http/Requests/Validasi input formStoreProductRequest.php
+
+
+DEV app/Events/Sesuatu yang terjadi (pemicu)OrderCreated.php
+
+
+DEV app/Listeners/Reaksi terhadap eventSendOrderCreatedEmail.php
+
+
+DEV app/Jobs/Proses background (queue)CopySnapshotImageJob.php
+
+
+DEV app/Notifications/Notifikasi LaravelOrderStatusChangedNotification.php
+
+
+UI app/Livewire/Komponen real-timeNotificationBell.php
+
+
+UI app/View/Components/Komponen Blade reusableButton.php, Modal.php
+
+
+OPS app/Console/Commands/Perintah CLI (/usr/bin/php8.5 artisan ...)UpdateUserState.php
+
+
+TEST tests/Testing otomatisOrderTest.php
+
+4. Folder resources/ — Detail
+
+resources/ — Detail Struktur
+
+resources/
+├── css/
+│   └── app.css                     # Entry point CSS (import Tailwind)
+│
+├── js/
+│   ├── app.js                      # Entry point JS (import Alpine, dll)
+│   ├── bootstrap.js                # Bootstrap JS (axios, dll)
+│   └── components/                # Custom JS module
+│       ├── image-protection.js         # v1.1 Kunci Download/Drag Foto (Bebas Copy Teks)
+│       ├── countdown.js
+│       ├── lightbox.js
+│       └── dropdown.js
+│
+├── svg/
+│   └── icons/                   # v1.3 ikon SVG Flaticon (fire, fire-double, handshake, lock, ...)
+│
+└── views/                        # Blade templates
+    ├── layouts/                    # Layout master
+    │   ├── app.blade.php              # Layout frontend
+    │   ├── admin.blade.php            # Layout admin
+    │   └── auth.blade.php             # Layout login/register
+    │
+    ├── livewire/                  # v1.3 view komponen Livewire
+    │   └── frontend/
+    │       ├── split-box-picker.blade.php
+    │       └── tier-progress.blade.php
+    │
+    ├── components/                 # Blade component
+    │   ├── navbar-guest.blade.php
+    │   ├── navbar-user.blade.php
+    │   ├── footer.blade.php
+    │   ├── badge-role.blade.php
+    │   ├── badge-tier.blade.php
+    │   ├── notification-bell.blade.php
+    │   ├── product-card.blade.php
+    │   ├── modal.blade.php
+    │   ├── toast.blade.php
+    │   └── icon.blade.php   # v1.3 <x-icon> (SVG Flaticon)
+    │
+    ├── frontend/                   # Halaman user
+    │   ├── home/
+    │   │   ├── index.blade.php
+    │   │   ├── partials/
+    │   │   │   ├── hero-carousel.blade.php
+    │   │   │   ├── game-grid.blade.php
+    │   │   │   ├── best-offers.blade.php
+    │   │   │   └── new-merch.blade.php
+    │   ├── catalog/
+    │   │   ├── game.blade.php
+    │   │   ├── developer.blade.php
+    │   │   ├── category.blade.php
+    │   │   └── partials/
+    │   │       ├── sidebar-filter.blade.php
+    │   │       └── toolbar.blade.php
+    │   ├── product/
+    │   │   ├── show.blade.php
+    │   │   └── partials/
+    │   │       ├── variant-grid.blade.php
+    │   │       ├── image-gallery.blade.php
+    │   │       └── related-products.blade.php
+    │   ├── search/
+    │   │   └── index.blade.php
+    │   ├── cart/
+    │   │   └── index.blade.php
+    │   ├── checkout/
+    │   │   └── index.blade.php
+    │   ├── order/
+    │   │   ├── index.blade.php         # Order list
+    │   │   ├── show.blade.php          # Detail order
+    │   │   └── partials/
+    │   │       ├── timeline.blade.php
+    │   │       ├── note-from-admin.blade.php
+    │   │       └── countdown.blade.php
+    │   ├── dashboard/
+    │   │   ├── index.blade.php
+    │   │   └── tabs/
+    │   │       ├── orders.blade.php
+    │   │       ├── coins.blade.php
+    │   │       ├── referral.blade.php
+    │   │       └── profile.blade.php
+    │   ├── notifications/
+    │   │   └── index.blade.php
+    │   ├── pages/
+    │   │   └── show.blade.php
+    │   └── preorder/
+    │       └── show.blade.php
+    │
+    ├── auth/                       # Login, register, dll
+    │   ├── login.blade.php
+    │   ├── register.blade.php
+    │   ├── forgot-password.blade.php
+    │   ├── reset-password.blade.php
+    │   └── verify-email.blade.php
+    │
+    ├── admin/                      # Admin panel
+    │   ├── dashboard/
+    │   │   └── index.blade.php
+    │   ├── products/
+    │   │   ├── index.blade.php
+    │   │   ├── create.blade.php
+    │   │   ├── edit.blade.php
+    │   │   └── partials/
+    │   │       ├── delete-modal.blade.php
+    │   │       ├── bulk-delete-modal.blade.php
+    │   │       ├── order-count-card.blade.php
+    │   │       └── split-box-config.blade.php   # v1.3 tab Split Box
+    │   ├── orders/
+    │   │   ├── index.blade.php
+    │   │   ├── show.blade.php
+    │   │   ├── inject.blade.php
+    │   │   └── partials/
+    │   │       ├── note-form.blade.php
+    │   │       ├── product-deleted-badge.blade.php
+    │   │       ├── snapshot-viewer-modal.blade.php
+    │   │       └── late-penalty-modal.blade.php   # v1.3 Buka Kunci via Denda
+    │   ├── users/
+    │   │   └── index.blade.php
+    │   ├── spammers/
+    │   │   └── index.blade.php
+    │   ├── vouchers/
+    │   │   └── index.blade.php
+    │   ├── settings/
+    │   │   └── index.blade.php
+    │   └── logs/
+    │       ├── activity.blade.php
+    │       ├── auth.blade.php
+    │       └── admin.blade.php
+    │
+    ├── pdf/                       # Template PDF
+    │   ├── invoice.blade.php
+    │   └── packing-list.blade.php
+    │
+    ├── emails/                    # Template email
+    │   ├── layouts/
+    │   │   └── base.blade.php
+    │   ├── verify-email.blade.php
+    │   ├── order-created.blade.php
+    │   └── ... (25+ template)
+    │
+    └── errors/                    # Halaman error
+        ├── 403.blade.php
+        ├── 404.blade.php
+        ├── 419.blade.php
+        └── 500.blade.php
+
+5. Folder database/ — Detail
+
+database/ — Detail Struktur
+
+database/
+├── factories/                 # Factory untuk testing
+│   ├── UserFactory.php
+│   ├── ProductFactory.php
+│   ├── OrderFactory.php
+│   └── ...
+│
+├── migrations/                # 67 migration (50 dasar + 7 v1.2–v1.4 + 10 v1.6)
+│   ├── 2026_10_14_000001_create_users_table.php
+│   ├── 2026_10_14_000002_create_crushes_table.php
+│   ├── 2026_10_14_000003_create_customers_table.php
+│   ├── ... (sampai 50)
+│   ├── 2026_10_14_000050_create_settings_table.php
+│   ├── 2026_10_15_000001_create_stores_table.php
+│   ├── 2026_10_15_000002_add_default_store_to_games_table.php
+│   ├── 2026_10_15_000003_add_store_and_weight_to_products_table.php
+│   ├── 2026_10_15_000004_add_price_rmb_and_weight_to_product_variants_table.php
+│   ├── 2026_10_15_000005_add_shipping_breakdown_to_snapshots_table.php
+│   ├── 2026_10_16_000001_add_is_migrated_to_users_table.php
+│   ├── 2026_10_21_000001_add_scoped_ban_fields_to_spammer_ips_and_customers.php
+│   ├── 2026_10_26_000001_create_split_boxes_table.php
+│   ├── 2026_10_26_000002_create_split_box_slots_table.php
+│   ├── 2026_10_26_000003_create_split_box_batches_table.php
+│   ├── 2026_10_26_000004_create_split_box_batch_slots_table.php
+│   ├── 2026_10_26_000005_add_split_box_flag_to_products_table.php
+│   ├── 2026_10_26_000006_add_bundle_to_carts_table.php
+│   ├── 2026_10_26_000007_add_tier_cancel_and_penalty_to_orders_table.php
+│   ├── 2026_10_26_000008_add_split_box_to_order_items_table.php
+│   ├── 2026_10_26_000009_add_item_type_and_split_to_order_item_snapshots_table.php
+│   └── 2026_10_26_000010_ensure_total_belanja_on_customers_table.php
+│
+└── seeders/                   # Seeder data default
+    ├── DatabaseSeeder.php
+    ├── AdminSeeder.php
+    ├── SettingsSeeder.php
+    ├── PaymentMethodSeeder.php
+    ├── MerchCategorySeeder.php
+    ├── TagSeeder.php
+    ├── EmailTemplateSeeder.php
+    └── PageSeeder.php
+
+6. Folder routes/ — Detail
+
+routes/ — Detail Struktur
+
+routes/
+├── web.php                     # Route frontend (dengan session)
+├── api.php                     # Route API (untuk polling bell)
+├── console.php                 # Route CLI command
+└── channels.php                # Broadcast channel (opsional)
+
+Untuk project besar, web.php bisa dipecah jadi beberapa file:
+
+routes/
+├── web.php                     # Include semua file di bawah
+├── frontend.php                # Route user (katalog, cart, checkout)
+├── auth.php                    # Route login, register
+├── dashboard.php               # Route dashboard user
+├── admin.php                   # Route admin (/office)
+├── api.php
+└── console.php
+
+7. Folder config/ — Detail
+
+config/ — Detail Struktur
+
+config/
+├── app.php                     # Config utama (timezone WIB, dll)
+├── auth.php                    # Config autentikasi
+├── cache.php                   # Config cache
+├── database.php                # Config DB
+├── filesystems.php             # Config storage
+├── logging.php                 # Config log
+├── mail.php                    # Config SMTP Hostinger
+├── queue.php                   # Config queue
+├── services.php                # Config 3rd party (Turnstile, GA4)
+├── session.php                 # Config session
+│
+└── mercatoria.php              # CONFIG KUSTOM MERCATORIA
+
+File config/mercatoria.php adalah config kustom kita. Isinya konstanta yang dipakai di seluruh aplikasi (warna badge, path snapshot, dll). Ini dibuat biar gampang diubah tanpa nyentuh kode.
+
+8. Folder public/ & storage/
+
+public/ & storage/ — Detail Struktur
+
+public/                          # Folder yang bisa diakses browser
+├── index.php                     # Entry point (semua request masuk sini)
+├── .htaccess                     # Config Apache
+├── favicon.ico
+├── robots.txt
+├── build/                        # Asset hasil build Vite (CSS, JS)
+│   ├── assets/
+│   └── manifest.json
+├── images/                       # Gambar statis (logo, banner)
+│   ├── icons/                    # SVG brand resmi (sosmed & marketplace); ikon UI pakai Flaticon
+│   ├── logo.svg
+│   └── placeholder.jpg
+└── storage/                      # Symlink ke storage/app/public
+    └── (link ke storage/app/public)
+
+storage/                         # File yang di-upload / di-generate
+├── app/
+│   ├── public/                     # File yang bisa diakses publik
+│   │   ├── products/              # Gambar produk (admin upload)
+│   │   │   ├── main/
+│   │   │   ├── variants/
+│   │   │   └── descriptions/
+│   │   │
+│   │   ├── order-snapshots/       # v4.3 — COPY gambar saat checkout
+│   │   │   ├── MER-XXXX-0001/
+│   │   │   │   ├── p-100.jpg
+│   │   │   │   └── v-100.jpg
+│   │   │   └── MER-XXXX-0002/
+│   │   │
+│   │   ├── payments/              # Bukti transfer
+│   │   │   └── 2026/10/
+│   │   │
+│   │   ├── games/                 # Logo game
+│   │   ├── developers/            # Logo developer
+│   │   ├── hero-slides/           # Gambar hero carousel
+│   │   └── pages/                 # Featured image halaman statis
+│   │
+│   └── private/                   # File private (gak bisa diakses publik)
+│       ├── originals/                 # v1.1 Master foto asli sebelum di-watermark
+│       └── backups/
+│
+├── framework/
+│   ├── cache/
+│   ├── sessions/
+│   └── views/
+│
+└── logs/                        # Log aplikasi
+    └── laravel.log
+
+Penting v4.3: Folder storage/app/public/order-snapshots/ TIDAK PERNAH dihapus oleh sistem. Ini tempat copy gambar produk saat checkout. Kalau produk asli dihapus admin, gambar di sini tetap ada → order item tetap tampil lengkap.
+
+9. Folder tests/ — Detail
+
+tests/ — Detail Struktur
+
+tests/
+├── Feature/                    # Feature test (test fitur end-to-end)
+│   ├── Auth/
+│   │   ├── LoginTest.php
+│   │   ├── RegisterTest.php
+│   │   └── ResetPasswordTest.php
+│   ├── Frontend/
+│   │   ├── CatalogTest.php
+│   │   ├── ProductDetailTest.php
+│   │   ├── CartTest.php
+│   │   ├── CheckoutTest.php
+│   │   └── OrderTest.php
+│   ├── Admin/
+│   │   ├── ProductDeleteTest.php     # Test hard delete
+│   │   ├── BulkDeleteTest.php
+│   │   ├── InjectOrderTest.php
+│   │   └── OrderStatusTest.php
+│   └── Snapshot/
+│       ├── SnapshotCreationTest.php   # Test snapshot
+│       └── OrderIntegrityTest.php     # Test order utuh walau produk dihapus
+│
+├── Unit/                       # Unit test (test 1 fungsi aja)
+│   ├── Services/
+│   │   ├── PriceCalculatorTest.php
+│   │   ├── OrderNumberServiceTest.php
+│   │   └── ProductHardDeleteServiceTest.php
+│   ├── Helpers/
+│   │   └── RealIpHelperTest.php
+│   └── Enums/
+│       └── OrderStatusTest.php
+│
+├── CreatesApplication.php
+└── TestCase.php
+
+10. composer.json — Paket PHP
+
+composer.json — Daftar Paket PHP
+
+{
+    "name": "mercatoria/mercatoria",
+    "type": "project",
+    "description": "Marketplace merch IP Cina — Mercatoria",
+    "require": {
+        "php": "^8.5",
+        "laravel/framework": "^13.0",
+        "laravel/tinker": "^2.10",
+
+        // ─── UI & Frontend (Laravel 13 + PHP 8.5 Ready) ─
+        "livewire/livewire": "^3.6",
+
+        // ─── Image Processing (Auto-Watermark WebP) ─────
+        "intervention/image": "^3.11",
+
+        // ─── PDF Generation (Validated PHP 8.5) ─────────
+        "barryvdh/laravel-dompdf": "^3.1",
+
+        // ─── Excel / CSV Export (Validated PHP 8.5) ─────
+        "maatwebsite/excel": "^3.1.68|^4.0",
+
+        // ─── SEO (meta/OG/JSON-LD lewat App\Services\Seo\SeoMetaService internal) ──
+        "spatie/laravel-sitemap": "^7.3",
+        "spatie/laravel-sluggable": "^3.7",
+
+        // ─── Security ───────────────────────────────────
+        "ryangjchandler/laravel-cloudflare-turnstile": "^1.1",
+        "spatie/laravel-honeypot": "^4.5",
+
+        // ─── Geolocation ────────────────────────────────
+        "stevebauman/location": "^7.4",
+
+        // ─── Activity Log ───────────────────────────────
+        "spatie/laravel-activitylog": "^4.9",
+
+        // ─── Utilities ──────────────────────────────────
+        "spatie/laravel-backup": "^9.2",
+        "spatie/laravel-permission": "^6.10",
+        "guzzlehttp/guzzle": "^7.9"
+    },
+    "require-dev": {
+        "fakerphp/faker": "^1.24",
+        "laravel/pint": "^1.20",
+        "larastan/larastan": "^3.0",
+        "laravel/pail": "^1.2",
+        "laravel/sail": "^1.41",
+        "nunomaduro/collision": "^8.6",
+        "phpunit/phpunit": "^11.5|^12.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "App\\": "app/",
+            "Database\\Factories\\": "database/factories/",
+            "Database\\Seeders\\": "database/seeders/"
+        },
+        "files": [
+            "app/Helpers/helpers.php"
+        ]
+    },
+    "scripts": {
+        "post-autoload-dump": [
+            "@/usr/bin/php8.5 artisan package:discover --ansi"
+        ],
+        "post-update-cmd": [
+            "@/usr/bin/php8.5 artisan vendor:publish --tag=laravel-assets --ansi --force"
+        ],
+        "lint": "./vendor/bin/pint",
+        "analyze": "./vendor/bin/phpstan analyse",
+        "test": "@/usr/bin/php8.5 artisan test"
+    }
+}
+
+10.1 Penjelasan Paket PHP
+
+
+PaketFungsi GampangDipakai untuk
+
+
+laravel/frameworkFramework utamaSemua
+
+
+livewire/livewireHalaman real-time tanpa reloadBell notifikasi, cart, admin tabel
+
+
+intervention/imageResize + kompres gambarUpload produk, bukti bayar
+
+
+barryvdh/laravel-dompdfBikin PDF dari HTMLInvoice, Packing List
+
+
+maatwebsite/excelExport Excel/CSVLaporan penjualan, rank pelanggan
+
+
+spatie/laravel-sitemapAuto-generate sitemap.xmlSEO
+
+
+spatie/laravel-sluggableAuto-bikin slug dari namaProduk, game, halaman
+
+
+ryangjchandler/...turnstileAnti-bot CloudflareLogin, register
+
+
+spatie/laravel-honeypotTrap bot pakai field tersembunyiForm publik
+
+
+stevebauman/locationDeteksi negara dari IPShare produk (batasi IP ID)
+
+
+spatie/laravel-activitylogAuto-log aktivitasActivity log (opsional)
+
+
+spatie/laravel-backupBackup DB + file otomatisCron backup
+
+
+spatie/laravel-permissionRBAC (role + permission)Opsional — bisa pakai native role column
+
+
+laravel/pintAuto-format kode biar rapiDevelopment
+
+
+larastan/larastanCek error di kode sebelum jalanDevelopment
+
+11. package.json — Paket JS
+
+package.json — Daftar Paket JS
+
+{
+    "name": "mercatoria",
+    "type": "module",
+    "private": true,
+    "scripts": {
+        "dev": "vite",
+        "build": "vite build"
+    },
+    "devDependencies": {
+        "@tailwindcss/forms": "^0.5.9",
+        "@tailwindcss/typography": "^0.5.15",
+        "autoprefixer": "^10.4.20",
+        "axios": "^1.7.7",
+        "laravel-vite-plugin": "^1.0.5",
+        "postcss": "^8.4.47",
+        "tailwindcss": "^3.4.14",
+        "vite": "^5.4.0"
+    },
+    "dependencies": {
+        "alpinejs": "^3.14.1",
+        "chart.js": "^4.4.4",
+        "grapesjs": "^0.21.10",
+        "grapesjs-preset-webpage": "^1.0.3",
+        "@alpinejs/focus": "^3.14.1",
+        "@alpinejs/persist": "^3.14.1",
+        "@alpinejs/collapse": "^3.14.1",
+        "flatpickr": "^4.6.13",
+        "sweetalert2": "^11.14.0"
+    }
+}
+
+11.1 Penjelasan Paket JS
+
+
+PaketFungsi GampangDipakai untuk
+
+
+tailwindcssBikin tampilan pakai classSemua UI
+
+
+alpinejsInteraktif ringan (dropdown, modal, toggle)Navbar, dropdown bell, filter
+
+
+chart.jsBikin grafik batang/garisAdmin dashboard
+
+
+grapesjsDrag & drop page builderPreorder Builder (admin)
+
+
+flatpickrKalender pilih tanggalForm tanggal lahir, filter tanggal
+
+
+axiosKirim request AJAXPolling bell, fetch data
+
+
+viteBuild toolDevelopment & production build
+
+
+sweetalert2Modal cantik siap pakaiModal konfirmasi (alternatif)
+
+12. Konvensi Naming
+
+12.1 File & Class
+
+
+JenisKonvensiContoh
+
+
+Class PHPPascalCaseOrderItemSnapshotService
+
+
+MethodcamelCasecreateForOrderItem()
+
+
+VariabelcamelCase$orderItem
+
+
+KonstantaUPPER_SNAKEMAX_RETRY_ATTEMPT
+
+
+Tabel DBsnake_case pluralorder_items
+
+
+Kolom DBsnake_caseproduct_name
+
+
+Blade filekebab-casenotification-bell.blade.php
+
+
+Migrationsnake_case + timestamp2026_10_14_000001_create_users_table.php
+
+
+Route namedot.notationadmin.orders.index
+
+
+URLkebab-case/office/merch-categories
+
+12.2 Controller Method
+
+
+MethodFungsi
+
+
+index()Tampil list
+
+
+create()Tampil form tambah
+
+
+store()Simpan data baru
+
+
+show($id)Tampil detail
+
+
+edit($id)Tampil form edit
+
+
+update($id)Update data
+
+
+destroy($id)Hapus data
+
+13. Alur Request (Route → Controller → Service)
+
+Contoh: User Klik "Buat Pesanan" (Checkout)
+
+1. USER KLIK "BUAT PESANAN"
+   → Browser kirim POST /checkout dengan data form
+                            ↓
+2. ROUTE (routes/web.php)
+   Route::post('/checkout', [CheckoutController::class, 'store'])
+       ->middleware(['auth', 'turnstile']);
+                            ↓
+3. MIDDLEWARE (app/Http/Middleware/)
+   - Authenticate → cek login
+   - VerifyTurnstile → cek anti-bot
+   - LogUserActivity → catat aktivitas
+                            ↓
+4. FORM REQUEST (app/Http/Requests/Frontend/CheckoutRequest.php)
+   → Validasi: platform, payment_scheme, payment_method, dll
+   → Kalau gagal → redirect back + error message
+                            ↓
+5. CONTROLLER (app/Http/Controllers/Frontend/CheckoutController)
+   public function store(CheckoutRequest $request)
+   {
+       $order = $this->orderService->create($request->validated());
+       return redirect()->route('orders.show', $order);
+   }
+                            ↓
+6. SERVICE (app/Services/Order/OrderService.php)
+   public function create(array $data): Order
+   {
+       DB::beginTransaction();
+       try {
+           $order = Order::create([...]);
+           $this->createOrderItemsAndSnapshots($order);  // [ikon: star]
+           DB::commit();
+           event(new OrderCreated($order));    // trigger
+           return $order;
+       } catch (\Exception $e) {
+           DB::rollBack();
+           throw $e;
+       }
+   }
+                            ↓
+7. EVENT + LISTENER
+   event(new OrderCreated($order))
+       ↓
+   Listener:
+   - SendOrderCreatedEmail → kirim email
+   - SendNotificationOnOrderCreated → kirim bell
+   - NotifyAdminOnNewOrder → bell admin
+                            ↓
+8. RESPONSE
+   → redirect ke /orders/{id}
+   → user lihat detail order
+
+13.1 Kenapa Service Dipisah?
+
+Kalau semua logic taruh di Controller, file-nya bisa jadi 500+ baris. Susah dibaca, susah di-test. Dengan Service:
+
+
+Controller cuma 5–10 baris
+
+
+Service berisi business logic yang reusable
+
+
+Mudah di-test (unit test)
+
+
+Kalau butuh dipakai di tempat lain (misal CLI command, API), tinggal panggil service
+
+14. Alur Response
+
+Alur Response — 3 Tipe
+
+// ─── 1. Response HTML (Blade) ────────────────────────
+public function index()
+{
+    $products = Product::active()->paginate(30);
+    return view('frontend.catalog.game', compact('products'));
+}
+
+// ─── 2. Response Redirect ────────────────────────────
+public function store(CheckoutRequest $request)
+{
+    $order = $this->orderService->create($request->validated());
+    return redirect()
+        ->route('orders.show', $order)
+        ->with('success', 'Pesanan berhasil dibuat!');
+}
+
+// ─── 3. Response JSON (API internal) ─────────────────
+public function latest()
+{
+    $notifications = auth()->user()
+        ->notifications()
+        ->orderByDesc('created_at')
+        ->limit(10)
+        ->get();
+
+    return NotificationResource::collection($notifications);
+}
+
+15. File Konfigurasi Kustom
+
+config/mercatoria.php — Config Kustom
+
+<?php
+
+// File ini berisi konstanta yang dipakai di seluruh aplikasi Mercatoria
+
+return [
+    // ─── Store Info ─────────────────────────────────────
+    'store' => [
+        'name' => 'Mercatoria',
+        'domain' => 'mercatoria.id',
+        'admin_url' => '/office',
+        'cs_email' => 'cs@mercatoria.id',
+        'security_email' => 'security@mercatoria.id',
+        'info_email' => 'info@mercatoria.id',
+    ],
+
+    // ─── Order ──────────────────────────────────────────
+    'order' => [
+        'number_prefix' => 'MER',
+        'payment_upload_timer_hours' => 24,
+        'forfeit_coin_voucher_on_failed_payment' => true,
+        'pickup_timer_days' => 7,
+        'dp_percent' => 50,
+        'rounding' => 5000,              // CEILING hanya di harga item/varian; cart & checkout tanpa pembulatan
+    ],
+
+    // ─── Snapshot (v4.3) ────────────────────────────────
+    'snapshot' => [
+        'storage_path' => 'order-snapshots',
+        'retention' => 'permanent',
+        'image_max_size' => 200 * 1024,
+        'delete_confirm_text' => 'HAPUS',
+    ],
+
+    // ─── Bell Notifikasi ────────────────────────────────
+    'bell' => [
+        'poll_interval' => 60,
+        'max_dropdown' => 10,
+        'retention_days' => 90,
+        'toast_duration' => 5,
+    ],
+
+    // ─── Shipping & Pricing (v1.1 Selaras PRD v4.6) ─────
+    'shipping' => [
+        'cn_btm_per_kg' => env('SHIPPING_CN_BTM_PER_KG', 25000),
+        'btm_jkt_per_kg' => env('SHIPPING_BTM_JKT_PER_KG', 60000),
+        'default_weight_gram' => env('SHIPPING_DEFAULT_WEIGHT', 0),
+        'rate_rmb_idr' => env('RATE_RMB_IDR', 3000),   // fallback; nilai aktif dari tabel settings
+        'local_cn_mode' => 'per_variant_customer_pays_directly',
+    ],
+
+    // ─── State & Smart Scoped Ban (v1.1 Selaras PRD v4.6)
+    'state' => [
+        'crush_auto_delete_days' => 30,
+        'view_limit' => 10,
+        'mvp_to_ex_days' => 0,          // Instan (0 hari) saat order aktif terakhir Selesai
+        'ex_to_ons_days' => 30,         // 0–30 hari = Ex, >30 hari = ONS
+        'ons_to_blocked_days' => 60,    // >60 hari = Blocked (Tier badge bukan tameng)
+        'h7_warning_days_before' => 7,  // H-7 untuk Crush->Delete, Ex->ONS, ONS->Blocked
+        'max_unblock_count' => 2,       // Maks 2x unblock sebelum permanen
+        'unblock_grace_days' => 7,
+        'spammer_ip_ttl_days' => 30,    // Auto-decay IP dinamis CGNAT 30 hari
+    ],
+
+    // ─── Split Box, Tier & Denda (v1.3; nilai aktif ada di tabel settings) ───
+    'split_box' => ['max_auto_batches' => 3, 'lock_on' => 'payment_proof_uploaded'],
+    'late_penalty' => ['per_day' => 1000, 'pay_hours' => 24, 'max_days' => 0, 'pickup_days' => 7],
+    'tier' => ['trigger_status' => 'sedang_diproses', 'gold' => 2000000, 'platinum' => 5000000],
+
+    // ─── Coin ───────────────────────────────────────────
+    'coin' => [
+        'referrer_reward' => 3000,
+        'referee_reward' => 1000,
+        'order_percent' => 1,
+        'share_reward' => 5,
+        'max_discount_percent' => 5,
+        'expiry_days' => 365,
+    ],
+
+    // ─── Share ──────────────────────────────────────────
+    'share' => [
+        'restrict_to_indonesia' => true,
+    ],
+
+    // ─── Mail Control (v1.1 Stop Email Customer) ────────
+    'mail_control' => [
+        'pause_customer_emails' => env('MAIL_PAUSE_CUSTOMER_EMAILS', false),
+        'always_allow_templates' => ['admin_otp'],
+    ],
+
+    // ─── Image Protection & Auto-Watermark (v1.1) ───────
+    'image_protection' => [
+        'enabled' => env('IMAGE_PROTECTION_ENABLED', true),
+        'watermark_enabled' => env('IMAGE_WATERMARK_ENABLED', true),
+        'watermark_text' => env('IMAGE_WATERMARK_TEXT', 'MERCATORIA · mercatoria.id'),
+        'watermark_opacity' => env('IMAGE_WATERMARK_OPACITY', 25),
+        'watermark_mode' => 'diagonal_tiled',
+    ],
+];
+
+16. Tips Development
+
+16.1 Command Penting
+
+
+CommandFungsi
+
+
+/usr/bin/php8.5 artisan serveJalankan server development
+
+
+npm run devJalankan Vite (watch CSS/JS)
+
+
+/usr/bin/php8.5 artisan migrateJalankan migration DB
+
+
+/usr/bin/php8.5 artisan db:seedIsi data default
+
+
+/usr/bin/php8.5 artisan migrate:fresh --seedReset DB + isi ulang (HATI-HATI!)
+
+
+/usr/bin/php8.5 artisan make:model ProductBikin model baru
+
+
+/usr/bin/php8.5 artisan make:controller ...Bikin controller
+
+
+/usr/bin/php8.5 artisan make:migration ...Bikin migration
+
+
+/usr/bin/php8.5 artisan testJalankan test
+
+
+./vendor/bin/pintAuto-format kode
+
+
+./vendor/bin/phpstan analyseCek error kode
+
+16.2 Workflow Development
+
+
+Buka 2 terminal:
+
+
+
+Terminal 1: /usr/bin/php8.5 artisan serve
+
+
+Terminal 2: npm run dev
+
+
+
+
+
+
+Buka browser: http://localhost:8000
+
+
+Edit kode → auto reload (Vite HMR)
+
+
+Kalau ubah migration → /usr/bin/php8.5 artisan migrate
+
+
+Kalau ubah config → /usr/bin/php8.5 artisan config:clear
+
+16.3 Yang Jangan Dilakukan
+
+
+[ikon: x-circle] Jangan edit vendor/ atau node_modules/
+
+
+[ikon: x-circle] Jangan commit .env (rahasia!)
+
+
+[ikon: x-circle] Jangan /usr/bin/php8.5 artisan migrate:fresh di production
+
+
+[ikon: x-circle] Jangan taruh logic bisnis di Controller (pakai Service)
+
+
+[ikon: x-circle] Jangan query DB di View Blade (pakai Controller)
+
+
+[ikon: x-circle] Jangan hardcode credential di kode (pakai .env + config/)
+
+— End of Document —
+
+Struktur Folder & Paket Mercatoria v1.3 FINAL · 26 Oktober 2026
+
+15 Paket Composer (+7 dev) · 17 Paket NPM · 67 Migration · 50 Model
+
+VPS Hostinger KVM 1 (CloudPanel v2) · Laravel 13.x · PHP 8.5 · MySQL 8.0 · Redis 7 · Blade + Alpine + Livewire + Tailwind
+

@@ -1,0 +1,1167 @@
+<!DOCTYPE html>
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+      xmlns:w="urn:schemas-microsoft-com:office:word"
+      xmlns="http://www.w3.org/TR/REC-html40">
+<head>
+<meta charset="UTF-8">
+<title>Backlog MVP v1.8 FINAL — Mercatoria</title>
+<!--[if gte mso 9]>
+<xml>
+  <w:WordDocument>
+    <w:View>Print</w:View>
+    <w:Zoom>100</w:Zoom>
+    <w:DoNotOptimizeForBrowser/>
+  </w:WordDocument>
+</xml>
+<![endif]-->
+<style>
+  @page { size: A4; margin: 2cm; }
+  body { font-family: 'Calibri', 'Segoe UI', Arial, sans-serif; font-size: 11pt; line-height: 1.5; color: #222; max-width: 900px; margin: 0 auto; padding: 20px; }
+  h1 { font-size: 22pt; color: #1a4d8f; border-bottom: 3px solid #1a4d8f; padding-bottom: 8px; margin-top: 30px; margin-bottom: 15px; page-break-after: avoid; }
+  h2 { font-size: 16pt; color: #1a4d8f; border-bottom: 1px solid #ccc; padding-bottom: 5px; margin-top: 22px; margin-bottom: 12px; page-break-after: avoid; }
+  h3 { font-size: 13pt; color: #2c5fa8; margin-top: 18px; margin-bottom: 8px; page-break-after: avoid; }
+  h4 { font-size: 11.5pt; color: #333; margin-top: 12px; margin-bottom: 6px; }
+  p { margin: 6px 0; text-align: justify; }
+  ul, ol { margin: 6px 0 6px 22px; padding-left: 0; }
+  li { margin: 3px 0; }
+  table { border-collapse: collapse; width: 100%; margin: 10px 0; font-size: 10pt; page-break-inside: avoid; }
+  th { background: #1a4d8f; color: #fff; border: 1px solid #1a4d8f; padding: 6px 8px; text-align: left; }
+  td { border: 1px solid #ccc; padding: 6px 8px; vertical-align: top; }
+  tr:nth-child(even) td { background: #f5f7fa; }
+  code { background: #f0f2f5; padding: 2px 5px; border-radius: 3px; font-family: 'Consolas', monospace; font-size: 9.5pt; color: #c0392b; }
+  pre { background: #f8f9fa; border-left: 4px solid #1a4d8f; padding: 10px 14px; font-family: 'Consolas', monospace; font-size: 9pt; line-height: 1.35; white-space: pre; page-break-inside: avoid; overflow-x: auto; }
+  .cover { text-align: center; padding: 100px 20px; page-break-after: always; }
+  .cover h1 { font-size: 40pt; border: none; color: #1a4d8f; margin-bottom: 10px; }
+  .cover .subtitle { font-size: 18pt; color: #666; margin-bottom: 80px; }
+  .cover .meta { font-size: 12pt; color: #444; line-height: 2; text-align: left; display: inline-block; margin-top: 40px; }
+  .cover .meta strong { color: #1a4d8f; }
+  .toc { background: #f5f7fa; border: 1px solid #ccc; padding: 15px 25px; margin: 20px 0; page-break-after: always; }
+  .toc h2 { margin-top: 0; border: none; }
+  .toc ol { margin-left: 20px; }
+  .toc li { margin: 3px 0; font-size: 10.5pt; }
+  hr { border: none; border-top: 1px solid #ccc; margin: 18px 0; }
+  .note { background: #fff8e1; border-left: 4px solid #ffc107; padding: 10px 14px; margin: 12px 0; font-size: 10.5pt; page-break-inside: avoid; }
+  .note-info { background: #e3f2fd; border-left: 4px solid #1e88e5; padding: 10px 14px; margin: 12px 0; font-size: 10.5pt; page-break-inside: avoid; }
+  .note-danger { background: #ffebee; border-left: 4px solid #e53935; padding: 10px 14px; margin: 12px 0; font-size: 10.5pt; page-break-inside: avoid; }
+  .note-success { background: #e8f5e9; border-left: 4px solid #43a047; padding: 10px 14px; margin: 12px 0; font-size: 10.5pt; page-break-inside: avoid; }
+  .pill { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 9pt; font-weight: bold; color: #fff; margin-right: 4px; }
+  .pill-p0 { background: #E53935; }
+  .pill-p1 { background: #FB8C00; }
+  .pill-p2 { background: #43A047; }
+  .epic-box-new { border: 2px solid #43A047; border-radius: 8px; padding: 12px 16px; margin: 16px 0; background: #F1F8E9; }
+  .epic-box-new h3 { margin-top: 0; color: #2E7D32; }
+  .story-box-new { border-left: 4px solid #43A047; padding: 8px 12px; margin: 10px 0; background: #F1F8E9; }
+  .story-box-new h4 { margin-top: 0; color: #2E7D32; }
+  .story-box-rev { border-left: 4px solid #FB8C00; padding: 8px 12px; margin: 10px 0; background: #FFF8E1; }
+  .story-box-rev h4 { margin-top: 0; color: #E65100; }
+  .task-list { margin: 6px 0 6px 20px; }
+  .task-list li { font-size: 10pt; }
+  .sprint-table th { background: #2c5fa8; }
+  .badge-new { background: #43A047; color: #fff; font-size: 8.5pt; font-weight: bold; padding: 2px 6px; border-radius: 4px; margin-left: 4px; }
+  .badge-rev { background: #FB8C00; color: #fff; font-size: 8.5pt; font-weight: bold; padding: 2px 6px; border-radius: 4px; margin-left: 4px; }
+</style>
+</head>
+<body>
+
+<div class="cover">
+  <h1>BACKLOG MVP v1.8</h1>
+  <div class="meta">
+    <p><strong>Versi:</strong> 1.8 (FINAL — AMANDEMEN applied VPS Hostinger KVM 1 + PHP 8.5 + Laravel 13.x)</p>
+    <p><strong>Tanggal:</strong> 26 Oktober 2026 · <strong>Riwayat:</strong> v1.8 AMANDEMEN struktur + Bootstrap Icons</p>
+    <p><strong>Referensi PRD:</strong> v4.8 FINAL (VPS Hostinger KVM 1 · CloudPanel v2 · PHP 8.5 · Laravel 13.x)</p>
+    <p><strong>Referensi Skema DB:</strong> v1.6 FINAL · <strong>Struktur Folder:</strong> v1.3 FINAL · <strong>Tutorial Sprint 0:</strong> v1.1 FINAL</p>
+    <p><strong>Referensi Design Spec:</strong> v3.2 FINAL</p>
+    <p><strong>Target Infrastruktur &amp; Stack:</strong> <strong>VPS Hostinger KVM 1</strong> (1 vCPU · 4 GB RAM + 2 GB Swap · 50 GB NVMe · CloudPanel v2) + <strong>PHP 8.5-FPM</strong> + <strong>Laravel 13.x</strong> + <strong>MySQL 8.0</strong> + <strong>Redis 7</strong></p>
+    <p><strong>Total Epic:</strong> 19 (+1: EPIC-19 Split Box)</p>
+    <p><strong>Total Story:</strong> 276 (+12 dari v1.6)</p>
+    <p><strong>Total Task:</strong> 848 (+41 dari v1.6)</p>
+    <p><strong>Total Story Points:</strong> 1.319 (+61 dari v1.6)</p>
+    <p><strong>Estimasi:</strong> <span style="color:#E53935;font-weight:bold;">12 minggu</span> (target launch PRD; 12 sprint @ 1 minggu)</p>
+  </div>
+</div>
+
+<div class="toc">
+  <h2>Daftar Isi — Backlog v1.5</h2>
+  <ol>
+    <li>Changelog v1.2 → v1.7</li>
+    <li>Ringkasan Epic (Updated)</li>
+    <li>Sprint Planning Update</li>
+    <li>EPIC-04: Story Baru — Store &amp; Berat Produk</li>
+    <li>EPIC-06: Story Baru — Shipping Calculator &amp; Snapshot</li>
+    <li>EPIC-11: Story Baru — Settings Ongkir</li>
+    <li>Dependency Graph (Updated)</li>
+    <li>Definition of Done (Updated)</li>
+    <li>Total SP per Sprint</li>
+    <li>EPIC-03: Story Baru — Migrasi User Lama</li>
+    <li>Total SP Update v1.3 → v1.5 &amp; EPIC-10 Smart Scoped IP Ban</li>
+    <li><strong>EPIC-01 (Sprint 0) &amp; Penyesuaian Package Laravel 13.x + PHP 8.5 di Seluruh Epic</strong> <span class="badge-new">NEW v1.5</span></li>
+      <li><strong>EPIC-19: Split Box, Progress Tier &amp; Denda Keterlambatan</strong> <span class="badge-new">NEW v1.7</span></li>
+</ol>
+</div>
+
+<h1>1. Changelog v1.2 → v1.7</h1>
+
+<div class="note-success">
+<strong>Backlog v1.6</strong> mengakumulasi perubahan dari v1.3 (Store Concept, Berat Produk, Bulk Edit, Shipping Calculator) dan v1.4 (Migrasi User Lama).
+</div>
+
+<h3>1.1 Changelog v1.2 → v1.3</h3>
+<table>
+  <tr><th>Area</th><th>Epic</th><th>Story Baru</th><th>SP</th></tr>
+  <tr><td>Store CRUD</td><td>EPIC-04</td><td>1</td><td>5</td></tr>
+  <tr><td>Store Selector di Game &amp; Produk</td><td>EPIC-04</td><td>1</td><td>3</td></tr>
+  <tr><td>Input Berat Produk</td><td>EPIC-04</td><td>1</td><td>3</td></tr>
+  <tr><td>Input Berat Varian + Bulk Edit</td><td>EPIC-04</td><td>1</td><td>8</td></tr>
+  <tr><td>Shipping Calculator Service</td><td>EPIC-06</td><td>1</td><td>8</td></tr>
+  <tr><td>Update Snapshot simpan Breakdown Ongkir</td><td>EPIC-06</td><td>1</td><td>5</td></tr>
+  <tr><td>Detail Order Admin — Breakdown Ongkir</td><td>EPIC-06</td><td>1</td><td>3</td></tr>
+  <tr><td>Settings — Ongkir per kg + Default Berat</td><td>EPIC-11</td><td>1</td><td>5</td></tr>
+  <tr style="background:#E3F2FD;font-weight:bold;"><td colspan="2">SUBTOTAL v1.3</td><td>8</td><td>40</td></tr>
+</table>
+
+<h3>1.2 Changelog v1.3 → v1.4</h3>
+<table>
+  <tr><th>Area</th><th>Epic</th><th>Story Baru</th><th>SP</th></tr>
+  <tr><td>Kolom <code>is_migrated</code> + Model Update</td><td>EPIC-03</td><td>1</td><td>3</td></tr>
+  <tr><td>Inject User — Form Sederhana</td><td>EPIC-03</td><td>1</td><td>5</td></tr>
+  <tr><td>Force Reset Password + Force Verify Email</td><td>EPIC-03</td><td>1</td><td>3</td></tr>
+  <tr><td>Gate Verifikasi — Wajib Verif + Isi Tgl Lahir</td><td>EPIC-03</td><td>1</td><td>3</td></tr>
+  <tr style="background:#E3F2FD;font-weight:bold;"><td colspan="2">SUBTOTAL v1.4</td><td>4</td><td>14</td></tr>
+</table>
+
+<h3>1.3 Perubahan v1.4 → v1.5</h3>
+<table>
+  <tr><th>Story</th><th>Epic</th><th>Jenis</th><th>SP</th></tr>
+  <tr><td>04-27 Proteksi Anti-Download Foto &amp; Auto-Watermark</td><td>EPIC-04</td><td>Baru</td><td>5</td></tr>
+  <tr><td>04-28 Halaman Search Full-Width &amp; Deep Search Varian</td><td>EPIC-04</td><td>Baru</td><td>5</td></tr>
+  <tr><td>11-14 Toggle Stop Kirim Email Customer</td><td>EPIC-11</td><td>Baru</td><td>3</td></tr>
+  <tr><td>10-15 Smart Scoped IP + Device Ban</td><td>EPIC-10</td><td>Baru</td><td>5</td></tr>
+  <tr><td>10-16 Transisi Instan MVP → Ex &amp; Tier Bukan Tameng</td><td>EPIC-10</td><td>Baru</td><td>3</td></tr>
+  <tr><td>04-26, 06-30, 03-23</td><td>EPIC-04/06/03</td><td>Revisi (harga varian RMB, single-profit, gate konfirmasi bayar)</td><td>—</td></tr>
+  <tr style="background:#E3F2FD;font-weight:bold;"><td colspan="3">SUBTOTAL v1.5</td><td>21</td></tr>
+</table>
+
+<h3>1.4 Perubahan v1.5 → v1.6 (Sinkronisasi PRD v4.7)</h3>
+<ul>
+  <li><strong>Rate RMB → IDR default 3.000</strong>; semua test case dihitung ulang (contoh: 58 RMB → ongkir lokal Rp 12.180).</li>
+  <li><strong>Harga tayang dibulatkan sekali</strong> (CEILING Rp 5.000 di item/varian). Cart &amp; Checkout tanpa pembulatan lagi (Story 06-30).</li>
+  <li><strong>Fee QRIS/marketplace live</strong> sesuai pilihan, bisa diganti sebelum/sesudah "Buat Pesanan"; <code>calculateCheckoutTotal()</code> ditambahkan.</li>
+  <li><strong>Preview perhitungan</strong> mengikuti varian/store/berat/metode yang dipilih.</li>
+  <li><strong>Ikon asli</strong> (Bootstrap Icons + SVG brand), tanpa emoji.</li>
+  <li>Versi package, jumlah paket (16 produksi + 7 dev, 17 NPM), migration (57), dan nama middleware disamakan dengan Struktur Folder v1.2.</li>
+  <li>Sprint dijadwalkan ulang mengikuti target PRD (launch minggu 12).</li>
+</ul>
+
+<h3>1.5 Ringkasan Akumulatif (Direkonstruksi)</h3>
+<table>
+  <tr><th>Metric</th><th>v1.2</th><th>v1.3</th><th>v1.4</th><th>v1.5</th><th>v1.6</th><th>v1.7</th></tr>
+  <tr><td>Story</td><td>247</td><td>255</td><td>259</td><td>264</td><td>264</td><td><strong>276</strong></td></tr>
+  <tr><td>Task</td><td>751</td><td>779</td><td>789</td><td>807</td><td>807</td><td><strong>848</strong></td></tr>
+  <tr><td>Story Points</td><td>1.183</td><td>1.223</td><td>1.237</td><td>1.258</td><td>1.258</td><td><strong>1.319</strong></td></tr>
+</table>
+<div class="note-info">
+<strong>Catatan koreksi:</strong> angka lama (223 / 662 / 1.179 dan seterusnya) tidak sama dengan jumlah baris per-epic di Bab 2. Angka di atas direkonstruksi dari ID story (EPIC-01 = 8, EPIC-03 = 23, EPIC-04 = 28, EPIC-06 = 32, EPIC-10 = 16, EPIC-11 = 14) dan jumlah baris per-epic, lalu dihitung mundur memakai delta tiap versi.
+</div>
+
+<h3>1.6 Perubahan v1.6 → v1.7 (Split Box, Tier, Denda)</h3>
+<ul>
+  <li><strong>EPIC-19 baru</strong> (12 story, 41 task, 61 SP): Split Box / Sharing Slot, Progress Tier saat Sedang Diproses, Denda Keterlambatan CO semi-manual, Hangus Permanen (lihat Bab 13).</li>
+  <li><strong>Ikon dari Bootstrap Icons</strong> (SVG + <code>&lt;x-icon&gt;</code>); <code>ikon Heroicons</code> dihapus, paket Composer produksi jadi 11 (AMANDEMEN §1).</li>
+  <li>Migration naik jadi 67, cron jadi 12 (<code>splitbox:check-batches</code>), status order bertambah <code>menunggu_denda</code> dan <code>hangus_permanen</code>.</li>
+  <li>Sprint 6 sampai 10 diperberat (+61 SP); lihat Bab 3.</li>
+</ul>
+
+<h1>2. Ringkasan Epic (Updated)</h1>
+
+<table>
+  <tr><th>Epic ID</th><th>Nama Epic</th><th>Story</th><th>Task</th><th>Total SP</th><th>v1.3 SP</th><th>Delta</th></tr>
+  <tr style="background:#FFF8E1;"><td>EPIC-01</td><td>Foundation &amp; Setup (VPS Hostinger KVM 1 + CloudPanel v2 + PHP 8.5 + Laravel 13) <span class="badge-rev">REV v1.5</span></td><td>8</td><td>24</td><td>34</td><td>34</td><td>—</td></tr>
+  <tr><td>EPIC-02</td><td>Design System &amp; Layout Global (Tailwind 4 + Ikon SVG Bootstrap Icons (&lt;x-icon&gt;))</td><td>11</td><td>34</td><td>50</td><td>50</td><td>—</td></tr>
+  <tr style="background:#F1F8E9;"><td>EPIC-03</td><td>User System &amp; Authentication (Turnstile ^1.1 + Honeypot ^4.5 + Migrasi User)</td><td>23 <span class="badge-new">+4</span></td><td>66 <span class="badge-new">+10</span></td><td>108</td><td>94</td><td>+14</td></tr>
+  <tr style="background:#F1F8E9;"><td>EPIC-04</td><td>Produk &amp; Katalog (Intervention Image ^3.11 PHP 8.5 + Sluggable ^3.7 + Deep Search)</td><td>28 <span class="badge-new">+6</span></td><td>88 <span class="badge-new">+20</span></td><td>131</td><td>121</td><td>+10</td></tr>
+  <tr><td>EPIC-05</td><td>Cart &amp; Checkout (Livewire ^3.6 + Redis Cart Reminder)</td><td>12</td><td>36</td><td>58</td><td>58</td><td>—</td></tr>
+  <tr style="background:#F1F8E9;"><td>EPIC-06</td><td>Order, Payment, Snapshot &amp; PDF (DomPDF ^3.1 PHP 8.5 + Shipping Calc)</td><td>32 <span class="badge-new">+3</span></td><td>100 <span class="badge-new">+8</span></td><td>158</td><td>158</td><td>—</td></tr>
+  <tr><td>EPIC-07</td><td>Koin, Referral &amp; Voucher (Stevebauman Location ^7.4 Geo-IP ID)</td><td>14</td><td>42</td><td>66</td><td>66</td><td>—</td></tr>
+  <tr><td>EPIC-08</td><td>Dashboard User (Livewire ^3.6 4-Tab Layout)</td><td>16</td><td>48</td><td>74</td><td>74</td><td>—</td></tr>
+  <tr><td>EPIC-09</td><td>Bell Notifikasi User (Laravel 13 Notification + Polling 60s)</td><td>12</td><td>38</td><td>60</td><td>60</td><td>—</td></tr>
+  <tr style="background:#F1F8E9;"><td>EPIC-10</td><td>Spammer, Security &amp; Logging (Smart Scoped IP Ban + Activitylog ^4.9)</td><td>16 <span class="badge-new">+2</span></td><td>48 <span class="badge-new">+6</span></td><td>80</td><td>72</td><td>+8</td></tr>
+  <tr style="background:#F1F8E9;"><td>EPIC-11</td><td>Admin Panel — Core, Settings Ongkir &amp; Kill-Switch Email</td><td>14 <span class="badge-new">+2</span></td><td>44 <span class="badge-new">+8</span></td><td>64</td><td>61</td><td>+3</td></tr>
+  <tr><td>EPIC-12</td><td>Admin Panel — Produk &amp; Katalog (Livewire ^3.6 Bulk Edit + Hard Delete)</td><td>12</td><td>36</td><td>58</td><td>58</td><td>—</td></tr>
+  <tr><td>EPIC-13</td><td>Admin Panel — Transaksi (DomPDF ^3.1 Packing List + Maatwebsite Excel ^3.1.68|^4.0)</td><td>16</td><td>50</td><td>80</td><td>80</td><td>—</td></tr>
+  <tr><td>EPIC-14</td><td>Admin Panel — User &amp; Spammer (Forever Delete + Force Reset/Verify)</td><td>11</td><td>33</td><td>51</td><td>51</td><td>—</td></tr>
+  <tr><td>EPIC-15</td><td>Admin Panel — Konten (GrapesJS Preorder Builder + 27 Email Template)</td><td>12</td><td>36</td><td>56</td><td>56</td><td>—</td></tr>
+  <tr><td>EPIC-16</td><td>Admin Panel — Laporan, Rank &amp; SEO (Maatwebsite Excel ^3.1.68|^4.0 PHP 8.5)</td><td>10</td><td>30</td><td>48</td><td>48</td><td>—</td></tr>
+  <tr><td>EPIC-17</td><td>SEO, Performance &amp; GA4 (Spatie Sitemap ^7.3 + OPcache JIT PHP 8.5)</td><td>9</td><td>28</td><td>42</td><td>42</td><td>—</td></tr>
+  <tr><td>EPIC-18</td><td>Integrasi, Backup &amp; Launch (Spatie Backup ^9.2 + Supervisor Redis KVM 1)</td><td>8</td><td>26</td><td>40</td><td>40</td><td>—</td></tr>
+  <tr style="background:#F1F8E9;"><td>EPIC-19</td><td>Split Box, Progress Tier &amp; Denda Keterlambatan (SplitBoxService + UserTierService + LatePenaltyService + Livewire) <span class="badge-new">NEW v1.7</span></td><td>12 <span class="badge-new">+12</span></td><td>41 <span class="badge-new">+41</span></td><td>61</td><td>—</td><td>+61</td></tr>
+  <tr style="background:#E3F2FD;font-weight:bold;"><td colspan="2">TOTAL (v1.8 FINAL)</td><td>276</td><td>848</td><td>1.319</td><td>1.223</td><td>+96</td></tr>
+</table>
+
+<h1>3. Sprint Planning Update (Mengikuti Target PRD: Launch Minggu 12)</h1>
+
+<div class="note-info">
+<strong>Cadence:</strong> 1 sprint = 1 minggu, Sprint 0 = pra-setup. Sprint 11 = Beta Tertutup (PRD minggu 11) dan Sprint 12 = Polish + Launch (PRD minggu 12). Fase Discovery/Desain PRD (minggu 1–4) berjalan paralel dengan Sprint 1–4.
+</div>
+
+<table class="sprint-table">
+  <tr><th>Sprint</th><th>Minggu</th><th>Fokus</th><th>SP v1.7</th><th>Catatan alokasi</th></tr>
+  <tr><td>Sprint 0</td><td>Pre</td><td>Setup Foundation</td><td>34</td><td>EPIC-01</td></tr>
+  <tr><td>Sprint 1</td><td>1</td><td>Design System + Auth Start</td><td>90</td><td>—</td></tr>
+  <tr><td>Sprint 2</td><td>2</td><td>Auth + Katalog + Store CRUD</td><td>103</td><td>—</td></tr>
+  <tr style="background:#FFEBEE;"><td>Sprint 3</td><td>3</td><td>Katalog + Berat + Bulk Edit + Migrasi User + Proteksi Foto + Deep Search</td><td>136</td><td>+10 (04-27, 04-28)</td></tr>
+  <tr><td>Sprint 4</td><td>4</td><td>Cart + Checkout (Harga Fix, Fee Live) + Hard Delete</td><td>98</td><td>+8 koreksi alokasi</td></tr>
+  <tr style="background:#FFEBEE;"><td>Sprint 5</td><td>5</td><td>Order + Shipping Calc + Note + Status + Refund</td><td>158</td><td>EPIC-06 = 158 SP</td></tr>
+  <tr style="background:#FFEBEE;"><td>Sprint 6</td><td>6</td><td>Dashboard + Bell + Badge + Snapshot Viewer + Tier Progress</td><td>142</td><td>+8 (19-09, 19-10)</td></tr>
+  <tr><td>Sprint 7</td><td>7</td><td>Admin Core + Settings Ongkir + Kill-Switch Email + GA4 + Master Split Box</td><td>113</td><td>+10 (19-01, 19-02)</td></tr>
+  <tr style="background:#FFF8E1;"><td>Sprint 8</td><td>8</td><td>Admin Transaksi + Inject + Breakdown Ongkir + Kunci Slot + Denda</td><td>125</td><td>+16 (19-05, 19-08, 19-11)</td></tr>
+  <tr style="background:#FFF8E1;"><td>Sprint 9</td><td>9</td><td>Admin User + Konten + Laporan + Smart IP Ban + Picker, Keranjang Bundle, Batal Otomatis</td><td>119</td><td>+16 (19-03, 19-04, 19-06)</td></tr>
+  <tr style="background:#FFF8E1;"><td>Sprint 10</td><td>10</td><td>SEO + Performance + Deploy Prep + FIFO/Auto-Open Kloter + Hangus Permanen</td><td>96</td><td>+11 (19-07, 19-12)</td></tr>
+  <tr><td>Sprint 11</td><td>11</td><td>Beta Tertutup + Bug Fix</td><td>65</td><td>—</td></tr>
+  <tr><td>Sprint 12</td><td>12</td><td>Polish + Launch</td><td>40</td><td>EPIC-18</td></tr>
+  <tr style="background:#E3F2FD;font-weight:bold;"><td colspan="3">TOTAL</td><td>1.319</td><td>—</td></tr>
+</table>
+
+<div class="note-danger">
+<strong>Catatan penting:</strong>
+<ul>
+  <li><strong>Alokasi EPIC-19 adalah usulan</strong> berdasarkan urutan dependensi (konfigurasi, lalu kunci slot, lalu picker). Validasi sebelum planning.</li>
+  <li><strong>Beban tidak realistis untuk 12 minggu.</strong> Rata-rata ±110 SP per minggu, puncak 158 SP di Sprint 5. Mitigasi: tambah dev part-time di Sprint 3, 5, 6, 8, 9; EPIC-19 dapat dipecah ke rilis v1.1 bila jadwal mepet (Split Box adalah fitur terpisah dan tidak menghalangi launch katalog biasa).</li>
+</ul>
+</div>
+
+<h1>4. EPIC-04: Story Baru — Store &amp; Berat Produk <span class="badge-new">NEW</span></h1>
+
+<div class="epic-box-new">
+<h3>EPIC-04 Update — Produk &amp; Katalog</h3>
+<p><strong>Tujuan:</strong> Store CRUD, Store Selector, Berat Produk, Berat Varian, Bulk Edit.</p>
+<p><strong>Total Baru:</strong> 4 Story · 12 Task · 19 SP</p>
+<p><strong>Dependency:</strong> EPIC-04 existing, Skema DB v1.2</p>
+<p><strong>Sprint:</strong> Sprint 2–3</p>
+</div>
+
+<h3>Story EPIC-04-23: Store CRUD (List, Create, Edit, Delete) <span class="badge-new">NEW</span></h3>
+<div class="story-box-new">
+<h4>As an admin, I want CRUD store untuk tier ongkir lokal CN, so that gak perlu edit kode tiap ada toko baru.</h4>
+<p><strong>Acceptance Criteria:</strong></p>
+<ul>
+  <li>Halaman list: <code>/office/stores</code> — tabel dengan kolom Nama, Min Belanja, Ongkir, Jumlah Produk, Aksi</li>
+  <li>Form create: <code>/office/stores/create</code> — field Nama, Min Belanja (RMB), Ongkir (RMB)</li>
+  <li>Form edit: <code>/office/stores/{id}/edit</code> — plus section "Penggunaan Store" (info jumlah game &amp; produk)</li>
+  <li>Preview perhitungan di form: contoh produk 58 RMB &amp; 150 RMB</li>
+  <li>Hapus store: modal konfirmasi dengan warning kalau dipakai produk/game</li>
+  <li>Validasi: nama wajib, min ≥ 0, ongkir ≥ 0</li>
+  <li>Ongkir = 0 → tampil "Gratis" (badge hijau)</li>
+  <li>Min Belanja = 0 → tampil "— (gak ada min)" muted</li>
+  <li>Sidebar admin: menu "Stores (Tier Ongkir)" di group Produk, setelah Tag</li>
+</ul>
+<p><strong>Tasks (5 SP):</strong></p>
+<ul class="task-list">
+  <li>[FE] Halaman list stores (tabel desktop, card mobile)</li>
+  <li>[FE] Form create + form edit dengan preview</li>
+  <li>[FE] Modal konfirmasi hapus (2 state: ada usage / gak ada)</li>
+  <li>[FE] Sidebar admin update (tambah menu Stores)</li>
+  <li>[BE] StoreController CRUD + validasi</li>
+  <li>[BE] StoreService (create, update, delete, getUsageCount)</li>
+  <li>[QA] Test CRUD + validasi + hapus dengan/tanpa usage</li>
+</ul>
+</div>
+
+<h3>Story EPIC-04-24: Store Selector di Form Game &amp; Produk <span class="badge-new">NEW</span></h3>
+<div class="story-box-new">
+<h4>As an admin, I want pilih store di form game &amp; produk, so that ongkir lokal kehitung otomatis.</h4>
+<p><strong>Acceptance Criteria:</strong></p>
+<ul>
+  <li>Form Game: dropdown "Default Store" (searchable), setelah field Developer</li>
+  <li>Form Produk: dropdown "Store" di sidebar kanan, setelah "Terbitkan"</li>
+  <li>Dropdown tampil: nama store + (min · ongkir)</li>
+  <li>Empty option di produk: "— Pakai default game —" (italic muted)</li>
+  <li>Info text di produk: tampil nama default game di bawah dropdown</li>
+  <li>Shortcut button "+ Store Baru" → <code>/office/stores/create</code></li>
+  <li>Kosong di produk → fallback ke <code>game.default_store_id</code></li>
+  <li>Kosong dua-duanya → ongkir lokal = Rp 0 (fallback aman)</li>
+</ul>
+<p><strong>Tasks (3 SP):</strong></p>
+<ul class="task-list">
+  <li>[FE] Searchable dropdown component (reusable)</li>
+  <li>[FE] Integrasi di form Game &amp; Produk</li>
+  <li>[FE] Empty option + info default game</li>
+  <li>[BE] Method <code>Product::effectiveStore()</code></li>
+  <li>[QA] Test fallback logic (produk → game → null)</li>
+</ul>
+</div>
+
+<h3>Story EPIC-04-25: Input Berat Produk <span class="badge-new">NEW</span></h3>
+<div class="story-box-new">
+<h4>As an admin, I want input berat produk, so that ongkir internasional per kg kehitung akurat.</h4>
+<p><strong>Acceptance Criteria:</strong></p>
+<ul>
+  <li>Field "Berat (gram)" di tab Inventory, setelah Harga RMB</li>
+  <li>Input number, min 1, required, suffix "gram"</li>
+  <li>Helper text: "Berat produk default. Varian bisa override."</li>
+  <li>Preview perhitungan otomatis update saat berat, harga RMB, store, atau varian yang dipilih berubah (Alpine.js + Livewire)</li>
+  <li>Preview tampil: harga produk, ongkir lokal, ongkir CN-BTM, ongkir BTM-JKT, profit, total</li>
+  <li>Info: "Preview cuma untuk admin. Customer cuma lihat 'Rp X'."</li>
+</ul>
+<p><strong>Tasks (3 SP):</strong></p>
+<ul class="task-list">
+  <li>[FE] Input berat di tab Inventory</li>
+  <li>[FE] Preview perhitungan box (auto-update)</li>
+  <li>[BE] Simpan <code>products.weight_gram</code></li>
+  <li>[QA] Test validasi + preview update</li>
+</ul>
+</div>
+
+<h3>Story EPIC-04-26: Input Harga RMB Varian, Berat Varian + Bulk Edit <span class="badge-rev">REV v1.5</span></h3>
+<div class="story-box-new">
+<h4>As an admin, I want input harga varian dalam RMB (<code>price_rmb</code>) &amp; berat varian + bulk edit, so that gampang kelola 30–50 varian dengan harga &amp; ongkir lokal CN per varian yang akurat.</h4>
+<p><strong>Acceptance Criteria:</strong></p>
+<ul>
+  <li>Admin menginput harga tiap varian dalam mata uang <strong>RMB (<code>product_variants.price_rmb</code>)</strong>, bukan IDR; tabel menampilkan konversi otomatis Harga Bersih IDR per varian</li>
+  <li>Kolom "Berat" di tabel varian, setelah Harga, sebelum Gambar</li>
+  <li>Tampil format "{angka}g", atau "—" italic muted kalau null</li>
+  <li>Inline edit: klik angka → jadi input number, Enter → save</li>
+  <li>Bulk Edit Bar sticky top saat scroll, muncul saat ada checkbox tercentang (mendukung Bulk Edit Berat &amp; Bulk Edit Harga RMB)</li>
+  <li>Tombol "Bulk Edit Berat" → modal "Set Same"</li>
+  <li>Modal: tampil list varian terpilih, input berat baru, preview before → after</li>
+  <li>Setelah apply → toast sukses, modal auto-close 2 detik</li>
+  <li>Null berat varian → fallback ke <code>products.weight_gram</code>; Null harga RMB varian → fallback ke <code>products.price_rmb</code></li>
+</ul>
+<p><strong>Tasks (8 SP):</strong></p>
+<ul class="task-list">
+  <li>[FE] Kolom Berat di tabel varian + inline edit</li>
+  <li>[FE] Bulk Edit Bar (sticky, muncul saat ada checkbox)</li>
+  <li>[FE] Modal Bulk Edit "Set Same"</li>
+  <li>[FE] Preview before → after di modal</li>
+  <li>[FE] Success state + auto-close</li>
+  <li>[BE] Bulk update endpoint (<code>PATCH /office/products/{id}/variants/bulk-weight</code>)</li>
+  <li>[BE] Method <code>ProductVariant::effectiveWeight()</code></li>
+  <li>[QA] Test bulk edit 30 varian sekaligus</li>
+</ul>
+</div>
+
+<h3>Story EPIC-04-27: Proteksi Anti-Download Foto &amp; Auto-Watermark Server-Side (Bebas Copy-Paste Teks) <span class="badge-new">NEW v1.5</span></h3>
+<div class="story-box-new">
+<h4>As an admin/owner, I want mengunci seluruh foto produk, varian, dan deskripsi agar tidak bisa di-download oleh orang lain serta otomatis memiliki watermark Mercatoria, namun tetap mengizinkan pengunjung copy-paste kalimat/kata dengan bebas.</h4>
+<p><strong>Acceptance Criteria:</strong></p>
+<ul>
+  <li><strong>Bebas Copy-Paste Kalimat/Kata:</strong> Seluruh teks di halaman web (nama produk, varian, SKU, harga, nomor rekening, kode promo/undangan) tetap bisa di-blok dan di-copy (<code>Ctrl+C</code> / klik kanan <em>Copy</em> / tap-hold teks di HP) tanpa hambatan.</li>
+  <li><strong>Scoped Image Shield (Frontend):</strong> Klik kanan (<code>contextmenu</code>), <em>drag-and-drop</em> (<code>dragstart</code>), dan <em>long-press save image</em> di HP (<code>-webkit-touch-callout: none</code>) diblokir <strong>khusus pada elemen gambar</strong> + dilapisi <code>.img-shield-overlay</code> transparan dan menampilkan toast <em>"[ikon: lock-closed] Gambar dilindungi hak cipta Mercatoria."</em></li>
+  <li><strong>Server-Side Burned Watermark (<code>ImageWatermarkService</code>):</strong> Saat admin upload foto produk induk, foto varian, dan gambar deskripsi panjang, sistem menyimpan file asli di <code>storage/app/private/originals/</code> dan otomatis menanamkan watermark diagonal berulang <code>MERCATORIA · mercatoria.id</code> menggunakan <code>intervention/image</code> v3 pada file publik.</li>
+  <li>Kalaupun pengunjung melakukan <em>Screenshot</em> atau mengambil URL dari <em>Inspect Element</em>, gambar yang didapat sudah menyatu dengan watermark permanen Mercatoria.</li>
+  <li>Bisa diatur on/off dan ketebalan (opacity) watermark-nya melalui <code>/office/settings</code> tab Security.</li>
+</ul>
+<p><strong>Tasks (5 SP):</strong></p>
+<ul class="task-list">
+  <li>[BE] Buat <code>ImageWatermarkService</code> dengan <code>intervention/image:^3.11</code> pada PHP 8.5 (Driver GD (wajib file font TTF di <code>resources/fonts</code> untuk teks watermark) + WebP + tiled diagonal watermark + backup original di <code>storage/app/private/originals</code>)</li>
+  <li>[FE] Buat komponen Blade <code>&lt;x-protected-image&gt;</code> dengan overlay transparan &amp; script <code>image-protection.js</code> (hanya cegat gambar, biarkan copy teks bebas)</li>
+  <li>[FE/BE] Tambah pengaturan toggle proteksi &amp; opacity watermark di <code>/office/settings</code> tab Security</li>
+  <li>[QA] Test di Desktop &amp; Mobile: pastikan copy-paste kalimat/kata lancar 100%, klik-kanan/drag/long-press foto terblokir, dan hasil screenshot/inspect memiliki watermark</li>
+</ul>
+</div>
+
+<h3>Story EPIC-04-28: Halaman Hasil Pencarian (Full-Width Mix Horizontal Filter) &amp; Deep Search Nama Varian <span class="badge-new">NEW v1.5</span></h3>
+<div class="story-box-new">
+<h4>As a customer, I want mencari kata kunci (seperti nama karakter "Tartaglia") dan menemukan seluruh produk baik yang cocok di nama produk maupun di nama variannya, dengan layout halaman Search yang konsisten namun tidak membingungkan dengan halaman Katalog.</h4>
+<p><strong>Acceptance Criteria:</strong></p>
+<ul>
+  <li><strong>Layout Halaman Search (<code>/search?q=...</code>):</strong> Menggunakan container 1 kolom Full-Width (max-width 1200px, tanpa Sidebar Kiri milik Katalog Game) yang memadukan Search Query Header Box, <strong>Horizontal Quick-Filter Bar</strong> (dropdown Game, Kategori Merch, Tag, Rentang Harga), Toolbar (<code>Menampilkan semua X hasil</code> + dropdown <code>Pengurutan standar ▾</code>), dan <strong>Grid 6 Kolom (Desktop) / 4 Kolom (Tablet) / 2 Kolom (Mobile)</strong>.</li>
+  <li><strong>Deep Search Wajib Membaca Nama Varian:</strong> Query <code>ProductSearchService</code> mencari ke <code>products.name</code>, <code>products.sku</code>, <strong><code>product_variants.name</code></strong>, <strong><code>product_variants.sku</code></strong>, serta nama Game dan Developer.</li>
+  <li><strong>Indikator &amp; Auto-Select Varian:</strong> Jika sebuah produk tampil karena kecocokan pada nama varian (misal produk seri gabungan yang memiliki varian <code>Tartaglia</code>), kartu menampilkan badge <code>[ikon: viewfinder-circle] Varian: Tartaglia</code> dan link kartu menyertakan <code>?variant={id}</code> agar varian tersebut otomatis terpilih saat halaman detail produk dibuka.</li>
+</ul>
+<p><strong>Tasks (5 SP):</strong></p>
+<ul class="task-list">
+  <li>[BE] Implementasi <code>ProductSearchService::search()</code> dengan <code>orWhereHas('variants')</code> + index DB <code>product_variants(name)</code></li>
+  <li>[FE] Halaman <code>resources/views/frontend/search/index.blade.php</code> (Full-Width 6-Column Grid + Search Header + Horizontal Quick-Filter Bar)</li>
+  <li>[FE] Tampilkan pill <code>[ikon: viewfinder-circle] Varian: {nama_varian}</code> pada kartu produk jika match berasal dari nama varian + auto-select query param</li>
+  <li>[QA] Test cari nama karakter yang hanya ada di tabel varian → pastikan semua produk yang memuat varian tersebut keluar lengkap</li>
+</ul>
+</div>
+
+<h1>5. EPIC-06: Story Baru — Shipping Calculator &amp; Snapshot <span class="badge-new">NEW</span></h1>
+
+<div class="epic-box-new">
+<h3>EPIC-06 Update — Order &amp; Payment</h3>
+<p><strong>Tujuan:</strong> Shipping Calculator (rumus baru), Update Snapshot (simpan breakdown), Detail Order Admin (breakdown collapsible).</p>
+<p><strong>Total Baru:</strong> 3 Story · 8 Task · 16 SP</p>
+<p><strong>Dependency:</strong> EPIC-06 existing, EPIC-04-23 (Store), EPIC-04-26 (Berat)</p>
+<p><strong>Sprint:</strong> Sprint 5, 8</p>
+</div>
+
+<h3>Story EPIC-06-30: ShippingCalculatorService (Rumus Ongkir Per-Varian RMB &amp; Harga Bersih Single-Profit) <span class="badge-rev">REV v1.5</span></h3>
+<div class="story-box-new">
+<h4>As a system, I want hitung ongkir 3 jenis otomatis per varian &amp; Harga Bersih konsisten dari Katalog hingga Checkout, so that tidak ada selisih/double profit.</h4>
+<p><strong>Acceptance Criteria:</strong></p>
+<ul>
+  <li>Service <code>ShippingCalculatorService</code> dengan method:
+    <ul>
+      <li><code>calculateLocalCn(Product, ?ProductVariant)</code> → ongkir lokal CN (Rp) dihitung spesifik per varian dari <code>variant.price_rmb ?? product.price_rmb</code></li>
+      <li><code>calculateCnBtm(int weightGram)</code> → ongkir CN-BTM (Rp)</li>
+      <li><code>calculateBtmJkt(int weightGram)</code> → ongkir BTM-JKT (Rp)</li>
+      <li><code>calculateItemShipping(Product, ?ProductVariant)</code> → array breakdown lengkap + <code>base_price_bersih</code> &amp; <code>final_price_bersih</code></li>
+      <li><code>calculateCheckoutTotal(items, discount, scheme, platform, method)</code> → total barang tanpa CEILING, tagihan web, dan estimasi biaya CO marketplace</li>
+    </ul>
+  </li>
+  <li><strong>Harga Tayang Dibulatkan Sekali; Cart &amp; Checkout Tanpa CEILING; Fee Live:</strong> Profit 11% dan CEILING Rp 5.000 dihitung <strong>satu kali</strong> di Harga Bersih per item/varian (Katalog = Detail = Keranjang = Checkout). Total Harga Barang = subtotal item dikurangi diskon Koin (maks 5%) atau Voucher, <strong>tanpa pembulatan lagi</strong>. Fee QRIS (0,03% bila total ≥ Rp 500.000) dan fee marketplace muncul langsung saat metode/platform dipilih dan bisa diganti sebelum maupun sesudah "Buat Pesanan". FP: bayar di web = Total Barang (+ fee QRIS), CO marketplace Toco Rp 1 / Shopee Rp 109. DP 50%: bayar di web = 50% × Total Barang; pelunasan saat CO = sisa 50% + Rp 0 (Toco) atau + 25% (Shopee). Contoh: Total Rp 285.000 → DP Rp 142.500; pelunasan Toco Rp 142.500 / Shopee Rp 178.125.</li>
+  <li><strong>Batas Waktu Upload Bukti Bayar Awal 1×24 Jam &amp; Koin/Voucher Hangus Tanpa Undo:</strong> Sejak klik <strong>"Buat Pesanan"</strong> (status <code>Menunggu Pembayaran</code>), user wajib upload bukti bayar dalam <strong>1×24 jam</strong>. Jika lewat 1×24 jam tanpa upload bukti (atau ditolak Admin dan lewat 24 jam tidak upload ulang), status pesanan otomatis menjadi <code>Pembayaran Gagal</code> dan <strong>Koin atau Voucher yang dipakai pada pesanan tersebut OTOMATIS HANGUS (tidak dikembalikan / tidak ada undo)</strong>.</li>
+  <li><strong>Dukungan Produk Single pada <code>OrderItemSnapshotService</code>:</strong> Parameter <code>variant_id</code> bersifat opsional (<code>nullable</code>) pada <code>OrderItemSnapshotService</code> dengan fallback ke produk induk (atau otomatis dibuatkan 1 default variant saat Admin menyimpan produk <code>single</code>).</li>
+  <li><strong>Logistik Marketplace Tanpa Tombol Pelunasan di Web:</strong> Saat pesanan berstatus <em>Menunggu Pelunasan &amp; Pengambilan</em>, customer wajib CO di Shopee/Toco (baik DP 50% maupun FP 100%). Tidak ada tombol <code>[Lunasi &amp; Ambil Sekarang]</code> di web; hanya tampil Countdown Timer 7 Hari dan status berubah otomatis by sistem.</li>
+</ul>
+<p><strong>Tasks (8 SP):</strong></p>
+<ul class="task-list">
+  <li>[BE] Service class + 5 method (termasuk calculateCheckoutTotal)</li>
+  <li>[BE] Logic lokal CN (4 cabang)</li>
+  <li>[BE] Logic internasional per kg</li>
+  <li>[BE] Method <code>effectiveWeight()</code> di Product &amp; ProductVariant</li>
+  <li>[BE] Unit test semua cabang logic</li>
+  <li>[QA] Test case: harga 58 → 12.180 (rate 3.000); harga 150 → 0; store gratis → 0</li>
+  <li>[QA] Test case: berat 500g → CN-BTM 12.500, BTM-JKT 30.000</li>
+  <li>[QA] Test fallback varian null → pakai produk; test total checkout: 300.000 − Koin 15.000 = 285.000 → DP 142.500, pelunasan Shopee 178.125</li>
+</ul>
+</div>
+
+<h3>Story EPIC-06-31: Update Snapshot simpan Breakdown Ongkir <span class="badge-new">NEW</span></h3>
+<div class="story-box-new">
+<h4>As a system, I want snapshot simpan breakdown ongkir, so that audit trail lengkap.</h4>
+<p><strong>Acceptance Criteria:</strong></p>
+<ul>
+  <li>Update <code>OrderItemSnapshotService::createForOrderItem()</code></li>
+  <li>Panggil <code>ShippingCalculatorService</code> untuk hitung breakdown</li>
+  <li>Simpan 6 field baru di snapshot:
+    <ul>
+      <li><code>weight_gram</code></li>
+      <li><code>store_name</code></li>
+      <li><code>ongkir_lokal_cn_idr</code></li>
+      <li><code>ongkir_cn_btm_idr</code></li>
+      <li><code>ongkir_btm_jkt_idr</code></li>
+      <li><code>ongkir_total_idr</code></li>
+    </ul>
+  </li>
+  <li>Test: checkout → buka detail order admin → breakdown tampil</li>
+  <li>Test: ubah store/berat produk setelah order → snapshot gak berubah (freeze)</li>
+</ul>
+<p><strong>Tasks (5 SP):</strong></p>
+<ul class="task-list">
+  <li>[BE] Inject <code>ShippingCalculatorService</code> ke constructor</li>
+  <li>[BE] Update method <code>createForOrderItem()</code> dengan breakdown</li>
+  <li>[BE] Simpan 6 field baru ke <code>order_item_snapshots</code></li>
+  <li>[QA] Test checkout end-to-end</li>
+  <li>[QA] Test freeze: ubah produk setelah order → snapshot gak berubah</li>
+</ul>
+</div>
+
+<h3>Story EPIC-06-32: Detail Order Admin — Breakdown Ongkir Collapsible <span class="badge-new">NEW</span></h3>
+<div class="story-box-new">
+<h4>As an admin, I want lihat breakdown ongkir per item, so that bisa audit kalau ada komplain.</h4>
+<p><strong>Acceptance Criteria:</strong></p>
+<ul>
+  <li>Section "[ikon: cube] Detail Ongkir" di bawah info item (per item)</li>
+  <li>Default state: collapsed ("Show")</li>
+  <li>Klik → expand dengan animasi slide</li>
+  <li>Expanded tampil: berat, store name, 3 komponen ongkir, total ongkir, harga produk, profit 11%, subtotal item</li>
+  <li>BG saat expanded: #F5F7FA, border-left 4px #1E88E5</li>
+  <li>Angka pakai monospace</li>
+  <li>Section ini cuma tampil di halaman admin</li>
+  <li>Invoice PDF &amp; Packing List TIDAK menampilkan breakdown (customer-facing)</li>
+</ul>
+<p><strong>Tasks (3 SP):</strong></p>
+<ul class="task-list">
+  <li>[FE] Component breakdown collapsible di detail order admin</li>
+  <li>[FE] Animasi expand/collapse + icon ▼▲</li>
+  <li>[QA] Test tampil breakdown + expand/collapse</li>
+</ul>
+</div>
+
+<h1>6. EPIC-11: Story Baru — Settings Ongkir <span class="badge-new">NEW</span></h1>
+
+<div class="epic-box-new">
+<h3>EPIC-11 Update — Admin Core &amp; Settings</h3>
+<p><strong>Tujuan:</strong> Tambah setting ongkir per kg + default berat.</p>
+<p><strong>Total Baru:</strong> 1 Story · 4 Task · 5 SP</p>
+<p><strong>Dependency:</strong> EPIC-11 existing</p>
+<p><strong>Sprint:</strong> Sprint 7</p>
+</div>
+
+<h3>Story EPIC-11-13: Settings — Ongkir per kg &amp; Default Berat <span class="badge-new">NEW</span></h3>
+<div class="story-box-new">
+<h4>As an admin, I want atur ongkir per kg &amp; default berat, so that bisa update tanpa edit kode.</h4>
+<p><strong>Acceptance Criteria:</strong></p>
+<ul>
+  <li>Di <code>/office/settings</code> tab "Harga", tambah section "Pengiriman"</li>
+  <li>Field baru:
+    <ul>
+      <li>Ongkir CN → Batam (per kg) — default Rp 25.000</li>
+      <li>Ongkir Batam → Jakarta (per kg) — default Rp 60.000</li>
+      <li>Default Berat Produk (gram) — default 0</li>
+    </ul>
+  </li>
+  <li>Helper text di tiap field</li>
+  <li>Validasi: ongkir ≥ 0, default berat ≥ 0</li>
+  <li>Save → update <code>settings</code> table</li>
+  <li>Order baru pakai nilai baru. Order lama tetap freeze.</li>
+  <li>Tambahkan setting baru di <code>SettingsSeeder</code></li>
+</ul>
+<p><strong>Tasks (5 SP):</strong></p>
+<ul class="task-list">
+  <li>[FE] Form section "Pengiriman" di Settings tab Harga</li>
+  <li>[BE] Save + validasi 3 setting baru</li>
+  <li>[DB] Update <code>SettingsSeeder</code> dengan 3 key baru</li>
+  <li>[FE] Helper text + auto-save atau tombol save</li>
+  <li>[QA] Test save + reload + apply di order baru</li>
+</ul>
+</div>
+
+<h3>Story EPIC-11-14: Settings — Toggle Stop Kirim Email ke Customer (Mode Testing / Maintenance) <span class="badge-new">NEW v1.5</span></h3>
+<div class="story-box-new">
+<h4>As an admin, I want bisa menonaktifkan sementara pengiriman email ke customer saat sedang maintenance atau testing fitur, so that email percobaan tidak masuk ke inbox customer asli walaupun sistem tetap berjalan.</h4>
+<p><strong>Acceptance Criteria:</strong></p>
+<ul>
+  <li>Di <code>/office/settings</code> tab "Email" (serta shortcut di <code>/office/email-templates</code>), terdapat toggle <strong>"Stop Kirim Email ke Customer (Mode Maintenance / Testing)"</strong> (key: <code>pause_customer_emails</code>, default: <code>false</code>)</li>
+  <li>Saat diaktifkan (<code>true</code>), modal konfirmasi tampil sebelum menyimpan perubahan dan dicatat ke <code>admin_logs</code></li>
+  <li>Ketika aktif, seluruh fitur web (order, ubah status, inject data, koin, Bell Notifikasi in-web) tetap berjalan normal, namun semua email keluar ke Customer/Crush di-intercept oleh listener <code>SuppressCustomerEmailWhenPaused</code> (tidak dikirim ke SMTP)</li>
+  <li>Setiap email yang di-stop tetap tercatat di <code>email_logs</code> dengan status <code>suppressed_maintenance</code> agar admin bisa mengecek trigger email saat testing</li>
+  <li><strong>Safety Guardrail:</strong> Email 2FA OTP Admin (<code>admin_otp</code>) dan fitur "Test Send" ke email Admin tetap terkirim normal agar admin tidak terkunci dari <code>/office</code></li>
+  <li>Selama mode ini aktif, Topbar Admin menampilkan badge peringatan mencolok: <code>[ikon: speaker-x-mark] EMAIL CUSTOMER: OFF (Mode Testing)</code> beserta tombol cepat untuk mengaktifkan kembali</li>
+</ul>
+<p><strong>Tasks (3 SP):</strong></p>
+<ul class="task-list">
+  <li>[FE] Toggle switch + modal konfirmasi di Settings tab Email &amp; banner indikator di Topbar Admin</li>
+  <li>[BE] Listener <code>SuppressCustomerEmailWhenPaused</code> pada event <code>Illuminate\Mail\Events\MessageSending</code></li>
+  <li>[DB] Tambah key <code>pause_customer_emails</code> di <code>SettingsSeeder</code> &amp; status <code>suppressed_maintenance</code> di <code>email_logs</code></li>
+  <li>[QA] Test buat order &amp; ubah status saat mode aktif → tidak ada email ke customer, tercatat di <code>email_logs</code>, dan OTP login admin tetap masuk</li>
+</ul>
+</div>
+
+<h1>7. Dependency Graph (Updated)</h1>
+
+<pre>EPIC-01 (Foundation)
+    │
+    ├──> EPIC-02 (Design System + Badge)
+    │        │
+    │        └──> EPIC-03 (Auth + Tier + Migrasi User ★NEW v1.4) ──┬──> EPIC-04 (Katalog + Preview/Zoom)
+    │                                                                │        │
+    │                                                                │        ├──> EPIC-04-23 (Store CRUD ★NEW)
+    │                                                                │        │        │
+    │                                                                │        │        └──> EPIC-04-24 (Store Selector ★NEW)
+    │                                                                │        │
+    │                                                                │        ├──> EPIC-04-25 (Berat Produk ★NEW)
+    │                                                                │        │        │
+    │                                                                │        │        └──> EPIC-04-26 (Berat Varian + Bulk Edit ★NEW)
+    │                                                                │        │
+    │                                                                │        └──> EPIC-06-23 (Snapshot Table)
+    │                                                                │                │
+    │                                                                │                └──> EPIC-06-24 (Snapshot Creation)
+    │                                                                │                        │
+    │                                                                │                        ├──> EPIC-06-25 (Baca Snapshot)
+    │                                                                │                        ├──> EPIC-06-26 (Badge Dihapus)
+    │                                                                │                        ├──> EPIC-06-27 (Timeline)
+    │                                                                │                        ├──> EPIC-06-28 (Viewer)
+    │                                                                │                        └──> EPIC-06-29 (Invoice Snapshot)
+    │                                                                │
+    │                                                                ├──> EPIC-05 (Cart/Checkout)
+    │                                                                │        │
+    │                                                                │        └──> EPIC-06 (Order/Payment)
+    │                                                                │                │
+    │                                                                │                ├──> EPIC-06-30 (Shipping Calc ★NEW)
+    │                                                                │                │        │
+    │                                                                │                │        └──> EPIC-06-31 (Snapshot Breakdown ★NEW)
+    │                                                                │                │                │
+    │                                                                │                │                └──> EPIC-06-32 (Detail Order Breakdown ★NEW)
+    │                                                                │                │
+    │                                                                │                ├──> EPIC-07 (Koin/Referral)
+    │                                                                │                │
+    │                                                                │                └──> EPIC-08 (Dashboard)
+    │                                                                │                        │
+    │                                                                │                        └──> EPIC-09 (Bell User)
+    │                                                                │
+    │                                                                └──> EPIC-10 (Spammer/Security/Log)
+    │
+    ├──> EPIC-11 (Admin Core + GA4 + Settings Ongkir ★NEW) ──┬──> EPIC-12 (Admin Produk)
+    │                                                          ├──> EPIC-13 (Admin Transaksi)
+    │                                                          ├──> EPIC-14 (Admin User/Spammer)
+    │                                                          ├──> EPIC-15 (Admin Konten)
+    │                                                          └──> EPIC-16 (Admin Laporan/Rank)
+    │
+    └──> EPIC-17 (SEO/Perf/GA4)
+              │
+              └──> EPIC-18 (Deploy/Launch)</pre>
+
+<h3>Critical Path (Updated)</h3>
+<p>EPIC-01 → EPIC-02 → EPIC-03 → EPIC-03-23 (Migrasi User) → EPIC-04 → EPIC-04-23 (Store) → EPIC-04-25 (Berat) → EPIC-06-30 (Shipping Calc) → EPIC-06-31 (Snapshot) → EPIC-08 → EPIC-11 → EPIC-13 → EPIC-18</p>
+<p><strong>Total critical path SP:</strong> ~704 SP (56% dari total v1.6)</p>
+
+<h1>8. Definition of Done (Updated)</h1>
+
+<h3>8.1 Code Quality &amp; Kompatibilitas PHP 8.5 + Laravel 13.x <span class="badge-rev">REV v1.5</span></h3>
+<ul>
+  <li>[ikon: check-circle] Code berjalan bersih di <strong>PHP 8.5</strong> (<code>/usr/bin/php8.5</code>) dan <strong>Laravel 13.x</strong> (<code>laravel/framework:^13.0</code>) tanpa <em>deprecation notice</em></li>
+  <li>[ikon: check-circle] Code lolos <strong>Laravel Pint (<code>laravel/pint:^1.20</code>)</strong> dan <strong>Larastan v3 (<code>larastan/larastan:^3.0</code>, PHPStan 2.x)</strong> level 5</li>
+  <li>[ikon: check-circle] Seluruh middleware kustom terdaftar di <code>bootstrap/app.php</code> dan seluruh jadwal Cron terdaftar di <code>routes/console.php</code> (standar arsitektur Laravel 13)</li>
+  <li>[ikon: check-circle] Tidak ada <code>dd()</code>, <code>dump()</code>, <code>var_dump()</code> tertinggal</li>
+</ul>
+
+<h3>8.2 Functionality (Sama + Tambahan v1.3 &amp; v1.4)</h3>
+<ul>
+  <li>[ikon: check-circle] Semua Acceptance Criteria terpenuhi</li>
+  <li>[ikon: check-circle] Happy path works</li>
+  <li>[ikon: check-circle] Edge case di-handle (empty, error, unauthorized)</li>
+  <li>[ikon: check-circle] <strong>v1.3:</strong> Store CRUD lengkap dengan validasi</li>
+  <li>[ikon: check-circle] <strong>v1.3:</strong> Berat input di produk &amp; varian</li>
+  <li>[ikon: check-circle] <strong>v1.3:</strong> Bulk edit berat untuk 30+ varian sekaligus</li>
+  <li>[ikon: check-circle] <strong>v1.3:</strong> Shipping Calculator 3 jenis ongkir akurat</li>
+  <li>[ikon: check-circle] <strong>v1.3:</strong> Snapshot simpan breakdown ongkir</li>
+  <li>[ikon: check-circle] <strong>v1.3:</strong> Detail order admin bisa expand breakdown</li>
+  <li>[ikon: check-circle] <strong>v1.3:</strong> Customer cuma lihat harga bersih (no breakdown)</li>
+  <li>[ikon: check-circle] <strong>v1.4:</strong> Kolom <code>is_migrated</code> + helper methods</li>
+  <li>[ikon: check-circle] <strong>v1.4:</strong> Inject user lama form minimal</li>
+  <li>[ikon: check-circle] <strong>v1.4:</strong> Force reset password + force verify email</li>
+  <li>[ikon: check-circle] <strong>v1.4:</strong> Gate verifikasi + isi tgl lahir sebelum order</li>
+  <li>[ikon: check-circle] <strong>v1.6:</strong> Harga tayang dibulatkan sekali; cart &amp; checkout tanpa CEILING; fee QRIS/marketplace live sesuai pilihan; preview mengikuti pilihan aktif</li>
+  <li>[ikon: check-circle] <strong>v1.6:</strong> Tanpa emoji di UI (ikon SVG Bootstrap Icons via &lt;x-icon&gt; + SVG brand)</li>
+  <li>[ikon: check-circle] <strong>v1.7:</strong> Split Box: pair kumulatif valid; slot terkunci saat bukti bayar diupload; order Menunggu Pembayaran batal otomatis bila slot diambil user lain (Koin/Voucher hangus); FIFO lintas kloter; kloter tidak full: Full Refund manual</li>
+  <li>[ikon: check-circle] <strong>v1.7:</strong> Tier: dihitung dari <code>orders.total</code> penuh saat Sedang Diproses, reversal saat Refund/Hangus, denda tidak dihitung</li>
+  <li>[ikon: check-circle] <strong>v1.7:</strong> Denda Rp 1.000/hari: Buka Kunci semi-manual, status Menunggu Denda, Hangus Permanen</li>
+</ul>
+
+<h3>8.3 Testing (Sama + Tambahan v1.3 &amp; v1.4)</h3>
+<ul>
+  <li>[ikon: check-circle] Feature test untuk critical path</li>
+  <li>[ikon: check-circle] Manual QA responsive (mobile, tablet, desktop)</li>
+  <li>[ikon: check-circle] <strong>v1.3:</strong> Unit test ShippingCalculator (semua cabang logic)</li>
+  <li>[ikon: check-circle] <strong>v1.3:</strong> Test case: harga 58 → 12.180 (rate 3.000); harga 150 → 0</li>
+  <li>[ikon: check-circle] <strong>v1.3:</strong> Test case: berat 500g → CN-BTM 12.500, BTM-JKT 30.000</li>
+  <li>[ikon: check-circle] <strong>v1.3:</strong> Test freeze: ubah produk setelah order → snapshot gak berubah</li>
+  <li>[ikon: check-circle] <strong>v1.3:</strong> Test bulk edit 30 varian sekaligus</li>
+  <li>[ikon: check-circle] <strong>v1.3:</strong> Test hapus store → produk jadi fallback ke game</li>
+  <li>[ikon: check-circle] <strong>v1.4:</strong> Test inject user → <code>is_migrated = true</code></li>
+  <li>[ikon: check-circle] <strong>v1.4:</strong> Test register mandiri → <code>is_migrated = false</code></li>
+  <li>[ikon: check-circle] <strong>v1.4:</strong> Test gate order (belum verif → redirect verify, tgl lahir kosong → redirect complete profile)</li>
+  <li>[ikon: check-circle] <strong>v1.6:</strong> Test total checkout (300.000 − Koin 15.000 = 285.000; DP 142.500; pelunasan Shopee 178.125)</li>
+</ul>
+
+<h3>8.4 Security (Sama + Tambahan v1.4)</h3>
+<ul>
+  <li>[ikon: check-circle] CSRF token di semua form</li>
+  <li>[ikon: check-circle] Auth middleware di route protected</li>
+  <li>[ikon: check-circle] Input sanitized + validated</li>
+  <li>[ikon: check-circle] Hapus store butuh konfirmasi modal</li>
+  <li>[ikon: check-circle] <strong>v1.4:</strong> Force reset password butuh konfirmasi modal + log admin</li>
+</ul>
+
+<h3>8.5 Performance (Sama + Tambahan v1.3)</h3>
+<ul>
+  <li>[ikon: check-circle] Query N+1 dihindari</li>
+  <li>[ikon: check-circle] <strong>v1.3:</strong> Store dropdown pakai cache (jarang berubah)</li>
+  <li>[ikon: check-circle] <strong>v1.3:</strong> Shipping Calculator gak query berulang (single call)</li>
+  <li>[ikon: check-circle] <strong>v1.3:</strong> Bulk edit pakai single UPDATE query</li>
+</ul>
+
+<h3>8.6 Logging (Sama + Tambahan v1.3 &amp; v1.4)</h3>
+<ul>
+  <li>[ikon: check-circle] <strong>v1.3:</strong> Store CRUD ter-log di <code>admin_logs</code></li>
+  <li>[ikon: check-circle] <strong>v1.3:</strong> Bulk edit berat ter-log di <code>admin_logs</code></li>
+  <li>[ikon: check-circle] <strong>v1.3:</strong> GA4 event <code>admin_store_crud</code>, <code>admin_bulk_edit_weight</code></li>
+  <li>[ikon: check-circle] <strong>v1.4:</strong> Inject user + force reset/verify ter-log di <code>admin_logs</code></li>
+</ul>
+
+<h3>8.7 Documentation (Sama)</h3>
+<ul>
+  <li>[ikon: check-circle] README diupdate (kalau perlu)</li>
+  <li>[ikon: check-circle] Migration + seeder ada</li>
+</ul>
+
+<h3>8.8 Deployment Ready (Sama + Tambahan v1.3 &amp; v1.4)</h3>
+<ul>
+  <li>[ikon: check-circle] Code merge ke develop branch</li>
+  <li>[ikon: check-circle] Migration siap (17 migration tambahan: 7 dari v1.2–v1.4 + 10 dari v1.6)</li>
+  <li>[ikon: check-circle] <strong>v1.3:</strong> StoreSeeder siap</li>
+  <li>[ikon: check-circle] <strong>v1.3:</strong> Settings ongkir di-seed dengan default</li>
+  <li>[ikon: check-circle] <strong>v1.4:</strong> Migration <code>is_migrated</code> siap</li>
+</ul>
+
+<h1>9. Total SP per Sprint</h1>
+
+<table>
+  <tr><th>Sprint</th><th>Minggu</th><th>SP v1.7</th></tr>
+  <tr><td>Sprint 0</td><td>Pre</td><td>34</td></tr>
+  <tr><td>Sprint 1</td><td>1</td><td>90</td></tr>
+  <tr><td>Sprint 2</td><td>2</td><td>103</td></tr>
+  <tr style="background:#FFEBEE;"><td>Sprint 3</td><td>3</td><td>136</td></tr>
+  <tr><td>Sprint 4</td><td>4</td><td>98</td></tr>
+  <tr style="background:#FFEBEE;"><td>Sprint 5</td><td>5</td><td>158</td></tr>
+  <tr style="background:#FFEBEE;"><td>Sprint 6</td><td>6</td><td>142</td></tr>
+  <tr><td>Sprint 7</td><td>7</td><td>113</td></tr>
+  <tr style="background:#FFF8E1;"><td>Sprint 8</td><td>8</td><td>125</td></tr>
+  <tr style="background:#FFF8E1;"><td>Sprint 9</td><td>9</td><td>119</td></tr>
+  <tr style="background:#FFF8E1;"><td>Sprint 10</td><td>10</td><td>96</td></tr>
+  <tr><td>Sprint 11</td><td>11</td><td>65</td></tr>
+  <tr><td>Sprint 12</td><td>12</td><td>40</td></tr>
+  <tr style="background:#E3F2FD;font-weight:bold;"><td colspan="2">TOTAL</td><td>1.319</td></tr>
+</table>
+
+<h3>9.1 Sprint yang Overload</h3>
+<div class="note-danger">
+<strong>Sprint 5 (158 SP), Sprint 6 (142 SP), Sprint 3 (136 SP), dan Sprint 8 (125 SP)</strong> paling padat dengan cadence 1 minggu.
+<br><br>
+<strong>Rekomendasi mitigasi (bisa digabung):</strong>
+<ol>
+  <li><strong>Tambah 1 dev part-time</strong> di Sprint 3, 5, 6, 8, 9 (freelance)</li>
+  <li><strong>Geser fitur P2 ke v1.1</strong>: Bulk Edit Berat Varian, Preview Perhitungan, Breakdown Collapsible</li>
+  <li><strong>Rilis EPIC-19 (Split Box) sebagai v1.1</strong> bila kapasitas tim tidak cukup untuk 1.319 SP dalam 12 minggu</li>
+</ol>
+</div>
+
+<h3>9.2 Prioritas Kalau Waktu Mepet</h3>
+<table>
+  <tr><th>Priority</th><th>Fitur v1.3 / v1.4</th><th>Alasan</th></tr>
+  <tr><td><span class="pill pill-p0">P0</span></td><td>Store CRUD</td><td>Core fitur, wajib ada</td></tr>
+  <tr><td><span class="pill pill-p0">P0</span></td><td>Shipping Calculator</td><td>Rumus ongkir wajib akurat</td></tr>
+  <tr><td><span class="pill pill-p0">P0</span></td><td>Input Berat Produk</td><td>Dibutuhkan shipping calculator</td></tr>
+  <tr><td><span class="pill pill-p0">P0</span></td><td>Snapshot Breakdown</td><td>Audit trail, wajib</td></tr>
+  <tr><td><span class="pill pill-p0">P0</span></td><td>Migrasi User Lama</td><td>User lama harus bisa order</td></tr>
+  <tr><td><span class="pill pill-p1">P1</span></td><td>Store Selector</td><td>UX admin</td></tr>
+  <tr><td><span class="pill pill-p1">P1</span></td><td>Settings Ongkir</td><td>Fleksibilitas</td></tr>
+  <tr><td><span class="pill pill-p1">P1</span></td><td>Detail Order Breakdown</td><td>Audit UX</td></tr>
+  <tr><td><span class="pill pill-p2">P2</span></td><td>Bulk Edit Berat Varian</td><td>Nice to have (bisa 1 per 1)</td></tr>
+</table>
+
+<h1>10. EPIC-03: Story Baru — Migrasi User Lama <span class="badge-new">NEW v1.4</span></h1>
+
+<div class="epic-box-new">
+<h3>EPIC-03 Update — Migrasi User Lama</h3>
+<p><strong>Tujuan:</strong> Migrasi user dari WooCommerce ke Mercatoria. Reuse flow reset password + verifikasi email + lengkapi profil.</p>
+<p><strong>Total Baru:</strong> 4 Story · 10 Task · 14 SP</p>
+<p><strong>Dependency:</strong> EPIC-03 (Auth), EPIC-10.7 (Inject Data)</p>
+<p><strong>Sprint:</strong> Sprint 3</p>
+</div>
+
+<h3>Story EPIC-03-20: Kolom is_migrated + Model Update <span class="badge-new">NEW</span></h3>
+<div class="story-box-new">
+<h4>As a developer, I want tandai user migrasi, so that bisa bedain user lama &amp; user baru.</h4>
+<p><strong>Acceptance Criteria:</strong></p>
+<ul>
+  <li>Kolom <code>users.is_migrated</code> (boolean, default false)</li>
+  <li>Update model User: fillable + casts + helper <code>isMigrated()</code> + <code>hasCompletedProfile()</code></li>
+  <li>User inject admin → <code>is_migrated = true</code></li>
+  <li>User register mandiri → <code>is_migrated = false</code></li>
+</ul>
+<p><strong>Tasks (3 SP):</strong></p>
+<ul class="task-list">
+  <li>[DB] Migration add column <code>is_migrated</code></li>
+  <li>[BE] Update fillable + casts di Model User</li>
+  <li>[BE] Helper methods <code>isMigrated()</code>, <code>hasCompletedProfile()</code></li>
+  <li>[QA] Test</li>
+</ul>
+</div>
+
+<h3>Story EPIC-03-21: Inject User — Form Sederhana <span class="badge-new">NEW</span></h3>
+<div class="story-box-new">
+<h4>As an admin, I want inject user lama dengan form minimal, so that cepat.</h4>
+<p><strong>Acceptance Criteria:</strong></p>
+<ul>
+  <li>Form inject user cuma: nama, email, HP, alamat (provinsi, kota, kecamatan, alamat lengkap, kode pos)</li>
+  <li>Password: kosong (nullable)</li>
+  <li>Tanggal lahir: kosong (nullable)</li>
+  <li>Email verified: null</li>
+  <li>Role: customer</li>
+  <li><code>is_migrated = true</code></li>
+  <li>State auto-hitung dari order (setelah order di-inject)</li>
+  <li>Setelah simpan → redirect ke <code>/office/orders/create?user_id=...</code> untuk langsung inject order</li>
+</ul>
+<p><strong>Tasks (5 SP):</strong></p>
+<ul class="task-list">
+  <li>[FE] Form inject user (minimal)</li>
+  <li>[BE] Controller storeUser dengan logic <code>is_migrated = true</code></li>
+  <li>[FE] Redirect otomatis ke form inject order</li>
+  <li>[BE] Set role + state default</li>
+  <li>[QA] Test end-to-end</li>
+</ul>
+</div>
+
+<h3>Story EPIC-03-22: Force Reset + Verify (Admin Action) <span class="badge-new">NEW</span></h3>
+<div class="story-box-new">
+<h4>As an admin, I want force reset password + force verify email, so that bisa bantu user yang stuck.</h4>
+<p><strong>Acceptance Criteria:</strong></p>
+<ul>
+  <li>Tombol "Force Reset Password" di <code>/office/users/{id}</code> → kirim link reset manual ke email user</li>
+  <li>Tombol "Force Verify Email" → set <code>email_verified_at = now()</code></li>
+  <li>Konfirmasi modal sebelum eksekusi</li>
+  <li>Log ke <code>admin_logs</code></li>
+  <li>Untuk user yang gak bisa akses email / stuck</li>
+</ul>
+<p><strong>Tasks (3 SP):</strong></p>
+<ul class="task-list">
+  <li>[FE] Tombol + modal konfirmasi di user detail</li>
+  <li>[BE] Controller force reset (kirim email reset)</li>
+  <li>[BE] Controller force verify (set email_verified_at)</li>
+  <li>[BE] Log ke admin_logs</li>
+  <li>[QA] Test</li>
+</ul>
+</div>
+
+<h3>Story EPIC-03-23: Gate Verifikasi — Wajib Verif + Isi Tgl Lahir (Order &amp; Konfirmasi Bayar) <span class="badge-rev">REV v1.5</span></h3>
+<div class="story-box-new">
+<h4>As a system, I want gate order &amp; konfirmasi pembayaran pakai verif email + tgl lahir, so that data profil user migrasi lengkap 100% sebelum bertransaksi.</h4>
+<p><strong>Acceptance Criteria:</strong></p>
+<ul>
+  <li>User bisa login tanpa verif email (soft mode)</li>
+  <li>Banner kuning di dashboard: "Verifikasi email dulu biar bisa order"</li>
+  <li>Klik "Buat Pesanan" ATAU aksi "Konfirmasi Pembayaran / Upload Bukti Bayar" (jika ada tanggungan order migrasi) → redirect <code>/verify-email</code> kalau belum verif</li>
+  <li>Setelah verif → form "Lengkapi Profil" (wajib isi tanggal lahir yang terkunci permanen 1x seumur hidup)</li>
+  <li>Klik "Buat Pesanan" ATAU "Konfirmasi Pembayaran" → redirect <code>/profile/complete</code> kalau tgl lahir masih kosong</li>
+  <li>Di tab Edit Profil (<code>/profile/edit</code>), field <code>No HP (WA)</code> dapat diedit oleh user (dengan validasi normalisasi <code>628xxx</code> &amp; pengecekan ke tabel <code>spammers</code>), sedangkan <code>Tanggal Lahir</code> dan <code>Kode Undangan</code> tetap terkunci permanen</li>
+</ul>
+<p><strong>Tasks (3 SP):</strong></p>
+<ul class="task-list">
+  <li>[FE] Banner verifikasi di dashboard</li>
+  <li>[FE] Form lengkapi profil (tgl lahir)</li>
+  <li>[BE] Middleware <code>EnsureEmailVerifiedForOrder</code> untuk gate "Buat Pesanan"</li>
+  <li>[BE] Middleware <code>EnsureProfileComplete</code> untuk gate tgl lahir</li>
+  <li>[QA] Test semua gate</li>
+</ul>
+</div>
+
+<h1>11. EPIC-10 Update &amp; Total SP v1.3 → v1.5 <span class="badge-new">NEW v1.5</span></h1>
+
+<h3>Story EPIC-10-15: Smart Scoped IP + Device Ban (Anti False-Positive CGNAT &amp; TTL 30 Hari) <span class="badge-new">NEW v1.5</span></h3>
+<div class="story-box-new">
+<h4>As a system, I want memblokir IP &amp; device dari email/no HP yang ter-block tanpa mengunci pelanggan sah di jaringan CGNAT yang sama, so that keamanan tinggi tanpa false-positive.</h4>
+<p><strong>Acceptance Criteria:</strong></p>
+<ul>
+  <li><strong>Layer 1 (Hard Identity Lock):</strong> Email &amp; No HP (<code>628xxx</code>) di tabel <code>spammers</code> atau <code>Blocked</code> permanen (&gt;2x gagal unblock) ditolak total pada <code>POST /register</code>, <code>POST /login</code>, dan <code>POST /profile/edit</code> dari IP mana pun.</li>
+  <li><strong>Layer 2 (Scoped IP + Device Fingerprint Ban):</strong> IP di <code>spammer_ips</code> diblokir dari <code>/register</code> &amp; katalog publik (redirect ke <code>/</code>), namun <code>/login</code> tetap mengizinkan login khusus bagi akun Customer sah (<code>MVP</code>, <code>Ex</code>, <code>ONS</code>) yang tidak ter-block.</li>
+  <li><strong>Layer 3 (Auto-Decay TTL 30 Hari):</strong> Kolom <code>spammer_ips.expires_at</code> otomatis diset <code>last_attempt_at + 30 hari</code> agar rotasi IP dinamis provider seluler tidak memblokir pengguna baru selamanya.</li>
+</ul>
+<p><strong>Tasks (5 SP):</strong></p>
+<ul class="task-list">
+  <li>[DB] Migration tambah <code>device_fingerprint</code>, <code>last_attempt_at</code>, <code>expires_at</code> di <code>spammer_ips</code></li>
+  <li>[BE] Update middleware <code>EnforceIpBlacklist</code> dengan Smart Scoped check</li>
+  <li>[BE] Update pencatatan attempt &amp; perpanjangan TTL 30 hari di <code>SpammerDetectionService</code></li>
+  <li>[QA] Test simulasi 1 IP CGNAT dipakai Spammer (ditolak daftar) &amp; Customer MVP (tetap bisa login)</li>
+</ul>
+</div>
+
+<h3>Story EPIC-10-16: Transisi Instan MVP → Ex &amp; Independensi Tier Badge terhadap Block/Unblock 2x <span class="badge-new">NEW v1.5</span></h3>
+<div class="story-box-new">
+<h4>As a system, I want mengubah state MVP ke Ex secara instan saat pesanan aktif terakhir selesai dan menerapkan batas 2x unblock tanpa tameng Tier Badge, so that aturan siklus pelanggan konsisten.</h4>
+<p><strong>Acceptance Criteria:</strong></p>
+<ul>
+  <li>Begitu pesanan aktif terakhir milik Customer berubah ke <code>Selesai</code> (dan tidak ada pesanan aktif lain), state langsung berubah menjadi <code>Ex</code> (0 hari jeda, tanpa notifikasi H-7 untuk <code>MVP → Ex</code>).</li>
+  <li>Notifikasi H-7 hanya dikirim untuk 3 transisi: <code>Crush → Auto-Delete</code> (hari ke-23), <code>Ex → ONS</code> (hari ke-23 sejak selesai), dan <code>ONS → Blocked</code> (hari ke-53 sejak selesai).</li>
+  <li>Kepemilikan Tier Badge (<code>MVP Silver</code>, <code>MVP Gold</code>, <code>MVP Platinum</code>) tidak memberikan imunitas/tameng terhadap transisi ke <code>Blocked</code> (&gt;60 hari vakum) maupun batas maksimal <strong>2x unblock</strong> (<code>customers.unblock_count</code>).</li>
+  <li><strong>Alur Unblock via WA Admin, Grace Period 7 Hari &amp; Kuota 10/10 View:</strong> Setiap user <code>Blocked</code> hanya bisa mengakses Dashboard dan wajib meminta unblock manual via tombol WA Admin di Dashboard. Setelah di-unblock Admin, user mendapatkan <strong>Grace Period 7 hari</strong> untuk CO &amp; bayar, akses Katalog + Checkout dibuka kembali, serta diberikan <strong>jatah kuota 10/10 produk untuk view</strong> agar tidak spam. Jika dalam 7 hari tidak ada pembayaran terverifikasi → otomatis kembali <code>Blocked</code> (<code>unblock_count + 1</code>).</li>
+  <li><strong>Proteksi Cron <code>user:purge-crush</code> Hari ke-30:</strong> Cron auto-delete Crush (&gt;30 hari) wajib mengecualikan (<code>skip</code>) akun <code>Crush</code> yang sedang memiliki pesanan berstatus <code>Menunggu Pembayaran</code> atau <code>Ditahan (Menunggu Verifikasi)</code> agar tidak ter-hard-delete saat menunggu verifikasi Admin.</li>
+</ul>
+<p><strong>Tasks (3 SP):</strong></p>
+<ul class="task-list">
+  <li>[BE] Listener <code>UpdateUserStateOnOrderCompleted</code> langsung set state <code>Ex</code> jika <code>activeOrders()->count() === 0</code></li>
+  <li>[BE] Update command <code>user:update-state</code> &amp; validasi <code>customers.unblock_count &lt; 2</code> tanpa pengecualian tier</li>
+  <li>[QA] Test Customer Gold/Platinum vakum &gt; 60 hari tetap menjadi <code>Blocked</code> dan terkunci permanen setelah 2x gagal unblock</li>
+</ul>
+</div>
+
+<table>
+  <tr><th>Epic</th><th>Story Baru</th><th>Task Baru</th><th>SP</th></tr>
+  <tr><td>EPIC-03</td><td>+4</td><td>+10</td><td>+14 SP</td></tr>
+  <tr style="background:#E3F2FD;font-weight:bold;"><td>TOTAL</td><td>+4</td><td>+10</td><td>+14 SP</td></tr>
+</table>
+
+<p><strong>Update total:</strong></p>
+<table>
+  <tr><th>Metric</th><th>v1.3</th><th>v1.4</th><th>Delta</th></tr>
+  <tr><td>Story</td><td>255</td><td><strong>259</strong></td><td>+4</td></tr>
+  <tr><td>Task</td><td>779</td><td><strong>789</strong></td><td>+10</td></tr>
+  <tr><td>SP</td><td>1.223</td><td><strong>1.237</strong></td><td>+14</td></tr>
+</table>
+
+<div class="note-danger">
+<strong>Sprint 3 kini 136 SP</strong> setelah EPIC-03 (Migrasi User Lama) dan story v1.5 (04-27, 04-28). Sprint 5 tetap terpadat (158 SP). <strong>Rekomendasi:</strong> tambah 1 dev part-time di Sprint 3, 5, dan 6.
+</div>
+
+<h1>12. EPIC-01 (Sprint 0) &amp; Penyesuaian Package Laravel 13.x + PHP 8.5 di Seluruh Epic <span class="badge-new">NEW v1.5</span></h1>
+
+<div class="epic-box-new">
+<h3>EPIC-01 — Foundation &amp; Pre-Setup VPS Hostinger KVM 1 (CloudPanel v2 + PHP 8.5 + Laravel 13.x)</h3>
+<p><strong>Tujuan:</strong> Menyiapkan server produksi &amp; staging pada <strong>VPS Hostinger KVM 1</strong> (1 vCPU · 4 GB RAM + 2 GB Swap · 50 GB NVMe) menggunakan <strong>CloudPanel v2</strong>, <strong>PHP 8.5-FPM</strong>, <strong>Laravel 13.x</strong>, <strong>MySQL 8.0</strong>, dan <strong>Redis 7</strong>, serta memastikan ke-15 package Composer produksi berjalan 100% kompatibel di PHP 8.5 tanpa konflik dependency.</p>
+<p><strong>Total:</strong> 8 Story · 24 Task · 34 SP (Sprint 0 — Detail langkah demi langkah tersedia di dokumen <em>Tutorial Sprint 0 v1.1 FINAL</em>)</p>
+</div>
+
+<h3>12.1 Rincian 8 Story pada EPIC-01 (Sprint 0: 34 SP)</h3>
+<table>
+  <tr><th>Story ID</th><th>Nama Story</th><th>Task</th><th>SP</th><th>Deliverable Teknis (VPS KVM 1 + PHP 8.5 + Laravel 13)</th></tr>
+  <tr><td><code>EPIC-01-01</code></td><td>Provisioning VPS Hostinger KVM 1, CloudPanel v2, Timezone WIB &amp; Swap 2 GB</td><td>3</td><td>5</td><td>OS Ubuntu 24.04 + CloudPanel v2 aktif di port <code>8443</code>, Timezone Linux &amp; MySQL <code>+07:00</code> (WIB), Swap 2 GB aktif, MySQL 8.0 dituning untuk RAM 4 GB (<code>innodb_buffer_pool_size=1G</code>), dan Redis 7 aktif.</td></tr>
+  <tr><td><code>EPIC-01-02</code></td><td>Setup PHP Site <code>mercatoria.id</code>, Tuning PHP 8.5-FPM &amp; Database MySQL 8.0</td><td>3</td><td>5</td><td>Site User terisolasi <code>mercatoria</code> (<code>/home/mercatoria/htdocs/mercatoria.id</code>), PHP <strong>8.5-FPM</strong> dengan <code>opcache.jit=1255</code>, <code>pm=ondemand</code> (<code>max_children=15</code>), ekstensi <code>gd</code>/<code>imagick</code> WebP &amp; <code>redis</code> aktif, serta DB <code>mercatoria_db</code> siap.</td></tr>
+  <tr><td><code>EPIC-01-03</code></td><td>Inisialisasi Laravel 13.x, Struktur Folder v1.1 &amp; Bootstrap Middleware</td><td>3</td><td>3</td><td>Instalasi <code>laravel/laravel:^13.0</code> via <code>/usr/bin/php8.5</code>, pembuatan struktur folder kustom, registrasi 10 middleware di <code>bootstrap/app.php</code>, RateLimiter di <code>AppServiceProvider.php</code>, serta <code>helpers.php</code> &amp; <code>fungsi IP helper.php</code>.</td></tr>
+  <tr><td><code>EPIC-01-04</code></td><td>Instalasi 10 Paket Composer produksi + dev (Kompatibel PHP 8.5 &amp; Laravel 13) + 17 Paket NPM</td><td>3</td><td>5</td><td>Instalasi seluruh library Composer versi terbaru yang mendukung PHP 8.5 &amp; Laravel 13 + publikasi config vendor + setup Tailwind CSS 4 (Design Spec v3.3) &amp; <code>npm run build</code>.</td></tr>
+  <tr><td><code>EPIC-01-05</code></td><td>Konfigurasi <code>.env</code> Production (Redis), <code>config/mercatoria.php</code> &amp; 3 SMTP</td><td>3</td><td>3</td><td>Setup <code>.env</code> dengan <code>CACHE_STORE=redis</code>, <code>SESSION_DRIVER=redis</code>, <code>QUEUE_CONNECTION=redis</code>, 3 mailer SMTP Hostinger (<code>security@</code>, <code>info@</code>, <code>cs@</code>), dan file <code>config/mercatoria.php</code> lengkap.</td></tr>
+  <tr><td><code>EPIC-01-06</code></td><td>Setup Storage Publik, Folder Permanen <code>order-snapshots</code> &amp; Privat <code>originals</code></td><td>3</td><td>3</td><td>Pembuatan struktur <code>storage/app/public/order-snapshots</code> (retensi permanen), <code>storage/app/private/originals</code> (master foto sebelum watermark), dan <code>/usr/bin/php8.5 artisan storage:link</code>.</td></tr>
+  <tr><td><code>EPIC-01-07</code></td><td>Eksekusi 67 Migration (50 dasar + 17 tambahan) Skema DB v1.7, Index Deep Search Varian &amp; 8 Seeder</td><td>3</td><td>5</td><td>Eksekusi <code>/usr/bin/php8.5 artisan migrate --seed</code> mencakup tabel <code>stores</code>, <code>price_rmb</code> varian, index <code>product_variants_name_search_idx</code>, Smart Scoped IP Ban, &amp; 8 Seeder awal.</td></tr>
+  <tr><td><code>EPIC-01-08</code></td><td>SSL Let's Encrypt, Vhost Anti-Hotlink, Jadwal <code>routes/console.php</code> &amp; Supervisor</td><td>3</td><td>5</td><td>SSL Let's Encrypt auto-renew, aturan Nginx Anti-Hotlink + <code>client_max_body_size 15M</code>, 12 jadwal Cron di <code>routes/console.php</code> dieksekusi oleh <code>/usr/bin/php8.5 artisan schedule:run</code>, &amp; Supervisor Redis Worker (<code>numprocs=2</code>).</td></tr>
+</table>
+
+<h3>12.2 Matriks Dampak Perubahan ke PHP 8.5 &amp; Laravel 13.x terhadap Fitur &amp; Package di Backlog</h3>
+<div class="note-info">
+<strong>Penting untuk Tim Developer:</strong> Pergantian ke <strong>PHP 8.5 + Laravel 13.x</strong> berdampak langsung pada versi minimal package Composer dan struktur file inti Laravel (tidak lagi memakai <code>app/Http/Kernel.php</code> atau <code>app/Console/Kernel.php</code>). Tabel di bawah ini adalah acuan wajib saat mengerjakan Story di EPIC-02 s/d EPIC-18:
+</div>
+
+<table>
+  <tr><th>Package Composer / Komponen</th><th>Versi Sebelumnya</th><th>Versi Baru Wajib (L13 / PHP 8.5)</th><th>Epic &amp; Fitur yang Terpengaruh</th><th>Catatan Teknis &amp; Alasan Perubahan</th></tr>
+  <tr><td><code>laravel/framework</code></td><td><code>^11.0</code></td><td><strong><code>^13.0</code></strong> (PHP <code>^8.5</code>)</td><td>Seluruh Epic (EPIC-01 s/d EPIC-18)</td><td>Rilis resmi Laravel 13 mendukung penuh PHP 8.5. Seluruh registrasi middleware &amp; exception terpusat di <code>bootstrap/app.php</code>, dan seluruh jadwal Cron didefinisikan di <code>routes/console.php</code>.</td></tr>
+  <tr><td><code>maatwebsite/excel</code></td><td><code>^3.1</code></td><td><strong><code>^3.1.68</code> atau <code>^4.0</code></strong></td><td><strong>EPIC-13</strong> (Export Order), <strong>EPIC-14</strong> (Export User), <strong>EPIC-16</strong> (Export Laporan Penjualan &amp; Rank Pelanggan)</td><td><strong>Sangat Krusial di PHP 8.5:</strong> Versi di bawah <code>3.1.68</code> mengunci <code>phpoffice/phpspreadsheet &lt;= 1.30.2</code> yang gagal diinstal di PHP 8.5. Wajib minimal <code>^3.1.68</code> atau <code>^4.0</code> yang sudah mendukung Laravel 13 &amp; PHP 8.5.</td></tr>
+  <tr><td><code>barryvdh/laravel-dompdf</code></td><td><code>^3.0</code></td><td><strong><code>^3.1</code></strong></td><td><strong>EPIC-06</strong> (Invoice PDF User &amp; Admin), <strong>EPIC-13</strong> (Packing List PDF Gudang)</td><td>Rilis <code>v3.1.0+</code> menambahkan dukungan resmi untuk <code>illuminate/* ^13.0</code> dan memperbaiki <em>deprecation warning</em> properti dinamis pada PHP 8.5 saat me-render PDF A4.</td></tr>
+  <tr><td><code>intervention/image</code></td><td><code>^3.7</code></td><td><strong><code>^3.11</code></strong></td><td><strong>EPIC-04-27</strong> (<code>ImageWatermarkService</code>), <strong>EPIC-06-24</strong> (Copy Snapshot Image), <strong>EPIC-06</strong> (Upload Bukti Bayar)</td><td>Versi <code>^3.11</code> kompatibel penuh dengan ekstensi <code>php8.5-gd</code> &amp; <code>php8.5-imagick</code> di CloudPanel untuk memproses kompresi WebP dan burn-in watermark diagonal berulang tanpa kebocoran memori di KVM 1.</td></tr>
+  <tr><td><code>livewire/livewire</code></td><td><code>^3.5</code></td><td><strong><code>^3.6</code></strong> (atau <code>^4.0</code>)</td><td><strong>EPIC-04-26</strong> (Bulk Edit Varian), <strong>EPIC-05</strong> (Cart Interaktif), <strong>EPIC-08</strong> (Dashboard Tab), <strong>EPIC-09</strong> (Bell Notifikasi), <strong>EPIC-12/13</strong> (Tabel Admin)</td><td>Mendukung container &amp; komponen Blade Laravel 13 serta serialisasi state komponen di PHP 8.5.</td></tr>
+  <tr><td><code>ryangjchandler/laravel-cloudflare-turnstile</code></td><td><code>^1.0</code></td><td><strong><code>^1.1</code></strong> (atau Custom Rule <code>Http::asForm()</code>)</td><td><strong>EPIC-03</strong> (Login &amp; Register Customer), <strong>EPIC-10 / EPIC-11</strong> (Login 2FA Admin <code>/office</code>)</td><td>Pastikan memakai rilis terbaru yang mendukung Laravel 13, atau gunakan <code>VerifyTurnstile</code> middleware/rule via <code>Illuminate\Support\Facades\Http</code> ke endpoint <code>challenges.cloudflare.com/turnstile/v0/siteverify</code>.</td></tr>
+  <tr><td><code>spatie/laravel-sitemap</code> &amp; <code>spatie/laravel-sluggable</code></td><td><code>^7.0</code> &amp; <code>^3.6</code></td><td><strong><code>^7.3</code> &amp; <code>^3.7</code></strong></td><td><strong>EPIC-04</strong> (Auto-slug Produk &amp; Game), <strong>EPIC-15</strong> (Slug Halaman CMS), <strong>EPIC-17</strong> (Auto-generate <code>sitemap.xml</code>)</td><td>Sudah mendukung Laravel 13; untuk Meta Tags, Open Graph, &amp; JSON-LD gunakan <code>App\Services\Seo\SeoMetaService</code> internal agar tidak terhambat package SEO pihak ketiga yang belum update ke Laravel 13.</td></tr>
+  <tr><td><code>stevebauman/location</code></td><td><code>^7.0</code></td><td><strong><code>^7.4</code></strong></td><td><strong>EPIC-07</strong> (Share Produk +5 Koin khusus IP Indonesia)</td><td>Kompatibel dengan Laravel 13 &amp; PHP 8.5 untuk mendeteksi <code>$position-&gt;countryCode === 'ID'</code> menggunakan IP asli dari <code>fungsi IP helper</code>.</td></tr>
+  <tr><td><code>spatie/laravel-activitylog</code>, <code>spatie/laravel-backup</code>, <code>spatie/laravel-permission</code>, <code>spatie/laravel-honeypot</code></td><td><code>^4.8</code>, <code>^9.0</code>, <code>^6.9</code>, <code>^4.5</code></td><td><strong><code>^4.9</code>, <code>^9.2</code>, <code>^6.10</code>, <code>^4.5</code></strong></td><td><strong>EPIC-03</strong> (Honeypot Auth), <strong>EPIC-10</strong> (Activity/Admin Log), <strong>EPIC-18</strong> (Auto-Backup DB &amp; Storage)</td><td>Seluruh keluarga package Spatie pada versi tersebut telah menyertakan dukungan <code>illuminate/support: ^13.0</code> dan PHP 8.5.</td></tr>
+  <tr><td><code>larastan/larastan</code>, <code>laravel/pint</code>, <code>phpunit/phpunit</code></td><td><code>^2.9</code>, <code>^1.17</code>, <code>^11.0</code></td><td><strong><code>^3.0</code>, <code>^1.20</code>, <code>^11.5|^12.0</code></strong></td><td><strong>EPIC-01</strong> &amp; <strong>Definition of Done (Bab 8)</strong> untuk seluruh Sprint 1–12</td><td>Larastan <code>^3.0</code> (berbasis PHPStan 2.x) dan Pint <code>^1.20</code> wajib digunakan agar static analysis &amp; code formatting mengenali sintaks PHP 8.5 dan struktur Laravel 13.</td></tr>
+</table>
+
+<h1>13. EPIC-19: Split Box, Progress Tier &amp; Denda Keterlambatan <span class="badge-new">NEW v1.7</span></h1>
+
+<div class="epic-box-new">
+<h3>EPIC-19: Split Box / Sharing Slot, Progress Tier, Denda Keterlambatan CO</h3>
+<p><strong>Tujuan:</strong> Menjual box terbagi per karakter dengan syarat pair +1/+2 (tanpa booking), menghitung progress Tier saat Sedang Diproses, dan menebus order Hangus lewat denda semi-manual.</p>
+<p><strong>Total:</strong> 12 Story · 41 Task · 61 SP</p>
+<p><strong>Dependency:</strong> EPIC-04 (varian, harga), EPIC-05 (cart), EPIC-06 (upload bukti, status), EPIC-08 (dashboard), EPIC-13 (verifikasi pembayaran, refund). Acuan: PRD v4.9 Section 49–51, Skema DB v1.7 Bab 18–25.</p>
+<p><strong>Sprint:</strong> 6 s/d 10. <strong>Prioritas:</strong> <span class="pill pill-p1">P1</span> Tier &amp; Denda, <span class="pill pill-p2">P2</span> Split Box (dapat digeser ke v1.1 bila jadwal mepet).</p>
+</div>
+
+<h3>Story EPIC-19-01: Admin: Master Split Box &amp; Role Karakter <span class="badge-new">NEW v1.7</span></h3>
+<div class="story-box-new">
+<h4>As an admin, I want mengatur isi Master Box beserta role tiap karakter, so that aturan pair berjalan otomatis.</h4>
+<p><strong>Acceptance Criteria:</strong></p>
+<ul>
+  <li>Tab "Split Box" di form produk: toggle <code>is_split_box</code>, daftar karakter (varian) dengan role <code>normal</code> / <code>hot_1</code> / <code>hot_2</code> dan <code>qty_per_box</code> (default 1)</li>
+  <li>Validasi: harga RMB dan berat seluruh karakter harus sama (dipukul rata); minimal 1 karakter Normal</li>
+  <li>Kloter 1 dibuka manual; <code>closes_at</code> opsional per kloter; <code>max_auto_batches</code> dan <code>auto_open_batch</code> per box</li>
+  <li>Perubahan tercatat di <code>admin_logs</code></li>
+</ul>
+<p><strong>Tasks (5 SP):</strong></p>
+<ul class="task-list">
+  <li>[DB] Migration 000001–000005 (<code>split_boxes</code>, <code>split_box_slots</code>, <code>split_box_batches</code>, <code>split_box_batch_slots</code>, <code>products.is_split_box</code>)</li>
+  <li>[BE] Model + <code>SplitRole</code> enum + FormRequest validasi</li>
+  <li>[FE] Tab Split Box di form produk admin</li>
+  <li>[QA] Test validasi harga/berat seragam dan role</li>
+</ul>
+</div>
+
+<h3>Story EPIC-19-02: Aturan Pair Kumulatif &amp; Validasi <span class="badge-new">NEW v1.7</span></h3>
+<div class="story-box-new">
+<h4>As a system, I want memvalidasi syarat pair di setiap tahap, so that pembeli tidak bisa mencurangi syarat.</h4>
+<p><strong>Acceptance Criteria:</strong></p>
+<ul>
+  <li>Valid bila total Normal dipilih ≥ total kebutuhan pair seluruh Hot (qty dihitung); hanya Normal selalu valid</li>
+  <li>Divalidasi di picker, keranjang, checkout, dan saat upload bukti</li>
+  <li>Contoh: Tartaglia (hot_1) butuh 1 Normal; Tartaglia + Zhongli butuh 2 Normal; hot_2 butuh 2 Normal</li>
+</ul>
+<p><strong>Tasks (5 SP):</strong></p>
+<ul class="task-list">
+  <li>[BE] <code>SplitBoxService::evaluatePair()</code></li>
+  <li>[BE] Panggil validasi di checkout dan upload bukti</li>
+  <li>[QA] Unit test semua kombinasi role termasuk qty &gt; 1</li>
+</ul>
+</div>
+
+<h3>Story EPIC-19-03: Split Box Picker di Detail Produk <span class="badge-new">NEW v1.7</span></h3>
+<div class="story-box-new">
+<h4>As a customer, I want memilih karakter dengan status pair real-time, so that tahu paket mana yang valid.</h4>
+<p><strong>Acceptance Criteria:</strong></p>
+<ul>
+  <li>Card grid interaktif (Livewire + Alpine.js) dengan status: Wajib Pair +1 (<code>[ikon: fire]</code>), Wajib Pair +2 (<code>[ikon: fire-double]</code>), Normal / Pairable (<code>[ikon: handshake]</code>), Habis (<code>[ikon: lock]</code>); ikon dari Bootstrap Icons, tanpa emoji</li>
+  <li>Status real-time, contoh: "Kamu memilih 2 Hot Item. Pilih 2 karakter Normal lagi untuk lanjut."</li>
+  <li>Tombol "Tambah Paket Split Box ke Keranjang" <code>disabled</code> selama syarat pair belum terpenuhi</li>
+  <li>Peringatan: slot baru terkunci setelah bukti bayar diupload</li>
+  <li>Responsif Desktop dan Mobile; gambar memakai proteksi foto (04-27)</li>
+</ul>
+<p><strong>Tasks (8 SP):</strong></p>
+<ul class="task-list">
+  <li>[FE] Komponen Livewire <code>SplitBoxPicker</code> + view Blade</li>
+  <li>[FE] Alpine.js untuk info aturan pair dan state kartu</li>
+  <li>[BE] Ketersediaan gabungan seluruh kloter terbuka (<code>availableQty</code>)</li>
+  <li>[QA] Test desktop, mobile, dan semua status kartu</li>
+</ul>
+</div>
+
+<h3>Story EPIC-19-04: Keranjang Bundle (<code>bundle_group_id</code>) <span class="badge-new">NEW v1.7</span></h3>
+<div class="story-box-new">
+<h4>As a system, I want mengikat item satu paket Split Box, so that syarat pair tidak bisa dicurangi di keranjang.</h4>
+<p><strong>Acceptance Criteria:</strong></p>
+<ul>
+  <li>Item satu paket memakai <code>bundle_group_id</code> (UUID) yang sama di <code>carts</code> dan <code>order_items</code></li>
+  <li>Di <code>/cart</code> item tampil sebagai satu grup; dicentang dan dihapus bersama; menghapus satu karakter menghapus seluruh grup; qty tidak bisa diubah per item</li>
+  <li>Snapshot menyimpan <code>item_type = variant</code>, <code>bundle_group_id</code>, <code>split_role</code>, <code>split_batch_no</code></li>
+</ul>
+<p><strong>Tasks (3 SP):</strong></p>
+<ul class="task-list">
+  <li>[DB] Migration 000006, 000008, 000009 (carts, order_items, snapshots)</li>
+  <li>[FE] Tampilan grup bundle di keranjang</li>
+  <li>[QA] Test hapus satu karakter menghapus grup</li>
+</ul>
+</div>
+
+<h3>Story EPIC-19-05: Kunci Slot saat Upload Bukti Bayar &amp; Release <span class="badge-new">NEW v1.7</span></h3>
+<div class="story-box-new">
+<h4>As a system, I want mengunci slot saat bukti bayar diupload, so that siapa yang bayar dulu dapat slot dan tidak bisa dipindahtangankan.</h4>
+<p><strong>Acceptance Criteria:</strong></p>
+<ul>
+  <li>Slot terkunci saat bukti bayar diupload (status Ditahan), bukan saat masuk keranjang atau Buat Pesanan; berlaku untuk DP maupun FP</li>
+  <li>Atomik dengan row lock dan all-or-nothing untuk seluruh paket; listener sinkron sebelum status berubah</li>
+  <li>Bukti ditolak Admin, Pembayaran Gagal, atau Dana Dikembalikan melepas slot; Hangus tidak melepas</li>
+  <li>Bila slot sudah diambil saat upload: order batal <code>slot_sold</code> dan Admin dinotifikasi untuk refund manual bila customer sudah transfer</li>
+</ul>
+<p><strong>Tasks (8 SP):</strong></p>
+<ul class="task-list">
+  <li>[BE] <code>SplitBoxService::lockForOrder()</code> + listener <code>LockSplitSlotsOnPaymentUploaded</code></li>
+  <li>[BE] <code>releaseForOrder()</code> + listener <code>ReleaseSplitSlots</code></li>
+  <li>[DB] Kolom <code>split_box_batch_slot_id</code> di order_items</li>
+  <li>[QA] Test dua upload bersamaan untuk slot terakhir</li>
+</ul>
+</div>
+
+<h3>Story EPIC-19-06: Batal Otomatis Order &amp; Purge Keranjang <span class="badge-new">NEW v1.7</span></h3>
+<div class="story-box-new">
+<h4>As a system, I want membatalkan order dan membersihkan keranjang user lain saat slot terkunci, so that tidak ada order yang menggantung.</h4>
+<p><strong>Acceptance Criteria:</strong></p>
+<ul>
+  <li>Order Menunggu Pembayaran yang slotnya habis batal otomatis: <code>Pembayaran Gagal</code>, <code>cancel_reason = slot_sold</code>, Koin/Voucher hangus tanpa undo</li>
+  <li>Item/bundle di <code>carts</code> user lain yang tidak lagi terpenuhi dihapus; Bell + toast: "Maaf, slot karakter di keranjangmu telah terjual ke pembeli lain."</li>
+  <li>Berlaku juga untuk produk biasa: telat bayar 1×24 jam tetap Pembayaran Gagal</li>
+</ul>
+<p><strong>Tasks (5 SP):</strong></p>
+<ul class="task-list">
+  <li>[BE] <code>purgeUnsatisfiableCarts()</code> dan <code>cancelUnsatisfiablePendingOrders()</code></li>
+  <li>[BE] Notifikasi Bell (tipe cart dan order)</li>
+  <li>[QA] Test purge, pembatalan order, dan Koin/Voucher hangus</li>
+</ul>
+</div>
+
+<h3>Story EPIC-19-07: FIFO Lintas Kloter &amp; Auto-Open Kloter Baru <span class="badge-new">NEW v1.7</span></h3>
+<div class="story-box-new">
+<h4>As a system, I want mengalokasikan slot FIFO dan membuka kloter baru saat perlu, so that pair tetap bisa terpenuhi.</h4>
+<p><strong>Acceptance Criteria:</strong></p>
+<ul>
+  <li>Stok digabung dari seluruh kloter terbuka; slot dialokasikan dari kloter dengan <code>batch_no</code> terkecil</li>
+  <li>Setelah tiap slot terkunci: bila Normal tersisa &lt; kebutuhan pair minimum Hot yang tersisa, atau slot habis, kloter N+1 dibuka otomatis</li>
+  <li>Batas <code>max_auto_batches</code>; tiap kloter otomatis dan tiap pencapaian batas mengirim notif Admin</li>
+  <li>Status kloter <code>full</code> / <code>open</code> diperbarui otomatis</li>
+</ul>
+<p><strong>Tasks (8 SP):</strong></p>
+<ul class="task-list">
+  <li>[BE] <code>ensureBatchHealth()</code>, <code>openNextBatch()</code>, <code>refreshBatchStatus()</code></li>
+  <li>[BE] Alokasi FIFO (urut <code>batch_no</code>) di <code>lockForOrder()</code></li>
+  <li>[BE] Notifikasi Admin</li>
+  <li>[QA] Test deadlock pair, slot habis, dan batas kloter otomatis</li>
+</ul>
+</div>
+
+<h3>Story EPIC-19-08: Tutup Kloter &amp; Full Refund Manual <span class="badge-new">NEW v1.7</span></h3>
+<div class="story-box-new">
+<h4>As an admin, I want menutup kloter yang tidak full dan memproses Full Refund, so that dana customer kembali.</h4>
+<p><strong>Acceptance Criteria:</strong></p>
+<ul>
+  <li>Cron <code>splitbox:check-batches</code> (08:30 WIB) memberi notif Admin untuk kloter lewat <code>closes_at</code> yang belum full</li>
+  <li>Tombol "Tutup Kloter &amp; Refund Semua" membuat permintaan Full Refund tiap order terkait dan Bell ke customer; transfer dana manual oleh Admin</li>
+  <li>Aksi tercatat di <code>admin_logs</code> dan GA4 <code>admin_cancel_split_batch</code></li>
+</ul>
+<p><strong>Tasks (3 SP):</strong></p>
+<ul class="task-list">
+  <li>[BE] <code>cancelBatchAndRefund()</code> + command <code>CheckSplitBoxBatches</code></li>
+  <li>[FE] Tombol dan modal konfirmasi di <code>SplitBoxManager</code></li>
+  <li>[QA] Test refund massal dan notifikasi</li>
+</ul>
+</div>
+
+<h3>Story EPIC-19-09: Progress Tier: Trigger Sedang Diproses &amp; Reversal <span class="badge-new">NEW v1.7</span></h3>
+<div class="story-box-new">
+<h4>As a system, I want menghitung total belanja saat order Sedang Diproses, so that progress tier akurat walau DP 50%.</h4>
+<p><strong>Acceptance Criteria:</strong></p>
+<ul>
+  <li>Tambah <code>orders.total</code> penuh ke <code>customers.total_belanja</code> saat status mencapai Sedang Diproses (bukan Pembayaran Diterima dan bukan Selesai); idempotent via <code>tier_counted_at</code></li>
+  <li>Refund Full dan Hangus mengurangi nilai tercatat; Partial Refund mengurangi nominal refund; tier direkalkulasi</li>
+  <li>Denda ditebus mengembalikan nilai order; pembayaran denda tidak dihitung</li>
+  <li>Listener <code>SyncTierOnOrderStatusChanged</code> menggantikan <code>UpdateTierOnOrderCompleted</code></li>
+</ul>
+<p><strong>Tasks (5 SP):</strong></p>
+<ul class="task-list">
+  <li>[BE] Rewrite <code>UserTierService</code> (recordProcessing, reverse, reapply)</li>
+  <li>[BE] Listener + hook <code>RefundService</code> untuk partial</li>
+  <li>[QA] Test DP 50%, refund, hangus, dan panggilan ganda</li>
+</ul>
+</div>
+
+<h3>Story EPIC-19-10: Progress Bar Tier di Header Dashboard <span class="badge-new">NEW v1.7</span></h3>
+<div class="story-box-new">
+<h4>As a customer, I want melihat progress menuju tier berikutnya, so that termotivasi belanja.</h4>
+<p><strong>Acceptance Criteria:</strong></p>
+<ul>
+  <li>Komponen Livewire <code>TierProgress</code> di Header Dashboard: tier saat ini, bar menuju tier berikutnya, sisa nominal; polling 60 detik</li>
+  <li>Belum ada tier: pesan bahwa pesanan terhitung saat Sedang Diproses; Platinum: bar penuh</li>
+  <li>Ambang dari setting (<code>tier_gold_threshold</code>, <code>tier_platinum_threshold</code>)</li>
+</ul>
+<p><strong>Tasks (3 SP):</strong></p>
+<ul class="task-list">
+  <li>[FE] <code>TierProgress</code> + view Blade</li>
+  <li>[BE] <code>UserTierService::progress()</code></li>
+  <li>[QA] Test tiap tier dan responsif</li>
+</ul>
+</div>
+
+<h3>Story EPIC-19-11: Denda Keterlambatan: Buka Kunci Semi-Manual <span class="badge-new">NEW v1.7</span></h3>
+<div class="story-box-new">
+<h4>As an admin, I want membuka kunci order Hangus dengan denda per hari, so that customer bisa CO barangnya.</h4>
+<p><strong>Acceptance Criteria:</strong></p>
+<ul>
+  <li>Tombol "Buka Kunci via Denda" di <code>/office/orders/{id}</code> untuk order Hangus: hitung <code>late_penalty_per_day</code> (Rp 1.000) × hari sejak <code>hangus_at</code> (min 1); nominal bisa diubah Admin</li>
+  <li>Status menjadi Menunggu Denda dengan batas bayar 24 jam; customer melihat tagihan denda dan upload bukti (<code>payments.type = penalty</code>)</li>
+  <li>Terverifikasi: kembali ke Menunggu Pelunasan &amp; Pengambilan dengan timer CO baru 7 hari; nilai order kembali ke tier; denda tidak masuk tier</li>
+  <li>Lewat batas bayar: kembali ke Hangus; GA4 <code>admin_late_penalty_unlock</code></li>
+</ul>
+<p><strong>Tasks (5 SP):</strong></p>
+<ul class="task-list">
+  <li>[BE] <code>LatePenaltyService</code> (quote, unlock, confirmPaid, expireUnpaid)</li>
+  <li>[FE] Modal Buka Kunci dan panel tagihan denda di detail order customer</li>
+  <li>[BE] Hook <code>PaymentVerificationService</code> untuk tipe <code>penalty</code></li>
+  <li>[QA] Test alur penuh dan kasus bukti ditolak</li>
+</ul>
+</div>
+
+<h3>Story EPIC-19-12: Hangus Permanen &amp; Laporan Denda <span class="badge-new">NEW v1.7</span></h3>
+<div class="story-box-new">
+<h4>As an admin, I want menetapkan Hangus Permanen dan melihat pendapatan denda, so that order tuntas dan laporan akurat.</h4>
+<p><strong>Acceptance Criteria:</strong></p>
+<ul>
+  <li>Admin dapat menetapkan Hangus Permanen (final, tidak bisa dibuka lagi); opsional otomatis bila <code>late_penalty_max_days</code> &gt; 0 terlampaui</li>
+  <li>Laporan Penjualan menampilkan "Denda Diterima" terpisah dari DP dan Pelunasan</li>
+  <li>Status Hangus Permanen dan Menunggu Denda masuk filter order, Bell Admin, dan <code>admin_logs</code></li>
+</ul>
+<p><strong>Tasks (3 SP):</strong></p>
+<ul class="task-list">
+  <li>[BE] <code>makePermanent()</code> dan hook <code>order:hangus-expired</code></li>
+  <li>[FE] Kartu laporan dan filter status</li>
+  <li>[QA] Test status final dan laporan</li>
+</ul>
+</div>
+
+<h3>13.1 Dampak ke Story Lain</h3>
+<table>
+  <tr><th>Story</th><th>Perubahan</th></tr>
+  <tr><td>EPIC-06 (Order, Status)</td><td>Status baru Menunggu Denda dan Hangus Permanen; <code>cancel_reason</code>; cron <code>order:hangus-expired</code> diperluas.</td></tr>
+  <tr><td>EPIC-06-31 (Snapshot)</td><td>Snapshot punya <code>item_type</code> (single/variant) dan kolom Split Box.</td></tr>
+  <tr><td>EPIC-08 (Dashboard)</td><td>Header memuat Progress Bar Tier.</td></tr>
+  <tr><td>EPIC-13 (Verifikasi, Refund)</td><td>Verifikasi bukti tipe <code>penalty</code>; refund manual untuk kloter dibatalkan.</td></tr>
+  <tr><td>EPIC-16 (Laporan)</td><td>Kartu Denda Diterima.</td></tr>
+  <tr><td>EPIC-02 (Design System)</td><td>Ikon Bootstrap Icons via komponen <code>&lt;x-icon&gt;</code>; paket <code>ikon Heroicons</code> dihapus.</td></tr>
+</table>
+
+<hr>
+<p style="text-align: center; color: #666; margin-top: 40px;">
+<strong>— End of Document —</strong><br>
+Backlog MVP Mercatoria v1.8 FINAL · 26 Oktober 2026<br>
+19 Epic · 276 Story · 848 Task · 1.319 Story Points · 12 Minggu (target PRD)<br>
+<strong>Selaras Penuh dengan VPS Hostinger KVM 1 (CloudPanel v2) · PHP 8.5 · Laravel 13.x · MySQL 8.0 · Redis 7</strong><br>
+Store Concept · Berat &amp; Harga RMB Varian · Deep Variant Search · Watermark Foto · Smart Scoped IP Ban · Migrasi User Lama
+</p>
+
+</body>
+</html>

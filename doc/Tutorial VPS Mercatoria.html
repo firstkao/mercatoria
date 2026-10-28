@@ -1,0 +1,1175 @@
+<!DOCTYPE html>
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+      xmlns:w="urn:schemas-microsoft-com:office:word"
+      xmlns="http://www.w3.org/TR/REC-html40">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sprint 0 — Pre-Setup Foundation &amp; Tutorial Lengkap VPS Hostinger KVM 1 (CloudPanel + PHP 8.5 + Laravel 13) — Mercatoria v1.2 FINAL</title>
+<!--[if gte mso 9]>
+<xml>
+  <w:WordDocument>
+    <w:View>Print</w:View>
+    <w:Zoom>100</w:Zoom>
+    <w:DoNotOptimizeForBrowser/>
+  </w:WordDocument>
+</xml>
+<![endif]-->
+<style>
+  @page { size: A4; margin: 2cm; }
+  body { font-family: 'Calibri', 'Segoe UI', Arial, sans-serif; font-size: 11pt; line-height: 1.5; color: #222; max-width: 920px; margin: 0 auto; padding: 20px; }
+  h1 { font-size: 22pt; color: #1a4d8f; border-bottom: 3px solid #1a4d8f; padding-bottom: 8px; margin-top: 30px; margin-bottom: 15px; page-break-after: avoid; }
+  h2 { font-size: 16pt; color: #1a4d8f; border-bottom: 1px solid #ccc; padding-bottom: 5px; margin-top: 22px; margin-bottom: 12px; page-break-after: avoid; }
+  h3 { font-size: 13pt; color: #2c5fa8; margin-top: 18px; margin-bottom: 8px; page-break-after: avoid; }
+  h4 { font-size: 11.5pt; color: #333; margin-top: 12px; margin-bottom: 6px; }
+  p { margin: 6px 0; text-align: justify; }
+  ul, ol { margin: 6px 0 6px 22px; padding-left: 0; }
+  li { margin: 3px 0; }
+  table { border-collapse: collapse; width: 100%; margin: 10px 0; font-size: 10pt; page-break-inside: avoid; }
+  th { background: #1a4d8f; color: #fff; border: 1px solid #1a4d8f; padding: 6px 8px; text-align: left; }
+  td { border: 1px solid #ccc; padding: 6px 8px; vertical-align: top; }
+  tr:nth-child(even) td { background: #f5f7fa; }
+  code { background: #f0f2f5; padding: 2px 5px; border-radius: 3px; font-family: 'Consolas', monospace; font-size: 9.5pt; color: #c0392b; }
+  pre { background: #1e1e1e; color: #d4d4d4; border-left: 4px solid #4FC3F7; padding: 12px 16px; font-family: 'Consolas', 'Monaco', monospace; font-size: 9pt; line-height: 1.45; white-space: pre; page-break-inside: avoid; overflow-x: auto; border-radius: 4px; }
+  pre .cmt { color: #6A9955; }
+  pre .kw { color: #569CD6; }
+  pre .str { color: #CE9178; }
+  pre .fn { color: #DCDCAA; }
+  pre .cls { color: #4EC9B0; }
+  pre .dir { color: #C586C0; font-weight: bold; }
+  .wire { background: #f8f9fa; border: 1px dashed #1a4d8f; padding: 12px 15px; font-family: 'Consolas', monospace; font-size: 8.8pt; line-height: 1.3; white-space: pre; overflow-x: auto; page-break-inside: avoid; color: #222; }
+  .cover { text-align: center; padding: 75px 20px; page-break-after: always; }
+  .cover h1 { font-size: 32pt; border: none; color: #1a4d8f; margin-bottom: 10px; }
+  .cover .subtitle { font-size: 15.5pt; color: #666; margin-bottom: 40px; }
+  .cover .meta { font-size: 11.5pt; color: #444; line-height: 1.9; text-align: left; display: inline-block; margin-top: 20px; }
+  .cover .meta strong { color: #1a4d8f; }
+  .toc { background: #f5f7fa; border: 1px solid #ccc; padding: 15px 25px; margin: 20px 0; page-break-after: always; }
+  .toc h2 { margin-top: 0; border: none; }
+  .toc ol { margin-left: 20px; }
+  .toc li { margin: 4px 0; font-size: 10.5pt; }
+  hr { border: none; border-top: 1px solid #ccc; margin: 18px 0; }
+  .note { background: #fff8e1; border-left: 4px solid #ffc107; padding: 10px 14px; margin: 12px 0; font-size: 10.5pt; page-break-inside: avoid; }
+  .note-info { background: #e3f2fd; border-left: 4px solid #1e88e5; padding: 10px 14px; margin: 12px 0; font-size: 10.5pt; page-break-inside: avoid; }
+  .note-danger { background: #ffebee; border-left: 4px solid #e53935; padding: 10px 14px; margin: 12px 0; font-size: 10.5pt; page-break-inside: avoid; }
+  .note-success { background: #e8f5e9; border-left: 4px solid #43a047; padding: 10px 14px; margin: 12px 0; font-size: 10.5pt; page-break-inside: avoid; }
+  .file-header { background: #2d2d2d; color: #fff; padding: 8px 14px; font-family: 'Consolas', monospace; font-size: 10pt; border-radius: 4px 4px 0 0; margin-top: 12px; margin-bottom: 0; }
+  .file-header::before { content: '📄 '; }
+  .file-header + pre { margin-top: 0; border-radius: 0 0 4px 4px; }
+  .cmd-header { background: #1a4d8f; color: #fff; padding: 8px 14px; font-family: 'Consolas', monospace; font-size: 10pt; border-radius: 4px 4px 0 0; margin-top: 12px; margin-bottom: 0; }
+  .cmd-header::before { content: '💻 '; }
+  .cmd-header + pre { margin-top: 0; border-radius: 0 0 4px 4px; }
+  .gui-header { background: #00838f; color: #fff; padding: 8px 14px; font-family: 'Consolas', monospace; font-size: 10pt; border-radius: 4px 4px 0 0; margin-top: 12px; margin-bottom: 0; }
+  .gui-header::before { content: '🖥️ '; }
+  .gui-header + .wire { margin-top: 0; border-radius: 0 0 4px 4px; border-top: none; }
+  .story-box { border: 2px solid #1a4d8f; border-radius: 8px; padding: 12px 16px; margin: 16px 0; background: #f5f9ff; page-break-inside: avoid; }
+  .story-box h3 { margin-top: 0; color: #1a4d8f; }
+  .pill { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 9pt; font-weight: bold; color: #fff; margin-right: 4px; }
+  .pill-p0 { background: #E53935; }
+  .pill-sp { background: #1a4d8f; }
+  .pill-cp { background: #00838f; }
+</style>
+</head>
+<body>
+
+<div class="cover">
+  <h1>SPRINT 0 — PRE-SETUP FOUNDATION</h1>
+  <div class="subtitle">Tutorial Lengkap &amp; Mandiri Setup VPS Hostinger KVM 1 + CloudPanel v2 + PHP 8.5 + Laravel 13.x (EPIC-01)</div>
+  <div class="meta">
+    <p><strong>Versi Dokumen:</strong> 1.2 FINAL — Sinkron PRD v4.8 + AMANDEMEN v1 + Kode (Khusus PHP 8.5 &amp; Laravel 13.x)</p>
+    <p><strong>Tanggal:</strong> Sinkronisasi pasca-audit (PRD v4.8 / AMANDEMEN-v1)</p>
+    <p><strong>Referensi Utama:</strong> Backlog MVP v1.7 (Sprint 0 / EPIC-01: 8 Story · 24 Task · 34 SP)</p>
+    <p><strong>Referensi Selaras:</strong> PRD v4.8 · Design Spec v3.2 · Skema DB v1.6 · Struktur Folder v1.3 · Backlog v1.7</p>
+    <p><strong>Spesifikasi Server:</strong> <strong>VPS Hostinger KVM 1</strong> (1 vCPU Core · 4 GB RAM + 2 GB Swap · 50 GB NVMe · 4 TB BW)</p>
+    <p><strong>Server Panel:</strong> <strong>CloudPanel v2</strong> di atas Ubuntu 24.04 LTS (Hostinger OS Template Resmi)</p>
+    <p><strong>Runtime &amp; Framework:</strong> <strong>PHP 8.5 (<code>/usr/bin/php8.5</code> + OPcache + JIT)</strong> &amp; <strong>Laravel 13.x (<code>laravel/framework:^13.0</code>)</strong></p>
+    <p><strong>Database &amp; Cache/Queue:</strong> <strong>MySQL 8.0</strong> (Buffer Pool 1 GB, WIB <code>+07:00</code>) + <strong>Redis 7 Server</strong> bawaan CloudPanel</p>
+    <p><strong>Path Proyek CloudPanel:</strong> <code>/home/mercatoria/htdocs/mercatoria.id</code> (Site User: <code>mercatoria</code>)</p>
+    <p><strong>Domain &amp; Timezone:</strong> <code>mercatoria.id</code> (Admin: <code>/office</code>) · WIB (<code>Asia/Jakarta</code>, GMT+7)</p>
+  </div>
+</div>
+
+<div class="toc">
+  <h2>Daftar Isi — Tutorial Sprint 0 (VPS Hostinger KVM 1 + CloudPanel + PHP 8.5 + Laravel 13.x)</h2>
+  <ol>
+    <li>Ringkasan Sprint 0 (EPIC-01: 8 Story · 24 Task · 34 SP) &amp; Arsitektur KVM 1 + CloudPanel + PHP 8.5 + Laravel 13</li>
+    <li><strong>Story EPIC-01-01 (5 SP):</strong> Instalasi Ubuntu 24.04 + CloudPanel di hPanel KVM 1, Timezone WIB, Swap 2 GB, Tuning MySQL 8.0 (4 GB RAM) &amp; Verifikasi Redis 7</li>
+    <li><strong>Story EPIC-01-02 (5 SP):</strong> Pembuatan PHP Site <code>mercatoria.id</code> (PHP 8.5), Tuning PHP 8.5-FPM Pool (<code>ondemand</code>) + OPcache/JIT &amp; Database MySQL 8.0</li>
+    <li><strong>Story EPIC-01-03 (3 SP):</strong> Login SSH Site User <code>mercatoria</code>, Instalasi Laravel 13.x, Struktur Folder v1.3, <code>helpers.php</code>, <code>bootstrap/app.php</code> &amp; <code>AppServiceProvider.php</code></li>
+    <li><strong>Story EPIC-01-04 (5 SP):</strong> Instalasi 10 Paket Composer (Tervalidasi PHP 8.5 &amp; Laravel 13), 17 Paket NPM, <code>vite.config.js</code>, <code>app.js</code> &amp; Tailwind 4 via @tailwindcss/vite</li>
+    <li><strong>Story EPIC-01-05 (3 SP):</strong> Konfigurasi <code>.env</code> Production (Redis + 3 SMTP Hostinger), Kode Lengkap <code>config/mercatoria.php</code> &amp; Multi-Mailer <code>config/mail.php</code></li>
+    <li><strong>Story EPIC-01-06 (3 SP):</strong> Setup Storage Symlink, Folder Permanen <code>order-snapshots</code>, Folder Privat <code>originals</code> &amp; Konfigurasi DomPDF/Backup</li>
+    <li><strong>Story EPIC-01-07 (5 SP):</strong> Eksekusi 71 Migration Skema DB v1.6, Index Deep Variant Search &amp; 8 Seeder Data Awal menggunakan PHP 8.5</li>
+    <li><strong>Story EPIC-01-08 (5 SP):</strong> SSL Let's Encrypt, Vhost Nginx Lengkap + Anti-Hotlink, 13 Jadwal Cron di <code>routes/console.php</code>, Cron CloudPanel &amp; Supervisor Worker Redis</li>
+    <li>Script Deployment Otomatis (<code>deploy.sh</code>), Troubleshooting Lengkap (KVM 1 + PHP 8.5 + Laravel 13) &amp; Checklist Verifikasi Akhir Sprint 0 (DoD)</li>
+  </ol>
+</div>
+
+<h1>1. Ringkasan Sprint 0 &amp; Arsitektur VPS Hostinger KVM 1 + CloudPanel + PHP 8.5 + Laravel 13.x</h1>
+
+<div class="note-success">
+<strong>Kenapa Kombinasi VPS Hostinger KVM 1 + CloudPanel v2 + PHP 8.5 + Laravel 13.x Sangat Optimal untuk Mercatoria?</strong>
+<ul>
+  <li><strong>KVM 1 (1 vCPU · 4 GB RAM · 50 GB NVMe) + CloudPanel (~120 MB RAM):</strong> Sangat hemat memori. Dibandingkan panel lain yang memakan &gt;1 GB RAM, CloudPanel menyisakan &gt;3,5 GB RAM murni untuk PHP 8.5-FPM, MySQL 8.0, dan Redis 7.</li>
+  <li><strong>Performa PHP 8.5 + JIT &amp; Native Functions:</strong> PHP 8.5 membawa peningkatan performa JIT compiler, penghematan memori OPcache, serta fungsi native seperti <code>array_first()</code> dan <code>array_last()</code> yang digunakan langsung oleh Laravel 13 tanpa overhead polyfill.</li>
+  <li><strong>Arsitektur Ramping Laravel 13.x:</strong> Seluruh konfigurasi routing, middleware, dan exception dipusatkan di <code>bootstrap/app.php</code>, penjadwalan 13 cron job langsung ditulis di <code>routes/console.php</code>, dan Event Listener (seperti <code>SuppressCustomerEmailWhenPaused</code>) otomatis terdeteksi (<em>auto-discovered</em>) tanpa perlu file <code>Kernel.php</code> atau <code>EventServiceProvider.php</code> warisan versi lama.</li>
+  <li><strong>Zero Permission Error (Isolated Site User <code>mercatoria</code>):</strong> Di CloudPanel, PHP 8.5-FPM pool dan user SSH berjalan di bawah user Linux yang sama (<code>mercatoria</code>), sehingga tidak pernah terjadi konflik <code>www-data</code> vs <code>root</code> pada <code>storage/</code> maupun <code>bootstrap/cache/</code>.</li>
+</ul>
+</div>
+
+<h3>1.1 Pemetaan 8 Story &amp; 24 Task pada EPIC-01 (Total: 34 Story Points)</h3>
+<table>
+  <tr><th>Story ID</th><th>Nama Story (EPIC-01)</th><th>Task</th><th>SP</th><th>Implementasi di VPS Hostinger KVM 1 + CloudPanel + PHP 8.5 + Laravel 13</th></tr>
+  <tr><td><code>EPIC-01-01</code></td><td>Provisioning VPS KVM 1, CloudPanel, MySQL Tuning &amp; Redis</td><td>3 Task</td><td>5 SP</td><td>Install template <strong>Ubuntu 24.04 with CloudPanel</strong> di hPanel, amankan port <code>8443</code>, kunci Timezone <code>Asia/Jakarta</code> (WIB), buat Swap 2 GB, tuning MySQL 8.0 (Buffer Pool 1 GB), &amp; aktifkan Redis 7.</td></tr>
+  <tr><td><code>EPIC-01-02</code></td><td>Setup Site <code>mercatoria.id</code>, PHP 8.5-FPM Pool &amp; Database</td><td>3 Task</td><td>5 SP</td><td>Buat PHP Site <code>mercatoria.id</code> (User: <code>mercatoria</code>, <strong>PHP 8.5</strong>), tuning pool <code>/etc/php/8.5/fpm/pool.d/mercatoria.conf</code> (<code>pm = ondemand</code>, OPcache + JIT), cek GD/Imagick WebP, &amp; buat DB <code>mercatoria_db</code>.</td></tr>
+  <tr><td><code>EPIC-01-03</code></td><td>Inisialisasi Laravel 13.x, Struktur Folder &amp; <code>bootstrap/app.php</code></td><td>3 Task</td><td>3 SP</td><td>Login SSH sebagai <code>mercatoria</code>, install <strong>Laravel 13.x</strong> via <code>/usr/bin/php8.5</code>, buat struktur folder v1.3 + AMANDEMEN §7, <code>helpers.php</code>, serta konfigurasikan <code>bootstrap/app.php</code> &amp; <code>AppServiceProvider.php</code>.</td></tr>
+  <tr><td><code>EPIC-01-04</code></td><td>Instalasi 10 Paket Composer (PHP 8.5 Ready), 17 NPM &amp; Vite/Tailwind</td><td>3 Task</td><td>5 SP</td><td>Install 10 paket PHP versi khusus Laravel 13 &amp; PHP 8.5 (termasuk <code>maatwebsite/excel:^3.1</code>, <code>barryvdh/laravel-dompdf:^3.1</code>, <code>larastan/larastan:^3.0</code>) + 17 paket NPM, <code>vite.config.js</code>, &amp; <code>vite.config.js</code> (Tailwind 4 via <code>@tailwindcss/vite</code>, tanpa <code>config Tailwind klasik</code>).</td></tr>
+  <tr><td><code>EPIC-01-05</code></td><td>Konfigurasi <code>.env</code> (Redis + 3 SMTP) &amp; <code>config/mercatoria.php</code></td><td>3 Task</td><td>3 SP</td><td>Setup <code>.env</code> dengan Redis CloudPanel, 3 SMTP Hostinger (<code>security@</code>, <code>info@</code>, <code>cs@</code>), <code>MAIL_PAUSE_CUSTOMER_EMAILS=false</code> (true hanya saat maintenance/testing), dan kode utuh <code>config/mercatoria.php</code>.</td></tr>
+  <tr><td><code>EPIC-01-06</code></td><td>Setup Storage, Folder <code>order-snapshots</code> &amp; <code>private/originals</code></td><td>3 Task</td><td>3 SP</td><td>Buat seluruh direktori publik &amp; privat (master foto asli sebelum watermark &amp; backup DB), jalankan <code>/usr/bin/php8.5 artisan storage:link</code>, &amp; publish config paket.</td></tr>
+  <tr><td><code>EPIC-01-07</code></td><td>Eksekusi 71 Migration Skema DB v1.6 &amp; 8 Seeder Awal</td><td>3 Task</td><td>5 SP</td><td>Jalankan <code>/usr/bin/php8.5 artisan migrate --force</code> dan <code>db:seed --force</code> (Admin, Settings, Store, PaymentMethod, MerchCategory, Tag, EmailTemplate, Page).</td></tr>
+  <tr><td><code>EPIC-01-08</code></td><td>SSL Let's Encrypt, Vhost Nginx, <code>routes/console.php</code> &amp; Supervisor</td><td>3 Task</td><td>5 SP</td><td>Pasang SSL 1-klik, Vhost Nginx Anti-Hotlink, daftarkan 13 cron di <code>routes/console.php</code>, pasang Cron Job CloudPanel, dan jalankan Supervisor Worker Redis (<code>numprocs=2</code>).</td></tr>
+  <tr style="background:#e3f2fd;font-weight:bold;"><td colspan="2">TOTAL SPRINT 0 (EPIC-01)</td><td>24 Task</td><td>34 SP</td><td>Fondasi KVM 1 + CloudPanel + PHP 8.5 + Laravel 13 Siap 100%</td></tr>
+</table>
+
+<h3>1.2 Peta Lokasi File &amp; Binary di CloudPanel v2 (PHP 8.5 + Laravel 13.x)</h3>
+<table>
+  <tr><th>Komponen</th><th>Path / Perintah Eksak di VPS Hostinger KVM 1 + CloudPanel</th></tr>
+  <tr><td>Site User Linux (SSH &amp; PHP-FPM)</td><td><strong><code>mercatoria</code></strong> (beralih dari root dengan perintah: <code>su - mercatoria</code>)</td></tr>
+  <tr><td>Root Folder Proyek Laravel 13</td><td><strong><code>/home/mercatoria/htdocs/mercatoria.id</code></strong></td></tr>
+  <tr><td>Document Root Web (Nginx)</td><td><strong><code>/home/mercatoria/htdocs/mercatoria.id/public</code></strong></td></tr>
+  <tr><td>Binary PHP 8.5 CLI</td><td><strong><code>/usr/bin/php8.5</code></strong> (wajib dipakai untuk semua perintah <code>artisan</code>, <code>composer</code>, Cron, &amp; Supervisor)</td></tr>
+  <tr><td>Perintah Composer dengan PHP 8.5</td><td><strong><code>/usr/bin/php8.5 /usr/local/bin/composer ...</code></strong></td></tr>
+  <tr><td>File Konfigurasi Pool PHP 8.5-FPM</td><td><strong><code>/etc/php/8.5/fpm/pool.d/mercatoria.conf</code></strong> (Port internal FPM pool otomatis dari CloudPanel)</td></tr>
+  <tr><td>File Konfigurasi MySQL 8.0</td><td><strong><code>/etc/mysql/mysql.conf.d/mysqld.cnf</code></strong></td></tr>
+  <tr><td>Pusat Middleware &amp; Routing Laravel 13</td><td><strong><code>/home/mercatoria/htdocs/mercatoria.id/bootstrap/app.php</code></strong> (menggantikan <code>Http/Kernel.php</code> lama)</td></tr>
+  <tr><td>Pusat 13 Jadwal Cron Laravel 13</td><td><strong><code>/home/mercatoria/htdocs/mercatoria.id/routes/console.php</code></strong> (menggantikan <code>Console/Kernel.php</code> lama)</td></tr>
+</table>
+
+<hr>
+
+<h1>2. Story EPIC-01-01: Provisioning VPS Hostinger KVM 1, CloudPanel, Swap 2 GB, Tuning MySQL &amp; Redis</h1>
+
+<div class="story-box">
+  <h3><span class="pill pill-p0">P0</span> <span class="pill pill-sp">5 SP</span> <span class="pill pill-cp">CloudPanel</span> EPIC-01-01 — Provisioning KVM 1, CloudPanel v2, Timezone WIB, Swap 2 GB &amp; Tuning MySQL/Redis</h3>
+  <p><strong>Rincian 3 Task:</strong></p>
+  <ol>
+    <li><strong>Task 1.1:</strong> Install OS template <strong>Ubuntu 24.04 with CloudPanel</strong> di hPanel Hostinger KVM 1, arahkan DNS Domain <code>mercatoria.id</code>, dan buat akun Admin CloudPanel di port <code>8443</code>.</li>
+    <li><strong>Task 1.2:</strong> Kunci Timezone Ubuntu &amp; MySQL 8.0 ke <code>Asia/Jakarta</code> (WIB <code>+07:00</code>), aktifkan Basic Auth + UFW Firewall di CloudPanel, dan verifikasi Redis 7 Server.</li>
+    <li><strong>Task 1.3:</strong> Buat Swap Memory 2 GB dan tuning <code>mysqld.cnf</code> khusus kapasitas RAM 4 GB KVM 1 agar server stabil 100% saat beban puncak.</li>
+  </ol>
+</div>
+
+<h3>Langkah 2.1 — Pilih OS "Ubuntu 24.04 with CloudPanel" di hPanel Hostinger &amp; Arahkan DNS (Task 1.1)</h3>
+<ol>
+  <li>Login ke <strong>hPanel Hostinger</strong> → buka menu <strong>VPS</strong> → klik server <strong>KVM 1</strong> kamu.</li>
+  <li>Buka menu <strong>OS &amp; Panel</strong> → <strong>Sistem Operasi</strong> → pilih tab <strong>Aplikasi / Panel dengan OS</strong> → pilih <strong>Ubuntu 24.04 with CloudPanel</strong> → simpan password <code>root</code> SSH → klik <strong>Ubah OS</strong> (tunggu 3–5 menit).</li>
+  <li>Buka <strong>DNS Zone Editor</strong> domain <code>mercatoria.id</code>, lalu pastikan record berikut mengarah ke IPv4 Public VPS KVM 1 kamu:
+    <ul>
+      <li><code>A Record</code> · Host: <code>@</code> · Points to: <code>IP_VPS_HOSTINGER_KAMU</code> · TTL: <code>300</code></li>
+      <li><code>A Record</code> · Host: <code>www</code> · Points to: <code>IP_VPS_HOSTINGER_KAMU</code> · TTL: <code>300</code></li>
+    </ul>
+  </li>
+  <li>Begitu instalasi OS selesai, langsung buka <code>https://IP_VPS_HOSTINGER_KAMU:8443</code> di browser (klik <em>Advanced → Proceed</em> pada SSL self-signed awal) dan buat akun Admin CloudPanel:</li>
+</ol>
+
+<div class="gui-header">Layar Setup Admin Pertama Kali di CloudPanel (https://IP_VPS:8443)</div>
+<div class="wire">┌──────────────────────────────────────────────────────────────────────────┐
+│                         ☁️ CloudPanel v2 — Setup                         │
+│  ──────────────────────────────────────────────────────────────────────  │
+│  First Name *        : [ Admin                                        ]  │
+│  Last Name *         : [ Mercatoria                                   ]  │
+│  User Name *         : [ admin_mercatoria                             ]  │
+│  E-Mail *            : [ security@mercatoria.id                       ]  │
+│  Password *          : [ ••••••••••••••••••••                         ]  │
+│  Timezone *          : [ Asia/Jakarta (GMT+07:00)                   ▾ ]  │
+│                                                                          │
+│  [☑] I agree to the Terms and Conditions                                 │
+│  [                         Create User                                ]  │
+└──────────────────────────────────────────────────────────────────────────┘</div>
+
+<div class="note-info">
+<strong>Wajib Langsung Aktifkan Proteksi Port 8443 di GUI CloudPanel:</strong>
+Setelah login ke CloudPanel, klik ikon <strong>⚙️ Admin Area</strong> (pojok kanan atas) → <strong>Security</strong>:
+<ul>
+  <li>Aktifkan <strong>Basic Authentication</strong> (masukkan User &amp; Password tambahan) agar halaman login port <code>8443</code> memiliki perlindungan lapis ganda.</li>
+  <li>Pada menu <strong>Firewall (UFW)</strong> di Admin Area CloudPanel, pastikan hanya port <code>22 (SSH)</code>, <code>80 (HTTP)</code>, <code>443 (HTTPS)</code>, dan <code>8443 (CloudPanel)</code> yang terbuka.</li>
+</ul>
+</div>
+
+<h3>Langkah 2.2 — Login SSH sebagai <code>root</code>: Kunci Timezone WIB, Buat Swap 2 GB, Tuning MySQL 4 GB RAM &amp; Cek Redis (Task 1.2 &amp; 1.3)</h3>
+
+<div class="cmd-header">Terminal Lokal → Login SSH ke VPS Hostinger KVM 1 sebagai root</div>
+<pre>ssh root@IP_VPS_HOSTINGER_KAMU</pre>
+
+<div class="cmd-header">Terminal VPS (sebagai root) — Timezone WIB, Swap 2 GB, Tuning MySQL KVM 1 &amp; Verifikasi PHP 8.5 / Redis</div>
+<pre><span class="cmt"># 1. Kunci Timezone Sistem Linux ke WIB (Asia/Jakarta, GMT+7)</span>
+timedatectl set-timezone Asia/Jakarta
+timedatectl set-ntp on
+date
+
+<span class="cmt"># 2. Buat Swap Memory 2 GB (Wajib untuk mendampingi RAM 4 GB &amp; 1 vCPU pada KVM 1)</span>
+if [ ! -f /swapfile ]; then
+    fallocate -l 2G /swapfile
+    chmod 600 /swapfile
+    mkswap /swapfile
+    swapon /swapfile
+    echo '/swapfile none swap sw 0 0' | tee -a /etc/fstab
+    sysctl vm.swappiness=10
+    echo 'vm.swappiness=10' | tee -a /etc/sysctl.conf
+fi
+free -h
+
+<span class="cmt"># 3. Tuning MySQL 8.0 khusus VPS KVM 1 (RAM 4 GB) + Kunci Timezone MySQL ke +07:00 (WIB)</span>
+cat &lt;&lt; 'MYSQL_EOF' &gt; /etc/mysql/mysql.conf.d/zz-mercatoria-kvm1.cnf
+[mysqld]
+default-time-zone = '+07:00'
+character-set-server = utf8mb4
+collation-server = utf8mb4_unicode_ci
+max_connections = 80
+innodb_buffer_pool_size = 1G
+innodb_log_file_size = 256M
+innodb_flush_log_at_trx_commit = 2
+innodb_flush_method = O_DIRECT
+slow_query_log = 1
+long_query_time = 2
+MYSQL_EOF
+systemctl restart mysql
+
+<span class="cmt"># 4. Pastikan Redis Server &amp; Supervisor aktif di sistem</span>
+apt update &amp;&amp; apt install -y supervisor zip unzip git curl acl
+systemctl enable --now redis-server supervisor
+redis-cli ping   <span class="cmt"># Harus menjawab: PONG</span>
+
+<span class="cmt"># 5. Pastikan binary PHP 8.5 &amp; seluruh ekstensi wajib sudah terinstal di CloudPanel</span>
+/usr/bin/php8.5 -v
+/usr/bin/php8.5 -m | grep -E "gd|imagick|intl|bcmath|mbstring|zip|xml|curl|redis|pdo_mysql|opcache"
+/usr/bin/php8.5 -r "print_r(gd_info());" | grep -i "WebP"</pre>
+
+<div class="note">
+<strong>Catatan Jika Binary <code>/usr/bin/php8.5</code> Belum Muncul di Image Lama:</strong>
+Template terbaru CloudPanel v2 sudah menyertakan PHP 8.5. Jika kebetulan image OS Hostinger yang terpasang masih versi CloudPanel sebelumnya, cukup jalankan <code>clp-update</code> sebagai <code>root</code> atau instal paket PHP 8.5 dengan perintah:
+<br><code>apt update &amp;&amp; apt install -y php8.5-fpm php8.5-cli php8.5-common php8.5-mysql php8.5-zip php8.5-gd php8.5-mbstring php8.5-curl php8.5-xml php8.5-bcmath php8.5-intl php8.5-imagick php8.5-redis php8.5-opcache</code>.
+</div>
+
+<hr>
+
+<h1>3. Story EPIC-01-02: Pembuatan Site <code>mercatoria.id</code> (PHP 8.5), Tuning Pool PHP 8.5-FPM (KVM 1) &amp; Database MySQL</h1>
+
+<div class="story-box">
+  <h3><span class="pill pill-p0">P0</span> <span class="pill pill-sp">5 SP</span> <span class="pill pill-cp">CloudPanel</span> EPIC-01-02 — Setup Site <code>mercatoria.id</code> dengan PHP 8.5, Tuning Pool FPM + JIT &amp; Database MySQL 8.0</h3>
+  <p><strong>Rincian 3 Task:</strong></p>
+  <ol>
+    <li><strong>Task 2.1:</strong> Buat PHP Site baru di CloudPanel untuk domain <code>mercatoria.id</code> dengan Site User <code>mercatoria</code> dan <strong>PHP Version <code>8.5</code></strong>.</li>
+    <li><strong>Task 2.2:</strong> Tuning <strong>PHP 8.5 Settings</strong> di GUI CloudPanel serta optimasi pool <code>/etc/php/8.5/fpm/pool.d/mercatoria.conf</code> (<code>pm = ondemand</code> + OPcache JIT PHP 8.5) agar 1 vCPU KVM 1 tidak pernah <em>overload</em>.</li>
+    <li><strong>Task 2.3:</strong> Buat database <code>mercatoria_db</code> dan user <code>mercatoria_user</code> melalui tab <strong>Databases</strong> di CloudPanel.</li>
+  </ol>
+</div>
+
+<h3>Langkah 3.1 — Buat PHP Site <code>mercatoria.id</code> dengan PHP 8.5 di Dashboard CloudPanel (Task 2.1)</h3>
+<p>Masuk ke dashboard CloudPanel (<code>https://IP_VPS:8443</code>) → menu <strong>Sites</strong> → klik tombol <strong>+ Add Site</strong> → pilih <strong>Create a PHP Site</strong>:</p>
+
+<div class="gui-header">CloudPanel GUI → + Add Site → Create a PHP Site (Pilih PHP 8.5)</div>
+<div class="wire">┌──────────────────────────────────────────────────────────────────────────┐
+│                    ☁️ CloudPanel — Create a PHP Site                     │
+│  ──────────────────────────────────────────────────────────────────────  │
+│  Application *         : [ Laravel 13                               ▾ ]  │
+│  Domain Name *         : [ mercatoria.id                              ]  │
+│  Site User *           : [ mercatoria                                 ]  │
+│  Site User Password *  : [ PASSWORD_SSH_SITE_USER_KUAT                ]  │
+│  PHP Version *         : [ 8.5                                      ▾ ]  │
+│                                                                          │
+│  [                             Create                                 ]  │
+└──────────────────────────────────────────────────────────────────────────┘
+📌 Catatan Penting Template Application di CloudPanel:
+   • Template Vhost Nginx CloudPanel langsung mengarahkan Document Root ke `/home/mercatoria/htdocs/mercatoria.id/public/index.php` untuk Laravel 13.
+   • Hasil otomatis yang dibuat oleh CloudPanel:
+     - User Linux terisolasi : mercatoria
+     - Root Folder Proyek    : /home/mercatoria/htdocs/mercatoria.id
+     - Document Root Nginx   : /home/mercatoria/htdocs/mercatoria.id/public
+     - PHP 8.5-FPM Pool      : /etc/php/8.5/fpm/pool.d/mercatoria.conf</div>
+
+<h3>Langkah 3.2 — Tuning PHP 8.5 Settings di GUI CloudPanel &amp; Pool FPM Khusus KVM 1 (Task 2.2)</h3>
+<p>Di daftar <strong>Sites</strong> CloudPanel, klik <strong>Manage</strong> pada <code>mercatoria.id</code> → buka tab <strong>PHP Settings</strong>, lalu atur parameter berikut:</p>
+
+<table>
+  <tr><th>Parameter di Tab PHP Settings CloudPanel</th><th>Nilai yang Diisi</th><th>Alasan Teknis (Selaras PRD v4.9 &amp; KVM 1)</th></tr>
+  <tr><td><code>PHP Version</code></td><td><strong><code>8.5</code></strong></td><td>Mendukung penuh <strong>Laravel 13.x</strong> dengan peningkatan JIT compiler &amp; fungsi native PHP 8.5.</td></tr>
+  <tr><td><code>memory_limit</code></td><td><code>256M</code></td><td>Ideal untuk proses <code>intervention/image:^3.11</code> (burn-in watermark gambar deskripsi 5000px) &amp; <code>dompdf:^3.1</code> tanpa menguras RAM 4 GB KVM 1.</td></tr>
+  <tr><td><code>max_execution_time</code></td><td><code>120</code></td><td>Mencegah timeout saat upload &amp; proses watermark gambar deskripsi panjang atau export Excel.</td></tr>
+  <tr><td><code>max_input_time</code></td><td><code>120</code></td><td>Mendukung form produk dengan 30–50 kombinasi varian sekaligus.</td></tr>
+  <tr><td><code>upload_max_filesize</code></td><td><code>10M</code></td><td>Melebihi batas maksimal PRD 13.6 (Deskripsi panjang 2 MB, Foto produk/varian/bukti bayar 1 MB).</td></tr>
+  <tr><td><code>post_max_size</code></td><td><code>12M</code></td><td>Mendukung submit form multi-file di Admin Panel <code>/office</code>.</td></tr>
+  <tr><td><code>Additional Configuration Directives</code></td><td><pre style="margin:0;padding:6px;font-size:8.5pt;">date.timezone = Asia/Jakarta
+max_input_vars = 5000
+opcache.enable = 1
+opcache.enable_cli = 1
+opcache.memory_consumption = 192
+opcache.interned_strings_buffer = 16
+opcache.max_accelerated_files = 20000
+opcache.validate_timestamps = 1
+opcache.revalidate_freq = 2
+opcache.jit = 1255
+opcache.jit_buffer_size = 64M</pre></td><td>Mengunci waktu PHP 8.5 ke WIB (GMT+7), mengizinkan Bulk Edit 50 varian, dan mengaktifkan <strong>OPcache + JIT Compiler PHP 8.5</strong> agar eksekusi Laravel 13 super cepat di 1 vCPU.</td></tr>
+</table>
+
+<p>Klik <strong>Save</strong> di GUI CloudPanel. Selanjutnya, dari terminal SSH (sebagai <code>root</code>), pastikan proses manajemen worker PHP 8.5-FPM menggunakan mode <code>ondemand</code> yang hemat RAM untuk KVM 1:</p>
+
+<div class="cmd-header">Terminal VPS — Verifikasi Ekstensi GD/Imagick WebP pada PHP 8.5 &amp; Optimasi Pool PHP 8.5-FPM KVM 1</div>
+<pre><span class="cmt"># 1. Verifikasi versi PHP 8.5, modul wajib Laravel 13, dan dukungan WebP untuk ImageWatermarkService</span>
+/usr/bin/php8.5 -v
+/usr/bin/php8.5 -m | grep -E "gd|imagick|intl|bcmath|mbstring|zip|xml|curl|redis|pdo_mysql|opcache"
+/usr/bin/php8.5 -r "print_r(gd_info());" | grep -i "WebP"
+
+<span class="cmt"># 2. Optimasi Pool PHP 8.5-FPM agar hemat RAM 4 GB KVM 1 (pm = ondemand, maks 15 child process)</span>
+sed -i 's/^pm = .*/pm = ondemand/' /etc/php/8.5/fpm/pool.d/mercatoria.conf
+sed -i 's/^pm.max_children = .*/pm.max_children = 15/' /etc/php/8.5/fpm/pool.d/mercatoria.conf
+sed -i 's/^pm.max_requests = .*/pm.max_requests = 500/' /etc/php/8.5/fpm/pool.d/mercatoria.conf
+systemctl reload php8.5-fpm
+systemctl status php8.5-fpm --no-pager</pre>
+
+<h3>Langkah 3.3 — Buat Database MySQL 8.0 di Tab Databases CloudPanel (Task 2.3)</h3>
+<p>Masih di halaman pengelolaan site <code>mercatoria.id</code> pada CloudPanel, buka tab <strong>Databases</strong> → klik <strong>Add Database</strong>:</p>
+
+<div class="gui-header">CloudPanel GUI → Site mercatoria.id → Tab Databases → Add Database</div>
+<div class="wire">┌──────────────────────────────────────────────────────────────────────────┐
+│                       ☁️ CloudPanel — Add Database                       │
+│  ──────────────────────────────────────────────────────────────────────  │
+│  Database Name *          : [ mercatoria_db                           ]  │
+│  Database User Name *     : [ mercatoria_user                         ]  │
+│  Database User Password * : [ PASSWORD_DB_KUAT_KAMU                   ]  │
+│                                                                          │
+│  [                           Add Database                             ]  │
+└──────────────────────────────────────────────────────────────────────────┘</div>
+
+<hr>
+
+<h1>4. Story EPIC-01-03: Inisialisasi Proyek Laravel 13.x, Struktur Folder v1.3 &amp; Konfigurasi Inti <code>bootstrap/app.php</code></h1>
+
+<div class="story-box">
+  <h3><span class="pill pill-p0">P0</span> <span class="pill pill-sp">3 SP</span> <span class="pill pill-cp">Laravel 13 + PHP 8.5</span> EPIC-01-03 — Inisialisasi Laravel 13.x, Struktur Folder &amp; Middleware Terpusat</h3>
+  <p><strong>Rincian 3 Task:</strong></p>
+  <ol>
+    <li><strong>Task 3.1:</strong> Masuk sebagai Site User <code>mercatoria</code>, set default PHP CLI user ke <code>php8.5</code>, dan instal <strong>Laravel 13.x (<code>laravel/laravel:^13.0</code>)</strong>.</li>
+    <li><strong>Task 3.2:</strong> Generate seluruh struktur folder kustom sesuai dokumen <strong>Struktur Folder v1.3 + AMANDEMEN §7</strong> dan buat <code>app/Helpers/helpers.php</code>.</li>
+    <li><strong>Task 3.3:</strong> Konfigurasikan <strong><code>bootstrap/app.php</code></strong> (pengganti <code>Http/Kernel.php</code> di Laravel 13) untuk <code>trustProxies</code> Nginx CloudPanel + 9 Middleware Mercatoria, serta <strong><code>app/Providers/AppServiceProvider.php</code></strong> untuk Rate Limiter PRD Section 8.1.</li>
+  </ol>
+</div>
+
+<h3>Langkah 4.1 — Masuk sebagai Site User <code>mercatoria</code>, Kunci Alias CLI <code>php8.5</code> &amp; Instal Laravel 13.x (Task 3.1)</h3>
+<div class="note-danger">
+<strong>Aturan Emas di CloudPanel:</strong> Jangan pernah menjalankan <code>composer</code>, <code>npm</code>, atau <code>/usr/bin/php8.5 artisan</code> sebagai <code>root</code>! Selalu beralih dulu ke Site User <code>mercatoria</code> dengan <code>su - mercatoria</code> agar seluruh file dimiliki oleh <code>mercatoria:mercatoria</code>.
+</div>
+
+<div class="cmd-header">Terminal VPS — Beralih ke Site User mercatoria, Kunci Alias PHP 8.5 &amp; Install Laravel 13.x</div>
+<pre><span class="cmt"># 1. Dari root, masuk sebagai Site User CloudPanel 'mercatoria'</span>
+su - mercatoria
+
+<span class="cmt"># 2. Kunci alias 'php' dan 'composer' di ~/.bashrc milik user mercatoria agar SELALU memakai PHP 8.5!</span>
+cat &lt;&lt; 'BASH_EOF' &gt;&gt; ~/.bashrc
+alias php='/usr/bin/php8.5'
+alias composer='/usr/bin/php8.5 /usr/local/bin/composer'
+BASH_EOF
+source ~/.bashrc
+/usr/bin/php8.5 -v
+
+<span class="cmt"># 3. Masuk ke direktori domain yang dibuat oleh CloudPanel &amp; bersihkan file placeholder</span>
+cd /home/mercatoria/htdocs/mercatoria.id
+rm -rf /home/mercatoria/htdocs/mercatoria.id/* /home/mercatoria/htdocs/mercatoria.id/.[!.]* 2&gt;/dev/null || true
+
+<span class="cmt"># 4. Install Laravel 13.x menggunakan PHP 8.5 &amp; Composer 2 bawaan CloudPanel</span>
+/usr/bin/php8.5 /usr/local/bin/composer create-project laravel/laravel:^13.0 .
+
+<span class="cmt"># 5. Verifikasi versi Laravel 13 yang terinstal &amp; inisialisasi Git</span>
+/usr/bin/php8.5 artisan --version
+git init</pre>
+
+<h3>Langkah 4.2 — Buat Seluruh Struktur Folder Kustom Sesuai Struktur Folder v1.3 (Task 3.2)</h3>
+
+<div class="cmd-header">Terminal VPS (sebagai user mercatoria di /home/mercatoria/htdocs/mercatoria.id)</div>
+<pre><span class="cmt"># Buat struktur folder app/ sesuai denah nyata repo (Struktur Folder v1.4 — <strong>dokumen menggambarkan kenyataan repo, bukan sebaliknya</strong>) (Struktur Folder v1.3 + standar repo)</span>
+mkdir -p app/Console/Commands app/Enums app/Events app/Exceptions app/Helpers \
+  app/Http/Controllers/{Admin,Auth} app/Http/Middleware \
+  app/Http/Requests/{Auth,Frontend,Admin} app/Jobs app/Listeners \
+  app/Livewire/{Admin,Frontend} app/Mail app/Models app/Notifications \
+  app/Policies app/Providers app/Services/{Cart,Content,Image,Notification,Order,Product,Security,Split,User} \
+  app/Traits resources/views/{layouts,components/icons,livewire/{frontend,admin}} \
+  database/{migrations,seeders,factories} routes config tests/{Feature,Unit}
+# Denah PERSIS = repo (AMANDEMEN §7.1). Jangan buat Actions/, Casts/, Exports/, Observers/, Repositories/, Rules/, Support/, View/Components/.</pre>
+
+<h3>Langkah 4.3 — Buat File <code>app/Helpers/helpers.php</code> (Task 3.2b)</h3>
+
+<div class="file-header">/home/mercatoria/htdocs/mercatoria.id/app/Helpers/helpers.php</div>
+<pre><span class="kw">&lt;?php</span>
+
+<span class="kw">use</span> <span class="cls">App\Models\Setting</span>;
+<span class="kw">use</span> <span class="cls">Illuminate\Support\Facades\Cache</span>;
+
+<span class="kw">if</span> (! <span class="fn">function_exists</span>(<span class="str">'setting'</span>)) {
+    <span class="cmt">/**
+     * Ambil nilai setting dari database (dengan cache Redis 10 menit) atau fallback ke default.
+     */</span>
+    <span class="kw">function</span> <span class="fn">setting</span>(<span class="kw">string</span> $key, <span class="kw">mixed</span> $default = <span class="kw">null</span>): <span class="kw">mixed</span>
+    {
+        <span class="kw">try</span> {
+            $settings = <span class="cls">Cache</span>::<span class="fn">remember</span>(<span class="str">'app_settings_all'</span>, <span class="str">600</span>, <span class="kw">function</span> (): <span class="kw">array</span> {
+                <span class="kw">return</span> <span class="cls">Setting</span>::<span class="fn">pluck</span>(<span class="str">'value'</span>, <span class="str">'key'</span>)-&gt;<span class="fn">toArray</span>();
+            });
+            <span class="kw">return</span> $settings[$key] ?? $default;
+        } <span class="kw">catch</span> (\<span class="cls">Throwable</span>) {
+            <span class="kw">return</span> $default;
+        }
+    }
+}
+
+<span class="kw">if</span> (! <span class="fn">function_exists</span>(<span class="str">'format_rp'</span>)) {
+    <span class="cmt">/**
+     * Format angka ke Rupiah bersih (contoh: Rp255.000)
+     */</span>
+    <span class="kw">function</span> <span class="fn">format_rp</span>(<span class="kw">float</span>|<span class="kw">int</span> $amount): <span class="kw">string</span>
+    {
+        <span class="kw">return</span> <span class="str">'Rp'</span> . <span class="fn">number_format</span>((<span class="kw">float</span>) $amount, <span class="str">0</span>, <span class="str">','</span>, <span class="str">'.'</span>);
+    }
+}</pre>
+
+<p><strong>Catatan AMANDEMEN §7.1:</strong> tanpa class <code>fungsi IP helper</code> — fungsi <code>get_real_ip()</code> &amp; <code>ip_in_cidr()</code> ada di <code>app/Helpers/helpers.php</code> (autoload).</p>
+
+<h2>5. Story EPIC-01-04: Instalasi 10 Paket Composer (PHP 8.5 &amp; Laravel 13), 17 Paket NPM &amp; Tailwind Design System</h2>
+
+
+<h2>P0 5 SP Laravel 13 + PHP 8.5 EPIC-01-04 — Instalasi Paket Composer, NPM, Vite 6 &amp; Tailwind 4</h2>
+
+
+<p>Rincian 3 Task:</p>
+
+
+
+
+<p>Task 4.1: Instal 11 paket utama PHP &amp; paket dev via Composer dengan versi yang sudah tervalidasi penuh untuk Laravel 13.x dan PHP 8.5, serta publish file konfigurasinya.</p>
+
+
+<p>Task 4.2: Instal 17 paket JS/CSS via NPM (Tailwind CSS 4, Alpine.js + plugins, Chart.js, GrapesJS, Flatpickr, SweetAlert2).</p>
+
+
+<p>Task 4.3: Konfigurasikan vite.config.js (Tailwind 4 via @tailwindcss/vite — tanpa config Tailwind klasik), resources/css/app.css, dan resources/js/app.js lalu jalankan npm run build.</p>
+
+
+
+<h2>Langkah 5.1 — Instal 10 Paket PHP via Composer untuk Laravel 13 + PHP 8.5 (Task 4.1)</h2>
+
+<p><strong>⚠️ Catatan Penting Kompatibilitas Paket di PHP 8.5 &amp; Laravel 13:</strong></p>
+
+
+<p>maatwebsite/excel mengikuti lock repo (AMANDEMEN §1: ^3.1): Versi di bawah 3.1.68 menarik phpoffice/phpspreadsheet ≤ 1.30.2 yang memblokir instalasi di PHP 8.5.</p>
+
+
+<p>barryvdh/laravel-dompdf mengikuti lock repo (AMANDEMEN §1: ^3.0): Rilis yang telah lolos uji penuh pada PHP 8.5 &amp; Laravel 13.</p>
+
+
+<p>larastan/larastan wajib versi ^3.0: Berbasis PHPStan 2.x yang mendukung sintaks PHP 8.5 &amp; Laravel 13.</p>
+
+<p>Terminal VPS (sebagai user mercatoria di /home/mercatoria/htdocs/mercatoria.id)</p>
+
+<pre># 1. Install seluruh 10 paket utama Mercatoria yang kompatibel dengan Laravel 13.x &amp; PHP 8.5</pre>
+<p>/usr/bin/php8.5 /usr/local/bin/composer require \</p>
+<p>livewire/livewire:^3.5 \</p>
+<p>intervention/image:^3.11 \</p>
+<p>barryvdh/laravel-dompdf:^3.0 \</p>
+<p>&quot;maatwebsite/excel:^3.1&quot; \</p>
+<p>spatie/laravel-sitemap:^7.3 \</p>
+<p>spatie/laravel-honeypot:^4.4 \</p>
+<p>stevebauman/location:^7.3 \</p>
+<p>spatie/laravel-activitylog:^4.8 \</p>
+<p>laravel/tinker:^3.0</p>
+<p># Custom Turnstile (VerifyTurnstile + TurnstileService) — tanpa package turnstile (AMANDEMEN §1)</p>
+<p># Tidak dipakai (AMANDEMEN 1a): ikon Heroicons, laravel-sluggable, laravel-backup, laravel-permission, elegantly/laravel-seo</p>
+
+<pre># 2. Install paket Quality Control &amp; Static Analysis khusus Laravel 13 + PHP 8.5 (Dev)</pre>
+<p>/usr/bin/php8.5 /usr/local/bin/composer require --dev \</p>
+<p>laravel/pint:^1.20 \</p>
+<p>larastan/larastan:^3.0 \</p>
+<p>phpunit/phpunit:^11.5</p>
+
+<pre># 3. Publish file konfigurasi penting dari paket yang baru diinstal</pre>
+<p>/usr/bin/php8.5 artisan livewire:publish --config</p>
+<p>/usr/bin/php8.5 artisan vendor:publish --provider=&quot;Barryvdh\DomPDF\ServiceProvider&quot;</p>
+<p>/usr/bin/php8.5 artisan vendor:publish --provider=&quot;Spatie\Backup\BackupServiceProvider&quot;</p>
+<p>/usr/bin/php8.5 artisan vendor:publish --provider=&quot;Spatie\Honeypot\HoneypotServiceProvider&quot; --tag=&quot;honeypot-config&quot;</p>
+<p>/usr/bin/php8.5 artisan vendor:publish --provider=&quot;Stevebauman\Location\LocationServiceProvider&quot;</p>
+
+<p>Pastikan blok autoload pada composer.json memuat app/Helpers/helpers.php, lalu jalankan dump-autoload:</p>
+
+<p>Potongan blok &quot;autoload&quot; &amp; &quot;require&quot; di /home/mercatoria/htdocs/mercatoria.id/composer.json</p>
+
+<p>&quot;require&quot;: {</p>
+<p>&quot;php&quot;: &quot;^8.5&quot;,</p>
+<p>&quot;laravel/framework&quot;: &quot;^13.0&quot;,</p>
+<p>// ... (10 paket utama di atas)</p>
+<p>},</p>
+<p>&quot;autoload&quot;: {</p>
+<p>&quot;psr-4&quot;: {</p>
+<p>&quot;App\\&quot;: &quot;app/&quot;,</p>
+<p>&quot;Database\\Factories\\&quot;: &quot;database/factories/&quot;,</p>
+<p>&quot;Database\\Seeders\\&quot;: &quot;database/seeders/&quot;</p>
+<p>},</p>
+<p>&quot;files&quot;: [</p>
+<p>&quot;app/Helpers/helpers.php&quot;</p>
+<p>]</p>
+<p>},</p>
+
+<p>Reload Autoloader Composer dengan PHP 8.5</p>
+
+<p>/usr/bin/php8.5 /usr/local/bin/composer dump-autoload -o</p>
+
+<h2>Langkah 5.2 — Instal 10 Paket Frontend via NPM (Task 4.2)</h2>
+
+<p>Terminal VPS (sebagai user mercatoria)</p>
+
+<pre># 1. Install Tailwind CSS 4 + Vite 6 (@tailwindcss/vite)</pre>
+<p>npm install -D tailwindcss@^4.0.0 @tailwindcss/vite@^4.0.0 vite@^6.4.4 laravel-vite-plugin@^1.3.0 \</p>
+<p>@tailwindcss/forms@^0.5.9 @tailwindcss/typography@^0.5.15</p>
+
+<pre># 2. Install Alpine.js (+ plugins), Chart.js, GrapesJS (Preorder Builder), Flatpickr &amp; SweetAlert2</pre>
+<p>npm install alpinejs@^3.14.1 @alpinejs/focus@^3.14.1 @alpinejs/persist@^3.14.1 \</p>
+<p>@alpinejs/collapse@^3.14.1 chart.js@^4.4.4 grapesjs@^0.21.10 \</p>
+<p>grapesjs-preset-webpage@^1.0.3 flatpickr@^4.6.13 sweetalert2@^11.14.0</p>
+
+<h2>Langkah 5.3 — Konfigurasi vite.config.js (Tailwind 4), resources/css/app.css &amp; resources/js/app.js (Task 4.3)</h2>
+
+<p>/home/mercatoria/htdocs/mercatoria.id/vite.config.js (Tailwind 4 via @tailwindcss/vite — tanpa config Tailwind klasik)</p>
+
+<p>import forms from &#x27;@tailwindcss/forms&#x27;;</p>
+<p>import typography from &#x27;@tailwindcss/typography&#x27;;</p>
+
+<p>/** @type {import(&#x27;tailwindcss&#x27;).Config} */</p>
+<p>export default {</p>
+<p>content: [</p>
+<p>&#x27;./vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php&#x27;,</p>
+<p>&#x27;./storage/framework/views/*.php&#x27;,</p>
+<p>&#x27;./resources/views/**/*.blade.php&#x27;,</p>
+<p>&#x27;./resources/js/**/*.js&#x27;,</p>
+<p>&#x27;./app/Livewire/**/*.php&#x27;,</p>
+<p></p>
+<p>],</p>
+<p>theme: {</p>
+<p>extend: {</p>
+<p>colors: {</p>
+<p>mercatoria: {</p>
+<p>primary: &#x27;#4FC3F7&#x27;,    // Tombol Primary &amp; Aksen Harga Bersih</p>
+<p>navy: &#x27;#1a4d8f&#x27;,       // Heading &amp; Header Tabel Admin</p>
+<p>auth: &#x27;#000000&#x27;,       // Khusus Tombol Login &amp; Register (PRD 30)</p>
+<p>footer: &#x27;#1E1E2D&#x27;,     // Dark Footer 4 Kolom</p>
+<p>bg: &#x27;#F5F7FA&#x27;,         // Background Katalog &amp; Search Full-Width</p>
+<p>danger: &#x27;#E53935&#x27;,     // Hapus Permanen, Diskon, Limited, Blocked</p>
+<p>success: &#x27;#43A047&#x27;,    // MVP Badge, Verifikasi</p>
+<p>warning: &#x27;#FB8C00&#x27;,    // Banner Verifikasi &amp; Warning</p>
+<p>presale: &#x27;#FFC107&#x27;,    // Badge PRESALE &amp; MVP Gold</p>
+<p>crush: &#x27;#F48FB1&#x27;,      // Badge Crush</p>
+<p>ex: &#x27;#64B5F6&#x27;,         // Badge Ex</p>
+<p>ons: &#x27;#FFB74D&#x27;,        // Badge ONS</p>
+<p>silver: &#x27;#B0BEC5&#x27;,     // Badge MVP Silver</p>
+<p>},</p>
+<p>},</p>
+<p>},</p>
+<p>},</p>
+<p>plugins: [forms, typography],</p>
+<p>};</p>
+
+<p>/home/mercatoria/htdocs/mercatoria.id/resources/css/app.css</p>
+
+<p>@tailwind base;</p>
+<p>@tailwind components;</p>
+<p>@tailwind utilities;</p>
+
+<p>/* 🛡️ PRD Section 8.10: Teks 100% bebas di-copy, tetapi elemen gambar dikunci dari drag/long-press save */</p>
+<p>body, p, h1, h2, h3, h4, h5, h6, span, td, th, li, code {</p>
+<p>user-select: text;</p>
+<p>-webkit-user-select: text;</p>
+<p>}</p>
+
+<p>img, picture, canvas, .protected-image-wrap img {</p>
+<p>-webkit-user-drag: none;</p>
+<p>user-select: none;</p>
+<p>-webkit-user-select: none;</p>
+<p>-webkit-touch-callout: none;</p>
+<p>}</p>
+
+<p>/home/mercatoria/htdocs/mercatoria.id/resources/js/app.js</p>
+
+<p>import &#x27;./bootstrap&#x27;;</p>
+<p>import &#x27;./components/image-protection&#x27;;</p>
+<p>import flatpickr from &#x27;flatpickr&#x27;;</p>
+<p>import Swal from &#x27;sweetalert2&#x27;;</p>
+<p>import Chart from &#x27;chart.js/auto&#x27;;</p>
+
+<p>window.flatpickr = flatpickr;</p>
+<p>window.Swal = Swal;</p>
+<p>window.Chart = Chart;</p>
+
+<p>Build Asset Frontend dengan Vite 6</p>
+
+<p>npm run build</p>
+
+<h2>6. Story EPIC-01-05: Konfigurasi .env Production (Redis + 3 SMTP), Kode Utuh config/mercatoria.php &amp; Multi-Mailer</h2>
+
+
+<h2>P0 3 SP CloudPanel + Redis EPIC-01-05 — Konfigurasi Environment, Config Mandiri &amp; 3 Pengirim SMTP</h2>
+
+
+<p>Rincian 3 Task:</p>
+
+
+
+
+<h2>Task 5.1: Konfigurasi file .env dengan Redis 7 CloudPanel (untuk Session, Cache, &amp; Queue) dan generate APP_KEY.</h2>
+
+
+<h2>Task 5.2: Buat file config/mercatoria.php secara utuh dan mandiri.</h2>
+
+
+<p>Task 5.3: Konfigurasi 3 mailer SMTP Hostinger (security@, info@, cs@) di config/mail.php dan pastikan listener SuppressCustomerEmailWhenPaused siap bekerja.</p>
+
+
+
+<h2>Langkah 6.1 — Konfigurasi File .env Production di CloudPanel (Task 5.1)</h2>
+
+<p>/home/mercatoria/htdocs/mercatoria.id/.env</p>
+
+<p>APP_NAME=&quot;Mercatoria&quot;</p>
+<p>APP_ENV=production</p>
+<p>APP_KEY=</p>
+<p>APP_DEBUG=false</p>
+<p>APP_TIMEZONE=Asia/Jakarta</p>
+<p>APP_URL=https://mercatoria.id</p>
+<p>APP_LOCALE=id</p>
+<p>APP_FALLBACK_LOCALE=id</p>
+
+<p>LOG_CHANNEL=daily</p>
+<p>LOG_LEVEL=warning</p>
+
+<p>DB_CONNECTION=mysql</p>
+<p>DB_HOST=127.0.0.1</p>
+<p>DB_PORT=3306</p>
+<p>DB_DATABASE=mercatoria_db</p>
+<p>DB_USERNAME=mercatoria_user</p>
+<p>DB_PASSWORD=&quot;PASSWORD_DB_KUAT_KAMU&quot;</p>
+
+<p># ─── REDIS 7 CLOUDPANEL (HEMAT CPU &amp; RAM DI VPS KVM 1) ──────────────────────</p>
+<p>REDIS_CLIENT=phpredis</p>
+<p>REDIS_HOST=127.0.0.1</p>
+<p>REDIS_PASSWORD=null</p>
+<p>REDIS_PORT=6379</p>
+
+<p>SESSION_DRIVER=redis</p>
+<p>SESSION_LIFETIME=120</p>
+<p>QUEUE_CONNECTION=redis</p>
+<p>CACHE_STORE=redis</p>
+<p>FILESYSTEM_DISK=public</p>
+
+<p># ─── 3 AKUN EMAIL RESMI HOSTINGER SMTP (PRD Section 1 &amp; 24.1) ───────────────</p>
+<p>MAIL_MAILER=info_smtp</p>
+<p>MAIL_HOST=smtp.hostinger.com</p>
+<p>MAIL_PORT=465</p>
+<p>MAIL_ENCRYPTION=ssl</p>
+
+<pre># 1. info@mercatoria.id (Notifikasi Otomatis Sistem)</pre>
+<p>MAIL_INFO_USERNAME=info@mercatoria.id</p>
+<p>MAIL_INFO_PASSWORD=&quot;PASSWORD_EMAIL_INFO&quot;</p>
+<p>MAIL_FROM_ADDRESS=info@mercatoria.id</p>
+<p>MAIL_FROM_NAME=&quot;Mercatoria&quot;</p>
+
+<pre># 2. security@mercatoria.id (Verifikasi Email, Reset Password, OTP 2FA Admin, Blokir)</pre>
+<p>MAIL_SECURITY_USERNAME=security@mercatoria.id</p>
+<p>MAIL_SECURITY_PASSWORD=&quot;PASSWORD_EMAIL_SECURITY&quot;</p>
+
+<pre># 3. cs@mercatoria.id (Customer Service &amp; Notif Admin Bukti Bayar Masuk)</pre>
+<p>MAIL_CS_USERNAME=cs@mercatoria.id</p>
+<p>MAIL_CS_PASSWORD=&quot;PASSWORD_EMAIL_CS&quot;</p>
+
+<p># ─── KONTROL STOP EMAIL CUSTOMER SAAT TESTING/MAINTENANCE (PRD 24.5) ────────</p>
+<p>MAIL_PAUSE_CUSTOMER_EMAILS=false</p>
+<p>SESSION_SECURE_COOKIE=true</p>
+<p>SESSION_HTTP_ONLY=true</p>
+<p>SESSION_SAME_SITE=lax</p>
+<p><strong>Catatan security:</strong> <code>SESSION_SECURE_COOKIE=true</code> wajib di produksi (HTTPS). Aplikasi juga mengirim header <code>X-Frame-Options: DENY</code>, <code>X-Content-Type-Options: nosniff</code>, <code>Referrer-Policy</code> via middleware <code>SecurityHeaders</code>; HSTS dll. di Nginx (lihat Langkah 9.2).</p>
+
+<p># ─── PROTEKSI FOTO &amp; AUTO-WATERMARK SERVER-SIDE (PRD 8.10) ──────────────────</p>
+<p>IMAGE_PROTECTION_ENABLED=true</p>
+<p>IMAGE_WATERMARK_ENABLED=true</p>
+<p>IMAGE_WATERMARK_TEXT=&quot;MERCATORIA · mercatoria.id&quot;</p>
+<p>IMAGE_WATERMARK_OPACITY=25</p>
+
+<p># ─── HARGA &amp; ONGKIR DEFAULT (PRD Section 20 &amp; 47) ───────────────────────────</p>
+<p>SHIPPING_CN_BTM_PER_KG=25000</p>
+<p>SHIPPING_BTM_JKT_PER_KG=60000</p>
+<p>SHIPPING_DEFAULT_WEIGHT=0</p>
+
+<p># ─── CLOUDFLARE TURNSTILE &amp; GA4 (PRD Section 8.1 &amp; 29) ──────────────────────</p>
+<p>TURNSTILE_SITE_KEY=&quot;ISI_SITE_KEY_TURNSTILE&quot;</p>
+<p>TURNSTILE_SECRET_KEY=&quot;ISI_SECRET_KEY_TURNSTILE&quot;</p>
+<p>GA4_MEASUREMENT_ID=&quot;&quot;</p>
+
+<p>Generate Application Key dengan PHP 8.5 &amp; Kunci Permission .env</p>
+
+<p>/usr/bin/php8.5 artisan key:generate --force</p>
+<p>chmod 600 /home/mercatoria/htdocs/mercatoria.id/.env</p>
+
+<h2>Langkah 6.2 — Buat File config/mercatoria.php Secara Utuh (Task 5.2)</h2>
+
+<p>/home/mercatoria/htdocs/mercatoria.id/config/mercatoria.php</p>
+
+<p>&lt;?php</p>
+
+<p>return [</p>
+<p>&#x27;store&#x27; =&gt; [</p>
+<p>&#x27;name&#x27;           =&gt; &#x27;Mercatoria&#x27;,</p>
+<p>&#x27;domain&#x27;         =&gt; &#x27;mercatoria.id&#x27;,</p>
+<p>&#x27;admin_url&#x27;      =&gt; &#x27;/office&#x27;,</p>
+<p>&#x27;cs_email&#x27;       =&gt; &#x27;cs@mercatoria.id&#x27;,</p>
+<p>&#x27;security_email&#x27; =&gt; &#x27;security@mercatoria.id&#x27;,</p>
+<p>&#x27;info_email&#x27;     =&gt; &#x27;info@mercatoria.id&#x27;,</p>
+<p>],</p>
+
+<p>&#x27;order&#x27; =&gt; [</p>
+<p>&#x27;number_prefix&#x27;                      =&gt; &#x27;MER&#x27;,</p>
+<p>&#x27;payment_upload_timer_hours&#x27;         =&gt; 24, // Batas 1x24 jam upload bukti bayar sejak Buat Pesanan</p>
+<p>&#x27;forfeit_coin_voucher_on_failed_payment&#x27; =&gt; true, // Koin/Voucher otomatis hangus tanpa undo jika gagal bayar</p>
+<p>&#x27;pickup_timer_days&#x27;                  =&gt; 7,</p>
+<p>&#x27;dp_percent&#x27;                         =&gt; 50, // DP tepat 50% (boleh pecahan .500); fee marketplace ditambahkan saat Pelunasan</p>
+<p>&#x27;rounding&#x27;                           =&gt; 5000,</p>
+<p>],</p>
+
+<p>&#x27;snapshot&#x27; =&gt; [</p>
+<p>&#x27;storage_path&#x27;        =&gt; &#x27;order-snapshots&#x27;,</p>
+<p>&#x27;retention&#x27;           =&gt; &#x27;permanent&#x27;,</p>
+<p>&#x27;image_max_size&#x27;      =&gt; 200 * 1024,</p>
+<p>&#x27;delete_confirm_text&#x27; =&gt; &#x27;HAPUS&#x27;,</p>
+<p>],</p>
+
+<p>&#x27;bell&#x27; =&gt; [</p>
+<p>&#x27;poll_interval&#x27;  =&gt; 60,</p>
+<p>&#x27;max_dropdown&#x27;   =&gt; 10,</p>
+<p>&#x27;retention_days&#x27; =&gt; 90,</p>
+<p>&#x27;toast_duration&#x27; =&gt; 5,</p>
+<p>],</p>
+
+<p>&#x27;shipping&#x27; =&gt; [</p>
+<p>&#x27;cn_btm_per_kg&#x27;       =&gt; env(&#x27;SHIPPING_CN_BTM_PER_KG&#x27;, 25000),</p>
+<p>&#x27;btm_jkt_per_kg&#x27;      =&gt; env(&#x27;SHIPPING_BTM_JKT_PER_KG&#x27;, 60000),</p>
+<p>&#x27;default_weight_gram&#x27; =&gt; env(&#x27;SHIPPING_DEFAULT_WEIGHT&#x27;, 0),</p>
+<p>&#x27;local_cn_mode&#x27;       =&gt; &#x27;per_variant_customer_pays_directly&#x27;,</p>
+<p>],</p>
+
+<p>&#x27;state&#x27; =&gt; [</p>
+<p>&#x27;crush_auto_delete_days&#x27; =&gt; 30,</p>
+<p>&#x27;view_limit&#x27;             =&gt; 10,</p>
+<p>&#x27;mvp_to_ex_days&#x27;         =&gt; 0,</p>
+<p>&#x27;ex_to_ons_days&#x27;         =&gt; 30,</p>
+<p>&#x27;ons_to_blocked_days&#x27;    =&gt; 60,</p>
+<p>&#x27;h7_warning_days_before&#x27; =&gt; 7,</p>
+<p>&#x27;max_unblock_count&#x27;      =&gt; 2,</p>
+<p>&#x27;unblock_grace_days&#x27;     =&gt; 7,</p>
+<p>&#x27;spammer_ip_ttl_days&#x27;    =&gt; 30,</p>
+<p>],</p>
+
+<p>&#x27;coin&#x27; =&gt; [</p>
+<p>&#x27;referrer_reward&#x27;       =&gt; 3000,</p>
+<p>&#x27;referee_reward&#x27;        =&gt; 1000,</p>
+<p>&#x27;order_percent&#x27;         =&gt; 1,</p>
+<p>&#x27;share_reward&#x27;          =&gt; 5,</p>
+<p>&#x27;max_discount_percent&#x27;  =&gt; 5,</p>
+<p>&#x27;expiry_days&#x27;           =&gt; 365,</p>
+<p>],</p>
+
+<p>&#x27;share&#x27; =&gt; [</p>
+<p>&#x27;restrict_to_indonesia&#x27; =&gt; true,</p>
+<p>],</p>
+
+<p>&#x27;mail_control&#x27; =&gt; [</p>
+<p>&#x27;pause_customer_emails&#x27;  =&gt; env(&#x27;MAIL_PAUSE_CUSTOMER_EMAILS&#x27;, false),</p>
+<p>&#x27;always_allow_templates&#x27; =&gt; [&#x27;admin_otp&#x27;],</p>
+<p>],</p>
+
+<p>&#x27;image_protection&#x27; =&gt; [</p>
+<p>&#x27;enabled&#x27;                =&gt; env(&#x27;IMAGE_PROTECTION_ENABLED&#x27;, true),</p>
+<p>&#x27;watermark_enabled&#x27;      =&gt; env(&#x27;IMAGE_WATERMARK_ENABLED&#x27;, true),</p>
+<p>&#x27;watermark_text&#x27;         =&gt; env(&#x27;IMAGE_WATERMARK_TEXT&#x27;, &#x27;MERCATORIA · mercatoria.id&#x27;),</p>
+<p>&#x27;watermark_opacity&#x27;      =&gt; env(&#x27;IMAGE_WATERMARK_OPACITY&#x27;, 25),</p>
+<p>&#x27;watermark_mode&#x27;         =&gt; &#x27;diagonal_tiled&#x27;,</p>
+<p>&#x27;private_originals_disk&#x27; =&gt; &#x27;local&#x27;,</p>
+<p>],</p>
+<p>];</p>
+
+<h2>Langkah 6.3 — Tambahkan 3 Mailer SMTP Hostinger di config/mail.php (Task 5.3)</h2>
+
+<p>Tambahkan di dalam array &#x27;mailers&#x27; pada /home/mercatoria/htdocs/mercatoria.id/config/mail.php</p>
+
+<p>&#x27;mailers&#x27; =&gt; [</p>
+<p>&#x27;info_smtp&#x27; =&gt; [</p>
+<p>&#x27;transport&#x27;  =&gt; &#x27;smtp&#x27;,</p>
+<p>&#x27;scheme&#x27;     =&gt; env(&#x27;MAIL_ENCRYPTION&#x27;, &#x27;smtps&#x27;),</p>
+<p>&#x27;host&#x27;       =&gt; env(&#x27;MAIL_HOST&#x27;, &#x27;smtp.hostinger.com&#x27;),</p>
+<p>&#x27;port&#x27;       =&gt; env(&#x27;MAIL_PORT&#x27;, 465),</p>
+<p>&#x27;username&#x27;   =&gt; env(&#x27;MAIL_INFO_USERNAME&#x27;),</p>
+<p>&#x27;password&#x27;   =&gt; env(&#x27;MAIL_INFO_PASSWORD&#x27;),</p>
+<p>],</p>
+<p>&#x27;security_smtp&#x27; =&gt; [</p>
+<p>&#x27;transport&#x27;  =&gt; &#x27;smtp&#x27;,</p>
+<p>&#x27;scheme&#x27;     =&gt; env(&#x27;MAIL_ENCRYPTION&#x27;, &#x27;smtps&#x27;),</p>
+<p>&#x27;host&#x27;       =&gt; env(&#x27;MAIL_HOST&#x27;, &#x27;smtp.hostinger.com&#x27;),</p>
+<p>&#x27;port&#x27;       =&gt; env(&#x27;MAIL_PORT&#x27;, 465),</p>
+<p>&#x27;username&#x27;   =&gt; env(&#x27;MAIL_SECURITY_USERNAME&#x27;),</p>
+<p>&#x27;password&#x27;   =&gt; env(&#x27;MAIL_SECURITY_PASSWORD&#x27;),</p>
+<p>],</p>
+<p>&#x27;cs_smtp&#x27; =&gt; [</p>
+<p>&#x27;transport&#x27;  =&gt; &#x27;smtp&#x27;,</p>
+<p>&#x27;scheme&#x27;     =&gt; env(&#x27;MAIL_ENCRYPTION&#x27;, &#x27;smtps&#x27;),</p>
+<p>&#x27;host&#x27;       =&gt; env(&#x27;MAIL_HOST&#x27;, &#x27;smtp.hostinger.com&#x27;),</p>
+<p>&#x27;port&#x27;       =&gt; env(&#x27;MAIL_PORT&#x27;, 465),</p>
+<p>&#x27;username&#x27;   =&gt; env(&#x27;MAIL_CS_USERNAME&#x27;),</p>
+<p>&#x27;password&#x27;   =&gt; env(&#x27;MAIL_CS_PASSWORD&#x27;),</p>
+<p>],</p>
+<p>],</p>
+
+<h2>7. Story EPIC-01-06: Setup Storage Symlink, Folder Permanen order-snapshots, Folder Privat originals &amp; DomPDF</h2>
+
+
+<h2>P0 3 SP Storage &amp; DomPDF EPIC-01-06 — Arsitektur Storage Publik, Snapshot Permanen &amp; Master Foto Privat</h2>
+
+
+<p>Rincian 3 Task:</p>
+
+
+
+
+<p>Task 6.1: Buat seluruh direktori storage publik di bawah storage/app/public/ (termasuk order-snapshots yang retensinya permanen — PRD Section 46).</p>
+
+
+<p>Task 6.2: Buat direktori privat storage/app/private/originals untuk menyimpan master foto asli sebelum di-watermark oleh ImageWatermarkService (PRD Section 8.10).</p>
+
+
+<p>Task 6.3: Buat symlink public/storage menggunakan /usr/bin/php8.5 artisan storage:link dan pastikan konfigurasi config/dompdf.php mengizinkan pembacaan path lokal snapshot.</p>
+
+
+
+<h2>Langkah 7.1 — Buat Struktur Folder Storage &amp; Symlink dengan PHP 8.5 (Task 6.1 – 6.3)</h2>
+
+<p>Terminal VPS (sebagai user mercatoria di /home/mercatoria/htdocs/mercatoria.id)</p>
+
+<pre># 1. Buat seluruh folder storage publik sesuai Struktur Folder v1.3 + AMANDEMEN §7 Bab 8</pre>
+<p>mkdir -p storage/app/public/products/{main,variants,descriptions} \</p>
+<p>storage/app/public/order-snapshots \</p>
+<p>storage/app/public/payments \</p>
+<p>storage/app/public/games \</p>
+<p>storage/app/public/developers \</p>
+<p>storage/app/public/hero-slides \</p>
+<p>storage/app/public/pages</p>
+
+<pre># 2. Buat folder privat untuk master foto asli (sebelum di-watermark) &amp; backup DB</pre>
+<p>mkdir -p storage/app/private/originals/products/{main,variants,descriptions} \</p>
+<p>storage/app/private/backups</p>
+
+<pre># 3. Buat symlink public/storage -&gt; storage/app/public menggunakan PHP 8.5</pre>
+<p>/usr/bin/php8.5 artisan storage:link</p>
+
+<pre># 4. Pastikan permission rapi untuk Site User CloudPanel (mercatoria:mercatoria)</pre>
+<p>chmod -R 775 storage bootstrap/cache</p>
+
+<p>Tips Penting barryvdh/laravel-dompdf:^3.1 di CloudPanel:</p>
+<p>Saat merender gambar produk di resources/views/pdf/invoice.blade.php atau packing-list.blade.php, gunakan path filesystem lokal storage_path(&#x27;app/public/&#x27; . $snapshot-&gt;product_image_path) (bukan URL asset(...) HTTP) agar DomPDF membaca langsung dari disk NVMe KVM 1 dalam &lt;50ms tanpa terblokir aturan Nginx Anti-Hotlink.</p>
+
+<h2>8. Story EPIC-01-07: Eksekusi Migration Database, Index Varian &amp; 8 Seeder Awal (PHP 8.5)</h2>
+
+
+<h2>P0 5 SP MySQL 8.0 + PHP 8.5 EPIC-01-07 — Eksekusi 71 Migration, Index Deep Variant Search &amp; 8 Seeder Awal</h2>
+
+
+<p>Rincian 3 Task:</p>
+
+
+
+
+<p>Task 7.1: Tempatkan seluruh file migration dari Skema Database Laravel v1.4 (termasuk tabel stores, harga RMB varian price_rmb, berat gram, index pencarian varian product_variants_name_search_idx, breakdown ongkir snapshot, is_migrated, dan Smart Scoped IP Ban TTL 30 hari).</p>
+
+
+<h2>Task 7.2: Jalankan /usr/bin/php8.5 artisan migrate --force dan verifikasi skema tabel di MySQL 8.0 CloudPanel.</h2>
+
+
+<p>Task 7.3: Jalankan ke-8 Seeder awal (AdminSeeder, SettingsSeeder, StoreSeeder, PaymentMethodSeeder, MerchCategorySeeder, TagSeeder, EmailTemplateSeeder, PageSeeder).</p>
+
+
+
+<h2>Langkah 8.1 — Eksekusi Migration &amp; Seeder Menggunakan PHP 8.5 CloudPanel (Task 7.1 – 7.3)</h2>
+
+<p>Terminal VPS (sebagai user mercatoria di /home/mercatoria/htdocs/mercatoria.id)</p>
+
+<pre># 1. Jalankan seluruh migration database (Skema DB v1.6) dengan PHP 8.5</pre>
+<p>/usr/bin/php8.5 artisan migrate --force</p>
+
+<pre># 2. Jalankan seluruh 8 Seeder data awal</pre>
+<p>/usr/bin/php8.5 artisan db:seed --force</p>
+
+<pre># 3. Verifikasi cepat hasil seeder &amp; koneksi Redis via Tinker di PHP 8.5</pre>
+<p>/usr/bin/php8.5 artisan tinker --execute=&quot;</p>
+<p>echo &#x27;PHP Version: &#x27; . PHP_VERSION . PHP_EOL;</p>
+<p>echo &#x27;Laravel Version: &#x27; . app()-&gt;version() . PHP_EOL;</p>
+<p>echo &#x27;Stores Count: &#x27; . \App\Models\Store::count() . PHP_EOL;</p>
+<p>echo &#x27;Pause Email Setting: &#x27; . setting(&#x27;pause_customer_emails&#x27;) . PHP_EOL;</p>
+<p>echo &#x27;Image Watermark Setting: &#x27; . setting(&#x27;image_watermark_enabled&#x27;) . PHP_EOL;</p>
+<p>&quot;</p>
+
+<h2>8.2 Daftar Data Awal yang Wajib Terbentuk oleh 8 Seeder di Sprint 0</h2>
+
+
+
+<p>Nama Seeder</p>
+
+<p>Data Default yang Di-seed ke Database mercatoria_db</p>
+
+
+
+<p>AdminSeeder</p>
+
+<p>1 Akun Admin utama untuk login ke /office (dengan 2FA Email OTP via security@mercatoria.id).</p>
+
+
+
+<p>SettingsSeeder</p>
+
+<p>Seluruh key pengaturan PRD Section 23: rate_rmb_idr = 2200, profit_percent = 11, ongkir_cn_btm_per_kg = 25000, ongkir_btm_jkt_per_kg = 60000, default_weight_gram = 0, pause_customer_emails = 0, image_protection_enabled = 1, image_watermark_enabled = 1, image_watermark_opacity = 25.</p>
+
+
+
+<p>StoreSeeder</p>
+
+<p>3 Store awal (Official Store min 100 RMB ongkir 7 RMB; Fanmade Studio gratis selalu; Toko Baju Collab min 150 RMB ongkir 10 RMB).</p>
+
+
+
+<p>PaymentMethodSeeder</p>
+
+<p>3 Metode Pembayaran: Bank BCA (Manual), QRIS (Fee 0,03% jika ≥ Rp 500.000), ShopeePay.</p>
+
+
+
+<p>MerchCategorySeeder</p>
+
+<p>8 Kategori Merch Auto-Group sesuai prioritas PRD Section 14 (Shikishi, Standee, Pendant, Plush, Keychain, Badge, Apparel, Other) beserta keyword-nya.</p>
+
+
+
+<p>TagSeeder</p>
+
+<p>2 Tag Produk: PRESALE (estimasi ≈200 hari) dan LIMITED.</p>
+
+
+
+<p>EmailTemplateSeeder</p>
+
+<p>27 Template Email resmi (PRD Section 24.2) terhubung ke 3 pengirim (security@, info@, cs@).</p>
+
+
+
+<p>PageSeeder</p>
+
+<p>5 Halaman Statis CMS awal: Tentang Kami, FAQ, Cara Belanja, Syarat &amp; Ketentuan (TNC), Kebijakan Privasi.</p>
+
+<h2>9. Story EPIC-01-08: SSL Let&#x27;s Encrypt, Vhost Nginx Anti-Hotlink, 13 Cron di routes/console.php &amp; Supervisor Worker</h2>
+
+
+<h2>P0 5 SP CloudPanel + Laravel 13 EPIC-01-08 — SSL 1-Klik, Vhost Nginx, Scheduler Laravel 13 &amp; Queue Worker</h2>
+
+
+<p>Rincian 3 Task:</p>
+
+
+
+
+<h2>Task 8.1: Terbitkan sertifikat SSL HTTPS Let&#x27;s Encrypt 1-klik di tab SSL/TLS CloudPanel (auto-renew).</h2>
+
+
+<p>Task 8.2: Pasang aturan Anti-Hotlink Gambar Produk (PRD Section 8.10 Layer 4) &amp; client_max_body_size 15M; pada tab Vhost di CloudPanel.</p>
+
+
+<p>Task 8.3: Daftarkan ke-13 jadwal cron WIB di routes/console.php (standar Laravel 13), pasang Cron Job /usr/bin/php8.5 .../artisan schedule:run di GUI CloudPanel, dan jalankan Supervisor Queue Worker Redis (numprocs=2).</p>
+
+
+
+<h2>Langkah 9.1 — Pasang SSL Let&#x27;s Encrypt 1-Klik di CloudPanel (Task 8.1)</h2>
+
+
+<p>Di dashboard CloudPanel, buka site mercatoria.id → klik tab SSL/TLS.</p>
+
+
+<p>Klik tombol Actions (kanan atas) → pilih New Let&#x27;s Encrypt Certificate.</p>
+
+
+<p>Pastikan Domain Name berisi mercatoria.id dan www.mercatoria.id → klik Create and Install.</p>
+
+<h2>Langkah 9.2 — Tambahkan Aturan Anti-Hotlink Gambar &amp; Limit Upload di Tab Vhost CloudPanel (Task 8.2)</h2>
+
+<p>Buka tab Vhost pada site mercatoria.id di CloudPanel. Di dalam blok server { ... } (tepat di atas baris location / { bawaan template Laravel CloudPanel), sisipkan konfigurasi berikut, lalu klik Save:</p>
+
+<p>CloudPanel GUI → Site mercatoria.id → Tab Vhost (Sisipkan di atas location /)</p>
+
+<p># 📦 Batas ukuran body upload Nginx (selaras post_max_size 12M PHP 8.5)</p>
+<p>client_max_body_size 15M;</p>
+
+<p># 🛡️ Anti-Hotlink Gambar Produk, Varian &amp; Deskripsi (PRD Section 8.10 Layer 4)</p>
+<p>location ~* ^/storage/products/.*\.(jpg|jpeg|png|webp)$ {</p>
+<p>valid_referers none blocked server_names ~\.mercatoria\.id ~\.google\. ~\.bing\.;</p>
+<p>if ($invalid_referer) {</p>
+<p>return 403;</p>
+<p>}</p>
+<p>expires 30d;</p>
+<p>add_header Cache-Control &quot;public, no-transform&quot;;
+# Security headers (pra-beta) — sisipkan di blok server yang sama
+add_header Strict-Transport-Security &quot;max-age=31536000; includeSubDomains&quot; always;
+add_header X-Frame-Options &quot;DENY&quot; always;
+add_header X-Content-Type-Options &quot;nosniff&quot; always;
+add_header Referrer-Policy &quot;strict-origin-when-cross-origin&quot; always;</p>
+<p>}</p>
+
+<h2>Langkah 9.3 — Tulis 13 Jadwal Otomatis WIB di routes/console.php (Standar Baru Laravel 13 — Task 8.3a)</h2>
+
+<p>Penting di Laravel 13: File app/Console/Kernel.php sudah tidak ada di Laravel 13! Seluruh jadwal otomatis (Cron Scheduler) wajib ditulis langsung di dalam routes/console.php menggunakan facade Illuminate\Support\Facades\Schedule.</p>
+
+<p>/home/mercatoria/htdocs/mercatoria.id/routes/console.php</p>
+
+<p>&lt;?php</p>
+
+<p>use Illuminate\Support\Facades\Schedule;</p>
+
+<p>// ─── 11 JADWAL OTOMATIS MERCATORIA (PRD Section 37 &amp; 39 — Timezone WIB) ─────</p>
+
+<p>// 1. Evaluasi State Customer (Ex / ONS / Blocked) &amp; kirim peringatan H-7</p>
+<p>Schedule::command(&#x27;orders:send-pickup-reminders&#x27;)-&gt;hourly();</p>
+<p>Schedule::command(&#x27;orders:hangus-expired&#x27;)-&gt;hourly();</p>
+<p>Schedule::command(&#x27;log:purge&#x27;)-&gt;dailyAt(&#x27;03:00&#x27;);</p>
+<p>Schedule::command(&#x27;notification:purge&#x27;)-&gt;dailyAt(&#x27;03:30&#x27;);</p>
+<p>Schedule::command(&#x27;user:update-state&#x27;)-&gt;dailyAt(&#x27;02:00&#x27;);</p>
+<p>Schedule::command(&#x27;customer:update-tier&#x27;)-&gt;dailyAt(&#x27;02:30&#x27;);</p>
+<p>Schedule::command(&#x27;user:purge-crush&#x27;)-&gt;dailyAt(&#x27;04:00&#x27;);</p>
+<p>Schedule::command(&#x27;cart:send-reminder&#x27;)-&gt;everyThirtyMinutes()-&gt;withoutOverlapping();</p>
+<p>Schedule::command(&#x27;coin:expiry-notify&#x27;)-&gt;dailyAt(&#x27;08:00&#x27;)-&gt;withoutOverlapping();</p>
+<p>Schedule::command(&#x27;user:birthday-bonus&#x27;)-&gt;dailyAt(&#x27;07:00&#x27;)-&gt;withoutOverlapping();</p>
+<p>Schedule::command(&#x27;spammers:recheck-grace&#x27;)-&gt;dailyAt(&#x27;05:30&#x27;);</p>
+<p>Schedule::command(&#x27;sitemap:generate&#x27;)-&gt;dailyAt(&#x27;06:00&#x27;);</p>
+<p>Schedule::command(&#x27;splitbox:check-batches&#x27;)-&gt;dailyAt(&#x27;08:30&#x27;);</p>
+
+<h2>Langkah 9.4 — Tambahkan Cron Job Laravel Scheduler (PHP 8.5) di GUI CloudPanel (Task 8.3b)</h2>
+
+<p>Buka tab Cron Jobs pada site mercatoria.id di CloudPanel → klik Add Cron Job:</p>
+
+<p>CloudPanel GUI → Site mercatoria.id → Tab Cron Jobs → Add Cron Job</p>
+
+<p>┌──────────────────────────────────────────────────────────────────────────┐</p>
+<p>│                        ☁️ CloudPanel — Add Cron Job                      │</p>
+<p>│  ──────────────────────────────────────────────────────────────────────  │</p>
+<p>│  Template               : [ Every Minute (* * * * *)                  ▾ ]│</p>
+<p>│  Minute                 : [ * ]   Hour : [ * ]   Day : [ * ]             │</p>
+<p>│  Month                  : [ * ]   Weekday : [ * ]                        │</p>
+<p>│  Command *              :                                                │</p>
+<p>│  [ /usr/bin/php8.5 /home/mercatoria/htdocs/mercatoria.id/artisan schedule:run &gt;&gt; /dev/null 2&gt;&amp;1 ]│</p>
+<p>│                                                                          │</p>
+<p>│  [                            Add Cron Job                            ]  │</p>
+<p>└──────────────────────────────────────────────────────────────────────────┘</p>
+
+<h2>Langkah 9.5 — Konfigurasi Supervisor Queue Worker Redis Khusus KVM 1 (Task 8.3c)</h2>
+
+<p>Buat file Supervisor berikut (sebagai root di terminal SSH) menggunakan /usr/bin/php8.5 dan koneksi redis:</p>
+
+<p>/etc/supervisor/conf.d/mercatoria-worker.conf</p>
+
+<p>[program:mercatoria-worker]</p>
+<p>process_name=%(program_name)s_%(process_num)02d</p>
+<p>command=/usr/bin/php8.5 /home/mercatoria/htdocs/mercatoria.id/artisan queue:work redis --sleep=3 --tries=3 --max-time=3600 --memory=128</p>
+<p>autostart=true</p>
+<p>autorestart=true</p>
+<p>stopasgroup=true</p>
+<p>killasgroup=true</p>
+<p>user=mercatoria</p>
+<p>numprocs=2</p>
+<p>redirect_stderr=true</p>
+<p>stdout_logfile=/home/mercatoria/htdocs/mercatoria.id/storage/logs/worker.log</p>
+<p>stopwaitsecs=3600</p>
+
+<p>Terminal VPS (sebagai root) — Aktifkan Supervisor Queue Worker PHP 8.5</p>
+
+<p>supervisorctl reread</p>
+<p>supervisorctl update</p>
+<p>supervisorctl start mercatoria-worker:*</p>
+<p>supervisorctl status</p>
+
+<hr>
+<h1>
+<h2>10.5 Catatan Sinkron PRD v4.8 / AMANDEMEN-v1 (v1.2)</h2>
+<ul>
+<li><strong>Status order v4.8:</strong> Menunggu Denda &amp; Hangus Permanen; kolom <code>orders.penalty_*</code>, <code>cancel_reason</code>, <code>hangus_permanent_at</code>, <code>tier_counted_*</code> (Skema DB v1.6).</li>
+<li><strong>Split Box:</strong> cron <code>splitbox:check-batches</code> 08:30 WIB; tabel <code>split_boxes</code>, <code>split_box_slots</code>, <code>split_box_batches</code>, <code>split_box_batch_slots</code>.</li>
+<li><strong>Ikon:</strong> Bootstrap Icons (MIT) inline di <code>resources/views/components/icons/</code> via <code>&lt;x-icon&gt;</code> — bukan Bootstrap Icons, tanpa halaman atribusi (AMANDEMEN §3).</li>
+<li><strong>Backup:</strong> spatie/laravel-backup <em>tidak</em> dipakai (AMANDEMEN 1a). Gunakan backup MySQL + storage via tooling hosting/snapshot VPS, dan dump berkala ke luar server.</li>
+<li><strong>deploy.sh:</strong> snippet “copy ke server” di bawah — <em>bukan</em> file yang harus ada di repo.</li>
+</ul>
+
+10. Script Deployment Otomatis (<code>deploy.sh</code>), Troubleshooting &amp; Checklist Verifikasi Akhir Sprint 0</h1>
+
+<h3>10.1 Script <code>deploy.sh</code> di CloudPanel (PHP 8.5 + Laravel 13.x) untuk Sprint 1 s/d Sprint 12</h3>
+<p>Snippet opsional — <strong>salin ke server</strong> sebagai <code>/home/mercatoria/htdocs/mercatoria.id/deploy.sh</code> (file ini tidak disertakan di repo) lalu <code>chmod +x deploy.sh</code> sebagai user <code>mercatoria</code>:</p>
+
+<div class="file-header">/home/mercatoria/htdocs/mercatoria.id/deploy.sh</div>
+<pre><span class="cmt">#!/usr/bin/env bash</span>
+set -e
+
+echo "🚀 Memulai deployment Mercatoria (Laravel 13 + PHP 8.5) di CloudPanel KVM 1..."
+cd /home/mercatoria/htdocs/mercatoria.id
+
+/usr/bin/php8.5 artisan down --render="errors::503" || true
+
+git pull origin main
+/usr/bin/php8.5 /usr/local/bin/composer install --no-dev --optimize-autoloader --no-interaction
+npm ci
+npm run build
+
+/usr/bin/php8.5 artisan migrate --force
+/usr/bin/php8.5 artisan optimize:clear
+/usr/bin/php8.5 artisan optimize
+/usr/bin/php8.5 artisan view:cache
+/usr/bin/php8.5 artisan queue:restart
+
+/usr/bin/php8.5 artisan up
+echo "✅ Deployment Mercatoria (Laravel 13 + PHP 8.5) selesai!"</pre>
+
+<h3>10.2 Panduan Troubleshooting 6 Masalah Umum di VPS Hostinger KVM 1 + CloudPanel + PHP 8.5 + Laravel 13</h3>
+<table>
+  <tr><th>#</th><th>Gejala / Masalah yang Muncul</th><th>Penyebab &amp; Solusi Pasti di CloudPanel (PHP 8.5 + Laravel 13)</th></tr>
+  <tr><td>1</td><td>Perintah <code>composer</code> error: <em>"Your Composer dependencies require a PHP version &gt;= 8.5.0"</em> padahal sudah pilih PHP 8.5 di GUI</td><td>Default binary <code>/usr/bin/php</code> di Ubuntu mungkin masih menunjuk ke versi lain. <strong>Solusi:</strong> Selalu panggil <code>/usr/bin/php8.5 /usr/local/bin/composer ...</code> atau pasang alias di <code>~/.bashrc</code> sesuai Langkah 4.1.</td></tr>
+  <tr><td>2</td><td>Gagal install <code>maatwebsite/excel</code> di PHP 8.5 karena konflik <code>phpoffice/phpspreadsheet</code></td><td>Versi lama <code>maatwebsite/excel</code> menarik <code>phpspreadsheet 1.30.2</code>. <strong>Solusi:</strong> Gunakan <code>/usr/bin/php8.5 /usr/local/bin/composer require "maatwebsite/excel:^3.1.68|^4.0"</code>.</td></tr>
+  <tr><td>3</td><td>Upload bukti bayar / foto produk via Livewire gagal dengan error <code>401 Unauthorized</code> atau <code>419 Page Expired</code></td><td>Nginx CloudPanel bertindak sebagai reverse proxy di depan PHP 8.5-FPM. <strong>Solusi:</strong> Pastikan <code>$middleware-&gt;trustProxies(at: '*');</code> di <code>bootstrap/app.php</code> dan <code>URL::forceScheme('https');</code> di <code>AppServiceProvider.php</code> sudah terpasang (Langkah 4.4).</td></tr>
+  <tr><td>4</td><td>Error <code>Permission denied</code> pada <code>storage/logs/laravel.log</code></td><td>Ada perintah <code>artisan</code> yang tidak sengaja dijalankan sebagai <code>root</code>. <strong>Solusi:</strong> Jalankan sebagai <code>root</code>: <code>chown -R mercatoria:mercatoria /home/mercatoria/htdocs/mercatoria.id</code>, lalu selanjutnya selalu masuk via <code>su - mercatoria</code>.</td></tr>
+  <tr><td>5</td><td>Gambar produk di Invoice PDF / Packing List PDF muncul silang merah (<em>Image not found</em>)</td><td>DomPDF diblokir oleh aturan Nginx Anti-Hotlink jika memanggil URL HTTP. <strong>Solusi:</strong> Di Blade PDF, panggil gambar menggunakan path lokal: <code>&lt;img src="{{ storage_path('app/public/' . $item-&gt;product_image_path) }}"&gt;</code>.</td></tr>
+  <tr><td>6</td><td>Proses <code>npm run build</code> terhenti (<em>Killed</em>) di KVM 1</td><td>RAM 4 GB habis sesaat ketika Vite mem-bundle GrapesJS + Chart.js. <strong>Solusi:</strong> Pastikan Swap 2 GB pada Langkah 2.2 sudah aktif (cek dengan <code>free -h</code>).</td></tr>
+</table>
+
+<h3>10.3 Checklist Definition of Done (DoD) Sprint 0 — Wajib Centang Sebelum Masuk Sprint 1</h3>
+<table>
+  <tr><th>#</th><th>Item Verifikasi di VPS Hostinger KVM 1 + CloudPanel</th><th>Cara Cek / Perintah</th><th>Target Hasil</th></tr>
+  <tr><td>1</td><td>Dashboard CloudPanel &amp; Basic Auth</td><td>Buka <code>https://IP_VPS:8443</code></td><td>CloudPanel aktif, Basic Auth aktif, Firewall UFW aktif</td></tr>
+  <tr><td>2</td><td>Runtime PHP 8.5 + OPcache + JIT</td><td><code>/usr/bin/php8.5 -v</code></td><td><code>PHP 8.5.x (cli) ... with Zend OPcache ...</code></td></tr>
+  <tr><td>3</td><td>Framework Laravel 13.x</td><td><code>/usr/bin/php8.5 artisan --version</code></td><td><code>Laravel Framework 13.x.x</code></td></tr>
+  <tr><td>4</td><td>Timezone Server, PHP 8.5 &amp; MySQL 8.0</td><td><code>date</code> &amp; <code>/usr/bin/php8.5 -i | grep timezone</code></td><td><code>WIB (+0700)</code> / <code>Asia/Jakarta</code></td></tr>
+  <tr><td>5</td><td>RAM 4 GB KVM 1 + Swap 2 GB + Redis 7</td><td><code>free -h</code> &amp; <code>redis-cli ping</code></td><td>Swap <code>2.0Gi</code> aktif &amp; Redis menjawab <code>PONG</code></td></tr>
+  <tr><td>6</td><td>Ekstensi PHP 8.5 GD WebP Support</td><td><code>/usr/bin/php8.5 -r "print_r(gd_info());" | grep WebP</code></td><td><code>[WebP Support] =&gt; 1</code> (Siap untuk <code>ImageWatermarkService</code>)</td></tr>
+  <tr><td>7</td><td>71 Migration &amp; 8 Seeder Awal</td><td><code>/usr/bin/php8.5 artisan migrate:status</code></td><td>Semua tabel &amp; index berstatus <code>Ran</code>, 8 Seeder terisi</td></tr>
+  <tr><td>8</td><td>13 Jadwal Cron di <code>routes/console.php</code></td><td><code>/usr/bin/php8.5 artisan schedule:list</code></td><td>Menampilkan 13 command terjadwal pada timezone <code>Asia/Jakarta</code></td></tr>
+  <tr><td>9</td><td>Mode Aman Testing Email</td><td>Cek <code>MAIL_PAUSE_CUSTOMER_EMAILS</code> di <code>.env</code></td><td>Khusus saat testing/migrasi boleh <code>true</code>; <strong>produksi WAJIB <code>false</code></strong> (email customer harus terkirim)</td></tr>
+  <tr><td>10</td><td>SSL Let's Encrypt, Cron &amp; Supervisor</td><td>Buka <code>https://mercatoria.id</code> &amp; <code>supervisorctl status</code></td><td>Gembok SSL valid, Cron aktif di CloudPanel, &amp; 2 worker Redis <code>RUNNING</code></td></tr>
+</table>
+
+<hr>
+<p style="text-align: center; color: #666; margin-top: 40px;">
+<strong>— End of Document —</strong><br>
+Sprint 0 — Pre-Setup Foundation &amp; Tutorial VPS Hostinger KVM 1 (CloudPanel + PHP 8.5 + Laravel 13 Edition) Mercatoria v1.2 FINAL · Sinkronisasi pasca-audit (PRD v4.8 / AMANDEMEN-v1)<br>
+Selaras 100% dengan Backlog MVP v1.7 (EPIC-01: 8 Story · 24 Task · 34 SP) · PRD v4.8 · Design Spec v3.2 · Skema DB v1.6 · Struktur Folder v1.3 · Backlog v1.7
+</p>
+
+</body>
+</html>
