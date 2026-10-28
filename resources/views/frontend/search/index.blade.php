@@ -1,0 +1,71 @@
+@extends('layouts.app')
+
+@section('title', 'Hasil Pencarian — Mercatoria')
+
+@section('content')
+    <div class="mx-auto max-w-[1200px]">
+        <div class="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-gray-100">
+            <h1 class="text-xl font-semibold">
+                Hasil Pencarian
+                @if ($q !== '') untuk &ldquo;{{ $q }}&rdquo; @endif
+            </h1>
+
+            <form action="{{ route('search') }}" method="GET" class="mt-4 flex gap-2">
+                <input type="search" name="q" value="{{ $q }}" placeholder="Cari produk, karakter, game..."
+                       class="flex-1 rounded-lg border border-gray-200 px-4 py-2.5 text-sm focus:border-black focus:outline-none">
+                <button type="submit" class="rounded-lg bg-black px-6 py-2.5 text-sm font-semibold text-white">
+                    Cari
+                </button>
+            </form>
+
+            <p class="mt-3 text-sm text-gray-500">
+                @if ($results->total() > 0)
+                    Menampilkan {{ $results->firstItem() }}–{{ $results->lastItem() }} dari {{ $results->total() }} hasil
+                @else
+                    Tidak ada hasil ditemukan.
+                @endif
+            </p>
+        </div>
+
+        <form method="GET" class="mt-4 flex flex-wrap items-center gap-2 rounded-xl bg-white p-3 shadow-sm ring-1 ring-gray-100">
+            <input type="hidden" name="q" value="{{ $q }}">
+
+            <select name="game_id" onchange="this.form.submit()" class="rounded-lg border border-gray-200 px-3 py-1.5 text-sm">
+                <option value="">Semua Game</option>
+                @foreach ($games as $g)
+                    <option value="{{ $g->id }}" @selected($filters['game_id'] == $g->id)>{{ $g->name }}</option>
+                @endforeach
+            </select>
+
+            <select name="merch_category_id" onchange="this.form.submit()" class="rounded-lg border border-gray-200 px-3 py-1.5 text-sm">
+                <option value="">Kategori Merch</option>
+                @foreach ($categories as $category)
+                    <option value="{{ $category->id }}" @selected($filters['merch_category_id'] == $category->id)>{{ $category->name }}</option>
+                @endforeach
+            </select>
+
+            <select name="tag" onchange="this.form.submit()" class="rounded-lg border border-gray-200 px-3 py-1.5 text-sm">
+                <option value="">Tag</option>
+                @foreach ($tags as $t)
+                    <option value="{{ $t->slug }}" @selected($filters['tag'] === $t->slug)>{{ $t->name }}</option>
+                @endforeach
+            </select>
+        </form>
+
+        @if ($results->isNotEmpty())
+            <div class="mt-4 grid grid-cols-2 gap-4 md:grid-cols-4 xl:grid-cols-6">
+                @foreach ($results as $product)
+                    <x-product-card
+                        :product="$product"
+                        :shipping="$shipping"
+                        :matched-variant="$matchedVariants[$product->id]"
+                    />
+                @endforeach
+            </div>
+
+            <div class="mt-6">
+                {{ $results->links() }}
+            </div>
+        @endif
+    </div>
+@endsection

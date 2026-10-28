@@ -6,6 +6,9 @@ use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Auth\ResetPasswordController;
 use App\Http\Controllers\Auth\VerifyEmailController;
+use App\Http\Controllers\Frontend\CatalogController;
+use App\Http\Controllers\Frontend\ProductController;
+use App\Http\Controllers\Frontend\SearchController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', fn () => view('welcome'))->name('home');
@@ -50,4 +53,26 @@ Route::get('/email/verify/{id}/{hash}', [VerifyEmailController::class, 'verify']
 
 Route::middleware(['auth', 'admin'])->group(function () {
     Route::get('/office', [AdminDashboardController::class, 'index'])->name('office.dashboard');
+});
+
+/*
+|--------------------------------------------------------------------------
+| Katalog (PRD 13.8) — butuh login (Guest Barrier, PRD 7.2)
+|--------------------------------------------------------------------------
+*/
+Route::middleware('auth')->group(function () {
+    Route::get('/search', [SearchController::class, 'index'])->name('search');
+
+    Route::get('/developer/{developer:slug}', [CatalogController::class, 'developer'])
+        ->name('catalog.developer');
+
+    Route::get('/{game:slug}/kategori/{category:slug}', [CatalogController::class, 'category'])
+        ->withoutScopedBindings()
+        ->name('catalog.category');
+
+    Route::get('/{game:slug}/{product:slug}', [ProductController::class, 'show'])
+        ->name('product.show');
+
+    Route::get('/{game:slug}', [CatalogController::class, 'game'])
+        ->name('catalog.game');
 });

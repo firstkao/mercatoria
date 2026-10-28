@@ -19,7 +19,7 @@ class SettingsSeeder extends Seeder
         ['key' => 'ongkir_cn_btm_per_kg', 'value' => '25000', 'type' => 'int', 'group' => 'pricing', 'description' => 'Ongkir CN → Batam per kg (IDR).'],
         ['key' => 'ongkir_btm_jkt_per_kg', 'value' => '60000', 'type' => 'int', 'group' => 'pricing', 'description' => 'Ongkir Batam → Jakarta per kg (IDR).'],
         ['key' => 'default_weight_gram', 'value' => '0', 'type' => 'int', 'group' => 'pricing', 'description' => 'Default berat produk (gram). 0 = admin wajib input.'],
-        ['key' => 'price_rounding_multiple', 'value' => '5000', 'type' => 'int', 'group' => 'pricing', 'description' => 'Pembulatan harga ke kelipatan (hanya di harga item/varian).'],
+        ['key' => 'price_rounding', 'value' => '5000', 'type' => 'int', 'group' => 'pricing', 'description' => 'Pembulatan harga ke kelipatan (hanya di harga item/varian).'],
         ['key' => 'fee_toco_fp', 'value' => '1', 'type' => 'int', 'group' => 'pricing', 'description' => 'Fee Toco Full Payment (IDR).'],
         ['key' => 'fee_toco_dp', 'value' => '0', 'type' => 'int', 'group' => 'pricing', 'description' => 'Fee Toco Down Payment (IDR).'],
         ['key' => 'fee_shopee_fp', 'value' => '109', 'type' => 'int', 'group' => 'pricing', 'description' => 'Fee Shopee Full Payment (IDR).'],
