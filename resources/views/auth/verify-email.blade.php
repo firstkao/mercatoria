@@ -4,7 +4,7 @@
 
 @section('content')
     <div class="rounded-2xl bg-white p-8 shadow-sm ring-1 ring-gray-100">
-        <h1 class="text-2xl font-semibold">Verifikasi Email Kamu</h1>
+        <h1 class="text-2xl font-semibold">Verifikasi Email</h1>
         <p class="mt-2 text-sm text-gray-600">
             Kami sudah mengirim link verifikasi ke <strong>{{ auth()->user()->email }}</strong>.
             Link hanya berlaku selama 24 jam sejak pendaftaran.
