@@ -31,7 +31,7 @@ class LoginController extends Controller
             $request->user()->id,
         );
 
-        return redirect()->intended('/');
+        return redirect()->intended(route('dashboard'));
     }
 
     public function destroy(Request $request): RedirectResponse

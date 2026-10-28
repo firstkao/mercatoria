@@ -16,22 +16,30 @@ use Illuminate\View\View;
 class ProfileController extends Controller
 {
     /**
-     * Dashboard user (PRD 7.16): 4 tab + info bar + Tagihan Menunggu (18.4).
+     * Dashboard user (PRD 7.16 / Design Spec 10.1): header + 4 stats + tab + Tagihan Menunggu (18.4).
      */
     public function show(Request $request): View
     {
         $user = $request->user();
+        $customer = $user->customer;
 
         return view('frontend.profile.show', [
             'user' => $user,
+            'stateBadge' => $customer?->current_state ?? ucfirst($user->role),
+            'tierBadge' => $customer ? 'MVP '.ucfirst($customer->tier) : null,
             'tagihan' => $user->orders()
                 ->whereIn('status', ['menunggu_pembayaran', 'menunggu_pelunasan_pengambilan'])
                 ->orderByDesc('id')
                 ->get(),
+            'orders' => $user->orders()->orderByDesc('id')->limit(10)->get(),
             'totalOrders' => $user->orders()->count(),
             'totalBelanja' => (float) $user->orders()->where('status', 'selesai')->sum('total'),
             'coinBalance' => (int) Coin::where('user_id', $user->id)->value('balance'),
             'referralCount' => $user->referrals()->count(),
+            // "Berhasil" = referee yang sudah menyelesaikan order pertama (PRD 9.10).
+            'undangBerhasil' => $user->referrals()
+                ->whereHas('orders', fn ($q) => $q->where('status', 'selesai'))
+                ->count(),
         ]);
     }
 
@@ -97,7 +105,7 @@ class ProfileController extends Controller
 
         $request->user()->update(['tgl_lahir' => $data['tgl_lahir']]);
 
-        return redirect()->route('profile.show')->with('status', 'Profil dilengkapi.');
+        return redirect()->route('dashboard')->with('status', 'Profil dilengkapi.');
     }
 
     public function coins(Request $request): View

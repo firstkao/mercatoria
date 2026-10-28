@@ -15,7 +15,7 @@ test('user terverifikasi mendapat row crush', function () {
         ['id' => $user->id, 'hash' => sha1($user->email)]
     );
 
-    $this->get($url)->assertRedirect('/');
+    $this->actingAs($user)->get($url)->assertRedirect('/dashboard');
 
     expect($user->fresh()->email_verified_at)->not->toBeNull()
         ->and(Crush::where('user_id', $user->id)->exists())->toBeTrue();

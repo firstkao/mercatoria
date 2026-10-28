@@ -10,7 +10,7 @@ use App\Models\User;
 test('tombol logout di layout pakai form post dengan csrf', function () {
     $user = User::factory()->create();
 
-    $html = $this->actingAs($user)->get('/profile')->getContent();
+    $html = $this->actingAs($user)->get('/dashboard')->getContent();
 
     expect($html)->toContain('action="'.route('logout').'"')
         ->toContain('method="POST"')

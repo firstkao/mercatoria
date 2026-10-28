@@ -56,7 +56,7 @@ test('user dapat mengganti password', function () {
     $this->post('/logout');
 
     $this->post('/login', ['email' => $user->email, 'password' => 'password-baru-1'])
-        ->assertRedirect('/');
+        ->assertRedirect('/dashboard');
 
     $this->assertAuthenticatedAs($user);
 });
@@ -79,7 +79,7 @@ test('form lengkapi profil untuk tgl lahir kosong', function () {
 
     $this->actingAs($user)->post('/profile/complete', [
         'tgl_lahir' => '1995-05-05',
-    ])->assertRedirect('/profile');
+    ])->assertRedirect('/dashboard');
 
     expect($user->fresh()->tgl_lahir->toDateString())->toBe('1995-05-05');
 });

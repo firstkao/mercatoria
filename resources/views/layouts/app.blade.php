@@ -11,9 +11,9 @@
         <div class="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-3">
             <div class="flex items-center gap-4 text-sm font-medium">
                 <a href="/" class="hover:text-black">Beranda</a>
-                <a href="#" class="text-gray-500 hover:text-black">Game</a>
-                <a href="#" class="text-gray-500 hover:text-black">Developer</a>
-                <a href="#" class="text-gray-500 hover:text-black">Pre-order Baru</a>
+                <a href="{{ route('coming-soon') }}" class="text-gray-500 hover:text-black">Game</a>
+                <a href="{{ route('coming-soon') }}" class="text-gray-500 hover:text-black">Developer</a>
+                <a href="{{ route('coming-soon') }}" class="text-gray-500 hover:text-black">Pre-order Baru</a>
             </div>
 
             <a href="/" class="flex items-center gap-2">
@@ -29,7 +29,8 @@
 
                 @auth
                     <a href="{{ route('cart.index') }}" class="text-gray-500 hover:text-black">Keranjang</a>
-                    <a href="{{ route('profile.show') }}" class="font-medium hover:text-black">{{ auth()->user()->name }}</a>
+                    <a href="{{ route('coming-soon') }}" class="text-gray-500 hover:text-black" title="Notifikasi — menyusul">Bell</a>
+                    <a href="{{ route('dashboard') }}" class="font-medium hover:text-black">{{ auth()->user()->name }}</a>
                     <form method="POST" action="{{ route('logout') }}">
                         @csrf
                         <button type="submit" class="text-gray-500 hover:text-black">Keluar</button>

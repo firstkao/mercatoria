@@ -21,6 +21,7 @@ use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Auth\ResetPasswordController;
 use App\Http\Controllers\Auth\VerifyEmailController;
+use App\Http\Controllers\ComingSoonController;
 use App\Http\Controllers\Frontend\CartController;
 use App\Http\Controllers\Frontend\CatalogController;
 use App\Http\Controllers\Frontend\CheckoutController;
@@ -31,6 +32,12 @@ use App\Http\Controllers\Frontend\SearchController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', fn () => view('welcome'))->name('home');
+
+// Placeholder jujur untuk fitur/halaman yang belum dibangun (antrean).
+Route::get('/menyusul', ComingSoonController::class)->name('coming-soon');
+foreach (['tentang-kami', 'faq', 'cara-belanja', 'tnc', 'kebijakan-privasi'] as $staticPage) {
+    Route::get('/'.$staticPage, ComingSoonController::class)->name('page.'.$staticPage);
+}
 
 Route::middleware('guest')->group(function () {
     Route::get('/login', [LoginController::class, 'create'])->name('login');
@@ -160,7 +167,8 @@ Route::middleware('auth')->group(function () {
     Route::get('/orders/{order:no_order}/invoice', [OrderController::class, 'invoice'])
         ->name('orders.invoice');
 
-    Route::get('/profile', [ProfileController::class, 'show'])->name('profile.show');
+    Route::get('/dashboard', [ProfileController::class, 'show'])->name('dashboard');
+    Route::get('/profile', fn () => redirect()->route('dashboard'));
     Route::get('/profile/edit', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::put('/profile/edit', [ProfileController::class, 'update'])->name('profile.update');
     Route::post('/profile/password', [ProfileController::class, 'updatePassword'])->name('profile.password');

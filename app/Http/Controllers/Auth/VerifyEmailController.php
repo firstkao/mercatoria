@@ -45,7 +45,9 @@ class VerifyEmailController extends Controller
             Crush::firstOrCreate(['user_id' => $user->id]);
         }
 
-        return redirect('/');
+        return $request->user()
+            ? redirect()->route('dashboard')
+            : redirect('/login');
     }
 
     public function resend(Request $request): RedirectResponse

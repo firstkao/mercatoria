@@ -23,7 +23,7 @@ test('user dapat login dengan kredensial valid', function () {
     ]);
 
     $this->post('/login', loginPayload())
-        ->assertRedirect('/');
+        ->assertRedirect('/dashboard');
 
     $this->assertAuthenticatedAs($user);
     expect($user->fresh()->last_login)->not->toBeNull();
@@ -56,7 +56,7 @@ test('checkbox ingat saya menyimpan remember token', function () {
     ]);
 
     $this->post('/login', loginPayload(['remember' => '1']))
-        ->assertRedirect('/');
+        ->assertRedirect('/dashboard');
 
     expect($user->fresh()->remember_token)->not->toBeNull();
 });

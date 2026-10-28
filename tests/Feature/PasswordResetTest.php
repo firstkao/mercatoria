@@ -49,7 +49,7 @@ test('user dapat mengatur ulang password dengan token valid', function () {
     $this->post('/login', [
         'email' => 'budi@example.com',
         'password' => 'password-baru',
-    ])->assertRedirect('/');
+    ])->assertRedirect('/dashboard');
 
     $this->assertAuthenticatedAs($user);
 });
