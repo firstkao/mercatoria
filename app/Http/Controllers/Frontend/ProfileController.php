@@ -27,6 +27,12 @@ class ProfileController extends Controller
             'user' => $user,
             'stateBadge' => $customer?->current_state ?? ucfirst($user->role),
             'tierBadge' => $customer ? 'MVP '.ucfirst($customer->tier) : null,
+            // PRD 50: progress bar antara batas tier saat ini dan berikutnya.
+            'tierProgress' => [
+                'belanja' => (float) ($customer->total_belanja ?? 0),
+                'gold' => (float) setting('tier_gold_threshold', 2000000),
+                'platinum' => (float) setting('tier_platinum_threshold', 5000000),
+            ],
             'tagihan' => $user->orders()
                 ->whereIn('status', ['menunggu_pembayaran', 'menunggu_pelunasan_pengambilan'])
                 ->orderByDesc('id')

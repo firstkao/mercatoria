@@ -15,6 +15,22 @@
                 @endif
                 <span class="text-gray-500">Terdaftar sejak: {{ $user->created_at->format('d F Y') }}</span>
             </div>
+            @if ($tierBadge)
+                @php
+                    $pct = $tierProgress['platinum'] > 0
+                        ? min(100, round($tierProgress['belanja'] / $tierProgress['platinum'] * 100))
+                        : 0;
+                @endphp
+                <div class="mt-3 w-full max-w-md">
+                    <div class="flex items-center justify-between text-xs text-gray-500">
+                        <span>Progress Tier</span>
+                        <span>{{ format_rp($tierProgress['belanja']) }} / {{ format_rp($tierProgress['platinum']) }}</span>
+                    </div>
+                    <div class="mt-1 h-2 w-full overflow-hidden rounded-full bg-gray-100">
+                        <div class="h-full rounded-full bg-amber-400" style="width: {{ $pct }}%"></div>
+                    </div>
+                </div>
+            @endif
         </div>
     </div>
 

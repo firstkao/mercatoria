@@ -10,6 +10,7 @@ use App\Models\User;
 use App\Services\SplitBox\SplitBoxService;
 use App\Services\User\CoinWalletService;
 use App\Services\User\DiscountForfeitureService;
+use App\Services\User\UserTierService;
 
 class OrderStatusService
 {
@@ -71,7 +72,7 @@ class OrderStatusService
 
     private function applySideEffects(Order $order, string $toValue): void
     {
-        if (in_array($toValue, [OrderStatus::PembayaranGagal->value, OrderStatus::Hangus->value], true)) {
+        if (in_array($toValue, [OrderStatus::PembayaranGagal->value, OrderStatus::Hangus->value, OrderStatus::HangusPermanen->value], true)) {
             $this->forfeiture->forfeitUnpaidCheckoutDiscounts($order);
         }
 
@@ -82,6 +83,29 @@ class OrderStatusService
             OrderStatus::DanaDikembalikan->value,
         ], true)) {
             app(SplitBoxService::class)->releaseSlotsForOrder($order);
+        }
+
+        // PRD 50: hitung tier saat Sedang Diproses (atau sesudahnya — idempotent via tier_counted_at).
+        if (in_array($toValue, [
+            OrderStatus::SedangDiproses->value,
+            OrderStatus::SampaiWhChina->value,
+            OrderStatus::DikirimKeIndonesia->value,
+            OrderStatus::BeaCukai->value,
+            OrderStatus::SampaiWhIndonesia->value,
+            OrderStatus::MenungguPelunasanPengambilan->value,
+            OrderStatus::SedangDikemas->value,
+            OrderStatus::Selesai->value,
+        ], true)) {
+            app(UserTierService::class)->countOrder($order);
+        }
+
+        // PRD 50: refund full & hangus mengurangi total belanja.
+        if (in_array($toValue, [
+            OrderStatus::DanaDikembalikan->value,
+            OrderStatus::Hangus->value,
+            OrderStatus::HangusPermanen->value,
+        ], true)) {
+            app(UserTierService::class)->uncount($order);
         }
 
         if ($toValue === OrderStatus::PembayaranDiterima->value) {

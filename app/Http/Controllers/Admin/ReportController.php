@@ -25,6 +25,8 @@ class ReportController extends Controller
         $hangus = (clone $verified())
             ->whereHas('order', fn ($q) => $q->whereIn('status', ['hangus', 'hangus_permanen']))
             ->sum('amount');
+        // PRD 51.2: pendapatan denda, terpisah dari DP/Pelunasan.
+        $dendaDiterima = (clone $verified())->where('type', Payment::TYPE_PENALTY)->sum('amount');
 
         return view('admin.reports.index', [
             'totalDp' => $totalDp,
@@ -32,6 +34,7 @@ class ReportController extends Controller
             'totalPenjualan' => $totalPenjualan,
             'outstanding' => $outstanding,
             'hangus' => $hangus,
+            'dendaDiterima' => $dendaDiterima,
         ]);
     }
 }

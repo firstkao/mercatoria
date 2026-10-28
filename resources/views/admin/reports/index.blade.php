@@ -26,9 +26,9 @@
             <p class="text-xs text-gray-500">Hangus (uang masuk, barang tidak keluar)</p>
             <p class="mt-1 text-2xl font-semibold">{{ format_rp($hangus) }}</p>
         </div>
+        <div class="rounded-xl bg-white p-4 shadow-sm ring-1 ring-gray-100">
+            <p class="text-xs text-gray-500">Denda Diterima</p>
+            <p class="mt-1 text-2xl font-semibold">{{ format_rp($dendaDiterima) }}</p>
+        </div>
     </div>
-
-    <p class="mt-4 text-xs text-gray-400">
-        Kartu denda menyusul bersama fitur denda (bagian h).
-    </p>
 @endsection

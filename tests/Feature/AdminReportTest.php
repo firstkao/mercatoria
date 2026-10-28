@@ -51,10 +51,10 @@ test('laporan menampilkan kartu dasar dengan angka benar', function () {
         ->assertSee('255.000');
 });
 
-test('kartu denda diterima belum tampil (menyusul bagian h)', function () {
+test('kartu denda diterima tampil di laporan', function () {
     $admin = User::factory()->admin()->create();
 
     $this->actingAs($admin)->get('/office/reports')
         ->assertOk()
-        ->assertDontSee('Denda Diterima');
+        ->assertSee('Denda Diterima');
 });

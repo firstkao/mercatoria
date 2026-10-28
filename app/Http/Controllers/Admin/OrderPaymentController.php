@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\AdminLog;
 use App\Models\Order;
 use App\Models\Payment;
+use App\Services\Order\LatePenaltyService;
 use App\Services\Order\OrderStatusService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -24,7 +25,13 @@ class OrderPaymentController extends Controller
             'verified_at' => now(),
         ]);
 
-        $this->statuses->changeStatus($order, 'pembayaran_diterima', 'admin', 'Bukti bayar diverifikasi');
+        if ($payment->type === Payment::TYPE_PENALTY) {
+            // PRD 51.1: denda terverifikasi → Menunggu Pelunasan & Pengambilan (timer CO baru).
+            app(LatePenaltyService::class)->markPaid($order);
+        } else {
+            $this->statuses->changeStatus($order, 'pembayaran_diterima', 'admin', 'Bukti bayar diverifikasi');
+        }
+
         AdminLog::record($request->user(), 'update', 'Payment', $payment->id,
             ['status' => Payment::STATUS_PENDING], ['status' => Payment::STATUS_VERIFIED],
             'Verifikasi bukti bayar');

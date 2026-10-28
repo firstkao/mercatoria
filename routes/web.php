@@ -121,6 +121,8 @@ Route::middleware(['auth', 'admin'])->prefix('office')->name('office.')->group(f
     Route::get('/orders/{order:no_order}', [AdminOrderController::class, 'show'])->name('orders.show');
     Route::patch('/orders/{order:no_order}/status', [OrderStatusController::class, 'update'])->name('orders.status');
     Route::post('/orders/{order:no_order}/settlements', [AdminOrderController::class, 'storeSettlement'])->name('orders.settlements');
+    Route::post('/orders/{order:no_order}/unlock-penalty', [AdminOrderController::class, 'unlockPenalty'])->name('orders.unlock-penalty');
+    Route::post('/orders/{order:no_order}/hangus-permanent', [AdminOrderController::class, 'hangusPermanent'])->name('orders.hangus-permanent');
     Route::post('/orders/{order:no_order}/payments/{payment}/verify', [OrderPaymentController::class, 'verify'])
         ->name('payments.verify');
     Route::post('/orders/{order:no_order}/payments/{payment}/reject', [OrderPaymentController::class, 'reject'])

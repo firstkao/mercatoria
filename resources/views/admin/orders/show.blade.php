@@ -51,6 +51,24 @@
                        class="flex-1 rounded-lg border border-gray-200 px-3 py-2 text-sm">
                 <button type="submit" class="rounded-lg border border-gray-300 px-4 py-2 text-sm hover:border-black">Catat</button>
             </form>
+            <h2 class="mt-4 text-sm font-semibold">Denda &amp; Hangus (PRD 51)</h2>
+            @if ($order->status === 'hangus')
+                <form method="POST" action="{{ route('office.orders.unlock-penalty', $order->no_order) }}" class="mt-2 flex gap-2">
+                    @csrf
+                    <input type="number" name="penalty_amount" min="0" placeholder="Nominal denda (opsional)"
+                           class="flex-1 rounded-lg border border-gray-200 px-3 py-2 text-sm">
+                    <button class="rounded-lg bg-black px-4 py-2 text-sm font-semibold text-white">Buka Kunci via Denda</button>
+                </form>
+            @endif
+            @if (in_array($order->status, ['hangus', 'menunggu_denda'], true))
+                <form method="POST" action="{{ route('office.orders.hangus-permanent', $order->no_order) }}" class="mt-2"
+                      onsubmit="return confirm('Tetapkan Hangus Permanen? Tidak dapat dibuka lagi.')">
+                    @csrf
+                    <button class="rounded-lg border border-red-300 px-4 py-2 text-sm text-red-600 hover:border-red-600">
+                        Hangus Permanen
+                    </button>
+                </form>
+            @endif
         </div>
     </div>
 

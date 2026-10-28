@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\AdminLog;
 use App\Models\Order;
 use App\Models\Payment;
+use App\Services\Order\LatePenaltyService;
 use App\Services\Order\OrderStatusService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -49,6 +50,44 @@ class OrderController extends Controller
         }
 
         return redirect()->route('office.orders.index')->with('status', count($data['no_orders']).' order diperbarui.');
+    }
+
+    /**
+     * PRD 51.1: "Buka Kunci via Denda".
+     */
+    public function unlockPenalty(Request $request, Order $order): RedirectResponse
+    {
+        $data = $request->validate([
+            'penalty_amount' => ['nullable', 'integer', 'min:0'],
+        ]);
+
+        $before = ['status' => $order->status];
+        app(LatePenaltyService::class)->unlockViaPenalty(
+            $order,
+            $request->user(),
+            isset($data['penalty_amount']) ? (int) $data['penalty_amount'] : null
+        );
+
+        AdminLog::record($request->user(), 'update', 'Order', $order->id,
+            $before, $order->fresh()->only(['status', 'penalty_amount']),
+            'Buka Kunci via Denda');
+
+        return redirect()->route('office.orders.show', $order)->with('status', 'Order dibuka via denda.');
+    }
+
+    /**
+     * PRD 51.1: Hangus Permanen.
+     */
+    public function hangusPermanent(Request $request, Order $order): RedirectResponse
+    {
+        $before = ['status' => $order->status];
+        app(LatePenaltyService::class)->markHangusPermanen($order, $request->user());
+
+        AdminLog::record($request->user(), 'update', 'Order', $order->id,
+            $before, ['status' => $order->fresh()->status],
+            'Hangus Permanen');
+
+        return redirect()->route('office.orders.show', $order)->with('status', 'Order ditetapkan Hangus Permanen.');
     }
 
     public function storeSettlement(Request $request, Order $order): RedirectResponse

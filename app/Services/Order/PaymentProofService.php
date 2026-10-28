@@ -20,9 +20,11 @@ class PaymentProofService
      */
     public function upload(Order $order, UploadedFile $file, User $user, OrderStatusService $statuses): Payment
     {
-        if ($order->status !== OrderStatus::MenungguPembayaran->value) {
+        $isPenalty = $order->status === OrderStatus::MenungguDenda->value;
+
+        if (! $isPenalty && $order->status !== OrderStatus::MenungguPembayaran->value) {
             throw ValidationException::withMessages([
-                'proof' => 'Upload bukti hanya untuk pesanan berstatus Menunggu Pembayaran.',
+                'proof' => 'Upload bukti hanya untuk pesanan berstatus Menunggu Pembayaran atau Menunggu Denda.',
             ]);
         }
 
@@ -30,13 +32,17 @@ class PaymentProofService
             ->whereIn('status', [Payment::STATUS_PENDING, Payment::STATUS_VERIFIED])
             ->exists();
 
-        if ($alreadyUploaded) {
+        if (! $isPenalty && $alreadyUploaded) {
             throw ValidationException::withMessages([
                 'proof' => 'Bukti bayar sudah pernah diunggah.',
             ]);
         }
 
-        $paymentType = $order->scheme === 'fp' ? Payment::TYPE_FULL : Payment::TYPE_DP;
+        $paymentType = match (true) {
+            $isPenalty => Payment::TYPE_PENALTY,
+            $order->scheme === 'fp' => Payment::TYPE_FULL,
+            default => Payment::TYPE_DP,
+        };
         $extension = $file->getClientOriginalExtension() ?: 'jpg';
         // Nama file PRD 17.9: {no_order} - {tipe_pembayaran} - {metode_pembayaran}.ext
         $filename = sprintf('%s - %s - %s.%s', $order->no_order, $paymentType, $order->payment_method, $extension);
@@ -48,11 +54,16 @@ class PaymentProofService
             'order_id' => $order->id,
             'type' => $paymentType,
             'method' => $order->payment_method,
-            'amount' => $order->tagihan_web,
+            'amount' => $isPenalty ? $order->penalty_amount : $order->tagihan_web,
             'file_path' => $path,
             'status' => Payment::STATUS_PENDING,
             'uploaded_at' => now(),
         ]);
+
+        // Bukti denda (PRD 51.1) tidak mengunci slot Split Box — status tetap Menunggu Denda.
+        if ($isPenalty) {
+            return $payment;
+        }
 
         // PRD 49.6–49.7: kunci slot Split Box SEBELUM status Ditahan (sinkron, atomik).
         // Gagal → order batal otomatis slot_sold → forfeit koin/voucher (pintu (e)).

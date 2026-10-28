@@ -45,6 +45,12 @@ class Order extends Model
         'customer_note',
         'admin_note',
         'cancel_reason',
+        'tier_counted_at',
+        'tier_counted_amount',
+        'penalty_amount',
+        'penalty_deadline_at',
+        'penalty_paid_at',
+        'penalty_unlocked_at',
         'hangus_at',
         'pickup_deadline_at',
         'payment_deadline_at',
@@ -64,6 +70,12 @@ class Order extends Model
             'hangus_at' => 'datetime',
             'pickup_deadline_at' => 'datetime',
             'payment_deadline_at' => 'datetime',
+            'tier_counted_at' => 'datetime',
+            'tier_counted_amount' => 'decimal:2',
+            'penalty_amount' => 'decimal:2',
+            'penalty_deadline_at' => 'datetime',
+            'penalty_paid_at' => 'datetime',
+            'penalty_unlocked_at' => 'datetime',
         ];
     }
 
