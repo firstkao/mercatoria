@@ -16,12 +16,12 @@
             {{-- Desktop 3-kolom: Menu Kiri · Logo Tengah · Utility Kanan --}}
             <div class="hidden min-h-[72px] lg:grid lg:grid-cols-3 lg:items-center">
                 <nav class="flex items-center gap-5" aria-label="Menu utama">
-                    <a href="{{ route('home') }}" class="text-[13px] font-medium text-[#4FC3F7]">Beranda</a>
+                    <a href="{{ route('home') }}" class="text-[14px] font-medium text-[#4FC3F7]">Beranda</a>
 
                     <details class="group relative">
-                        <summary class="flex cursor-pointer list-none items-center gap-1 text-[13px] font-medium text-[#333] transition-colors hover:text-[#4FC3F7]">
+                        <summary class="flex cursor-pointer list-none items-center gap-1 text-[14px] font-medium text-[#333] transition-colors hover:text-[#4FC3F7]">
                             Game
-                            <span class="text-[10px] transition-transform group-open:rotate-180">▾</span>
+                            <span class="text-[12px] transition-transform group-open:rotate-180">▾</span>
                         </summary>
                         <div class="absolute left-0 top-full z-20 mt-2 max-h-80 w-56 overflow-y-auto rounded-lg border border-[#EAEAEA] bg-white py-2 shadow-sm">
                             @isset($footerGames)
@@ -39,7 +39,7 @@
                     </details>
 
                     <details class="group relative">
-                        <summary class="flex cursor-pointer list-none items-center gap-1 text-[13px] font-medium text-[#333] transition-colors hover:text-[#4FC3F7]">
+                        <summary class="flex cursor-pointer list-none items-center gap-1 text-[14px] font-medium text-[#333] transition-colors hover:text-[#4FC3F7]">
                             Developer
                             <span class="text-[10px] transition-transform group-open:rotate-180">▾</span>
                         </summary>
@@ -58,11 +58,11 @@
                         </div>
                     </details>
 
-                    <a href="#" class="text-[13px] font-medium text-[#333] transition-colors hover:text-[#4FC3F7]">Pre-order Baru</a>
+                    <a href="#" class="text-[14px] font-medium text-[#333] transition-colors hover:text-[#4FC3F7]">Pre-order Baru</a>
                 </nav>
 
                 <a href="{{ route('home') }}" class="flex flex-col items-center justify-center no-underline">
-                    <img src="{{ asset('logo.png') }}" alt="Mercatoria" class="h-10 w-auto" width="1608" height="494">
+                    <img src="{{ asset('logo.png') }}" alt="Mercatoria" style="height: 50px; width: auto;">
                 </a>
 
                 <div class="flex items-center justify-end gap-3">
@@ -70,7 +70,7 @@
                         <x-icons.magnifying-glass width="18" height="18" />
                     </a>
 
-                    <div class="flex items-center gap-2.5 text-[#333]">
+                    <div class="flex items-center gap-4 text-[#333]">
                         <a href="{{ setting('url_instagram', '#') }}" class="transition-colors hover:text-[#4FC3F7]" aria-label="Instagram">
                             <x-icons.instagram width="16" height="16" />
                         </a>
