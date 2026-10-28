@@ -14,6 +14,18 @@ use Illuminate\View\View;
 
 class OrderController extends Controller
 {
+    /**
+     * Riwayat order user (tab Pesanan Saya — PRD 7.16).
+     */
+    public function index(Request $request): View
+    {
+        return view('frontend.orders.index', [
+            'orders' => Order::where('user_id', $request->user()->id)
+                ->orderByDesc('id')
+                ->paginate(20),
+        ]);
+    }
+
     public function show(Request $request, Order $order): View
     {
         abort_unless($this->canAccess($request, $order), 403);

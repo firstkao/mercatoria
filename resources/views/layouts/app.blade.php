@@ -28,6 +28,8 @@
                 </form>
 
                 @auth
+                    <a href="{{ route('cart.index') }}" class="text-gray-500 hover:text-black">Keranjang</a>
+                    <a href="{{ route('profile.show') }}" class="font-medium hover:text-black">{{ auth()->user()->name }}</a>
                     <form method="POST" action="{{ route('logout') }}">
                         @csrf
                         <button type="submit" class="text-gray-500 hover:text-black">Keluar</button>

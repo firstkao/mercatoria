@@ -18,7 +18,8 @@ return new class extends Migration
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
             $table->string('role', 20)->default('customer');
-            $table->date('tgl_lahir');
+            // Nullable: user migrasi lama mengisi lewat /profile/complete (Skema DB 16.2).
+            $table->date('tgl_lahir')->nullable();
             $table->string('no_hp', 20);
             $table->string('provinsi', 100);
             $table->string('kota', 100);

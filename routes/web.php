@@ -26,6 +26,7 @@ use App\Http\Controllers\Frontend\CatalogController;
 use App\Http\Controllers\Frontend\CheckoutController;
 use App\Http\Controllers\Frontend\OrderController;
 use App\Http\Controllers\Frontend\ProductController;
+use App\Http\Controllers\Frontend\ProfileController;
 use App\Http\Controllers\Frontend\SearchController;
 use Illuminate\Support\Facades\Route;
 
@@ -152,11 +153,22 @@ Route::middleware('auth')->group(function () {
     Route::post('/checkout/summary', [CheckoutController::class, 'summary'])->name('checkout.summary');
     Route::post('/checkout', [CheckoutController::class, 'store'])->name('checkout.store');
 
+    Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');
     Route::get('/orders/{order:no_order}', [OrderController::class, 'show'])->name('orders.show');
     Route::post('/orders/{order:no_order}/payments', [OrderController::class, 'storePayment'])
         ->name('orders.payments.store');
     Route::get('/orders/{order:no_order}/invoice', [OrderController::class, 'invoice'])
         ->name('orders.invoice');
+
+    Route::get('/profile', [ProfileController::class, 'show'])->name('profile.show');
+    Route::get('/profile/edit', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::put('/profile/edit', [ProfileController::class, 'update'])->name('profile.update');
+    Route::post('/profile/password', [ProfileController::class, 'updatePassword'])->name('profile.password');
+    Route::get('/profile/complete', [ProfileController::class, 'complete'])->name('profile.complete');
+    Route::post('/profile/complete', [ProfileController::class, 'storeComplete'])->name('profile.complete.store');
+    Route::get('/profile/koin', [ProfileController::class, 'coins'])->name('profile.coins');
+    Route::get('/profile/wallet', [ProfileController::class, 'wallet'])->name('profile.wallet');
+    Route::get('/profile/undang', [ProfileController::class, 'referral'])->name('profile.referral');
 });
 
 /*
