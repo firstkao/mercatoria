@@ -1,6 +1,8 @@
 <?php
 
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
+use App\Http\Controllers\Admin\OrderPaymentController;
+use App\Http\Controllers\Admin\OrderStatusController;
 use App\Http\Controllers\Auth\ForgotPasswordController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
@@ -56,6 +58,13 @@ Route::get('/email/verify/{id}/{hash}', [VerifyEmailController::class, 'verify']
 
 Route::middleware(['auth', 'admin'])->group(function () {
     Route::get('/office', [AdminDashboardController::class, 'index'])->name('office.dashboard');
+
+    Route::post('/office/orders/{order:no_order}/payments/{payment}/verify', [OrderPaymentController::class, 'verify'])
+        ->name('office.payments.verify');
+    Route::post('/office/orders/{order:no_order}/payments/{payment}/reject', [OrderPaymentController::class, 'reject'])
+        ->name('office.payments.reject');
+    Route::patch('/office/orders/{order:no_order}/status', [OrderStatusController::class, 'update'])
+        ->name('office.orders.status');
 });
 
 /*
@@ -74,6 +83,10 @@ Route::middleware('auth')->group(function () {
     Route::post('/checkout', [CheckoutController::class, 'store'])->name('checkout.store');
 
     Route::get('/orders/{order:no_order}', [OrderController::class, 'show'])->name('orders.show');
+    Route::post('/orders/{order:no_order}/payments', [OrderController::class, 'storePayment'])
+        ->name('orders.payments.store');
+    Route::get('/orders/{order:no_order}/invoice', [OrderController::class, 'invoice'])
+        ->name('orders.invoice');
 });
 
 /*

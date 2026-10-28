@@ -11,8 +11,6 @@ class Order extends Model
 {
     use HasFactory;
 
-    public const STATUS_MENUNGGU_PEMBAYARAN = 'menunggu_pembayaran';
-
     public const SCHEME_FP = 'fp';
 
     public const SCHEME_DP = 'dp';
@@ -46,6 +44,7 @@ class Order extends Model
         'admin_note',
         'hangus_at',
         'pickup_deadline_at',
+        'payment_deadline_at',
     ];
 
     protected function casts(): array
@@ -61,6 +60,7 @@ class Order extends Model
             'fee_co_marketplace' => 'decimal:2',
             'hangus_at' => 'datetime',
             'pickup_deadline_at' => 'datetime',
+            'payment_deadline_at' => 'datetime',
         ];
     }
 
@@ -82,5 +82,15 @@ class Order extends Model
     public function coinTransactions(): HasMany
     {
         return $this->hasMany(CoinTransaction::class);
+    }
+
+    public function payments(): HasMany
+    {
+        return $this->hasMany(Payment::class);
+    }
+
+    public function statusLogs(): HasMany
+    {
+        return $this->hasMany(OrderStatusLog::class);
     }
 }

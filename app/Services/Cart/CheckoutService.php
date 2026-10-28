@@ -6,6 +6,7 @@ use App\Models\Cart;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\OrderItemSnapshot;
+use App\Models\OrderStatus;
 use App\Models\User;
 use App\Models\UserVoucher;
 use App\Services\Order\ShippingCalculatorService;
@@ -69,7 +70,7 @@ class CheckoutService
             $order = Order::create([
                 'user_id' => $user->id,
                 'no_order' => generate_order_number(),
-                'status' => Order::STATUS_MENUNGGU_PEMBAYARAN,
+                'status' => OrderStatus::MenungguPembayaran->value,
                 'scheme' => $data['scheme'],
                 'platform' => $data['platform'],
                 'payment_method' => $data['payment_method'],
@@ -84,6 +85,7 @@ class CheckoutService
                 'estimasi_co_marketplace' => $totals['estimasi_co_marketplace'] ?? null,
                 'fee_co_marketplace' => $totals['fee_co_marketplace'] ?? null,
                 'customer_note' => $data['customer_note'] ?? null,
+                'payment_deadline_at' => now()->addHours(24),
             ]);
 
             foreach ($lines as $line) {

@@ -20,7 +20,7 @@ return new class extends Migration
             $table->string('discount_type', 10)->nullable();
             $table->decimal('discount_amount', 14, 2)->default(0);
             $table->unsignedBigInteger('coin_spent')->default(0);
-            // Tanpa FK: orders ↔ user_vouchers saling merujuk (sirkular).
+            // Tanpa FK: orders â†” user_vouchers saling merujuk (sirkular).
             $table->unsignedBigInteger('user_voucher_id')->nullable()->index();
             $table->decimal('total', 14, 2);
             $table->decimal('fee_qris', 14, 2)->default(0);

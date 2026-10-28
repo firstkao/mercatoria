@@ -1,7 +1,11 @@
 <?php
 
+use App\Models\Cart;
+use App\Models\Order;
 use App\Models\Product;
 use App\Models\Store;
+use App\Models\User;
+use App\Services\Cart\CheckoutService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -84,4 +88,34 @@ function checkoutPayload(array $overrides = []): array
         'discount_type' => 'none',
         'customer_note' => 'bubble wrap extra',
     ], $overrides);
+}
+
+/**
+ * Buat order nyata via CheckoutService (produk final Rp 255.000).
+ *
+ * @return array{0: User, 1: Order}
+ */
+function placeTestOrder(?User $user = null): array
+{
+    $user ??= User::factory()->create();
+
+    $cart = Cart::factory()->create([
+        'user_id' => $user->id,
+        'product_id' => productFinal255()->id,
+        'qty' => 1,
+    ]);
+
+    $order = app(CheckoutService::class)->placeOrder(
+        $user,
+        [$cart->id],
+        [
+            'platform' => 'toco',
+            'scheme' => 'fp',
+            'payment_method' => 'bca',
+            'discount_type' => 'none',
+            'customer_note' => null,
+        ]
+    );
+
+    return [$user, $order];
 }
