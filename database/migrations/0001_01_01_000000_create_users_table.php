@@ -13,12 +13,27 @@ return new class extends Migration
     {
         Schema::create('users', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
+            $table->string('name', 100);
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
+            $table->string('role', 20)->default('customer');
+            $table->date('tgl_lahir');
+            $table->string('no_hp', 20);
+            $table->string('provinsi', 100);
+            $table->string('kota', 100);
+            $table->string('kecamatan', 100);
+            $table->text('alamat');
+            $table->string('kode_pos', 10);
+            $table->string('referral_code', 20)->unique();
+            $table->foreignId('referred_by')->nullable()->constrained('users')->nullOnDelete();
+            $table->boolean('has_seen_tour')->default(false);
+            $table->boolean('is_migrated')->default(false);
+            $table->timestamp('last_login')->nullable();
             $table->rememberToken();
             $table->timestamps();
+
+            $table->index('no_hp');
         });
 
         Schema::create('password_reset_tokens', function (Blueprint $table) {

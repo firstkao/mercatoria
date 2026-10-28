@@ -2,31 +2,100 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
-use Database\Factories\UserFactory;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
-use Illuminate\Database\Eloquent\Attributes\Hidden;
+use App\Notifications\VerifyEmailNotification;
+use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
-#[Fillable(['name', 'email', 'password'])]
-#[Hidden(['password', 'remember_token'])]
-class User extends Authenticatable
+class User extends Authenticatable implements MustVerifyEmail
 {
-    /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable;
 
-    /**
-     * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
-     */
+    public const ROLE_CUSTOMER = 'customer';
+
+    public const ROLE_ADMIN = 'admin';
+
+    protected $fillable = [
+        'name',
+        'email',
+        'password',
+        'role',
+        'tgl_lahir',
+        'no_hp',
+        'provinsi',
+        'kota',
+        'kecamatan',
+        'alamat',
+        'kode_pos',
+        'referral_code',
+        'referred_by',
+        'has_seen_tour',
+        'is_migrated',
+        'last_login',
+    ];
+
     protected function casts(): array
     {
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'tgl_lahir' => 'date',
+            'has_seen_tour' => 'boolean',
+            'is_migrated' => 'boolean',
+            'last_login' => 'datetime',
         ];
+    }
+
+    protected static function booted(): void
+    {
+        static::creating(function (User $user): void {
+            if ($user->referral_code === null || $user->referral_code === '') {
+                $user->referral_code = generate_referral_code();
+            }
+        });
+    }
+
+    public function sendEmailVerificationNotification(): void
+    {
+        $this->notify(new VerifyEmailNotification);
+    }
+
+    public function isAdmin(): bool
+    {
+        return $this->role === self::ROLE_ADMIN;
+    }
+
+    public function isMigrated(): bool
+    {
+        return $this->is_migrated === true;
+    }
+
+    public function hasCompletedProfile(): bool
+    {
+        return $this->tgl_lahir !== null;
+    }
+
+    public function crush(): HasOne
+    {
+        return $this->hasOne(Crush::class);
+    }
+
+    public function customer(): HasOne
+    {
+        return $this->hasOne(Customer::class);
+    }
+
+    public function referrer(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'referred_by');
+    }
+
+    public function referrals(): HasMany
+    {
+        return $this->hasMany(User::class, 'referred_by');
     }
 }
