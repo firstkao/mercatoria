@@ -6,7 +6,7 @@
     <div class="rounded-2xl border border-rule bg-white px-6 py-8 shadow-[0_1px_0_rgba(20,27,34,0.04)] sm:px-8">
         <p class="font-mono text-[10px] uppercase tracking-[0.22em] text-ink/45">Akun</p>
         <h1 class="mt-2 font-display text-[1.75rem] leading-tight font-semibold text-ink sm:text-3xl">
-            Masuk ke Akun Mercatoria Kamu
+            Masuk ke Akun Kamu
         </h1>
         <p class="mt-2 text-sm text-ink/65">
             Katalog hanya bisa dilihat setelah masuk
@@ -29,7 +29,6 @@
 
             <div>
                 <label for="email" class="block font-mono text-[10px] font-medium uppercase tracking-[0.16em] text-ink/70">
-                    <span class="text-ink/40">01</span>
                     Email
                     <span class="text-danger">*</span>
                 </label>
@@ -43,7 +42,6 @@
 
             <div>
                 <label for="password" class="block font-mono text-[10px] font-medium uppercase tracking-[0.16em] text-ink/70">
-                    <span class="text-ink/40">02</span>
                     Kata Sandi
                     <span class="text-danger">*</span>
                 </label>
@@ -65,7 +63,7 @@
             <div class="flex flex-wrap items-center justify-between gap-3">
                 <label class="flex items-center gap-2 text-sm text-ink/80">
                     <input type="checkbox" name="remember" value="1" class="h-4 w-4 rounded border-rule text-black focus:ring-accent/50">
-                    Ingat saya
+                    Ingatkan saya
                 </label>
                 <a href="{{ route('password.request') }}" class="text-sm font-medium text-link underline decoration-link/35 underline-offset-4 transition-colors hover:text-ink hover:decoration-ink">
                     Lupa Password?

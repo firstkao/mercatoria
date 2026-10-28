@@ -1,6 +1,6 @@
 @extends('layouts.guest')
 
-@section('title', 'Daftar Akun Baru — Mercatoria')
+@section('title', 'Daftar — Mercatoria')
 
 @section('width', 'w-full max-w-2xl')
 
@@ -15,7 +15,7 @@
             <div class="mt-5 rounded-xl border border-rule bg-paper px-4 py-4 sm:px-5">
                 <p class="flex items-start gap-2.5 font-semibold text-ink">
                     <x-icons.shield-check class="mt-0.5 text-link" width="18" height="18" />
-                    <span>Email atau Nomor WhatsApp ini sudah terdaftar sebagai Pelanggan!</span>
+                    <span>Email atau Nomor WhatsApp ini sudah terdaftar!</span>
                 </p>
                 <p class="mt-2 pl-[26px] text-sm text-ink/70">
                     Demi keamanan riwayat pesanan &amp; koin kamu, pendaftaran ulang tidak diizinkan.
@@ -31,7 +31,7 @@
         <div class="mt-5 rounded-xl border border-rule bg-paper px-4 py-4 sm:px-5">
             <p class="flex items-start gap-2.5 text-sm text-ink/80">
                 <x-icons.exclamation-triangle-fill class="mt-0.5 text-ink/55" width="18" height="18" />
-                <span>Akun baru hanya bisa membuka 10 detail produk dan terhapus otomatis 30 hari setelah mendaftar jika belum ada pembayaran. Email dan nomor WhatsApp yang sama maksimal 3 kali mendaftar.</span>
+                <span>Akun baru hanya bisa membuka 10 detail produk dan terhapus otomatis 30 hari setelah mendaftar jika belum ada pembayaran.</span>
             </p>
         </div>
 
@@ -53,7 +53,6 @@
             <div class="grid grid-cols-1 gap-5 sm:grid-cols-2">
                 <div>
                     <label for="name" class="block font-mono text-[10px] font-medium uppercase tracking-[0.16em] text-ink/70">
-                        <span class="text-ink/40">01</span>
                         Nama Lengkap
                         <span class="text-danger">*</span>
                     </label>
@@ -65,11 +64,10 @@
 
                 <div>
                     <label for="tgl_lahir" class="flex items-center gap-1.5 font-mono text-[10px] font-medium uppercase tracking-[0.16em] text-ink/70">
-                        <span class="text-ink/40">02</span>
                         Tanggal Lahir
                         <x-icons.lock-fill class="text-ink/45" width="11" height="11" />
                         <span class="text-danger">*</span>
-                        <span class="font-sans text-[11px] font-normal tracking-normal normal-case text-ink/45">(Terkunci 1x seumur hidup)</span>
+                        <span class="font-sans text-[11px] font-normal tracking-normal normal-case text-ink/45">(Tidak bisa diubah)</span>
                     </label>
                     <div class="relative mt-2">
                         <input type="date" name="tgl_lahir" id="tgl_lahir" value="{{ old('tgl_lahir') }}" required
@@ -80,7 +78,6 @@
 
                 <div>
                     <label for="no_hp" class="block font-mono text-[10px] font-medium uppercase tracking-[0.16em] text-ink/70">
-                        <span class="text-ink/40">03</span>
                         No HP (WhatsApp)
                         <span class="text-danger">*</span>
                     </label>
@@ -92,7 +89,6 @@
 
                 <div>
                     <label for="email" class="block font-mono text-[10px] font-medium uppercase tracking-[0.16em] text-ink/70">
-                        <span class="text-ink/40">04</span>
                         Email
                         <span class="text-danger">*</span>
                     </label>
@@ -104,7 +100,6 @@
 
                 <div>
                     <label for="provinsi" class="block font-mono text-[10px] font-medium uppercase tracking-[0.16em] text-ink/70">
-                        <span class="text-ink/40">05</span>
                         Provinsi
                         <span class="text-danger">*</span>
                     </label>
@@ -120,7 +115,6 @@
 
                 <div>
                     <label for="kota" class="block font-mono text-[10px] font-medium uppercase tracking-[0.16em] text-ink/70">
-                        <span class="text-ink/40">06</span>
                         Kota / Kabupaten
                         <span class="text-danger">*</span>
                     </label>
@@ -132,7 +126,6 @@
 
                 <div>
                     <label for="kecamatan" class="block font-mono text-[10px] font-medium uppercase tracking-[0.16em] text-ink/70">
-                        <span class="text-ink/40">07</span>
                         Kecamatan
                         <span class="text-danger">*</span>
                     </label>
@@ -144,7 +137,6 @@
 
                 <div>
                     <label for="kode_pos" class="block font-mono text-[10px] font-medium uppercase tracking-[0.16em] text-ink/70">
-                        <span class="text-ink/40">08</span>
                         Kode Pos
                         <span class="text-danger">*</span>
                     </label>
@@ -157,7 +149,6 @@
 
             <div>
                 <label for="alamat" class="block font-mono text-[10px] font-medium uppercase tracking-[0.16em] text-ink/70">
-                    <span class="text-ink/40">09</span>
                     Alamat Lengkap
                     <span class="text-danger">*</span>
                 </label>
@@ -170,7 +161,6 @@
             <div class="grid grid-cols-1 gap-5 sm:grid-cols-2">
                 <div>
                     <label for="password" class="block font-mono text-[10px] font-medium uppercase tracking-[0.16em] text-ink/70">
-                        <span class="text-ink/40">10</span>
                         Kata Sandi
                         <span class="text-danger">*</span>
                         <span class="font-sans text-[11px] font-normal tracking-normal normal-case text-ink/45">(Min 8 karakter)</span>
@@ -190,7 +180,6 @@
 
                 <div>
                     <label for="password_confirmation" class="block font-mono text-[10px] font-medium uppercase tracking-[0.16em] text-ink/70">
-                        <span class="text-ink/40">11</span>
                         Ulangi Kata Sandi
                         <span class="text-danger">*</span>
                     </label>
@@ -201,9 +190,8 @@
 
             <div>
                 <label for="referral_code" class="block font-mono text-[10px] font-medium uppercase tracking-[0.16em] text-ink/70">
-                    <span class="text-ink/40">12</span>
                     Kode Undangan
-                    <span class="font-sans text-[11px] font-normal tracking-normal normal-case text-ink/45">(Opsional — Auto-lock dari ?ref=)</span>
+                    <span class="font-sans text-[11px] font-normal tracking-normal normal-case text-ink/45">(Opsional)</span>
                 </label>
                 <input type="text" name="referral_code" id="referral_code"
                        value="{{ old('referral_code', $referralCode) }}"
