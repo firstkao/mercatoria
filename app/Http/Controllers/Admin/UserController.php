@@ -1,0 +1,92 @@
+<?php
+
+namespace App\Http\Controllers\Admin;
+
+use App\Http\Controllers\Controller;
+use App\Models\AdminLog;
+use App\Models\User;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\View\View;
+
+class UserController extends Controller
+{
+    public function index(Request $request): View
+    {
+        $q = (string) $request->query('q', '');
+
+        return view('admin.users.index', [
+            'users' => User::query()
+                ->when($q !== '', function ($query) use ($q) {
+                    $like = '%'.$q.'%';
+                    $query->where(fn ($sub) => $sub->where('name', 'like', $like)
+                        ->orWhere('email', 'like', $like)
+                        ->orWhere('no_hp', 'like', $like));
+                })
+                ->orderByDesc('id')
+                ->paginate(30)
+                ->withQueryString(),
+            'q' => $q,
+        ]);
+    }
+
+    public function create(): View
+    {
+        return view('admin.users.form', ['user' => new User]);
+    }
+
+    public function store(Request $request): RedirectResponse
+    {
+        $data = $request->validate([
+            'name' => ['required', 'string', 'min:2', 'max:100'],
+            'email' => ['required', 'email', 'unique:users,email'],
+            'password' => ['required', 'string', 'min:8'],
+            'role' => ['required', 'in:customer,admin'],
+            'tgl_lahir' => ['required', 'date'],
+            'no_hp' => ['required', 'regex:/^(?:\+?62|0)8[1-9][0-9]{6,11}$/'],
+            'provinsi' => ['required', 'string', 'max:100'],
+            'kota' => ['required', 'string', 'max:100'],
+            'kecamatan' => ['required', 'string', 'max:100'],
+            'alamat' => ['required', 'string', 'max:500'],
+            'kode_pos' => ['required', 'string', 'max:10'],
+        ]);
+
+        $data['no_hp'] = normalize_phone($data['no_hp']);
+        $data['password'] = Hash::make($data['password']);
+        $data['is_migrated'] = true;
+
+        $user = User::create($data);
+        AdminLog::record($request->user(), 'create', 'User', $user->id, null, collect($data)->except('password')->all(), 'Tambah user (inject)');
+
+        return redirect()->route('office.users.index')->with('status', 'User dibuat.');
+    }
+
+    public function edit(User $user): View
+    {
+        return view('admin.users.form', ['user' => $user]);
+    }
+
+    public function update(Request $request, User $user): RedirectResponse
+    {
+        $data = $request->validate([
+            'name' => ['required', 'string', 'min:2', 'max:100'],
+            'email' => ['required', 'email', 'unique:users,email,'.$user->id],
+            'role' => ['required', 'in:customer,admin'],
+            'password' => ['nullable', 'string', 'min:8'],
+        ]);
+
+        [$old, $new] = AdminLog::diff($user, ['name', 'email', 'role'], $data);
+
+        if (! empty($data['password'])) {
+            $data['password'] = Hash::make($data['password']);
+        } else {
+            unset($data['password']);
+        }
+
+        $user->update($data);
+        AdminLog::record($request->user(), 'update', 'User', $user->id, $old, $new, 'Ubah user');
+
+        return redirect()->route('office.users.index')->with('status', 'User diperbarui.');
+    }
+}

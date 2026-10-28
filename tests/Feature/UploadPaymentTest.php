@@ -16,7 +16,7 @@ test('upload bukti bayar sukses tersimpan di folder privat', function () {
 
     $payment = Payment::where('order_id', $order->id)->firstOrFail();
     expect($payment->status)->toBe('pending')
-        ->and($payment->type)->toBe('fp')
+        ->and($payment->type)->toBe('full')
         ->and($payment->file_path)->toContain('payment-proofs');
 
     Storage::disk('local')->assertExists($payment->file_path);
@@ -34,7 +34,7 @@ test('file nama sesuai format prd 17.9', function () {
 
     $payment = Payment::where('order_id', $order->id)->firstOrFail();
     expect(basename($payment->file_path))
-        ->toStartWith("{$order->no_order} - fp - bca");
+        ->toStartWith("{$order->no_order} - full - bca");
 });
 
 test('upload ditolak bila tipe file bukan jpg jpeg png', function () {

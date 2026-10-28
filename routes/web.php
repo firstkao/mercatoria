@@ -1,8 +1,20 @@
 <?php
 
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
+use App\Http\Controllers\Admin\DeveloperController as AdminDeveloperController;
+use App\Http\Controllers\Admin\GameController as AdminGameController;
+use App\Http\Controllers\Admin\LogController as AdminLogController;
+use App\Http\Controllers\Admin\MerchCategoryController as AdminMerchCategoryController;
+use App\Http\Controllers\Admin\OrderController as AdminOrderController;
 use App\Http\Controllers\Admin\OrderPaymentController;
 use App\Http\Controllers\Admin\OrderStatusController;
+use App\Http\Controllers\Admin\PaymentController as AdminPaymentController;
+use App\Http\Controllers\Admin\ProductController as AdminProductController;
+use App\Http\Controllers\Admin\ReportController as AdminReportController;
+use App\Http\Controllers\Admin\SettingsController as AdminSettingsController;
+use App\Http\Controllers\Admin\StoreController as AdminStoreController;
+use App\Http\Controllers\Admin\TagController as AdminTagController;
+use App\Http\Controllers\Admin\UserController as AdminUserController;
 use App\Http\Controllers\Auth\ForgotPasswordController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
@@ -56,15 +68,70 @@ Route::get('/email/verify/{id}/{hash}', [VerifyEmailController::class, 'verify']
     ->middleware('signed')
     ->name('verification.verify');
 
-Route::middleware(['auth', 'admin'])->group(function () {
-    Route::get('/office', [AdminDashboardController::class, 'index'])->name('office.dashboard');
+Route::middleware(['auth', 'admin'])->prefix('office')->name('office.')->group(function () {
+    Route::get('/', [AdminDashboardController::class, 'index'])->name('dashboard');
 
-    Route::post('/office/orders/{order:no_order}/payments/{payment}/verify', [OrderPaymentController::class, 'verify'])
-        ->name('office.payments.verify');
-    Route::post('/office/orders/{order:no_order}/payments/{payment}/reject', [OrderPaymentController::class, 'reject'])
-        ->name('office.payments.reject');
-    Route::patch('/office/orders/{order:no_order}/status', [OrderStatusController::class, 'update'])
-        ->name('office.orders.status');
+    // Produk (PRD 22.6)
+    Route::get('/products', [AdminProductController::class, 'index'])->name('products.index');
+    Route::get('/products/create', [AdminProductController::class, 'create'])->name('products.create');
+    Route::post('/products', [AdminProductController::class, 'store'])->name('products.store');
+    Route::post('/products/bulk', [AdminProductController::class, 'bulk'])->name('products.bulk');
+    Route::get('/products/{product}/edit', [AdminProductController::class, 'edit'])->name('products.edit');
+    Route::put('/products/{product}', [AdminProductController::class, 'update'])->name('products.update');
+    Route::delete('/products/{product}', [AdminProductController::class, 'destroy'])->name('products.destroy');
+    Route::post('/products/{product}/variants', [AdminProductController::class, 'storeVariant'])->name('products.variants.store');
+    Route::post('/products/{product}/variants/bulk-weight', [AdminProductController::class, 'bulkWeight'])->name('products.variants.bulk-weight');
+
+    // Katalog pendukung
+    Route::get('/games', [AdminGameController::class, 'index'])->name('games.index');
+    Route::post('/games', [AdminGameController::class, 'store'])->name('games.store');
+    Route::put('/games/{game}', [AdminGameController::class, 'update'])->name('games.update');
+    Route::delete('/games/{game}', [AdminGameController::class, 'destroy'])->name('games.destroy');
+
+    Route::get('/developers', [AdminDeveloperController::class, 'index'])->name('developers.index');
+    Route::post('/developers', [AdminDeveloperController::class, 'store'])->name('developers.store');
+    Route::put('/developers/{developer}', [AdminDeveloperController::class, 'update'])->name('developers.update');
+    Route::delete('/developers/{developer}', [AdminDeveloperController::class, 'destroy'])->name('developers.destroy');
+
+    Route::get('/stores', [AdminStoreController::class, 'index'])->name('stores.index');
+    Route::post('/stores', [AdminStoreController::class, 'store'])->name('stores.store');
+    Route::put('/stores/{store}', [AdminStoreController::class, 'update'])->name('stores.update');
+    Route::delete('/stores/{store}', [AdminStoreController::class, 'destroy'])->name('stores.destroy');
+
+    Route::get('/merch-categories', [AdminMerchCategoryController::class, 'index'])->name('merch-categories.index');
+    Route::post('/merch-categories', [AdminMerchCategoryController::class, 'store'])->name('merch-categories.store');
+    Route::put('/merch-categories/{merch_category}', [AdminMerchCategoryController::class, 'update'])->name('merch-categories.update');
+
+    Route::get('/tags', [AdminTagController::class, 'index'])->name('tags.index');
+    Route::post('/tags', [AdminTagController::class, 'store'])->name('tags.store');
+    Route::delete('/tags/{tag}', [AdminTagController::class, 'destroy'])->name('tags.destroy');
+
+    // Transaksi
+    Route::get('/orders', [AdminOrderController::class, 'index'])->name('orders.index');
+    Route::post('/orders/bulk-status', [AdminOrderController::class, 'bulkStatus'])->name('orders.bulk-status');
+    Route::get('/orders/{order:no_order}', [AdminOrderController::class, 'show'])->name('orders.show');
+    Route::patch('/orders/{order:no_order}/status', [OrderStatusController::class, 'update'])->name('orders.status');
+    Route::post('/orders/{order:no_order}/settlements', [AdminOrderController::class, 'storeSettlement'])->name('orders.settlements');
+    Route::post('/orders/{order:no_order}/payments/{payment}/verify', [OrderPaymentController::class, 'verify'])
+        ->name('payments.verify');
+    Route::post('/orders/{order:no_order}/payments/{payment}/reject', [OrderPaymentController::class, 'reject'])
+        ->name('payments.reject');
+    Route::get('/payments', [AdminPaymentController::class, 'index'])->name('payments.index');
+
+    // Pengguna
+    Route::get('/users', [AdminUserController::class, 'index'])->name('users.index');
+    Route::get('/users/create', [AdminUserController::class, 'create'])->name('users.create');
+    Route::post('/users', [AdminUserController::class, 'store'])->name('users.store');
+    Route::get('/users/{user}/edit', [AdminUserController::class, 'edit'])->name('users.edit');
+    Route::put('/users/{user}', [AdminUserController::class, 'update'])->name('users.update');
+
+    // Settings, laporan, log
+    Route::get('/settings', [AdminSettingsController::class, 'index'])->name('settings.index');
+    Route::post('/settings', [AdminSettingsController::class, 'update'])->name('settings.update');
+    Route::get('/reports', [AdminReportController::class, 'index'])->name('reports.index');
+    Route::get('/admin-logs', [AdminLogController::class, 'admin'])->name('admin-logs');
+    Route::get('/auth-logs', [AdminLogController::class, 'auth'])->name('auth-logs');
+    Route::get('/activity-logs', [AdminLogController::class, 'activity'])->name('activity-logs');
 });
 
 /*

@@ -17,3 +17,37 @@ test('admin dapat membuka halaman office', function () {
 
     $this->actingAs($admin)->get('/office')->assertOk();
 });
+
+test('semua route modul admin ditolak untuk guest dan customer', function () {
+    $urls = [
+        '/office',
+        '/office/products',
+        '/office/products/create',
+        '/office/games',
+        '/office/developers',
+        '/office/stores',
+        '/office/merch-categories',
+        '/office/tags',
+        '/office/orders',
+        '/office/payments',
+        '/office/users',
+        '/office/users/create',
+        '/office/settings',
+        '/office/reports',
+        '/office/admin-logs',
+        '/office/auth-logs',
+        '/office/activity-logs',
+    ];
+
+    $customer = User::factory()->create(['role' => 'customer']);
+
+    foreach ($urls as $url) {
+        $this->get($url)->assertRedirect('/login');
+    }
+
+    $this->actingAs($customer);
+
+    foreach ($urls as $url) {
+        $this->get($url)->assertForbidden();
+    }
+});

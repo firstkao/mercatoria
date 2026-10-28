@@ -10,9 +10,16 @@ class Payment extends Model
 {
     use HasFactory;
 
-    public const TYPE_FP = 'fp';
+    /**
+     * Tipe pembayaran (PRD 28: dp / full / settlement / refund; PRD 51: penalty).
+     */
+    public const TYPE_FULL = 'full';
 
     public const TYPE_DP = 'dp';
+
+    public const TYPE_SETTLEMENT = 'settlement';
+
+    public const TYPE_REFUND = 'refund';
 
     public const TYPE_PENALTY = 'penalty';
 

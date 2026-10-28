@@ -1,0 +1,177 @@
+<?php
+
+namespace App\Http\Controllers\Admin;
+
+use App\Http\Controllers\Controller;
+use App\Models\AdminLog;
+use App\Models\Game;
+use App\Models\MerchCategory;
+use App\Models\OrderItem;
+use App\Models\Product;
+use App\Models\ProductVariant;
+use App\Models\Store;
+use App\Models\Tag;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Str;
+use Illuminate\View\View;
+
+class ProductController extends Controller
+{
+    public function index(): View
+    {
+        return view('admin.products.index', [
+            'products' => Product::with(['game', 'store', 'merchCategory'])->orderByDesc('id')->paginate(30),
+        ]);
+    }
+
+    public function create(): View
+    {
+        return view('admin.products.form', [
+            'product' => new Product,
+            'games' => Game::orderBy('name')->get(),
+            'stores' => Store::orderBy('name')->get(),
+            'categories' => MerchCategory::orderBy('priority')->get(),
+            'tags' => Tag::orderBy('name')->get(),
+        ]);
+    }
+
+    public function store(Request $request): RedirectResponse
+    {
+        $data = $this->validateProduct($request);
+        $data['slug'] = $data['slug'] ?: Str::slug($data['name']).'-'.Str::random(4);
+
+        $product = Product::create($data + ['sold_count' => 0]);
+
+        if ($request->filled('tags')) {
+            $product->tags()->sync($request->input('tags'));
+        }
+
+        AdminLog::record($request->user(), 'create', 'Product', $product->id, null, $product->only(array_keys($data)), 'Tambah produk');
+
+        return redirect()->route('office.products.edit', $product)->with('status', 'Produk dibuat.');
+    }
+
+    public function edit(Product $product): View
+    {
+        return view('admin.products.form', [
+            'product' => $product->load('variants', 'tags'),
+            'games' => Game::orderBy('name')->get(),
+            'stores' => Store::orderBy('name')->get(),
+            'categories' => MerchCategory::orderBy('priority')->get(),
+            'tags' => Tag::orderBy('name')->get(),
+        ]);
+    }
+
+    public function update(Request $request, Product $product): RedirectResponse
+    {
+        $data = $this->validateProduct($request, $product);
+        [$old, $new] = AdminLog::diff($product, array_keys($data), $data);
+
+        $product->update($data);
+        $product->tags()->sync($request->input('tags', []));
+
+        AdminLog::record($request->user(), 'update', 'Product', $product->id, $old, $new, 'Ubah produk');
+
+        return redirect()->route('office.products.edit', $product)->with('status', 'Produk diperbarui.');
+    }
+
+    public function destroy(Request $request, Product $product): RedirectResponse
+    {
+        // Hard delete (PRD 13.5): snapshot order tetap utuh, order_items.product_id → NULL.
+        $snapshotCount = OrderItem::where('product_id', $product->id)->count();
+
+        AdminLog::record($request->user(), 'delete', 'Product', $product->id, $product->only(['name', 'sku']), null, "Hapus permanen ({$snapshotCount} order_item terdampak)");
+
+        $product->delete();
+
+        return redirect()->route('office.products.index')->with('status', 'Produk dihapus permanen.');
+    }
+
+    public function bulk(Request $request): RedirectResponse
+    {
+        $data = $request->validate([
+            'action' => ['required', 'in:aktifkan,nonaktifkan,hapus'],
+            'ids' => ['required', 'array', 'min:1'],
+            'ids.*' => ['integer', 'exists:products,id'],
+        ]);
+
+        $products = Product::whereIn('id', $data['ids'])->get();
+
+        foreach ($products as $product) {
+            if ($data['action'] === 'hapus') {
+                AdminLog::record($request->user(), 'delete', 'Product', $product->id, $product->only(['name', 'sku']), null, 'Bulk hapus permanen');
+                $product->delete();
+            } else {
+                $active = $data['action'] === 'aktifkan';
+                $product->update(['is_active' => $active]);
+                AdminLog::record($request->user(), 'update', 'Product', $product->id, ['is_active' => ! $active], ['is_active' => $active], 'Bulk '.($active ? 'aktifkan' : 'nonaktifkan'));
+            }
+        }
+
+        return redirect()->route('office.products.index')->with('status', count($data['ids']).' produk diproses.');
+    }
+
+    public function storeVariant(Request $request, Product $product): RedirectResponse
+    {
+        $data = $request->validate([
+            'name' => ['required', 'string', 'max:150'],
+            'sku' => ['required', 'string', 'max:64', 'unique:product_variants,sku'],
+            'price_rmb' => ['nullable', 'numeric', 'min:0'],
+            'weight_gram' => ['nullable', 'integer', 'min:0'],
+            'availability' => ['required', 'in:tersedia,kosong'],
+        ]);
+
+        $variant = $product->variants()->create($data);
+
+        AdminLog::record($request->user(), 'create', 'ProductVariant', $variant->id, null, $data, 'Tambah varian');
+
+        return redirect()->route('office.products.edit', $product)->with('status', 'Varian dibuat.');
+    }
+
+    public function bulkWeight(Request $request, Product $product): RedirectResponse
+    {
+        $data = $request->validate([
+            'weight_gram' => ['required', 'integer', 'min:0'],
+            'ids' => ['required', 'array', 'min:1'],
+            'ids.*' => ['integer', 'exists:product_variants,id'],
+        ]);
+
+        $updated = ProductVariant::whereIn('id', $data['ids'])
+            ->where('product_id', $product->id)
+            ->update(['weight_gram' => $data['weight_gram']]);
+
+        AdminLog::record($request->user(), 'update', 'Product', $product->id, null, ['weight_gram' => $data['weight_gram'], 'varian' => $data['ids']], "Bulk edit berat {$updated} varian");
+
+        return redirect()->route('office.products.edit', $product)->with('status', "{$updated} varian diperbarui.");
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function validateProduct(Request $request, ?Product $product = null): array
+    {
+        $data = $request->validate([
+            'game_id' => ['required', 'exists:games,id'],
+            'store_id' => ['nullable', 'exists:stores,id'],
+            'merch_category_id' => ['nullable', 'exists:merch_categories,id'],
+            'name' => ['required', 'string', 'max:150'],
+            'sku' => ['required', 'string', 'max:64', $product ? 'unique:products,sku,'.$product->id : 'unique:products,sku'],
+            'slug' => ['nullable', 'string', 'max:170', $product ? 'unique:products,slug,'.$product->id : 'unique:products,slug'],
+            'price_rmb' => ['required', 'numeric', 'min:0'],
+            'weight_gram' => ['nullable', 'integer', 'min:0'],
+            'type' => ['required', 'in:single,variant'],
+            'description' => ['nullable', 'string'],
+            'discount_amount' => ['nullable', 'numeric', 'min:0'],
+            'discount_start' => ['nullable', 'date'],
+            'discount_end' => ['nullable', 'date'],
+            'availability' => ['required', 'in:tersedia,kosong'],
+            'is_active' => ['nullable', 'boolean'],
+        ]);
+
+        $data['is_active'] = $request->boolean('is_active');
+        $data['slug'] = $data['slug'] ?? '';
+
+        return $data;
+    }
+}

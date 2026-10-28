@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Auth;
 
+use App\Models\AuthLog;
 use App\Models\Spammer;
 use Illuminate\Auth\Events\Lockout;
 use Illuminate\Contracts\Validation\ValidationRule;
@@ -50,6 +51,8 @@ class LoginRequest extends FormRequest
         $this->ensureIsNotLockedOut($lockKey);
 
         if (Spammer::blocksIdentity($email, null)) {
+            AuthLog::record(AuthLog::ACTION_LOGIN_FAILED, $email, null, 'identitas diblokir');
+
             throw ValidationException::withMessages([
                 'email' => 'Akun ini tidak dapat digunakan untuk login.',
             ]);
@@ -60,6 +63,8 @@ class LoginRequest extends FormRequest
             'password' => (string) $this->input('password'),
         ], $this->boolean('remember'))) {
             RateLimiter::hit($lockKey, self::LOCKOUT_SECONDS);
+
+            AuthLog::record(AuthLog::ACTION_LOGIN_FAILED, $email, null, 'kredensial salah');
 
             throw ValidationException::withMessages([
                 'email' => 'Email atau kata sandi salah.',
@@ -78,6 +83,8 @@ class LoginRequest extends FormRequest
         event(new Lockout($this));
 
         $seconds = RateLimiter::availableIn($lockKey);
+
+        AuthLog::record(AuthLog::ACTION_LOGIN_FAILED, $this->input('email'), null, 'akun terkunci');
 
         throw ValidationException::withMessages([
             'email' => 'Terlalu banyak percobaan gagal. Akun terkunci selama 15 menit ('.$seconds.' detik lagi).',

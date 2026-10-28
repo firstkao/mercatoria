@@ -35,16 +35,17 @@ class PaymentProofService
             ]);
         }
 
+        $paymentType = $order->scheme === 'fp' ? Payment::TYPE_FULL : Payment::TYPE_DP;
         $extension = $file->getClientOriginalExtension() ?: 'jpg';
         // Nama file PRD 17.9: {no_order} - {tipe_pembayaran} - {metode_pembayaran}.ext
-        $filename = sprintf('%s - %s - %s.%s', $order->no_order, $order->scheme, $order->payment_method, $extension);
+        $filename = sprintf('%s - %s - %s.%s', $order->no_order, $paymentType, $order->payment_method, $extension);
 
         // Disk 'local' = storage/app/private — tidak publik (PRD 17.7 / keamanan file).
         $path = $file->storeAs('payment-proofs', $filename, 'local');
 
         $payment = Payment::create([
             'order_id' => $order->id,
-            'type' => $order->scheme,
+            'type' => $paymentType,
             'method' => $order->payment_method,
             'amount' => $order->tagihan_web,
             'file_path' => $path,
