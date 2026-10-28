@@ -38,4 +38,38 @@ class CoinWalletService
             'balance_after' => $coin->fresh()->balance,
         ]);
     }
+
+    /**
+     * Tambah saldo koin (PRD 9.2). lockForUpdate + saldo setelah transaksi
+     * dihitung dari row yang sama — dua kredit serentak tidak korup.
+     *
+     * expired_at = 1 tahun sejak didapat (PRD 9.3).
+     */
+    public function credit(User $user, int $amount, ?Order $order, string $type, ?string $note = null): CoinTransaction
+    {
+        if ($amount <= 0) {
+            throw new \InvalidArgumentException('Nominal koin harus positif.');
+        }
+
+        $coin = Coin::query()
+            ->where('user_id', $user->id)
+            ->lockForUpdate()
+            ->first();
+
+        if (! $coin) {
+            $coin = Coin::create(['user_id' => $user->id, 'balance' => 0]);
+        }
+
+        $coin->increment('balance', $amount);
+
+        return CoinTransaction::create([
+            'user_id' => $user->id,
+            'order_id' => $order?->id,
+            'type' => $type,
+            'amount' => $amount,
+            'balance_after' => $coin->fresh()->balance,
+            'expired_at' => now()->addYear(),
+            'note' => $note,
+        ]);
+    }
 }

@@ -1,11 +1,15 @@
 <?php
 
 use App\Models\Cart;
+use App\Models\Coin;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\Store;
 use App\Models\User;
+use App\Models\UserVoucher;
+use App\Models\Voucher;
 use App\Services\Cart\CheckoutService;
+use App\Services\Order\OrderStatusService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -77,6 +81,28 @@ function productFinal85(): Product
 }
 
 /**
+ * Payload default POST /register.
+ */
+function registerPayload(array $overrides = []): array
+{
+    return array_merge([
+        'name' => 'Budi Santoso',
+        'tgl_lahir' => '1998-08-15',
+        'no_hp' => '081234567890',
+        'email' => 'budi@example.com',
+        'provinsi' => 'DKI Jakarta',
+        'kota' => 'Jakarta Selatan',
+        'kecamatan' => 'Kebayoran Baru',
+        'alamat' => 'Jl. Melati No. 10, RT 01 / RW 02',
+        'kode_pos' => '12120',
+        'password' => 'password123',
+        'password_confirmation' => 'password123',
+        'agree_tnc' => '1',
+        'agree_privacy' => '1',
+    ], $overrides);
+}
+
+/**
  * Payload default POST /checkout (harga selalu dihitung ulang di server).
  */
 function checkoutPayload(array $overrides = []): array
@@ -118,4 +144,96 @@ function placeTestOrder(?User $user = null): array
     );
 
     return [$user, $order];
+}
+
+/**
+ * Order dengan diskon koin (produk final Rp 255.000; maks 5% = 12.750).
+ *
+ * @return array{0: User, 1: Order}
+ */
+function placeOrderUsingCoin(int $coinAmount = 12750): array
+{
+    $user = User::factory()->create();
+    Coin::factory()->create(['user_id' => $user->id, 'balance' => $coinAmount]);
+
+    $cart = Cart::factory()->create([
+        'user_id' => $user->id,
+        'product_id' => productFinal255()->id,
+        'qty' => 1,
+    ]);
+
+    $order = app(CheckoutService::class)->placeOrder(
+        $user,
+        [$cart->id],
+        [
+            'platform' => 'toco',
+            'scheme' => 'fp',
+            'payment_method' => 'bca',
+            'discount_type' => 'coin',
+            'coin_amount' => $coinAmount,
+            'customer_note' => null,
+        ]
+    );
+
+    return [$user, $order];
+}
+
+/**
+ * Order dengan diskon voucher (nominal 25.000).
+ *
+ * @return array{0: User, 1: Order, 2: UserVoucher}
+ */
+function placeOrderUsingVoucher(): array
+{
+    $user = User::factory()->create();
+    $voucher = Voucher::factory()->create(['nominal' => 25000, 'min_belanja' => 100000, 'is_active' => true]);
+    $userVoucher = UserVoucher::factory()->create([
+        'user_id' => $user->id,
+        'voucher_id' => $voucher->id,
+        'status' => 'active',
+    ]);
+
+    $cart = Cart::factory()->create([
+        'user_id' => $user->id,
+        'product_id' => productFinal255()->id,
+        'qty' => 1,
+    ]);
+
+    $order = app(CheckoutService::class)->placeOrder(
+        $user,
+        [$cart->id],
+        [
+            'platform' => 'toco',
+            'scheme' => 'fp',
+            'payment_method' => 'bca',
+            'discount_type' => 'voucher',
+            'user_voucher_id' => $userVoucher->id,
+            'customer_note' => null,
+        ]
+    );
+
+    return [$user, $order, $userVoucher];
+}
+
+/**
+ * Majukan order sampai status Selesai lewat jalur resmi.
+ */
+function advanceToSelesai(Order $order): void
+{
+    $statuses = app(OrderStatusService::class);
+
+    foreach ([
+        'ditahan',
+        'pembayaran_diterima',
+        'sedang_diproses',
+        'sampai_wh_china',
+        'dikirim_ke_indonesia',
+        'bea_cukai',
+        'sampai_wh_indonesia',
+        'menunggu_pelunasan_pengambilan',
+        'sedang_dikemas',
+        'selesai',
+    ] as $status) {
+        $statuses->changeStatus($order, $status, 'admin');
+    }
 }

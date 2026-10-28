@@ -93,6 +93,15 @@ class RegisterRequest extends FormRequest
             if ($registrationCount >= 3) {
                 $validator->errors()->add('no_hp', 'Email dan nomor WhatsApp yang sama maksimal 3 kali mendaftar.');
             }
+
+            // Self-referral: kode undangan milik orang dengan no HP yang sama ditolak.
+            if ($this->filled('referral_code')) {
+                $referrer = User::where('referral_code', $this->input('referral_code'))->first();
+
+                if ($referrer && normalize_phone((string) $referrer->no_hp) === $noHp) {
+                    $validator->errors()->add('referral_code', 'Kode undangan tidak dapat digunakan untuk diri sendiri.');
+                }
+            }
         });
     }
 

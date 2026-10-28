@@ -6,25 +6,6 @@ use App\Models\User;
 use App\Notifications\VerifyEmailNotification;
 use Illuminate\Support\Facades\Notification;
 
-function registerPayload(array $overrides = []): array
-{
-    return array_merge([
-        'name' => 'Budi Santoso',
-        'tgl_lahir' => '1998-08-15',
-        'no_hp' => '081234567890',
-        'email' => 'budi@example.com',
-        'provinsi' => 'DKI Jakarta',
-        'kota' => 'Jakarta Selatan',
-        'kecamatan' => 'Kebayoran Baru',
-        'alamat' => 'Jl. Melati No. 10, RT 01 / RW 02',
-        'kode_pos' => '12120',
-        'password' => 'password123',
-        'password_confirmation' => 'password123',
-        'agree_tnc' => '1',
-        'agree_privacy' => '1',
-    ], $overrides);
-}
-
 test('guest dapat melihat halaman register', function () {
     $this->get('/register')->assertOk();
 });

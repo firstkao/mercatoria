@@ -11,9 +11,22 @@ class CoinTransaction extends Model
     use HasFactory;
 
     /**
-     * Tipe transaksi koin. `hangus_payment_failed` & `expired` dipakai di bagian (e).
+     * Tipe transaksi koin.
+     * `expired_at` diisi saat earned (PRD 9.3: expired 1 tahun sejak didapat).
      */
     public const TYPE_USED_AT_CHECKOUT = 'used_at_checkout';
+
+    public const TYPE_FORFEIT_AT_CHECKOUT = 'forfeit_at_checkout';
+
+    public const TYPE_EARNED_REFERRAL_REFERRER = 'earned_referral_referrer';
+
+    public const TYPE_EARNED_REFERRAL_REFEREE = 'earned_referral_referee';
+
+    public const TYPE_EARNED_ORDER = 'earned_order';
+
+    public const TYPE_EARNED_SHARE = 'earned_share';
+
+    public const TYPE_EARNED_BIRTHDAY = 'earned_birthday';
 
     public const TYPE_HANGUS_PAYMENT_FAILED = 'hangus_payment_failed';
 
