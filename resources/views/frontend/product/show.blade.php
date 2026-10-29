@@ -108,6 +108,26 @@
                     </button>
                 </form>
             @endunless
+
+            {{-- Share link reward (PRD 9.5 / Design Spec 6.1) --}}
+            @auth
+                <div class="mt-5 rounded-xl border border-rule bg-white p-4">
+                    <p class="font-mono text-[10px] uppercase tracking-[0.16em] text-ink/55">Bagikan produk ini</p>
+                    <p class="mt-1.5 text-sm text-ink/75">
+                        +5 koin per IP unik (khusus IP Indonesia) saat link dibuka.
+                    </p>
+                    <p class="mt-2 break-all font-mono text-xs text-link">
+                        {{ request()->getSchemeAndHttpHost() }}/{{ $game->slug }}/{{ $product->slug }}?ref={{ auth()->user()->referral_code }}
+                    </p>
+                </div>
+            @else
+                <div class="mt-5 rounded-xl border border-rule bg-white p-4">
+                    <p class="text-sm text-ink/70">
+                        <a href="{{ route('login') }}" class="font-medium text-link underline decoration-link/35 underline-offset-4">Masuk</a>
+                        untuk membagikan link referral dan mendapat koin.
+                    </p>
+                </div>
+            @endauth
         </div>
     </div>
 
