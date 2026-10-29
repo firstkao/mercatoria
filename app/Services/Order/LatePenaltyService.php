@@ -93,6 +93,9 @@ class LatePenaltyService
      */
     public function markHangusPermanen(Order $order, User $admin): Order
     {
+        // Skema DB 18: timestamp penetapan Hangus Permanen.
+        $order->update(['hangus_permanent_at' => now()]);
+
         return app(OrderStatusService::class)->changeStatus(
             $order,
             OrderStatus::HangusPermanen,

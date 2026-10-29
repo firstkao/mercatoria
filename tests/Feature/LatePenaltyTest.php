@@ -81,3 +81,13 @@ test('admin dapat menetapkan hangus permanen', function () {
 
     expect($order->fresh()->status)->toBe('hangus_permanen');
 });
+
+test('hangus permanen mengisi kolom hangus_permanent_at', function () {
+    $admin = User::factory()->admin()->create();
+    [, $order] = placeTestOrder();
+    $order->update(['status' => 'hangus', 'hangus_at' => now()]);
+
+    penaltyService()->markHangusPermanen($order, $admin);
+
+    expect($order->fresh()->hangus_permanent_at)->not->toBeNull();
+});

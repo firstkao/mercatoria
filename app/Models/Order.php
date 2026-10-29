@@ -52,6 +52,7 @@ class Order extends Model
         'penalty_paid_at',
         'penalty_unlocked_at',
         'hangus_at',
+        'hangus_permanent_at',
         'pickup_deadline_at',
         'payment_deadline_at',
     ];
@@ -68,6 +69,7 @@ class Order extends Model
             'estimasi_co_marketplace' => 'decimal:2',
             'fee_co_marketplace' => 'decimal:2',
             'hangus_at' => 'datetime',
+            'hangus_permanent_at' => 'datetime',
             'pickup_deadline_at' => 'datetime',
             'payment_deadline_at' => 'datetime',
             'tier_counted_at' => 'datetime',
