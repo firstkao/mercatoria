@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\RegisterRequest;
+use App\Models\ActivityLog;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -51,6 +52,8 @@ class RegisterController extends Controller
         $user->sendEmailVerificationNotification();
 
         Auth::login($user);
+
+        ActivityLog::record('register', 'Registrasi akun baru');
 
         return redirect()->route('verification.notice');
     }

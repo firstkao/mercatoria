@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Frontend;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Frontend\UploadPaymentRequest;
+use App\Models\ActivityLog;
 use App\Models\Order;
 use App\Services\Order\OrderStatusService;
 use App\Services\Order\PaymentProofService;
@@ -40,6 +41,8 @@ class OrderController extends Controller
         abort_unless($order->user_id === $request->user()->id, 403);
 
         $proofs->upload($order, $request->file('proof'), $request->user(), app(OrderStatusService::class));
+
+        ActivityLog::record('upload_payment_proof', 'Upload bukti bayar', ['no_order' => $order->no_order]);
 
         return redirect()->route('orders.show', $order->no_order)
             ->with('status', 'Bukti bayar terkirim. Menunggu verifikasi admin.');

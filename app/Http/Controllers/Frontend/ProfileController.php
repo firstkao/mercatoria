@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Frontend;
 
 use App\Http\Controllers\Controller;
+use App\Models\ActivityLog;
 use App\Models\Coin;
 use App\Models\CoinTransaction;
 use App\Models\ShareClick;
@@ -83,6 +84,8 @@ class ProfileController extends Controller
             'kode_pos' => $data['kode_pos'],
         ]);
 
+        ActivityLog::record('edit_profile', 'Ubah profil', ['fields' => array_keys($data)]);
+
         return redirect()->route('profile.edit')->with('status', 'Profil diperbarui.');
     }
 
@@ -96,6 +99,8 @@ class ProfileController extends Controller
         $request->user()->update([
             'password' => Hash::make($request->input('password')),
         ]);
+
+        ActivityLog::record('change_password', 'Ubah kata sandi');
 
         return redirect()->route('profile.edit')->with('status', 'Kata sandi diganti.');
     }

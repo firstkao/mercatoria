@@ -31,4 +31,22 @@ class ActivityLog extends Model
     {
         return $this->belongsTo(User::class);
     }
+
+    /**
+     * Catat aktivitas user (PRD 39.2/39.5) — dipanggil dari controller.
+     *
+     * @param  array<string, mixed>|null  $metadata
+     */
+    public static function record(string $action, ?string $description = null, ?array $metadata = null): self
+    {
+        return static::create([
+            'user_id' => auth()->id(),
+            'action' => $action,
+            'description' => $description,
+            'url' => substr((string) request()?->fullUrl(), 0, 255),
+            'ip_address' => get_real_ip(),
+            'user_agent' => substr((string) request()?->userAgent(), 0, 2000),
+            'metadata' => $metadata,
+        ]);
+    }
 }

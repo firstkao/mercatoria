@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Frontend;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Frontend\AddToCartRequest;
+use App\Models\ActivityLog;
 use App\Models\Cart;
 use App\Models\Product;
 use App\Services\Cart\CartService;
@@ -34,6 +35,8 @@ class CartController extends Controller
 
         $this->carts->add($request->user(), $product, $variant, (int) $request->input('qty', 1));
 
+        ActivityLog::record('add_to_cart', 'Tambah ke keranjang');
+
         return redirect()->route('cart.index');
     }
 
@@ -60,6 +63,8 @@ class CartController extends Controller
         } else {
             $cart->delete();
         }
+
+        ActivityLog::record('remove_from_cart', 'Hapus dari keranjang');
 
         return redirect()->route('cart.index');
     }

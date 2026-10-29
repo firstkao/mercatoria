@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Frontend;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Frontend\CheckoutRequest;
+use App\Models\ActivityLog;
 use App\Models\Cart;
 use App\Models\Coin;
 use App\Models\PaymentMethod;
@@ -97,6 +98,8 @@ class CheckoutController extends Controller
             collect($request->input('cart_item_ids'))->map(fn ($id) => (int) $id)->all(),
             $request->checkoutData(),
         );
+
+        ActivityLog::record('order_created', 'Buat pesanan '.$order->no_order, ['no_order' => $order->no_order]);
 
         return redirect()->route('orders.show', $order->no_order);
     }

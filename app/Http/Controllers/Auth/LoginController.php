@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\TwoFactorController;
 use App\Http\Requests\Auth\LoginRequest;
+use App\Models\ActivityLog;
 use App\Models\AuthLog;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -43,6 +44,8 @@ class LoginController extends Controller
             (string) $request->input('email'),
             $user->id,
         );
+
+        ActivityLog::record('login', 'Login berhasil');
 
         return redirect()->intended(route('dashboard'));
     }
