@@ -62,7 +62,7 @@ class CoinWalletService
 
         $coin->increment('balance', $amount);
 
-        return CoinTransaction::create([
+        $transaction = CoinTransaction::create([
             'user_id' => $user->id,
             'order_id' => $order?->id,
             'type' => $type,
@@ -71,5 +71,15 @@ class CoinWalletService
             'expired_at' => now()->addYear(),
             'note' => $note,
         ]);
+
+        // PRD 43: koin bertambah → bell ke /profile/koin
+        app(UserNotificationService::class)->notify(
+            $user,
+            'coin_earned',
+            'Koin bertambah +'.number_format($amount, 0, ',', '.'),
+            '/profile/koin'
+        );
+
+        return $transaction;
     }
 }

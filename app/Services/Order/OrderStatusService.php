@@ -10,6 +10,7 @@ use App\Models\User;
 use App\Services\SplitBox\SplitBoxService;
 use App\Services\User\CoinWalletService;
 use App\Services\User\DiscountForfeitureService;
+use App\Services\User\UserNotificationService;
 use App\Services\User\UserTierService;
 
 class OrderStatusService
@@ -66,6 +67,14 @@ class OrderStatusService
             'changed_by' => $actor,
             'note' => $note,
         ]);
+
+        // PRD 43: perubahan status order → bell ke detail order.
+        app(UserNotificationService::class)->notify(
+            $order->user,
+            'order_status',
+            'Status pesanan '.$order->no_order.' kini '.ucwords(str_replace('_', ' ', $toValue)),
+            '/orders/'.$order->no_order
+        );
 
         $order->refresh();
         $this->applySideEffects($order, $toValue);

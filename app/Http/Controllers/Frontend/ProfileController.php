@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Coin;
 use App\Models\CoinTransaction;
 use App\Models\User;
+use App\Models\UserNotification;
 use App\Models\UserVoucher;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -141,5 +142,26 @@ class ProfileController extends Controller
             'user' => $request->user(),
             'referrals' => $request->user()->referrals()->orderByDesc('id')->get(),
         ]);
+    }
+
+    /**
+     * PRD 43.6: halaman semua notifikasi (20/halaman).
+     */
+    public function notifications(Request $request): View
+    {
+        return view('frontend.profile.notifications', [
+            'notifications' => UserNotification::where('user_id', $request->user()->id)
+                ->orderByDesc('id')
+                ->paginate(20),
+        ]);
+    }
+
+    public function readAllNotifications(Request $request): RedirectResponse
+    {
+        UserNotification::where('user_id', $request->user()->id)
+            ->where('is_read', false)
+            ->update(['is_read' => true]);
+
+        return redirect()->back();
     }
 }

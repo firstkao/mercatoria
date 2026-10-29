@@ -2,6 +2,7 @@
 
 namespace App\Services\Cart;
 
+use App\Mail\OrderCreatedMail;
 use App\Models\Cart;
 use App\Models\Order;
 use App\Models\OrderItem;
@@ -15,6 +16,7 @@ use App\Services\SplitBox\SplitBoxService;
 use App\Services\User\CoinWalletService;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Validation\ValidationException;
 
 class CheckoutService
@@ -145,6 +147,11 @@ class CheckoutService
             }
 
             Cart::whereIn('id', $carts->pluck('id'))->delete();
+
+            // Email konfirmasi order (PRD 37 — 3 mailer). Gate pause_customer_emails (AMANDEMEN).
+            if (! (bool) setting('pause_customer_emails', false)) {
+                Mail::to($user->email)->send(new OrderCreatedMail($order));
+            }
 
             return $order;
         });

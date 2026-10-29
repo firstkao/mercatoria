@@ -83,12 +83,7 @@
                         @endif
                     </a>
 
-                    <a href="{{ route('coming-soon') }}" class="relative text-[#333] transition-colors hover:text-[#4FC3F7]" aria-label="Notifikasi">
-                        <x-icons.bell width="18" height="18" />
-                        @if (!empty($notifCount) && $notifCount > 0)
-                            <span class="absolute -right-1.5 -top-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-[#E53935] px-1 text-[9px] font-semibold text-white">{{ $notifCount > 99 ? '99+' : $notifCount }}</span>
-                        @endif
-                    </a>
+                    <x-notification-bell :notifications="$bellNotifications" :unread-count="$bellUnreadCount ?? 0" />
 
                     <a href="{{ route('dashboard') }}" class="flex items-center gap-1.5 text-[#333] transition-colors hover:text-[#4FC3F7]" aria-label="Akun">
                         <x-icons.user width="18" height="18" />

@@ -29,6 +29,7 @@ use App\Http\Controllers\Frontend\OrderController;
 use App\Http\Controllers\Frontend\ProductController;
 use App\Http\Controllers\Frontend\ProfileController;
 use App\Http\Controllers\Frontend\SearchController;
+use App\Http\Controllers\Frontend\ShareController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', fn () => view('welcome'))->name('home');
@@ -179,6 +180,10 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile/koin', [ProfileController::class, 'coins'])->name('profile.coins');
     Route::get('/profile/wallet', [ProfileController::class, 'wallet'])->name('profile.wallet');
     Route::get('/profile/undang', [ProfileController::class, 'referral'])->name('profile.referral');
+    Route::get('/profile/notifications', [ProfileController::class, 'notifications'])->name('profile.notifications');
+    Route::post('/profile/notifications/read-all', [ProfileController::class, 'readAllNotifications'])->name('profile.notifications.read-all');
+
+    Route::post('/share/{product:slug}', [ShareController::class, 'store'])->name('share.store');
 });
 
 /*

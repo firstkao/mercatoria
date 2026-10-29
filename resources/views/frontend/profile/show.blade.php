@@ -35,9 +35,7 @@
         </div>
 
         <div class="flex items-center gap-2">
-            <a href="{{ route('coming-soon') }}" class="relative inline-flex h-10 w-10 items-center justify-center rounded-lg border border-rule text-ink/70 transition-colors hover:border-ink hover:text-ink" aria-label="Notifikasi">
-                <x-icons.bell width="18" height="18" />
-            </a>
+            <x-notification-bell :notifications="$bellNotifications" :unread-count="$bellUnreadCount ?? 0" />
             <form method="POST" action="{{ route('logout') }}">
                 @csrf
                 <button type="submit" class="rounded-lg border border-rule px-4 py-2 text-xs font-semibold text-ink transition-colors hover:border-ink">
