@@ -11,6 +11,18 @@ class Order extends Model
 {
     use HasFactory;
 
+    /**
+     * PRD 23: nomor invoice INV-MER-{4 digit} — sinkron sequence akhir no_order.
+     */
+    protected static function booted(): void
+    {
+        static::creating(function (Order $order): void {
+            if (! $order->invoice_number && $order->no_order) {
+                $order->invoice_number = 'INV-MER-'.substr($order->no_order, -4);
+            }
+        });
+    }
+
     public const SCHEME_FP = 'fp';
 
     public const SCHEME_DP = 'dp';
@@ -28,6 +40,7 @@ class Order extends Model
     protected $fillable = [
         'user_id',
         'no_order',
+        'invoice_number',
         'status',
         'scheme',
         'platform',
