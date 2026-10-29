@@ -8,6 +8,8 @@ use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Password;
+use Illuminate\Support\Str;
 use Illuminate\View\View;
 
 class UserController extends Controller
@@ -38,12 +40,13 @@ class UserController extends Controller
 
     public function store(Request $request): RedirectResponse
     {
+        // PRD 48.3: inject user lama — password & tgl lahir boleh kosong.
         $data = $request->validate([
             'name' => ['required', 'string', 'min:2', 'max:100'],
             'email' => ['required', 'email', 'unique:users,email'],
-            'password' => ['required', 'string', 'min:8'],
-            'role' => ['required', 'in:customer,admin'],
-            'tgl_lahir' => ['required', 'date'],
+            'password' => ['nullable', 'string', 'min:8'],
+            'role' => ['nullable', 'in:customer,admin'],
+            'tgl_lahir' => ['nullable', 'date'],
             'no_hp' => ['required', 'regex:/^(?:\+?62|0)8[1-9][0-9]{6,11}$/'],
             'provinsi' => ['required', 'string', 'max:100'],
             'kota' => ['required', 'string', 'max:100'],
@@ -53,13 +56,37 @@ class UserController extends Controller
         ]);
 
         $data['no_hp'] = normalize_phone($data['no_hp']);
-        $data['password'] = Hash::make($data['password']);
+        $data['role'] = $data['role'] ?? User::ROLE_CUSTOMER;
+        // Password kosong → hash acak tak terpakai; user set via "Lupa Password" (PRD 48.4).
+        $data['password'] = Hash::make($data['password'] ?? Str::random(40));
         $data['is_migrated'] = true;
 
         $user = User::create($data);
         AdminLog::record($request->user(), 'create', 'User', $user->id, null, collect($data)->except('password')->all(), 'Tambah user (inject)');
 
         return redirect()->route('office.users.index')->with('status', 'User dibuat.');
+    }
+
+    /**
+     * EPIC-03-22: kirim link reset password manual ke email user yang stuck.
+     */
+    public function forceResetPassword(Request $request, User $user): RedirectResponse
+    {
+        Password::sendResetLink(['email' => $user->email]);
+        AdminLog::record($request->user(), 'force_reset_password', 'User', $user->id, null, null, 'Kirim link reset password manual');
+
+        return redirect()->route('office.users.index')->with('status', 'Link reset password dikirim ke email user.');
+    }
+
+    /**
+     * EPIC-03-22: verifikasi email manual untuk user yang tidak bisa akses email.
+     */
+    public function forceVerifyEmail(Request $request, User $user): RedirectResponse
+    {
+        $user->forceFill(['email_verified_at' => now()])->save();
+        AdminLog::record($request->user(), 'force_verify_email', 'User', $user->id, ['email_verified_at' => null], ['email_verified_at' => (string) $user->email_verified_at], 'Verifikasi email manual');
+
+        return redirect()->route('office.users.index')->with('status', 'Email user diverifikasi.');
     }
 
     public function edit(User $user): View
