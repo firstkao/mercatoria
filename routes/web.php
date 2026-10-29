@@ -188,6 +188,7 @@ Route::middleware(['auth', 'admin'])->prefix('office')->name('office.')->group(f
     Route::put('/users/{user}', [AdminUserController::class, 'update'])->name('users.update');
     Route::post('/users/{user}/force-reset-password', [AdminUserController::class, 'forceResetPassword'])->name('users.force-reset-password');
     Route::post('/users/{user}/force-verify-email', [AdminUserController::class, 'forceVerifyEmail'])->name('users.force-verify-email');
+    Route::post('/users/{user}/notify', [AdminUserController::class, 'notify'])->name('users.notify');
     Route::delete('/users/{user}', [AdminUserController::class, 'destroy'])->name('users.destroy');
     Route::post('/users/{user}/forever-delete', [AdminUserController::class, 'foreverDelete'])->name('users.forever-delete');
 

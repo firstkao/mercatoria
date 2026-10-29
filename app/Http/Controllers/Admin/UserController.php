@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\AdminLog;
 use App\Models\Spammer;
 use App\Models\User;
+use App\Services\User\UserNotificationService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -88,6 +89,30 @@ class UserController extends Controller
         AdminLog::record($request->user(), 'force_verify_email', 'User', $user->id, ['email_verified_at' => null], ['email_verified_at' => (string) $user->email_verified_at], 'Verifikasi email manual');
 
         return redirect()->route('office.users.index')->with('status', 'Email user diverifikasi.');
+    }
+
+    /**
+     * PRD 22.6: kirim notifikasi manual ke user terkait.
+     */
+    public function notify(Request $request, User $user): RedirectResponse
+    {
+        $data = $request->validate([
+            'title' => ['required', 'string', 'max:255'],
+            'message' => ['required', 'string', 'max:1000'],
+            'link' => ['nullable', 'string', 'max:255'],
+        ]);
+
+        app(UserNotificationService::class)->notify(
+            $user,
+            'admin_manual',
+            $data['title'],
+            $data['link'] ?? null,
+            $data['message']
+        );
+
+        AdminLog::record($request->user(), 'notify', 'User', $user->id, null, $data, 'Kirim notifikasi manual');
+
+        return redirect()->route('office.users.index')->with('status', 'Notifikasi terkirim ke user.');
     }
 
     /**

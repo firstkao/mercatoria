@@ -14,6 +14,7 @@ class UserNotification extends Model
         'user_id',
         'type',
         'title',
+        'message',
         'target_url',
         'is_read',
     ];
