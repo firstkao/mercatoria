@@ -34,6 +34,9 @@ class OrderStatusService
     public function changeStatus(Order $order, OrderStatus|string $to, string $actor, ?string $note = null): Order
     {
         $toValue = $to instanceof OrderStatus ? $to->value : $to;
+
+        // Gate membaca status terkini di DB (sumber kebenaran), bukan model yang mungkin stale.
+        $order->refresh();
         $from = OrderStatus::tryFrom($order->status);
 
         if (! $from) {
