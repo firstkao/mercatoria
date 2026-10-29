@@ -16,6 +16,15 @@ class LogSentNotification
             return;
         }
 
+        // Pesan yang di-suppress kill-switch sudah dicatat sebagai
+        // 'suppressed_maintenance' — jangan dicatat ganda sebagai 'sent'.
+        $to = (string) $event->notifiable->routeNotificationFor('mail');
+        $subject = (string) optional($event->notification->toMail($event->notifiable))->subject;
+
+        if (isset(SuppressCustomerEmailWhenPaused::$suppressed[SuppressCustomerEmailWhenPaused::signature($to, $subject)])) {
+            return;
+        }
+
         EmailLog::create([
             'recipient_email' => substr((string) $event->notifiable->routeNotificationFor('mail'), 0, 255),
             'subject' => substr((string) optional($event->notification->toMail($event->notifiable))->subject, 0, 255),

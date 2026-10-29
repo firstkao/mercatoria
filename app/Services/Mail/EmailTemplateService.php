@@ -43,17 +43,20 @@ class EmailTemplateService
     {
         $rendered = $this->render($code, $variables);
 
-        if (! $rendered) {
-            return $default;
-        }
+        $message = $rendered
+            ? (new MailMessage)
+                ->subject($rendered['subject'])
+                ->line($rendered['body'])
+            : $default;
 
-        $message = (new MailMessage)
-            ->subject($rendered['subject'])
-            ->line($rendered['body']);
-
-        if (! empty($default->from)) {
+        if ($rendered && ! empty($default->from)) {
             $message->from($default->from[0], $default->from[1] ?? null);
         }
+
+        // Penanda template untuk email_logs (kill-switch & audit).
+        $message->withSymfonyMessage(function ($email) use ($code): void {
+            $email->getHeaders()->addTextHeader('X-Mercatoria-Template', $code);
+        });
 
         return $message;
     }
