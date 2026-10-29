@@ -47,6 +47,8 @@ class InjectOrderController extends Controller
                 fn ($status) => $status->value,
                 OrderStatus::cases()
             ))],
+            // PRD 48.2: tanggal order historis (boleh kosong → waktu sekarang).
+            'tanggal_order' => ['nullable', 'date', 'before_or_equal:now'],
             'customer_note' => ['nullable', 'string', 'max:500'],
             'items' => ['required', 'array', 'min:1'],
             'items.*.product_id' => ['required', 'integer', 'exists:products,id'],
@@ -81,6 +83,14 @@ class InjectOrderController extends Controller
                 'tagihan_web' => $subtotal,
                 'customer_note' => $data['customer_note'] ?? null,
             ]);
+
+            // PRD 48.2: tanggal order historis ditulis langsung ke timestamps.
+            if (! empty($data['tanggal_order'])) {
+                $order->forceFill([
+                    'created_at' => $data['tanggal_order'],
+                    'updated_at' => $data['tanggal_order'],
+                ])->save(['timestamps' => false]);
+            }
 
             foreach ($data['items'] as $item) {
                 $product = Product::with('variants')->findOrFail($item['product_id']);
@@ -128,6 +138,7 @@ class InjectOrderController extends Controller
         AdminLog::record($request->user(), 'create', 'Order', $order->id, null, [
             'user_id' => $user->id,
             'status' => $data['status'],
+            'tanggal_order' => $data['tanggal_order'] ?? (string) $order->created_at,
             'items' => count($data['items']),
         ], 'Inject order lama '.$order->no_order);
 

@@ -154,3 +154,52 @@ test('validasi inject menolak data tidak sah', function () {
 
     expect(Order::count())->toBe(0);
 });
+
+test('inject order mengisi tanggal order dari input (PRD 48.2)', function () {
+    $admin = User::factory()->admin()->create();
+    $customer = User::factory()->create();
+    [$product] = injectFixture();
+
+    $this->actingAs($admin)->post('/office/orders/inject', [
+        'user_id' => $customer->id,
+        'status' => 'selesai',
+        'tanggal_order' => '2024-05-01 10:30',
+        'items' => [['product_id' => $product->id, 'variant_id' => null, 'qty' => 1, 'price' => 10000]],
+    ])->assertRedirect();
+
+    $order = Order::where('user_id', $customer->id)->firstOrFail();
+
+    expect($order->created_at->format('Y-m-d H:i'))->toBe('2024-05-01 10:30')
+        ->and($order->updated_at->format('Y-m-d H:i'))->toBe('2024-05-01 10:30');
+});
+
+test('inject order tanpa tanggal order memakai waktu sekarang', function () {
+    $admin = User::factory()->admin()->create();
+    $customer = User::factory()->create();
+    [$product] = injectFixture();
+
+    $this->actingAs($admin)->post('/office/orders/inject', [
+        'user_id' => $customer->id,
+        'status' => 'selesai',
+        'items' => [['product_id' => $product->id, 'variant_id' => null, 'qty' => 1, 'price' => 10000]],
+    ])->assertRedirect();
+
+    $order = Order::where('user_id', $customer->id)->firstOrFail();
+
+    expect($order->created_at->isToday())->toBeTrue();
+});
+
+test('tanggal order tidak boleh masa depan', function () {
+    $admin = User::factory()->admin()->create();
+    $customer = User::factory()->create();
+    [$product] = injectFixture();
+
+    $this->actingAs($admin)->post('/office/orders/inject', [
+        'user_id' => $customer->id,
+        'status' => 'selesai',
+        'tanggal_order' => now()->addDay()->format('Y-m-d'),
+        'items' => [['product_id' => $product->id, 'variant_id' => null, 'qty' => 1, 'price' => 10000]],
+    ])->assertSessionHasErrors('tanggal_order');
+
+    expect(Order::count())->toBe(0);
+});
