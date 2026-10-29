@@ -31,14 +31,55 @@
         </div>
     </div>
 
-    {{-- Grafik 30 hari — slot kosong, data BE menyusul --}}
+    {{-- Grafik 30 hari --}}
     <div class="mt-6 rounded-xl border border-rule bg-white p-6">
-        <h2 class="flex items-center gap-2 font-mono text-[11px] font-medium uppercase tracking-[0.16em] text-ink">
-            Grafik Penjualan 30 Hari
-        </h2>
-        <div class="mt-4 flex h-40 items-center justify-center rounded-lg border border-dashed border-rule bg-paper/40">
-            <p class="font-mono text-[10px] uppercase tracking-[0.16em] text-ink/40">Grafik menyusul</p>
-        </div>
+        <h2 class="font-mono text-[11px] font-medium uppercase tracking-[0.16em] text-ink">Grafik Penjualan 30 Hari</h2>
+        @if (\Illuminate\Support\Facades\Route::has('office.reports.sales-chart'))
+            <div id="sales-chart" class="mt-4 h-48" data-src="{{ route('office.reports.sales-chart') }}">
+                <div class="flex h-full items-center justify-center rounded-lg border border-dashed border-rule bg-paper/40">
+                    <p class="font-mono text-[10px] uppercase tracking-[0.16em] text-ink/40">Memuat grafik...</p>
+                </div>
+            </div>
+            <script>
+                (function () {
+                    var el = document.getElementById('sales-chart');
+                    if (!el) return;
+                    fetch(el.dataset.src, { headers: { 'Accept': 'application/json' } })
+                        .then(function (r) { return r.json(); })
+                        .then(function (rows) {
+                            if (!rows || !rows.length) {
+                                el.innerHTML = '<div class="flex h-full items-center justify-center rounded-lg border border-dashed border-rule bg-paper/40"><p class="font-mono text-[10px] uppercase tracking-[0.16em] text-ink/40">Belum ada data</p></div>';
+                                return;
+                            }
+                            var W = el.clientWidth || 800, H = 180, pad = 28;
+                            var max = Math.max.apply(null, rows.map(function (d) { return Number(d.revenue) || 0; }));
+                            if (max <= 0) max = 1;
+                            var pts = rows.map(function (d, i) {
+                                var x = pad + (i / Math.max(1, rows.length - 1)) * (W - pad * 2);
+                                var y = H - pad - (Number(d.revenue) || 0) / max * (H - pad * 2);
+                                return x.toFixed(1) + ',' + y.toFixed(1);
+                            }).join(' ');
+                            var labels = [0, Math.floor(rows.length / 2), rows.length - 1].map(function (i) {
+                                var d = rows[i]; if (!d) return '';
+                                var x = pad + (i / Math.max(1, rows.length - 1)) * (W - pad * 2);
+                                return '<text x="' + x + '" y="' + (H - 6) + '" text-anchor="middle" fill="#141B22" opacity="0.45" font-size="10" font-family="IBM Plex Mono,monospace">' + (d.date || '') + '</text>';
+                            }).join('');
+                            var grid = [0.25, 0.5, 0.75].map(function (f) {
+                                var y = pad + f * (H - pad * 2);
+                                return '<line x1="' + pad + '" y1="' + y + '" x2="' + (W - pad) + '" y2="' + y + '" stroke="#D8D2C4" stroke-width="0.5" stroke-dasharray="4,4"/>';
+                            }).join('');
+                            el.innerHTML = '<svg width="100%" height="' + H + '" viewBox="0 0 ' + W + ' ' + H + '">' + grid + '<polyline fill="none" stroke="#4FC3F7" stroke-width="2" points="' + pts + '"/>' + labels + '</svg>';
+                        })
+                        .catch(function () {
+                            el.innerHTML = '<div class="flex h-full items-center justify-center rounded-lg border border-dashed border-rule bg-paper/40"><p class="font-mono text-[10px] uppercase tracking-[0.16em] text-ink/40">Gagal memuat</p></div>';
+                        });
+                })();
+            </script>
+        @else
+            <div class="mt-4 flex h-48 items-center justify-center rounded-lg border border-dashed border-rule bg-paper/40">
+                <p class="font-mono text-[10px] uppercase tracking-[0.16em] text-ink/40">Grafik menyusul</p>
+            </div>
+        @endif
     </div>
 
     <div class="mt-6 grid grid-cols-1 gap-4 lg:grid-cols-2">
