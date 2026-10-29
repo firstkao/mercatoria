@@ -2,7 +2,6 @@
 
 namespace App\Services\Image;
 
-use Intervention\Image\Drivers\Gd\Driver;
 use Intervention\Image\ImageManager;
 
 class ImageWatermarkService
@@ -22,7 +21,7 @@ class ImageWatermarkService
         }
         copy($sourcePath, storage_path('app/private/originals/'.$target));
 
-        $manager = ImageManager::usingDriver(new Driver);
+        $manager = ImageManager::gd();
 
         if (! (bool) setting('image_watermark_enabled', true)) {
             $destDir = storage_path('app/private/'.dirname($target));
@@ -34,8 +33,7 @@ class ImageWatermarkService
             return $target;
         }
 
-        $image = $manager->decodePath($sourcePath);
-
+        $image = $manager->read($sourcePath);
         $image->text(
             (string) config('mercatoria.image_protection.watermark_text', 'MERCATORIA · mercatoria.id'),
             (int) ($image->width() / 2),
@@ -43,7 +41,8 @@ class ImageWatermarkService
             function ($font) {
                 $font->size(24);
                 $font->color('rgba(255, 255, 255, 0.25)');
-                $font->align('center', 'center');
+                $font->align('center');
+                $font->valign('middle');
                 $font->angle(-30);
             }
         );
