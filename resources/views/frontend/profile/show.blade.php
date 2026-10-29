@@ -98,7 +98,12 @@
                                 <p class="text-xs text-ink/60">
                                     Menunggu Pelunasan &amp; CO Marketplace
                                     @if ($order->pickup_deadline_at)
-                                        · Sisa Waktu CO: {{ $order->pickup_deadline_at->diffForHumans(now(), ['parts' => 2]) }}
+                                        @php
+                                            $sisa = now()->diff($order->pickup_deadline_at);
+                                            $sisaText = sprintf('%02d Hari %02d Jam', (int) $sisa->days, (int) $sisa->h);
+                                        @endphp
+                                        · <x-icons.clock width="12" height="12" class="inline align-[-2px]" />
+                                        Sisa Waktu CO: {{ $sisaText }}
                                     @endif
                                 </p>
                             @endif
