@@ -1,6 +1,6 @@
-@extends('layouts.app')
+﻿@extends('layouts.app')
 
-@section('title', 'Edit Profil — Mercatoria')
+@section('title', 'Edit Profil â€” Mercatoria')
 
 @section('content')
     <p class="font-mono text-[10px] uppercase tracking-[0.22em] text-ink/45">Akun</p>
@@ -78,7 +78,7 @@
             @error('alamat')<p class="mt-1 text-sm text-danger">{{ $message }}</p>@enderror
         </div>
 
-        <button type="submit" class="rounded-lg bg-black px-6 py-2.5 text-sm font-semibold tracking-[0.08em] text-white transition-colors hover:bg-ink">SIMPAN PROFIL</button>
+        <button type="submit" class="rounded-lg bg-black px-6 py-2.5 text-sm font-semibold tracking-[0.12em] text-white transition-colors hover:bg-ink">SIMPAN PROFIL</button>
     </form>
 
     <form method="POST" action="{{ route('profile.password') }}" class="mt-6 space-y-4 rounded-xl border border-rule bg-white p-6">

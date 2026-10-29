@@ -1,6 +1,6 @@
-@extends('layouts.app')
+﻿@extends('layouts.app')
 
-@section('title', 'Keranjang — Mercatoria')
+@section('title', 'Keranjang â€” Mercatoria')
 
 @section('content')
     <p class="font-mono text-[10px] uppercase tracking-[0.22em] text-ink/45">Belanja</p>
@@ -44,7 +44,7 @@
                                     @if ($item->bundle_group_id)
                                         <p class="text-[11px] text-violet-500">Paket Split Box</p>
                                     @endif
-                                    <p class="font-mono text-[10px] uppercase tracking-[0.1em] text-ink/45">[{{ $item->product->game->name }}]</p>
+                                    <p class="font-mono text-[10px] uppercase tracking-[0.12em] text-ink/45">[{{ $item->product->game->name }}]</p>
                                 </td>
                                 <td class="px-4 py-3 text-ink/80">{{ format_rp($pricing['final_price_bersih']) }}</td>
                                 <td class="px-4 py-3">
@@ -79,7 +79,7 @@
             </div>
 
             <button type="submit" form="checkout-form"
-                    class="mt-4 rounded-lg bg-black px-8 py-3 text-sm font-semibold tracking-[0.1em] text-white transition-colors hover:bg-ink">
+                    class="mt-4 rounded-lg bg-black px-8 py-3 text-sm font-semibold tracking-[0.12em] text-white transition-colors hover:bg-ink">
                 CHECKOUT ITEM TERPILIH
             </button>
         </form>

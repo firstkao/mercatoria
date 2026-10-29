@@ -1,6 +1,6 @@
-@extends('layouts.app')
+﻿@extends('layouts.app')
 
-@section('title', 'Pesanan '.$order->no_order.' — Mercatoria')
+@section('title', 'Pesanan '.$order->no_order.' â€” Mercatoria')
 
 @section('content')
     <p class="font-mono text-[10px] uppercase tracking-[0.22em] text-ink/45">Pesanan</p>
@@ -43,7 +43,7 @@
                                 <p class="text-xs text-ink/55">Varian: {{ $snapshot->variant_name }}</p>
                             @endif
                             @if ($snapshot->store_name)
-                                <p class="font-mono text-[10px] uppercase tracking-[0.1em] text-ink/45">Store: {{ $snapshot->store_name }}</p>
+                                <p class="font-mono text-[10px] uppercase tracking-[0.12em] text-ink/45">Store: {{ $snapshot->store_name }}</p>
                             @endif
                         </td>
                         <td class="py-2 text-ink/80">{{ format_rp($snapshot->final_price) }}</td>
@@ -101,7 +101,7 @@
             <p class="mt-1 text-sm text-ink/70">
                 Tagihan: <strong class="text-ink">{{ format_rp($order->tagihan_web) }}</strong>
                 @if ($order->payment_deadline_at)
-                    · Batas waktu: {{ $order->payment_deadline_at->format('d/m/Y H:i') }}
+                    Â· Batas waktu: {{ $order->payment_deadline_at->format('d/m/Y H:i') }}
                 @endif
             </p>
 
@@ -113,7 +113,7 @@
                 <p class="font-mono text-[10px] uppercase tracking-[0.12em] text-ink/45">Format JPG/PNG, maksimal 1 MB. Hanya bisa diunggah 1 kali.</p>
                 @error('proof')<p class="text-sm text-danger">{{ $message }}</p>@enderror
                 <button type="submit"
-                        class="rounded-lg bg-black px-6 py-2.5 text-sm font-semibold tracking-[0.08em] text-white transition-colors hover:bg-ink">
+                        class="rounded-lg bg-black px-6 py-2.5 text-sm font-semibold tracking-[0.12em] text-white transition-colors hover:bg-ink">
                     UNGGAH BUKTI
                 </button>
             </form>
@@ -148,9 +148,9 @@
                     <p class="text-sm {{ $loop->last ? 'font-semibold text-ink' : 'text-ink/75' }}">
                         <x-order-status-badge :status="$log->status" />
                     </p>
-                    <p class="font-mono text-[10px] uppercase tracking-[0.1em] text-ink/45">
-                        {{ $log->created_at->format('d/m/Y H:i') }} · oleh {{ $log->changed_by }}
-                        @if ($log->note) — {{ $log->note }} @endif
+                    <p class="font-mono text-[10px] uppercase tracking-[0.12em] text-ink/45">
+                        {{ $log->created_at->format('d/m/Y H:i') }} Â· oleh {{ $log->changed_by }}
+                        @if ($log->note) â€” {{ $log->note }} @endif
                     </p>
                 </li>
             @endforeach
