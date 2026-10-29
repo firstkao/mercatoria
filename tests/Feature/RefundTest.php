@@ -10,6 +10,7 @@ use App\Models\UserNotification;
 use App\Models\UserVoucher;
 use App\Services\Payment\RefundService;
 use App\Services\SplitBox\SplitBoxService;
+use App\Services\User\UserNotificationService;
 
 function refundReady(array $orderPair): array
 {
@@ -154,6 +155,35 @@ test('pengembalian koin voucher tidak memicu jalur forfeit', function () {
     expect(CoinTransaction::where('order_id', $order->id)->where('type', 'forfeit_at_checkout')->exists())->toBeFalse()
         ->and(CoinTransaction::where('order_id', $order->id)->where('type', 'hangus_payment_failed')->exists())->toBeFalse()
         ->and(CoinTransaction::where('order_id', $order->id)->where('type', 'refund_returned')->exists())->toBeTrue();
+});
+
+test('rollback saat gagal di tengah: koin dan status tidak berubah', function () {
+    $admin = User::factory()->admin()->create();
+    [$user, $order] = refundReady(placeOrderUsingCoin(12750));
+    $refund = app(RefundService::class)->requestFull($order, 'Kosong', $admin);
+
+    // Notif akhir melempar exception → SELURUH transaksi wajib batal
+    $this->mock(UserNotificationService::class, function ($mock) {
+        $mock->shouldReceive('notify')->andReturnUsing(function ($u, $type) {
+            if ($type === 'refund_completed') {
+                throw new RuntimeException('gagal di tengah');
+            }
+
+            return new UserNotification;
+        });
+    });
+
+    try {
+        app(RefundService::class)->complete($refund, $admin);
+    } catch (Throwable) {
+    }
+
+    // Semua tulisan DB harus berguling: saldo koin, transaksi, status refund & order
+    expect((int) Coin::where('user_id', $user->id)->value('balance'))->toBe(0)
+        ->and(CoinTransaction::where('order_id', $order->id)->where('type', 'refund_returned')->exists())->toBeFalse()
+        ->and($refund->fresh()->status)->toBe('requested')
+        ->and($refund->fresh()->completed_at)->toBeNull()
+        ->and($order->fresh()->status)->toBe('ditahan');
 });
 
 test('endpoint refund admin mencatat admin_logs dan non-admin ditolak 403', function () {

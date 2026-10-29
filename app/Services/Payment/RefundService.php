@@ -11,6 +11,7 @@ use App\Models\UserVoucher;
 use App\Services\Order\OrderStatusService;
 use App\Services\User\CoinWalletService;
 use App\Services\User\UserNotificationService;
+use Illuminate\Support\Facades\DB;
 
 class RefundService
 {
@@ -35,34 +36,37 @@ class RefundService
             throw new \RuntimeException('Refund sudah diproses sebelumnya.');
         }
 
-        $order = $refund->order;
+        // ATOMIC (uang): koin/voucher + status refund + status order + notif — satu transaksi.
+        return DB::transaction(function () use ($refund, $admin) {
+            $order = $refund->order;
 
-        // Koin/voucher dikembalikan SEBELUM status dana_dikembalikan —
-        // jalur terpisah dari DiscountForfeitureService (forfeit tetap berlaku untuk
-        // pembayaran_gagal/hangus, tidak tersentuh di sini).
-        $this->returnDiscounts($order);
+            // Koin/voucher dikembalikan SEBELUM status dana_dikembalikan —
+            // jalur terpisah dari DiscountForfeitureService (forfeit tetap berlaku untuk
+            // pembayaran_gagal/hangus, tidak tersentuh di sini).
+            $this->returnDiscounts($order);
 
-        $refund->update([
-            'status' => Refund::STATUS_COMPLETED,
-            'handled_by' => $admin->id,
-            'completed_at' => now(),
-        ]);
+            $refund->update([
+                'status' => Refund::STATUS_COMPLETED,
+                'handled_by' => $admin->id,
+                'completed_at' => now(),
+            ]);
 
-        app(OrderStatusService::class)->changeStatus(
-            $order,
-            OrderStatus::DanaDikembalikan->value,
-            'admin',
-            'Refund selesai'
-        );
+            app(OrderStatusService::class)->changeStatus(
+                $order,
+                OrderStatus::DanaDikembalikan->value,
+                'admin',
+                'Refund selesai'
+            );
 
-        $this->notifications->notify(
-            $order->user,
-            'refund_completed',
-            $this->completedMessage($order),
-            '/orders/'.$order->no_order
-        );
+            $this->notifications->notify(
+                $order->user,
+                'refund_completed',
+                $this->completedMessage($order),
+                '/orders/'.$order->no_order
+            );
 
-        return $refund->refresh();
+            return $refund->refresh();
+        });
     }
 
     public function reject(Refund $refund, string $reason, User $admin): Refund
@@ -95,34 +99,37 @@ class RefundService
      */
     public function autoFull(Order $order, string $reason, User $admin): Refund
     {
-        $this->returnDiscounts($order);
+        // ATOMIC (uang): koin/voucher + record refund + status order + notif — satu transaksi.
+        return DB::transaction(function () use ($order, $reason, $admin) {
+            $this->returnDiscounts($order);
 
-        $refund = Refund::create([
-            'order_id' => $order->id,
-            'type' => Refund::TYPE_FULL,
-            'amount' => (float) $order->tagihan_web,
-            'reason' => $reason,
-            'status' => Refund::STATUS_COMPLETED,
-            'requested_by' => $admin->id,
-            'handled_by' => $admin->id,
-            'completed_at' => now(),
-        ]);
+            $refund = Refund::create([
+                'order_id' => $order->id,
+                'type' => Refund::TYPE_FULL,
+                'amount' => (float) $order->tagihan_web,
+                'reason' => $reason,
+                'status' => Refund::STATUS_COMPLETED,
+                'requested_by' => $admin->id,
+                'handled_by' => $admin->id,
+                'completed_at' => now(),
+            ]);
 
-        app(OrderStatusService::class)->changeStatus(
-            $order,
-            OrderStatus::DanaDikembalikan->value,
-            'admin',
-            $reason
-        );
+            app(OrderStatusService::class)->changeStatus(
+                $order,
+                OrderStatus::DanaDikembalikan->value,
+                'admin',
+                $reason
+            );
 
-        $this->notifications->notify(
-            $order->user,
-            'refund_completed',
-            $this->completedMessage($order),
-            '/orders/'.$order->no_order
-        );
+            $this->notifications->notify(
+                $order->user,
+                'refund_completed',
+                $this->completedMessage($order),
+                '/orders/'.$order->no_order
+            );
 
-        return $refund;
+            return $refund;
+        });
     }
 
     private function request(Order $order, string $type, float $amount, string $reason, User $admin): Refund
