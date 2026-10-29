@@ -37,6 +37,7 @@
                 <p class="px-3 pt-4 font-mono text-[9px] uppercase tracking-[0.18em] text-white/40">Konten</p>
                 <a href="{{ route('office.hero-slides.index') }}" class="block rounded px-3 py-2 text-white/80 transition-colors hover:bg-white/10 hover:text-white">Hero Slides</a>
                 <a href="{{ route('office.pages.index') }}" class="block rounded px-3 py-2 text-white/80 transition-colors hover:bg-white/10 hover:text-white">Halaman CMS</a>
+                <a href="{{ route('office.vouchers.index') }}" class="block rounded px-3 py-2 text-white/80 transition-colors hover:bg-white/10 hover:text-white">Vouchers</a>
 
                 <p class="px-3 pt-4 font-mono text-[9px] uppercase tracking-[0.18em] text-white/40">Transaksi</p>
                 <a href="{{ route('office.orders.index') }}" class="block rounded px-3 py-2 text-white/80 transition-colors hover:bg-white/10 hover:text-white">Orders</a>
