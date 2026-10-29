@@ -4,21 +4,22 @@
 
 @section('content')
     <div class="mx-auto max-w-[1200px]">
-        <div class="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-gray-100">
-            <h1 class="text-xl font-semibold">
+        <div class="rounded-xl border border-rule bg-white p-6">
+            <p class="font-mono text-[10px] uppercase tracking-[0.22em] text-ink/45">Pencarian</p>
+            <h1 class="mt-2 font-display text-xl font-semibold text-ink">
                 Hasil Pencarian
                 @if ($q !== '') untuk &ldquo;{{ $q }}&rdquo; @endif
             </h1>
 
             <form action="{{ route('search') }}" method="GET" class="mt-4 flex gap-2">
                 <input type="search" name="q" value="{{ $q }}" placeholder="Cari produk, karakter, game..."
-                       class="flex-1 rounded-lg border border-gray-200 px-4 py-2.5 text-sm focus:border-black focus:outline-none">
-                <button type="submit" class="rounded-lg bg-black px-6 py-2.5 text-sm font-semibold text-white">
+                       class="flex-1 rounded-lg border border-rule bg-white px-4 py-2.5 text-sm text-ink placeholder:text-ink/35 focus:border-ink focus:outline-none focus:ring-2 focus:ring-accent/45">
+                <button type="submit" class="rounded-lg bg-black px-6 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-ink">
                     Cari
                 </button>
             </form>
 
-            <p class="mt-3 text-sm text-gray-500">
+            <p class="mt-3 text-sm text-ink/55">
                 @if ($results->total() > 0)
                     Menampilkan {{ $results->firstItem() }}–{{ $results->lastItem() }} dari {{ $results->total() }} hasil
                 @else
@@ -27,24 +28,24 @@
             </p>
         </div>
 
-        <form method="GET" class="mt-4 flex flex-wrap items-center gap-2 rounded-xl bg-white p-3 shadow-sm ring-1 ring-gray-100">
+        <form method="GET" class="mt-4 flex flex-wrap items-center gap-2 rounded-xl border border-rule bg-white p-3">
             <input type="hidden" name="q" value="{{ $q }}">
 
-            <select name="game_id" onchange="this.form.submit()" class="rounded-lg border border-gray-200 px-3 py-1.5 text-sm">
+            <select name="game_id" onchange="this.form.submit()" class="rounded-lg border border-rule bg-white px-3 py-1.5 text-sm text-ink">
                 <option value="">Semua Game</option>
                 @foreach ($games as $g)
                     <option value="{{ $g->id }}" @selected($filters['game_id'] == $g->id)>{{ $g->name }}</option>
                 @endforeach
             </select>
 
-            <select name="merch_category_id" onchange="this.form.submit()" class="rounded-lg border border-gray-200 px-3 py-1.5 text-sm">
+            <select name="merch_category_id" onchange="this.form.submit()" class="rounded-lg border border-rule bg-white px-3 py-1.5 text-sm text-ink">
                 <option value="">Kategori Merch</option>
                 @foreach ($categories as $category)
                     <option value="{{ $category->id }}" @selected($filters['merch_category_id'] == $category->id)>{{ $category->name }}</option>
                 @endforeach
             </select>
 
-            <select name="tag" onchange="this.form.submit()" class="rounded-lg border border-gray-200 px-3 py-1.5 text-sm">
+            <select name="tag" onchange="this.form.submit()" class="rounded-lg border border-rule bg-white px-3 py-1.5 text-sm text-ink">
                 <option value="">Tag</option>
                 @foreach ($tags as $t)
                     <option value="{{ $t->slug }}" @selected($filters['tag'] === $t->slug)>{{ $t->name }}</option>
