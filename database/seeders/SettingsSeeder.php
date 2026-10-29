@@ -108,6 +108,20 @@ class SettingsSeeder extends Seeder
         ['key' => 'recently_viewed_count', 'value' => '5', 'type' => 'int', 'group' => 'display', 'description' => 'Jumlah Terakhir Dilihat.'],
         ['key' => 'ga4_measurement_id', 'value' => '', 'type' => 'string', 'group' => 'seo', 'description' => 'GA4 Measurement ID (format G-XXXXXXXXXX).'],
         ['key' => 'log_retention_days', 'value' => '30', 'type' => 'int', 'group' => 'security', 'description' => 'Retensi activity / auth / admin log (hari).'],
+
+        // URL eksternal (sosial & marketplace)
+        ['key' => 'url_toco', 'value' => '#', 'type' => 'string', 'group' => 'social', 'description' => 'Link marketplace Toco.'],
+        ['key' => 'url_shopee', 'value' => '#', 'type' => 'string', 'group' => 'social', 'description' => 'Link marketplace Shopee.'],
+        ['key' => 'url_instagram', 'value' => '#', 'type' => 'string', 'group' => 'social', 'description' => 'Link Instagram.'],
+        ['key' => 'url_facebook', 'value' => '#', 'type' => 'string', 'group' => 'social', 'description' => 'Link Facebook.'],
+        ['key' => 'url_x', 'value' => '#', 'type' => 'string', 'group' => 'social', 'description' => 'Link X (Twitter).'],
+        ['key' => 'url_threads', 'value' => '#', 'type' => 'string', 'group' => 'social', 'description' => 'Link Threads.'],
+        ['key' => 'url_whatsapp', 'value' => '#', 'type' => 'string', 'group' => 'social', 'description' => 'Link WhatsApp.'],
+
+        // Promo bar (PRD 40.1)
+        ['key' => 'promo_bar_text', 'value' => 'Gunakan kode promo NEWWEB dan nikmati potongan harga untuk belanja pertamamu.', 'type' => 'string', 'group' => 'marketing', 'description' => 'Teks promo bar di atas halaman.'],
+        ['key' => 'promo_bar_link', 'value' => '', 'type' => 'string', 'group' => 'marketing', 'description' => 'Link tujuan promo bar (opsional).'],
+        ['key' => 'promo_bar_active', 'value' => '1', 'type' => 'bool', 'group' => 'marketing', 'description' => 'Tampilkan promo bar (1 = aktif, 0 = nonaktif).'],
     ];
 
     public function run(): void
