@@ -4,77 +4,283 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>@yield('title', 'Mercatoria')</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=IBM+Plex+Mono:wght@400;500;600&family=Schibsted+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-<body class="min-h-screen bg-[#F5F7FA] font-sans text-gray-900 antialiased">
-    <nav class="bg-white shadow-sm">
-        <div class="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-3">
-            <div class="flex items-center gap-4 text-sm font-medium">
-                <a href="/" class="hover:text-black">Beranda</a>
+<body id="top" class="flex min-h-screen flex-col bg-[#F5F7FA] font-sans text-ink antialiased">
+    {{-- Navbar user login (Design Spec 4.6.2) --}}
+    <header class="border-b border-[#EAEAEA] bg-white">
+        <div class="mx-auto max-w-[1200px] px-4">
+            {{-- Desktop 3-kolom --}}
+            <div class="hidden min-h-[72px] lg:grid lg:grid-cols-3 lg:items-center">
+                <nav class="flex items-center gap-5" aria-label="Menu utama">
+                    <a href="{{ route('home') }}" class="text-[13px] font-medium text-[#4FC3F7]">Beranda</a>
 
-                <details class="relative">
-                    <summary class="cursor-pointer list-none text-gray-500 hover:text-black">Game ▾</summary>
-                    <div class="absolute left-0 top-full z-20 mt-2 w-48 rounded-lg border border-gray-100 bg-white py-2 shadow-lg">
-                        @forelse ($navGames as $navGame)
-                            <a href="{{ route('catalog.game', $navGame->slug) }}"
-                               class="block px-4 py-1.5 text-gray-700 hover:bg-gray-50">{{ $navGame->name }}</a>
-                        @empty
-                            <a href="{{ route('coming-soon') }}" class="block px-4 py-1.5 text-gray-400">Menyusul</a>
-                        @endforelse
+                    <details class="group relative">
+                        <summary class="flex cursor-pointer list-none items-center gap-1 text-[13px] font-medium text-[#333] transition-colors hover:text-[#4FC3F7]">
+                            Game
+                            <span class="text-[10px] transition-transform group-open:rotate-180">▾</span>
+                        </summary>
+                        <div class="absolute left-0 top-full z-20 mt-2 max-h-80 w-56 overflow-y-auto rounded-lg border border-[#EAEAEA] bg-white py-2 shadow-sm">
+                            @forelse ($navGames as $navGame)
+                                <a href="{{ route('catalog.game', $navGame->slug) }}" class="block px-3.5 py-1.5 text-[12px] text-[#333] transition-colors hover:bg-[#F5F7FA] hover:text-[#4FC3F7]">{{ $navGame->name }}</a>
+                            @empty
+                                <a href="{{ route('coming-soon') }}" class="block px-3.5 py-1.5 text-[12px] text-[#999]">Menyusul</a>
+                            @endforelse
+                        </div>
+                    </details>
+
+                    <details class="group relative">
+                        <summary class="flex cursor-pointer list-none items-center gap-1 text-[13px] font-medium text-[#333] transition-colors hover:text-[#4FC3F7]">
+                            Developer
+                            <span class="text-[10px] transition-transform group-open:rotate-180">▾</span>
+                        </summary>
+                        <div class="absolute left-0 top-full z-20 mt-2 max-h-80 w-56 overflow-y-auto rounded-lg border border-[#EAEAEA] bg-white py-2 shadow-sm">
+                            @forelse ($navDevelopers as $navDeveloper)
+                                <a href="{{ route('catalog.developer', $navDeveloper->slug) }}" class="block px-3.5 py-1.5 text-[12px] text-[#333] transition-colors hover:bg-[#F5F7FA] hover:text-[#4FC3F7]">{{ $navDeveloper->name }}</a>
+                            @empty
+                                <a href="{{ route('coming-soon') }}" class="block px-3.5 py-1.5 text-[12px] text-[#999]">Menyusul</a>
+                            @endforelse
+                        </div>
+                    </details>
+
+                    <a href="{{ route('coming-soon') }}" class="text-[13px] font-medium text-[#333] transition-colors hover:text-[#4FC3F7]">Pre-order Baru</a>
+                </nav>
+
+                <a href="{{ route('home') }}" class="flex items-center justify-center no-underline">
+                    <img src="{{ asset('logo.png') }}" alt="Mercatoria" class="h-10 w-auto" width="1608" height="494">
+                </a>
+
+                <div class="flex items-center justify-end gap-3">
+                    <a href="{{ route('search') }}" class="text-[#333] transition-colors hover:text-[#4FC3F7]" aria-label="Cari">
+                        <x-icons.magnifying-glass width="18" height="18" />
+                    </a>
+
+                    <div class="flex items-center gap-2.5 text-[#333]">
+                        <a href="{{ setting('url_instagram', '#') }}" class="transition-colors hover:text-[#4FC3F7]" aria-label="Instagram">
+                            <x-icons.instagram width="16" height="16" />
+                        </a>
+                        <a href="{{ setting('url_facebook', '#') }}" class="transition-colors hover:text-[#4FC3F7]" aria-label="Facebook">
+                            <x-icons.facebook width="16" height="16" />
+                        </a>
+                        <a href="{{ setting('url_x', '#') }}" class="transition-colors hover:text-[#4FC3F7]" aria-label="X">
+                            <x-icons.twitter-x width="16" height="16" />
+                        </a>
+                        <a href="{{ setting('url_threads', '#') }}" class="transition-colors hover:text-[#4FC3F7]" aria-label="Threads">
+                            <x-icons.threads width="16" height="16" />
+                        </a>
+                        <a href="{{ setting('url_whatsapp', '#') }}" class="transition-colors hover:text-[#4FC3F7]" aria-label="WhatsApp">
+                            <x-icons.whatsapp width="16" height="16" />
+                        </a>
                     </div>
-                </details>
 
-                <details class="relative">
-                    <summary class="cursor-pointer list-none text-gray-500 hover:text-black">Developer ▾</summary>
-                    <div class="absolute left-0 top-full z-20 mt-2 w-48 rounded-lg border border-gray-100 bg-white py-2 shadow-lg">
-                        @forelse ($navDevelopers as $navDeveloper)
-                            <a href="{{ route('catalog.developer', $navDeveloper->slug) }}"
-                               class="block px-4 py-1.5 text-gray-700 hover:bg-gray-50">{{ $navDeveloper->name }}</a>
-                        @empty
-                            <a href="{{ route('coming-soon') }}" class="block px-4 py-1.5 text-gray-400">Menyusul</a>
-                        @endforelse
-                    </div>
-                </details>
+                    <a href="{{ route('cart.index') }}" class="relative text-[#333] transition-colors hover:text-[#4FC3F7]" aria-label="Keranjang">
+                        <x-icons.bag width="18" height="18" />
+                        @if (!empty($cartCount) && $cartCount > 0)
+                            <span class="absolute -right-1.5 -top-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-black px-1 text-[9px] font-semibold text-white">{{ $cartCount > 99 ? '99+' : $cartCount }}</span>
+                        @endif
+                    </a>
 
-                <a href="{{ route('coming-soon') }}" class="text-gray-500 hover:text-black">Pre-order Baru</a>
+                    <a href="{{ route('coming-soon') }}" class="relative text-[#333] transition-colors hover:text-[#4FC3F7]" aria-label="Notifikasi">
+                        <x-icons.bell width="18" height="18" />
+                        @if (!empty($notifCount) && $notifCount > 0)
+                            <span class="absolute -right-1.5 -top-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-[#E53935] px-1 text-[9px] font-semibold text-white">{{ $notifCount > 99 ? '99+' : $notifCount }}</span>
+                        @endif
+                    </a>
+
+                    <a href="{{ route('dashboard') }}" class="flex items-center gap-1.5 text-[#333] transition-colors hover:text-[#4FC3F7]" aria-label="Akun">
+                        <x-icons.user width="18" height="18" />
+                        @if (!empty($stateBadge))
+                            <span class="rounded px-1.5 py-0.5 text-[10px] font-semibold {{ ($stateBadgeClass ?? '') }}">{{ $stateBadge }}</span>
+                        @endif
+                        @if (!empty($tierBadge))
+                            <span class="inline-flex items-center gap-0.5 rounded px-1.5 py-0.5 text-[10px] font-semibold {{ ($tierBadgeClass ?? '') }}">
+                                <x-icons.trophy width="10" height="10" />
+                                {{ $tierBadge }}
+                            </span>
+                        @endif
+                    </a>
+                </div>
             </div>
 
-            <a href="/" class="flex items-center gap-2">
-                <span class="flex h-9 w-9 items-center justify-center rounded-lg bg-black text-sm font-semibold text-white">M</span>
-                <span class="font-semibold tracking-wide">MERCATORIA</span>
-            </a>
+            {{-- Mobile --}}
+            <div class="flex min-h-[64px] items-center justify-between gap-3 lg:hidden">
+                <details class="relative">
+                    <summary class="flex h-10 w-10 cursor-pointer list-none items-center justify-center text-[#333]" aria-label="Menu">
+                        <x-icons.list width="22" height="22" />
+                    </summary>
+                    <div class="absolute left-0 top-full z-20 mt-2 w-64 rounded-lg border border-[#EAEAEA] bg-white py-2 shadow-sm">
+                        <a href="{{ route('home') }}" class="block px-4 py-2.5 text-[13px] font-medium text-[#4FC3F7]">Beranda</a>
+                        <a href="{{ route('search') }}" class="block px-4 py-2.5 text-[13px] text-[#333]">Cari</a>
+                        <a href="{{ route('cart.index') }}" class="block px-4 py-2.5 text-[13px] text-[#333]">Keranjang</a>
+                        <a href="{{ route('dashboard') }}" class="block px-4 py-2.5 text-[13px] text-[#333]">Dashboard</a>
+                        <a href="{{ route('coming-soon') }}" class="block px-4 py-2.5 text-[13px] text-[#333]">Pre-order Baru</a>
 
-            <div class="flex items-center gap-3 text-sm">
-                <form action="{{ route('search') }}" method="GET" class="hidden md:block">
-                    <input type="search" name="q" value="{{ request('q') }}" placeholder="Cari merch..."
-                           class="w-48 rounded-full border border-gray-200 px-4 py-1.5 text-sm focus:border-black focus:outline-none">
-                </form>
+                        <div class="mt-1 border-t border-[#EAEAEA] pt-1">
+                            <p class="px-4 py-1.5 font-mono text-[10px] uppercase tracking-wider text-ink/45">Game</p>
+                            @foreach ($navGames as $navGame)
+                                <a href="{{ route('catalog.game', $navGame->slug) }}" class="block px-4 py-2 text-[12px] text-[#333]">{{ $navGame->name }}</a>
+                            @endforeach
+                        </div>
 
-                @auth
-                    <a href="{{ route('cart.index') }}" class="text-gray-500 hover:text-black">Keranjang</a>
-                    <a href="{{ route('coming-soon') }}" class="text-gray-500 hover:text-black" title="Notifikasi — menyusul">Bell</a>
-                    <a href="{{ route('dashboard') }}" class="font-medium hover:text-black">{{ auth()->user()->name }}</a>
-                    <form method="POST" action="{{ route('logout') }}">
-                        @csrf
-                        <button type="submit" class="text-gray-500 hover:text-black">Keluar</button>
-                    </form>
-                @else
-                    <a href="{{ route('login') }}" class="font-medium hover:text-black">Masuk</a>
-                @endauth
+                        <div class="mt-1 border-t border-[#EAEAEA] pt-1">
+                            <p class="px-4 py-1.5 font-mono text-[10px] uppercase tracking-wider text-ink/45">Developer</p>
+                            @foreach ($navDevelopers as $navDeveloper)
+                                <a href="{{ route('catalog.developer', $navDeveloper->slug) }}" class="block px-4 py-2 text-[12px] text-[#333]">{{ $navDeveloper->name }}</a>
+                            @endforeach
+                        </div>
+
+                        <div class="mt-1 border-t border-[#EAEAEA] pt-1">
+                            <form method="POST" action="{{ route('logout') }}">
+                                @csrf
+                                <button type="submit" class="block w-full px-4 py-2.5 text-left text-[13px] text-[#333]">Keluar</button>
+                            </form>
+                        </div>
+                    </div>
+                </details>
+
+                <a href="{{ route('home') }}" class="flex items-center no-underline">
+                    <img src="{{ asset('logo.png') }}" alt="Mercatoria" class="h-9 w-auto" width="1608" height="494">
+                </a>
+
+                <a href="{{ route('cart.index') }}" class="relative flex h-10 w-10 items-center justify-center text-[#333]" aria-label="Keranjang">
+                    <x-icons.bag width="20" height="20" />
+                    @if (!empty($cartCount) && $cartCount > 0)
+                        <span class="absolute right-1 top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-black px-1 text-[9px] font-semibold text-white">{{ $cartCount > 99 ? '99+' : $cartCount }}</span>
+                    @endif
+                </a>
             </div>
         </div>
-    </nav>
+    </header>
 
     @if (session('status'))
-        <div class="mx-auto max-w-7xl px-4 pt-4">
-            <div class="rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-800">
+        <div class="mx-auto w-full max-w-[1200px] px-4 pt-4">
+            <div class="rounded-lg border border-rule bg-white px-4 py-3 text-sm text-ink">
                 {{ session('status') }}
             </div>
         </div>
     @endif
 
-    <main class="mx-auto max-w-7xl px-4 py-8">
+    <main class="mx-auto w-full max-w-[1200px] flex-1 px-4 py-8">
         @yield('content')
     </main>
+
+    {{-- Footer (sama dengan guest — Design Spec 4.4.5) --}}
+    <footer class="bg-[#1E1E2D] text-white">
+        <div class="mx-auto max-w-[1200px] px-4 py-14">
+            <div class="grid gap-10 md:grid-cols-2 lg:grid-cols-3">
+                <div class="flex flex-col items-center">
+                    <a href="{{ route('home') }}" class="inline-flex flex-col items-center no-underline">
+                        <img src="{{ asset('logo.png') }}" alt="Mercatoria" class="h-10 w-auto" width="1608" height="494">
+                    </a>
+
+                    <div class="mt-6 flex items-center justify-center gap-4">
+                        <a href="{{ setting('url_instagram', '#') }}" class="text-[#B0B3C5] transition-colors hover:text-[#4FC3F7]" aria-label="Instagram">
+                            <x-icons.instagram width="18" height="18" />
+                        </a>
+                        <a href="{{ setting('url_facebook', '#') }}" class="text-[#B0B3C5] transition-colors hover:text-[#4FC3F7]" aria-label="Facebook">
+                            <x-icons.facebook width="18" height="18" />
+                        </a>
+                        <a href="{{ setting('url_x', '#') }}" class="text-[#B0B3C5] transition-colors hover:text-[#4FC3F7]" aria-label="X">
+                            <x-icons.twitter-x width="18" height="18" />
+                        </a>
+                        <a href="{{ setting('url_threads', '#') }}" class="text-[#B0B3C5] transition-colors hover:text-[#4FC3F7]" aria-label="Threads">
+                            <x-icons.threads width="18" height="18" />
+                        </a>
+                        <a href="{{ setting('url_whatsapp', '#') }}" class="text-[#B0B3C5] transition-colors hover:text-[#4FC3F7]" aria-label="WhatsApp">
+                            <x-icons.whatsapp width="18" height="18" />
+                        </a>
+                    </div>
+
+                    <div class="mt-6 flex flex-wrap items-center justify-center gap-3">
+                        <a href="{{ setting('url_toco', '#') }}" class="inline-flex items-center gap-1.5 rounded-[20px] border border-white/25 px-4 py-1.5 text-[11px] font-bold text-white transition-colors hover:border-white/50">
+                            TOCO
+                            <x-icons.arrow-right width="12" height="12" />
+                        </a>
+                        <a href="{{ setting('url_shopee', '#') }}" class="inline-flex items-center gap-1.5 rounded-[20px] border border-white/25 px-4 py-1.5 text-[11px] font-bold text-white transition-colors hover:border-white/50">
+                            SHOPEE
+                            <x-icons.arrow-right width="12" height="12" />
+                        </a>
+                    </div>
+                </div>
+
+                <details class="group" open>
+                    <summary class="flex cursor-pointer list-none items-center justify-between text-[14px] font-bold text-white marker:hidden lg:pointer-events-none lg:cursor-default">
+                        Game
+                        <span class="text-[#B0B3C5] transition-transform group-open:rotate-180 lg:hidden">
+                            <x-icons.chevron-up width="14" height="14" />
+                        </span>
+                    </summary>
+                    <ul class="mt-3.5 space-y-0 text-[12px] leading-[1.8]">
+                        @isset($footerGames)
+                            @foreach ($footerGames as $game)
+                                <li>
+                                    <a href="{{ data_get($game, 'url') ?? (data_get($game, 'slug') ? route('catalog.game', data_get($game, 'slug')) : '#') }}" class="text-[#B0B3C5] transition-colors hover:text-[#4FC3F7]">
+                                        {{ data_get($game, 'name') }}
+                                    </a>
+                                </li>
+                            @endforeach
+                        @endisset
+                    </ul>
+                </details>
+
+                <div class="space-y-8">
+                    <details class="group" open>
+                        <summary class="flex cursor-pointer list-none items-center justify-between text-[14px] font-bold text-white marker:hidden lg:pointer-events-none lg:cursor-default">
+                            Developer
+                            <span class="text-[#B0B3C5] transition-transform group-open:rotate-180 lg:hidden">
+                                <x-icons.chevron-up width="14" height="14" />
+                            </span>
+                        </summary>
+                        <ul class="mt-3.5 space-y-0 text-[12px] leading-[1.8]">
+                            @isset($footerDevelopers)
+                                @foreach ($footerDevelopers as $developer)
+                                    <li>
+                                        <a href="{{ data_get($developer, 'url') ?? (data_get($developer, 'slug') ? route('catalog.developer', data_get($developer, 'slug')) : '#') }}" class="text-[#B0B3C5] transition-colors hover:text-[#4FC3F7]">
+                                            {{ data_get($developer, 'name') }}
+                                        </a>
+                                    </li>
+                                @endforeach
+                            @endisset
+                        </ul>
+                    </details>
+
+                    <details class="group" open>
+                        <summary class="flex cursor-pointer list-none items-center justify-between text-[14px] font-bold text-white marker:hidden lg:pointer-events-none lg:cursor-default">
+                            Jelajahi
+                            <span class="text-[#B0B3C5] transition-transform group-open:rotate-180 lg:hidden">
+                                <x-icons.chevron-up width="14" height="14" />
+                            </span>
+                        </summary>
+                        <ul class="mt-3.5 space-y-0 text-[12px] leading-[1.8]">
+                            @isset($footerPages)
+                                @foreach ($footerPages as $page)
+                                    <li>
+                                        <a href="{{ data_get($page, 'url') ?? (data_get($page, 'slug') ? url(data_get($page, 'slug')) : '#') }}" class="text-[#B0B3C5] transition-colors hover:text-[#4FC3F7]">
+                                            {{ data_get($page, 'name') }}
+                                        </a>
+                                    </li>
+                                @endforeach
+                            @endisset
+                        </ul>
+                    </details>
+                </div>
+            </div>
+        </div>
+
+        <div class="border-t border-white/[0.08]">
+            <div class="mx-auto flex max-w-[1200px] flex-wrap items-center justify-between gap-3 px-4 py-[18px] text-[11px] text-[#888]">
+                <p>&copy; 2022 MERCATORIA</p>
+                <div class="flex items-center gap-4">
+                    <p>Powered by MERCATORIA</p>
+                    <a href="#top" class="inline-flex h-7 w-7 items-center justify-center rounded border border-white/15 text-[#B0B3C5] transition-colors hover:border-white/35 hover:text-white" aria-label="Kembali ke atas">
+                        <x-icons.chevron-up width="12" height="12" />
+                    </a>
+                </div>
+            </div>
+        </div>
+    </footer>
 </body>
 </html>
