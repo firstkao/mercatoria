@@ -108,6 +108,6 @@ enum OrderStatus: string
 
     public function label(): string
     {
-        return ucwords(str_replace('_', ' ', $this->value));
+        return order_status_label($this->value);
     }
 }

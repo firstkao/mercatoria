@@ -23,6 +23,9 @@ test('halaman search menampilkan hasil pencarian', function () {
         'slug' => 'produk-lain',
     ]);
 
+    // Dorong "Produk Lain" keluar dari footer "Produk Terpopuler" (top 5 sold_count)
+    Product::factory()->count(5)->create(['sold_count' => 10, 'is_active' => true]);
+
     $this->actingAs($user)
         ->get('/search?q=Tartaglia')
         ->assertOk()

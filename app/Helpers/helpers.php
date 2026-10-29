@@ -33,6 +33,26 @@ if (! function_exists('format_rp')) {
     }
 }
 
+if (! function_exists('order_status_label')) {
+    /**
+     * Label tampilan status order (config/order_statuses.php — satu sumber).
+     */
+    function order_status_label(string $status): string
+    {
+        return config('order_statuses.'.$status.'.label') ?? ucwords(str_replace('_', ' ', $status));
+    }
+}
+
+if (! function_exists('order_status_color')) {
+    /**
+     * Kelas warna badge status order (config/order_statuses.php — satu sumber).
+     */
+    function order_status_color(string $status): string
+    {
+        return config('order_statuses.'.$status.'.color') ?? 'bg-paper text-ink/70';
+    }
+}
+
 if (! function_exists('normalize_phone')) {
     /**
      * Seragamkan nomor telepon ke format 62xxx.
