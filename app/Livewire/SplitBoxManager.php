@@ -60,7 +60,7 @@ class SplitBoxManager extends Component
     public function closeRefund(int $batchId, SplitBoxService $splitBox): void
     {
         $batch = SplitBoxBatch::findOrFail($batchId);
-        $count = $splitBox->closeBatchAndRefund($batch);
+        $count = $splitBox->closeBatchAndRefund($batch, auth()->user());
 
         $this->statusMessage = "Kloter ditutup. {$count} order di-refund.";
         $this->mount($this->product);

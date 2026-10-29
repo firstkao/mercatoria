@@ -30,6 +30,8 @@ class CoinTransaction extends Model
 
     public const TYPE_HANGUS_PAYMENT_FAILED = 'hangus_payment_failed';
 
+    public const TYPE_REFUND_RETURNED = 'refund_returned';
+
     public const TYPE_EXPIRED = 'expired';
 
     protected $fillable = [

@@ -13,6 +13,7 @@ use App\Models\SplitBoxBatchSlot;
 use App\Models\SplitBoxSlot;
 use App\Models\User;
 use App\Services\Order\OrderStatusService;
+use App\Services\Payment\RefundService;
 use App\Services\User\UserNotificationService;
 use Illuminate\Support\Facades\DB;
 
@@ -135,8 +136,9 @@ class SplitBoxService
 
     /**
      * Tutup kloter & refund semua order yang terkunci di kloter itu (PRD 49.11).
+     * Refund full otomatis via RefundService — koin/voucher kembali + 1 notif.
      */
-    public function closeBatchAndRefund(SplitBoxBatch $batch): int
+    public function closeBatchAndRefund(SplitBoxBatch $batch, User $admin): int
     {
         $batch->update(['status' => SplitBoxBatch::STATUS_CLOSED]);
 
@@ -146,10 +148,10 @@ class SplitBoxService
             )->pluck('order_id'))
             ->get();
 
-        $statuses = app(OrderStatusService::class);
+        $refunds = app(RefundService::class);
 
         foreach ($orders as $order) {
-            $statuses->changeStatus($order, OrderStatus::DanaDikembalikan->value, 'admin', 'Tutup kloter & refund semua');
+            $refunds->autoFull($order, 'Slot split box tidak terpenuhi', $admin);
         }
 
         return $orders->count();

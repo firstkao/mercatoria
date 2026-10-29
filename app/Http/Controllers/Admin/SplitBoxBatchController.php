@@ -19,7 +19,7 @@ class SplitBoxBatchController extends Controller
     public function closeRefund(Request $request, SplitBoxBatch $split_box_batch): RedirectResponse
     {
         $before = $split_box_batch->only(['status']);
-        $count = $this->splitBox->closeBatchAndRefund($split_box_batch);
+        $count = $this->splitBox->closeBatchAndRefund($split_box_batch, $request->user());
 
         AdminLog::record($request->user(), 'update', 'SplitBoxBatch', $split_box_batch->id,
             $before, ['status' => $split_box_batch->fresh()->status],
