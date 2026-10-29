@@ -53,10 +53,36 @@
                                         @if ($item->snapshot->store_name)
                                             <p class="font-mono text-[10px] uppercase tracking-[0.1em] text-ink/45">Store: {{ $item->snapshot->store_name }}</p>
                                         @endif
+                                        @if ($item->product_id === null)
+                                            <span class="mt-1 inline-block rounded border border-rule px-1.5 py-0.5 font-mono text-[9px] uppercase tracking-[0.12em] text-ink/45">Produk Asli Telah Dihapus</span>
+                                        @endif
                                     </td>
                                     <td class="py-1.5 text-ink/80">{{ $item->snapshot->qty }}</td>
                                     <td class="py-1.5 text-ink/80">{{ format_rp($item->snapshot->final_price) }}</td>
                                     <td class="py-1.5 text-ink/80">{{ format_rp($item->snapshot->subtotal) }}</td>
+                                </tr>
+                                <tr>
+                                    <td colspan="4" class="pb-2">
+                                        <details class="group rounded-lg border border-rule/60">
+                                            <summary class="flex cursor-pointer list-none items-center justify-between px-3 py-1.5 font-mono text-[10px] uppercase tracking-[0.12em] text-ink/55">
+                                                <span>Detail Ongkir</span>
+                                                <span class="transition-transform group-open:rotate-180">▼</span>
+                                            </summary>
+                                            <div class="border-t border-rule/60 bg-[#F5F7FA] px-3 py-2">
+                                                <dl class="space-y-0.5 font-mono text-[11px]">
+                                                    <div class="flex justify-between"><dt class="text-ink/55">Berat</dt><dd class="text-ink">{{ number_format($item->snapshot->weight_gram ?? 0) }} gram</dd></div>
+                                                    <div class="flex justify-between"><dt class="text-ink/55">Store</dt><dd class="text-ink">{{ $item->snapshot->store_name ?? '—' }}</dd></div>
+                                                    <div class="flex justify-between"><dt class="text-ink/55">Ongkir Lokal CN</dt><dd class="text-ink">{{ $item->snapshot->ongkir_lokal_cn_idr ? format_rp($item->snapshot->ongkir_lokal_cn_idr) : '—' }}</dd></div>
+                                                    <div class="flex justify-between"><dt class="text-ink/55">Ongkir CN-BTM</dt><dd class="text-ink">{{ $item->snapshot->ongkir_cn_btm_idr ? format_rp($item->snapshot->ongkir_cn_btm_idr) : '—' }}</dd></div>
+                                                    <div class="flex justify-between"><dt class="text-ink/55">Ongkir BTM-JKT</dt><dd class="text-ink">{{ $item->snapshot->ongkir_btm_jkt_idr ? format_rp($item->snapshot->ongkir_btm_jkt_idr) : '—' }}</dd></div>
+                                                    <div class="flex justify-between border-t border-rule/60 pt-1 font-semibold"><dt class="text-ink">Total Ongkir</dt><dd class="text-ink">{{ $item->snapshot->ongkir_total_idr ? format_rp($item->snapshot->ongkir_total_idr) : '—' }}</dd></div>
+                                                    <div class="flex justify-between"><dt class="text-ink/55">Harga Produk</dt><dd class="text-ink">{{ $item->snapshot->base_price ? format_rp($item->snapshot->base_price) : '—' }}</dd></div>
+                                                    <div class="flex justify-between"><dt class="text-ink/55">Profit 11%</dt><dd class="text-ink/40">—</dd></div>
+                                                    <div class="flex justify-between border-t border-rule/60 pt-1 font-semibold"><dt class="text-ink">Harga Tayang</dt><dd class="text-ink">{{ format_rp($item->snapshot->final_price) }}</dd></div>
+                                                </dl>
+                                            </div>
+                                        </details>
+                                    </td>
                                 </tr>
                             @endforeach
                         </tbody>
@@ -241,6 +267,23 @@
 
         {{-- SIDEBAR --}}
         <div class="space-y-4">
+            {{-- Info User --}}
+            <div class="rounded-xl border border-rule bg-white p-4">
+                <h2 class="font-mono text-[11px] font-medium uppercase tracking-[0.16em] text-ink">Info User</h2>
+                <p class="mt-2 text-sm font-medium text-ink">{{ $order->user->name ?? '-' }}</p>
+                @if ($order->user?->email)
+                    <p class="text-xs text-ink/60">{{ $order->user->email }}</p>
+                @endif
+                @if ($order->user?->no_hp)
+                    <p class="text-xs text-ink/60">{{ $order->user->no_hp }}</p>
+                @endif
+                @if ($order->user)
+                    <p class="mt-2 font-mono text-[10px] uppercase tracking-[0.14em] text-ink/55">
+                        Order Count: {{ $order->user->orders()->count() }}x
+                    </p>
+                @endif
+            </div>
+
             {{-- Ubah Status --}}
             <div class="rounded-xl border border-rule bg-white p-4">
                 <h2 class="font-mono text-[11px] font-medium uppercase tracking-[0.16em] text-ink">Ubah Status</h2>
