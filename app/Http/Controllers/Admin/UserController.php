@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\AdminLog;
 use App\Models\Spammer;
 use App\Models\User;
+use App\Models\VisitorTracking;
 use App\Services\User\UserNotificationService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -163,7 +164,25 @@ class UserController extends Controller
 
     public function edit(User $user): View
     {
-        return view('admin.users.form', ['user' => $user]);
+        return view('admin.users.form', [
+            'user' => $user,
+            'visit' => $this->visitSourceFor($user),
+        ]);
+    }
+
+    /**
+     * PRD 12/22.6: referral_source + landing_page kunjungan pertama user.
+     *
+     * @return array{source: ?string, landing_page: ?string}
+     */
+    private function visitSourceFor(User $user): array
+    {
+        $visit = VisitorTracking::where('user_id', $user->id)->oldest('id')->first();
+
+        return [
+            'source' => $visit?->source,
+            'landing_page' => $visit?->landing_page,
+        ];
     }
 
     public function update(Request $request, User $user): RedirectResponse

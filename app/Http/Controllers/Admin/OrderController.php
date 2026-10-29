@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\AdminLog;
 use App\Models\Order;
 use App\Models\Payment;
+use App\Models\VisitorTracking;
 use App\Services\Order\LatePenaltyService;
 use App\Services\Order\OrderStatusService;
 use App\Services\User\UserNotificationService;
@@ -34,7 +35,15 @@ class OrderController extends Controller
     {
         $order->load(['items.snapshot', 'payments', 'statusLogs', 'user', 'userVoucher']);
 
-        return view('admin.orders.show', ['order' => $order]);
+        $visit = VisitorTracking::where('user_id', $order->user_id)->oldest('id')->first();
+
+        return view('admin.orders.show', [
+            'order' => $order,
+            'visit' => [
+                'source' => $visit?->source,
+                'landing_page' => $visit?->landing_page,
+            ],
+        ]);
     }
 
     /**
