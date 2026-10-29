@@ -64,3 +64,29 @@ test('customer tidak memerlukan otp', function () {
     $this->assertAuthenticatedAs($user);
     Notification::assertNotSentTo($user, AdminOtpNotification::class);
 });
+
+test('halaman 2fa mengirim otpExpiresAt', function () {
+    Notification::fake();
+    $admin = User::factory()->admin()->create(['email' => 'admin@mercatoria.id', 'password' => 'password123']);
+
+    $this->post('/login', ['email' => 'admin@mercatoria.id', 'password' => 'password123']);
+
+    $response = $this->get('/2fa/verify')->assertOk();
+
+    $expiresAt = \Illuminate\Support\Carbon::parse($response->viewData('otpExpiresAt'));
+    $sisaDetik = now()->diffInSeconds($expiresAt, false);
+
+    expect($sisaDetik)->toBeGreaterThan(290)->toBeLessThanOrEqual(300);
+});
+
+test('countdown otp memakai otpExpiresAt di halaman', function () {
+    Notification::fake();
+    $admin = User::factory()->admin()->create(['email' => 'admin@mercatoria.id', 'password' => 'password123']);
+
+    $this->post('/login', ['email' => 'admin@mercatoria.id', 'password' => 'password123']);
+
+    $expiresAt = cache()->get('admin_otp_expires_at:'.$admin->id);
+    $html = $this->get('/2fa/verify')->assertOk()->getContent();
+
+    expect($html)->toContain((string) \Illuminate\Support\Carbon::parse($expiresAt)->getTimestampMs());
+});

@@ -16,7 +16,9 @@ class TwoFactorController extends Controller
     {
         abort_unless($request->session()->has('admin_2fa_id'), 403);
 
-        return view('two-factor.verify');
+        return view('two-factor.verify', [
+            'otpExpiresAt' => Cache::get('admin_otp_expires_at:'.(int) $request->session()->get('admin_2fa_id')),
+        ]);
     }
 
     public function verify(Request $request): RedirectResponse
@@ -34,6 +36,7 @@ class TwoFactorController extends Controller
         }
 
         Cache::forget('admin_otp:'.$userId);
+        Cache::forget('admin_otp_expires_at:'.$userId);
         $request->session()->forget('admin_2fa_id');
 
         Auth::login($user);
@@ -50,6 +53,7 @@ class TwoFactorController extends Controller
         $code = str_pad((string) random_int(0, 999999), 6, '0', STR_PAD_LEFT);
 
         Cache::put('admin_otp:'.$user->id, $code, 300);
+        Cache::put('admin_otp_expires_at:'.$user->id, now()->addSeconds(300)->toIso8601String(), 300);
         $user->notify(new AdminOtpNotification($code));
 
         return $code;
