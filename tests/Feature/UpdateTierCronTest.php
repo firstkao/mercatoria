@@ -2,6 +2,7 @@
 
 use App\Models\Customer;
 use App\Models\User;
+use Illuminate\Console\Scheduling\Schedule;
 
 test('customer:update-tier mengevaluasi tier dari total belanja', function () {
     $user = User::factory()->create();
@@ -30,7 +31,7 @@ test('customer:update-tier juga menurunkan tier yang tidak lagi memenuhi', funct
 });
 
 test('jadwal customer:update-tier terdaftar 02:30 asia jakarta', function () {
-    $events = collect(app(\Illuminate\Console\Scheduling\Schedule::class)->events());
+    $events = collect(app(Schedule::class)->events());
     $event = $events->first(fn ($e) => str_contains((string) $e->command, 'customer:update-tier'));
 
     expect($event->expression)->toBe('30 2 * * *')
