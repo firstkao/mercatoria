@@ -103,7 +103,20 @@ class ProductController extends Controller
 
         AdminLog::record($request->user(), 'delete', 'Product', $product->id, $product->only(['name', 'sku']), null, "Hapus permanen ({$snapshotCount} order_item terdampak)");
 
+        $imagePaths = array_filter([$product->image_path, $product->description_image_path]);
+        foreach ($product->variants as $variant) {
+            $imagePaths[] = $variant->image_path;
+        }
+
         $product->delete();
+
+        // PRD 13.5: file gambar produk asli ikut dihapus; snapshot order TIDAK.
+        foreach (array_filter($imagePaths) as $path) {
+            if (str_starts_with($path, 'products/')) {
+                @unlink(storage_path('app/private/'.$path));
+                @unlink(storage_path('app/private/originals/'.$path));
+            }
+        }
 
         return redirect()->route('office.products.index')->with('status', 'Produk dihapus permanen.');
     }
