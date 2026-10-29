@@ -184,8 +184,7 @@
                     <form method="POST" action="{{ route('profile.tour-seen') }}" class="inline">
                         @csrf
                         <button type="submit"
-                                class="rounded-lg px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:opacity-90"
-                                style="background:#4FC3F7">
+                                class="rounded-lg bg-accent px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:opacity-90">
                             Mengerti
                         </button>
                     </form>

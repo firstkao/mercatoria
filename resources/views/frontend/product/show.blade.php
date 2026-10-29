@@ -102,8 +102,7 @@
                                class="mt-2 w-24 rounded-lg border border-rule bg-white px-3 py-2.5 text-center text-sm text-ink focus:border-ink focus:outline-none focus:ring-2 focus:ring-accent/45">
                     </div>
                     <button type="submit"
-                            class="rounded-lg px-6 py-2.5 text-sm font-semibold tracking-[0.08em] text-white transition-colors hover:opacity-90"
-                            style="background:#4FC3F7">
+                            class="rounded-lg bg-accent px-6 py-2.5 text-sm font-semibold tracking-[0.12em] text-white transition-colors hover:opacity-90">
                         TAMBAH KE KERANJANG
                     </button>
                 </form>
