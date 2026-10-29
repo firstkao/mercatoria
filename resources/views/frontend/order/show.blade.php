@@ -3,73 +3,74 @@
 @section('title', 'Pesanan '.$order->no_order.' — Mercatoria')
 
 @section('content')
-    <h1 class="text-2xl font-semibold">Detail Pesanan</h1>
+    <p class="font-mono text-[10px] uppercase tracking-[0.22em] text-ink/45">Pesanan</p>
+    <h1 class="mt-2 font-display text-[1.75rem] leading-tight font-semibold text-ink sm:text-3xl">Detail Pesanan</h1>
 
-    <div class="mt-6 rounded-xl bg-white p-6 shadow-sm ring-1 ring-gray-100">
+    <div class="mt-6 rounded-xl border border-rule bg-white p-6">
         <div class="flex flex-wrap items-center justify-between gap-3">
             <div>
-                <p class="text-xs text-gray-400">Nomor Pesanan</p>
-                <p class="text-lg font-semibold tracking-wide">{{ $order->no_order }}</p>
+                <p class="font-mono text-[10px] uppercase tracking-[0.14em] text-ink/50">Nomor Pesanan</p>
+                <p class="mt-1 text-lg font-semibold tracking-wide text-ink">{{ $order->no_order }}</p>
             </div>
             <div class="flex items-center gap-2">
                 <span class="rounded bg-amber-100 px-3 py-1 text-sm font-medium text-amber-800">
                     {{ ucwords(str_replace(['_', 'wh'], [' ', 'WH'], $order->status)) }}
                 </span>
                 <a href="{{ route('orders.invoice', $order->no_order) }}"
-                   class="rounded-lg border border-gray-300 px-3 py-1.5 text-sm hover:border-black">
+                   class="rounded-lg border border-rule px-3 py-1.5 text-sm text-ink transition-colors hover:border-ink">
                     Download Invoice PDF
                 </a>
             </div>
         </div>
 
         <table class="mt-4 w-full text-sm">
-            <thead class="border-b border-gray-100 text-left text-gray-500">
+            <thead class="border-b border-rule text-left">
                 <tr>
-                    <th class="py-2">Item</th>
-                    <th class="py-2">Harga</th>
-                    <th class="py-2">Qty</th>
-                    <th class="py-2">Subtotal</th>
+                    <th class="py-2 font-mono text-[10px] uppercase tracking-[0.14em] text-ink/55">Item</th>
+                    <th class="py-2 font-mono text-[10px] uppercase tracking-[0.14em] text-ink/55">Harga</th>
+                    <th class="py-2 font-mono text-[10px] uppercase tracking-[0.14em] text-ink/55">Qty</th>
+                    <th class="py-2 font-mono text-[10px] uppercase tracking-[0.14em] text-ink/55">Subtotal</th>
                 </tr>
             </thead>
             <tbody>
                 @foreach ($order->items as $item)
                     @php $snapshot = $item->snapshot; @endphp
-                    <tr class="border-b border-gray-50">
+                    <tr class="border-b border-rule/50">
                         <td class="py-2">
-                            <p class="font-medium">{{ $snapshot->product_name }}</p>
+                            <p class="font-medium text-ink">{{ $snapshot->product_name }}</p>
                             @if ($snapshot->variant_name)
-                                <p class="text-xs text-gray-500">Varian: {{ $snapshot->variant_name }}</p>
+                                <p class="text-xs text-ink/55">Varian: {{ $snapshot->variant_name }}</p>
                             @endif
                             @if ($snapshot->store_name)
-                                <p class="text-[11px] text-gray-400">Store: {{ $snapshot->store_name }}</p>
+                                <p class="font-mono text-[10px] uppercase tracking-[0.1em] text-ink/45">Store: {{ $snapshot->store_name }}</p>
                             @endif
                         </td>
-                        <td class="py-2">{{ format_rp($snapshot->final_price) }}</td>
-                        <td class="py-2">{{ $snapshot->qty }}</td>
-                        <td class="py-2">{{ format_rp($snapshot->subtotal) }}</td>
+                        <td class="py-2 text-ink/80">{{ format_rp($snapshot->final_price) }}</td>
+                        <td class="py-2 text-ink/80">{{ $snapshot->qty }}</td>
+                        <td class="py-2 text-ink/80">{{ format_rp($snapshot->subtotal) }}</td>
                     </tr>
                 @endforeach
             </tbody>
         </table>
 
         <dl class="mt-4 space-y-1 text-sm">
-            <div class="flex justify-between"><dt>Subtotal</dt><dd>{{ format_rp($order->subtotal) }}</dd></div>
+            <div class="flex justify-between"><dt class="text-ink/70">Subtotal</dt><dd class="text-ink">{{ format_rp($order->subtotal) }}</dd></div>
             @if ((float) $order->discount_amount > 0)
-                <div class="flex justify-between text-red-600">
+                <div class="flex justify-between text-danger">
                     <dt>Diskon {{ $order->discount_type === 'coin' ? 'Koin' : 'Voucher' }}</dt>
                     <dd>- {{ format_rp($order->discount_amount) }}</dd>
                 </div>
             @endif
-            <div class="flex justify-between font-medium"><dt>Total Harga Barang</dt><dd>{{ format_rp($order->total) }}</dd></div>
-            <div class="flex justify-between text-gray-500"><dt>Fee QRIS</dt><dd>{{ format_rp($order->fee_qris) }}</dd></div>
-            <div class="flex justify-between text-lg font-semibold"><dt>Bayar di Web</dt><dd>{{ format_rp($order->tagihan_web) }}</dd></div>
+            <div class="flex justify-between font-medium"><dt class="text-ink">Total Harga Barang</dt><dd class="text-ink">{{ format_rp($order->total) }}</dd></div>
+            <div class="flex justify-between text-ink/55"><dt>Fee QRIS</dt><dd>{{ format_rp($order->fee_qris) }}</dd></div>
+            <div class="flex justify-between text-lg font-semibold"><dt class="text-ink">Bayar di Web</dt><dd class="text-ink">{{ format_rp($order->tagihan_web) }}</dd></div>
             @if ($order->estimasi_co_marketplace)
-                <div class="flex justify-between text-gray-500"><dt>Estimasi CO Marketplace</dt><dd>{{ format_rp($order->estimasi_co_marketplace) }}</dd></div>
+                <div class="flex justify-between text-ink/55"><dt>Estimasi CO Marketplace</dt><dd>{{ format_rp($order->estimasi_co_marketplace) }}</dd></div>
             @endif
         </dl>
 
         @if ($order->customer_note)
-            <p class="mt-4 rounded-lg bg-gray-50 p-3 text-sm text-gray-600">
+            <p class="mt-4 rounded-lg bg-paper p-3 text-sm text-ink/75">
                 Catatan: {{ $order->customer_note }}
             </p>
         @endif
@@ -82,10 +83,10 @@
     </div>
 
     @if ($order->status === 'menunggu_pembayaran')
-        <div class="mt-6 rounded-xl bg-white p-6 shadow-sm ring-1 ring-gray-100">
-            <h2 class="text-sm font-semibold">Bayar &amp; Unggah Bukti</h2>
-            <p class="mt-1 text-sm text-gray-600">
-                Tagihan: <strong>{{ format_rp($order->tagihan_web) }}</strong>
+        <div class="mt-6 rounded-xl border border-rule bg-white p-6">
+            <h2 class="font-mono text-[11px] font-medium uppercase tracking-[0.16em] text-ink">Bayar &amp; Unggah Bukti</h2>
+            <p class="mt-1 text-sm text-ink/70">
+                Tagihan: <strong class="text-ink">{{ format_rp($order->tagihan_web) }}</strong>
                 @if ($order->payment_deadline_at)
                     · Batas waktu: {{ $order->payment_deadline_at->format('d/m/Y H:i') }}
                 @endif
@@ -95,34 +96,34 @@
                   class="mt-4 space-y-3">
                 @csrf
                 <input type="file" name="proof" accept=".jpg,.jpeg,.png" required
-                       class="block w-full text-sm text-gray-600">
-                <p class="text-xs text-gray-400">Format JPG/PNG, maksimal 1 MB. Hanya bisa diunggah 1 kali.</p>
-                @error('proof')<p class="text-sm text-red-600">{{ $message }}</p>@enderror
+                       class="block w-full text-sm text-ink/70 file:mr-3 file:rounded-lg file:border file:border-rule file:bg-white file:px-3 file:py-2 file:text-xs file:font-semibold file:text-ink">
+                <p class="font-mono text-[10px] uppercase tracking-[0.12em] text-ink/45">Format JPG/PNG, maksimal 1 MB. Hanya bisa diunggah 1 kali.</p>
+                @error('proof')<p class="text-sm text-danger">{{ $message }}</p>@enderror
                 <button type="submit"
-                        class="rounded-lg bg-black px-6 py-2.5 text-sm font-semibold text-white hover:bg-gray-800">
+                        class="rounded-lg bg-black px-6 py-2.5 text-sm font-semibold tracking-[0.08em] text-white transition-colors hover:bg-ink">
                     UNGGAH BUKTI
                 </button>
             </form>
         </div>
     @elseif ($order->status === 'ditahan')
         <div class="mt-6 rounded-xl border border-sky-200 bg-sky-50 p-6">
-            <h2 class="text-sm font-semibold text-sky-900">Bukti Bayar Terkirim</h2>
+            <h2 class="font-mono text-[11px] font-medium uppercase tracking-[0.16em] text-sky-900">Bukti Bayar Terkirim</h2>
             <p class="mt-1 text-sm text-sky-800">
                 Menunggu verifikasi admin. Form upload terkunci sampai admin menyetujui atau menolak bukti kamu.
             </p>
         </div>
     @endif
 
-    <div class="mt-6 rounded-xl bg-white p-6 shadow-sm ring-1 ring-gray-100">
-        <h2 class="text-sm font-semibold">Riwayat Status</h2>
-        <ol class="mt-3 space-y-3 border-l border-gray-200 pl-4">
+    <div class="mt-6 rounded-xl border border-rule bg-white p-6">
+        <h2 class="font-mono text-[11px] font-medium uppercase tracking-[0.16em] text-ink">Riwayat Status</h2>
+        <ol class="mt-3 space-y-3 border-l border-rule pl-4">
             @foreach ($order->statusLogs as $log)
                 <li class="relative">
-                    <span class="absolute -left-[21px] top-1.5 h-2.5 w-2.5 rounded-full {{ $loop->last ? 'bg-black' : 'bg-gray-300' }}"></span>
-                    <p class="text-sm {{ $loop->last ? 'font-semibold' : 'text-gray-700' }}">
+                    <span class="absolute -left-[21px] top-1.5 h-2.5 w-2.5 rounded-full {{ $loop->last ? 'bg-ink' : 'bg-rule' }}"></span>
+                    <p class="text-sm {{ $loop->last ? 'font-semibold text-ink' : 'text-ink/75' }}">
                         {{ ucwords(str_replace(['_', 'wh'], [' ', 'WH'], $log->status)) }}
                     </p>
-                    <p class="text-xs text-gray-400">
+                    <p class="font-mono text-[10px] uppercase tracking-[0.1em] text-ink/45">
                         {{ $log->created_at->format('d/m/Y H:i') }} · oleh {{ $log->changed_by }}
                         @if ($log->note) — {{ $log->note }} @endif
                     </p>
