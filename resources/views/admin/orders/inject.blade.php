@@ -34,6 +34,13 @@
                 <label class="block text-sm font-medium">Catatan Pembelian</label>
                 <input type="text" name="customer_note" maxlength="500" class="mt-1 w-full rounded-lg border border-gray-200 px-3 py-2 text-sm">
             </div>
+
+            <div>
+                <label class="block text-sm font-medium">Tanggal Order</label>
+                <input type="date" name="tanggal_order" max="{{ now()->format('Y-m-d') }}"
+                       class="mt-1 w-full rounded-lg border border-gray-200 px-3 py-2 text-sm">
+                <p class="mt-1 text-xs text-gray-400">Opsional. Masa lalu. Kosong = pakai waktu sekarang.</p>
+            </div>
         </div>
 
         <div class="flex items-center justify-between">
