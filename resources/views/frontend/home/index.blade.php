@@ -10,15 +10,23 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body id="top" class="flex min-h-screen flex-col bg-white font-sans text-ink antialiased">
-    {{-- 1. Top Promo Bar (PRD 40.1 / Design Spec 4.1) --}}
-    <div id="promo-bar" class="relative bg-[#F5F7FA] px-10 py-1.5 text-center text-[11.5px] text-[#444]">
-        <p>
-            {{ setting('promo_bar_text', 'Gunakan kode promo NEWWEB dan nikmati potongan harga untuk belanja pertamamu.') }}
-        </p>
-        <button type="button" id="promo-bar-close" class="absolute right-3 top-1/2 -translate-y-1/2 text-[#444] hover:text-ink" aria-label="Tutup">
-            <x-icons.chevron-up class="rotate-90" width="12" height="12" />
-        </button>
-    </div>
+    {{-- 1. Top Promo Bar (PRD 40.1) --}}
+    @if (setting('promo_bar_active', '1') !== '0')
+        <div id="promo-bar" class="relative bg-[#F5F7FA] px-10 py-1.5 text-center text-[11.5px] text-[#444]">
+            <p>
+                @if (setting('promo_bar_link'))
+                    <a href="{{ setting('promo_bar_link') }}" class="underline decoration-[#E53935] underline-offset-2 hover:text-ink">
+                        {{ setting('promo_bar_text', 'Gunakan kode promo NEWWEB dan nikmati potongan harga untuk belanja pertamamu.') }}
+                    </a>
+                @else
+                    {{ setting('promo_bar_text', 'Gunakan kode promo NEWWEB dan nikmati potongan harga untuk belanja pertamamu.') }}
+                @endif
+            </p>
+            <button type="button" id="promo-bar-close" class="absolute right-3 top-1/2 -translate-y-1/2 text-[#444] hover:text-ink" aria-label="Tutup">
+                <x-icons.chevron-up class="rotate-90" width="12" height="12" />
+            </button>
+        </div>
+    @endif
 
     {{-- 2. Header (Design Spec 4.4.1) --}}
     <header class="border-b border-[#EAEAEA] bg-white">
@@ -66,20 +74,41 @@
     </header>
 
     <main class="flex-1">
-        {{-- 3. Hero (PRD 40.2 / Design Spec 4.4.2) --}}
+        {{-- 3. Hero Carousel (PRD 40.2) --}}
         <section id="hero" class="mx-auto max-w-[1200px] px-4 py-6">
             @isset($heroSlides)
-                <div class="relative overflow-hidden rounded-lg border border-rule">
-                    <div class="relative aspect-[2/1] bg-ink">
-                        @foreach ($heroSlides as $i => $slide)
-                            <a href="{{ data_get($slide, 'url') ?? '#' }}" class="absolute inset-0 {{ $i === 0 ? '' : 'hidden' }}" data-hero-slide="{{ $i }}">
-                                @if (data_get($slide, 'image'))
-                                    <img src="{{ data_get($slide, 'image') }}" alt="" class="h-full w-full object-cover">
-                                @endif
-                            </a>
-                        @endforeach
+                @if (count($heroSlides) > 0)
+                    <div class="relative overflow-hidden rounded-lg border border-rule" id="hero-carousel">
+                        <div class="relative aspect-[2/1] bg-ink" id="hero-track">
+                            @foreach ($heroSlides as $i => $slide)
+                                <a href="{{ data_get($slide, 'url') ?? '#' }}" class="absolute inset-0 {{ $i === 0 ? '' : 'hidden' }}" data-hero-slide="{{ $i }}">
+                                    @if (data_get($slide, 'image'))
+                                        <img src="{{ data_get($slide, 'image') }}" alt="" class="h-full w-full object-cover">
+                                    @endif
+                                </a>
+                            @endforeach
+                        </div>
+
+                        <button type="button" id="hero-prev" class="absolute left-3 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-white/70 text-ink transition-colors hover:bg-white" aria-label="Sebelumnya">
+                            <x-icons.chevron-up class="rotate-90" width="16" height="16" />
+                        </button>
+                        <button type="button" id="hero-next" class="absolute right-3 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-white/70 text-ink transition-colors hover:bg-white" aria-label="Berikutnya">
+                            <x-icons.chevron-up class="-rotate-90" width="16" height="16" />
+                        </button>
+
+                        <div class="absolute bottom-3 left-1/2 flex -translate-x-1/2 gap-2" id="hero-dots">
+                            @foreach ($heroSlides as $i => $slide)
+                                <button type="button" data-hero-dot="{{ $i }}" class="h-2 w-2 rounded-full {{ $i === 0 ? 'bg-white' : 'bg-white/45' }}" aria-label="Slide {{ $i + 1 }}"></button>
+                            @endforeach
+                        </div>
                     </div>
-                </div>
+                @else
+                    <div class="rounded-lg border border-rule bg-[#F5F7FA] px-8 py-16 text-center">
+                        <p class="font-mono text-[10px] uppercase tracking-[0.22em] text-ink/45">Mercatoria</p>
+                        <h1 class="mt-2 font-display text-3xl font-semibold text-ink">Merch &amp; Collectibles untuk IP Favoritmu</h1>
+                        <p class="mt-2 text-sm text-ink/65">Harga bersih — sudah termasuk ongkir CN-ID &amp; bea.</p>
+                    </div>
+                @endif
             @else
                 <div class="rounded-lg border border-rule bg-[#F5F7FA] px-8 py-16 text-center">
                     <p class="font-mono text-[10px] uppercase tracking-[0.22em] text-ink/45">Mercatoria</p>
@@ -125,10 +154,13 @@
                             @if ($product->image_path)
                                 <img src="{{ \Illuminate\Support\Facades\Storage::url($product->image_path) }}" alt="{{ $product->name }}" class="aspect-square w-full rounded object-cover">
                             @endif
-                            <p class="mt-2 text-[11.5px] font-bold leading-snug text-ink">
-                                <span class="text-ink/60">[{{ $product->game->name }}]</span> {{ $product->name }}
-                            </p>
-                        </a>
+                        <p class="mt-2 text-[11.5px] font-bold leading-snug text-ink">
+                            <span class="text-ink/60">[{{ $product->game->name }}]</span> {{ $product->name }}
+                        </p>
+                        @if (!empty($product->price_idr))
+                            <p class="mt-0.5 text-[11.5px] font-bold text-[#29B6F6]">{{ format_rp($product->price_idr) }}</p>
+                        @endif
+                    </a>
                     @endforeach
                 </div>
             </section>
@@ -154,6 +186,9 @@
                         <p class="mt-1.5 text-[11.5px] font-bold leading-[1.35] text-ink">
                             <span class="text-ink/55">[{{ $product->game->name }}]</span> {{ $product->name }}
                         </p>
+                        @if (!empty($product->price_idr))
+                            <p class="mt-0.5 text-[11.5px] font-bold text-[#29B6F6]">{{ format_rp($product->price_idr) }}</p>
+                        @endif
                     </a>
                 @empty
                     <p class="col-span-full text-center text-sm text-ink/45">Belum ada merch.</p>
@@ -221,10 +256,28 @@
 
                 <details class="group" open>
                     <summary class="flex cursor-pointer list-none items-center justify-between text-[14px] font-bold text-white marker:hidden lg:pointer-events-none lg:cursor-default">
-                        Kontak
+                        Produk Terpopuler
                         <span class="text-[#B0B3C5] transition-transform group-open:rotate-180 lg:hidden"><x-icons.chevron-up width="14" height="14" /></span>
                     </summary>
-                    <p class="mt-3.5 text-[12px] leading-[1.8] text-[#B0B3C5]">info@mercatoria.id</p>
+                    <ul class="mt-3.5 space-y-2 text-[12px]">
+                        @isset($footerTopProducts)
+                            @foreach ($footerTopProducts as $product)
+                                <li class="flex items-center gap-2.5 border-b border-white/10 pb-2">
+                                    @if (data_get($product, 'image'))
+                                        <img src="{{ data_get($product, 'image') }}" alt="" class="h-12 w-12 shrink-0 rounded object-cover">
+                                    @endif
+                                    <div class="min-w-0">
+                                        <a href="{{ data_get($product, 'url') ?? '#' }}" class="block truncate text-[#B0B3C5] transition-colors hover:text-[#4FC3F7]">
+                                            {{ data_get($product, 'name') }}
+                                        </a>
+                                        @if (data_get($product, 'price') !== null)
+                                            <span class="text-white">{{ format_rp(data_get($product, 'price')) }}</span>
+                                        @endif
+                                    </div>
+                                </li>
+                            @endforeach
+                        @endisset
+                    </ul>
                 </details>
             </div>
         </div>
@@ -250,6 +303,57 @@
                     localStorage.setItem('promo-bar-dismissed', '1');
                 });
             }
+
+            var carousel = document.getElementById('hero-carousel');
+            if (!carousel) return;
+            var slides = carousel.querySelectorAll('[data-hero-slide]');
+            var dots = carousel.querySelectorAll('[data-hero-dot]');
+            if (slides.length < 2) return;
+            var index = 0;
+            var timer = null;
+
+            function show(i) {
+                index = (i + slides.length) % slides.length;
+                slides.forEach(function (s, n) { s.classList.toggle('hidden', n !== index); });
+                dots.forEach(function (d, n) {
+                    d.classList.toggle('bg-white', n === index);
+                    d.classList.toggle('bg-white/45', n !== index);
+                });
+            }
+            function next() { show(index + 1); }
+            function prev() { show(index - 1); }
+            function start() { stop(); timer = setInterval(next, 5000); }
+            function stop() { if (timer) clearInterval(timer); timer = null; }
+
+            var prevBtn = document.getElementById('hero-prev');
+            var nextBtn = document.getElementById('hero-next');
+            if (prevBtn) prevBtn.addEventListener('click', function () { prev(); start(); });
+            if (nextBtn) nextBtn.addEventListener('click', function () { next(); start(); });
+            dots.forEach(function (d) {
+                d.addEventListener('click', function () {
+                    show(parseInt(d.getAttribute('data-hero-dot'), 10) || 0);
+                    start();
+                });
+            });
+
+            carousel.addEventListener('mouseenter', stop);
+            carousel.addEventListener('mouseleave', start);
+
+            var touchX = null;
+            carousel.addEventListener('touchstart', function (e) {
+                touchX = e.changedTouches[0].clientX;
+                stop();
+            }, { passive: true });
+            carousel.addEventListener('touchend', function (e) {
+                if (touchX === null) return;
+                var dx = e.changedTouches[0].clientX - touchX;
+                if (Math.abs(dx) > 40) { dx < 0 ? next() : prev(); }
+                touchX = null;
+                start();
+            }, { passive: true });
+
+            show(0);
+            start();
         })();
     </script>
 </body>
