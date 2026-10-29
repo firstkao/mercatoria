@@ -11,6 +11,31 @@
     <p class="font-mono text-[10px] uppercase tracking-[0.22em] text-ink/45">Belanja</p>
     <h1 class="mt-2 font-display text-[1.75rem] leading-tight font-semibold text-ink sm:text-3xl">Checkout</h1>
 
+    @php
+        $needsVerify = auth()->user() && ! auth()->user()->hasVerifiedEmail();
+        $needsDob = auth()->user() && ! auth()->user()->tgl_lahir;
+    @endphp
+    @if ($needsVerify || $needsDob)
+        <div class="mt-4 rounded-xl border border-amber-300 bg-amber-50 px-4 py-3">
+            <p class="flex items-start gap-2 text-sm text-amber-900">
+                <x-icons.exclamation-triangle-fill class="mt-0.5 shrink-0" width="16" height="16" />
+                <span>
+                    @if ($needsVerify)
+                        Email kamu belum diverifikasi. Verifikasi dulu agar pesananmu bisa diproses.
+                        <a href="{{ route('verification.notice') }}" class="font-medium underline decoration-amber-400 underline-offset-4 hover:decoration-amber-900">Kirim ulang link verifikasi</a>
+                    @endif
+                    @if ($needsVerify && $needsDob)
+                        <br>
+                    @endif
+                    @if ($needsDob)
+                        Tanggal lahir belum diisi.
+                        <a href="{{ route('profile.complete') }}" class="font-medium underline decoration-amber-400 underline-offset-4 hover:decoration-amber-900">Lengkapi profil</a>
+                    @endif
+                </span>
+            </p>
+        </div>
+    @endif
+
     <form id="checkout-form" method="POST" action="{{ route('checkout.store') }}" class="mt-6 space-y-6">
         @csrf
 
