@@ -2,9 +2,11 @@
 
 namespace App\Providers;
 
+use App\Models\Cart;
 use App\Models\Developer;
 use App\Models\Game;
 use App\Models\UserNotification;
+use App\Services\Order\ShippingCalculatorService;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
@@ -34,9 +36,22 @@ class AppServiceProvider extends ServiceProvider
             return Limit::perMinute(3)->by($request->ip());
         });
 
-        // Navbar dropdown Game / Developer → route katalog (PRD 7.2) + bell (PRD 43.2).
+        // Navbar dropdown Game / Developer → route katalog (PRD 7.2) + bell (PRD 43.2) + keranjang.
         View::composer(['layouts.app', 'frontend.profile.show'], function ($view): void {
             $user = auth()->user();
+
+            $cartTotal = 0;
+            $cartCount = 0;
+
+            if ($user) {
+                $shipping = app(ShippingCalculatorService::class);
+
+                foreach (Cart::with(['product', 'variant'])->where('user_id', $user->id)->get() as $item) {
+                    $pricing = $shipping->calculateItemShipping($item->product, $item->variant);
+                    $cartTotal += $pricing['final_price_bersih'] * $item->qty;
+                    $cartCount += $item->qty;
+                }
+            }
 
             $view->with(
                 'navGames',
@@ -54,6 +69,12 @@ class AppServiceProvider extends ServiceProvider
                 $user
                     ? (int) UserNotification::where('user_id', $user->id)->where('is_read', false)->count()
                     : 0
+            )->with(
+                'cartTotal',
+                $cartTotal
+            )->with(
+                'cartCount',
+                $cartCount
             );
         });
     }
