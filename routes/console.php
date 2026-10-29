@@ -8,6 +8,9 @@ Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
 })->purpose('Display an inspiring quote');
 
+// Evaluasi tier (PRD 37.3) — sebelum urusan harian lain.
+Schedule::command('customer:update-tier')->dailyAt('02:30')->timezone('Asia/Jakarta');
+
 // Jadwal cron (PRD 37.3–39.10, WIB) — timezone Asia/Jakarta.
 Schedule::command('log:purge')->dailyAt('03:00')->timezone('Asia/Jakarta');
 Schedule::command('notification:purge')->dailyAt('03:30')->timezone('Asia/Jakarta');
