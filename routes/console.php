@@ -20,3 +20,6 @@ Schedule::command('splitbox:check-batches')->dailyAt('08:30')->timezone('Asia/Ja
 Schedule::command('orders:expire-unpaid')->everyFifteenMinutes()->timezone('Asia/Jakarta');
 Schedule::command('orders:expire-penalties')->everyFifteenMinutes()->timezone('Asia/Jakarta');
 Schedule::command('orders:hangus-expired')->dailyAt('05:00')->timezone('Asia/Jakarta');
+
+// Cart reminder (PRD 16.3/37.3) — Bell + Email info@ tiap 30 menit selama item masih di cart.
+Schedule::command('cart:send-reminder')->everyThirtyMinutes()->timezone('Asia/Jakarta');
