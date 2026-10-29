@@ -54,11 +54,14 @@
                             var W = el.clientWidth || 800, H = 180, pad = 28;
                             var max = Math.max.apply(null, rows.map(function (d) { return Number(d.revenue) || 0; }));
                             if (max <= 0) max = 1;
-                            var pts = rows.map(function (d, i) {
+                            var pts = [];
+                            var dots = rows.map(function (d, i) {
                                 var x = pad + (i / Math.max(1, rows.length - 1)) * (W - pad * 2);
                                 var y = H - pad - (Number(d.revenue) || 0) / max * (H - pad * 2);
-                                return x.toFixed(1) + ',' + y.toFixed(1);
-                            }).join(' ');
+                                pts.push(x.toFixed(1) + ',' + y.toFixed(1));
+                                var label = (d.date || '') + ': Rp ' + (Number(d.revenue) || 0).toLocaleString('id-ID');
+                                return '<circle cx="' + x.toFixed(1) + '" cy="' + y.toFixed(1) + '" r="4" fill="#4FC3F7"><title>' + label + '</title></circle>';
+                            }).join('');
                             var labels = [0, Math.floor(rows.length / 2), rows.length - 1].map(function (i) {
                                 var d = rows[i]; if (!d) return '';
                                 var x = pad + (i / Math.max(1, rows.length - 1)) * (W - pad * 2);
@@ -68,7 +71,7 @@
                                 var y = pad + f * (H - pad * 2);
                                 return '<line x1="' + pad + '" y1="' + y + '" x2="' + (W - pad) + '" y2="' + y + '" stroke="#D8D2C4" stroke-width="0.5" stroke-dasharray="4,4"/>';
                             }).join('');
-                            el.innerHTML = '<svg width="100%" height="' + H + '" viewBox="0 0 ' + W + ' ' + H + '">' + grid + '<polyline fill="none" stroke="#4FC3F7" stroke-width="2" points="' + pts + '"/>' + labels + '</svg>';
+                            el.innerHTML = '<svg width="100%" height="' + H + '" viewBox="0 0 ' + W + ' ' + H + '">' + grid + '<polyline fill="none" stroke="#4FC3F7" stroke-width="2" points="' + pts.join(' ') + '"/>' + dots + labels + '</svg>';
                         })
                         .catch(function () {
                             el.innerHTML = '<div class="flex h-full items-center justify-center rounded-lg border border-dashed border-rule bg-paper/40"><p class="font-mono text-[10px] uppercase tracking-[0.16em] text-ink/40">Gagal memuat</p></div>';
