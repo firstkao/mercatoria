@@ -5,7 +5,7 @@
 @section('content')
     <p class="font-mono text-[10px] uppercase tracking-[0.22em] text-ink/45">Akun</p>
     <h1 class="mt-2 font-display text-[1.75rem] leading-tight font-semibold text-ink sm:text-3xl">Undang Teman</h1>
-    <p class="mt-1 text-sm text-ink/65">+3.000 koin saat temanmu menyelesaikan order pertama · teman dapat +1.000 koin saat pembayaran pertama terverifikasi.</p>
+    <p class="mt-1 text-sm text-ink/65">Ajak teman berbelanja dan dapatkan koin.</p>
 
     <div class="mt-5 flex flex-wrap gap-1 border-b border-rule">
         <a href="{{ route('dashboard') }}" class="border-b-2 border-transparent px-4 py-2.5 text-sm text-ink/55 transition-colors hover:text-ink">Pesanan Saya</a>
@@ -29,7 +29,7 @@
             <button type="button" data-copy="{{ url('/register?ref='.$user->referral_code) }}"
                     class="inline-flex items-center gap-1.5 rounded-lg border border-rule px-4 py-2 text-xs font-semibold text-ink transition-colors hover:border-ink">
                 <x-icons.link width="14" height="14" />
-                Copy Link Undang
+                Copy Link Undangan
             </button>
         </div>
     </div>
