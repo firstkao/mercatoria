@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\RegisterRequest;
 use App\Models\ActivityLog;
 use App\Models\User;
+use App\Services\User\UserNotificationService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -48,6 +49,16 @@ class RegisterController extends Controller
             'role' => User::ROLE_CUSTOMER,
             'referred_by' => $referrer?->id,
         ]);
+
+        // PRD 9.2/43.21: referrer dapat bell info saat referee mendaftar (tanpa koin).
+        if ($referrer) {
+            app(UserNotificationService::class)->notify(
+                $referrer,
+                'referral_joined',
+                $user->name.' menggunakan kode undanganmu',
+                '/profile/undang'
+            );
+        }
 
         $user->sendEmailVerificationNotification();
 
