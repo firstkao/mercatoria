@@ -3,6 +3,7 @@
 use App\Models\Order;
 use App\Models\Setting;
 use App\Models\User;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 
 if (! function_exists('setting')) {
@@ -50,6 +51,80 @@ if (! function_exists('order_status_color')) {
     function order_status_color(string $status): string
     {
         return config('order_statuses.'.$status.'.color') ?? 'bg-paper text-ink/70';
+    }
+}
+
+if (! function_exists('get_real_ip')) {
+    /**
+     * IP asli client (PRD 8.7): HTTP_X_FORWARDED_FOR → HTTP_X_REAL_IP → REMOTE_ADDR.
+     * Validasi filter_var, skip IP private & reserved; XFF bisa berupa daftar.
+     */
+    function get_real_ip(?Request $request = null): ?string
+    {
+        $request ??= request();
+
+        foreach ([
+            (string) $request->server('HTTP_X_FORWARDED_FOR', ''),
+            (string) $request->server('HTTP_X_REAL_IP', ''),
+            (string) $request->server('REMOTE_ADDR', ''),
+        ] as $candidates) {
+            foreach (explode(',', $candidates) as $candidate) {
+                $ip = trim($candidate);
+
+                if ($ip !== ''
+                    && filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE) !== false) {
+                    return $ip;
+                }
+            }
+        }
+
+        return null;
+    }
+}
+
+if (! function_exists('ip_in_cidr')) {
+    /**
+     * Cek IP dalam range CIDR (PRD 8.9) — IPv4 & IPv6.
+     */
+    function ip_in_cidr(string $ip, string $cidr): bool
+    {
+        if (filter_var($ip, FILTER_VALIDATE_IP) === false) {
+            throw new InvalidArgumentException("IP tidak valid: {$ip}");
+        }
+
+        [$subnet, $bits] = array_pad(explode('/', $cidr, 2), 2, null);
+
+        if ($bits === null || ! is_numeric($bits) || filter_var($subnet, FILTER_VALIDATE_IP) === false) {
+            throw new InvalidArgumentException("CIDR tidak valid: {$cidr}");
+        }
+
+        $bits = (int) $bits;
+        $ipBin = @inet_pton($ip);
+        $subnetBin = @inet_pton($subnet);
+
+        if ($ipBin === false || $subnetBin === false || strlen($ipBin) !== strlen($subnetBin)) {
+            return false;
+        }
+
+        $maxBits = strlen($ipBin) * 8;
+        if ($bits < 0 || $bits > $maxBits) {
+            throw new InvalidArgumentException("CIDR tidak valid: {$cidr}");
+        }
+
+        $fullBytes = intdiv($bits, 8);
+        $remaining = $bits % 8;
+
+        if ($fullBytes > 0 && substr($ipBin, 0, $fullBytes) !== substr($subnetBin, 0, $fullBytes)) {
+            return false;
+        }
+
+        if ($remaining === 0) {
+            return true;
+        }
+
+        $mask = 0xFF << (8 - $remaining) & 0xFF;
+
+        return (ord($ipBin[$fullBytes]) & $mask) === (ord($subnetBin[$fullBytes]) & $mask);
     }
 }
 
