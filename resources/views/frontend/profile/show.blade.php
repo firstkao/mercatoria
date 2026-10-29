@@ -10,9 +10,9 @@
             <h1 class="mt-2 font-display text-[1.75rem] leading-tight font-semibold text-ink sm:text-3xl">Dashboard Pelanggan</h1>
             <p class="mt-1 text-[15px] text-ink/80">Selamat datang, {{ $user->name }}</p>
             <div class="mt-2 flex flex-wrap items-center gap-2">
-                <span class="rounded bg-sky-100 px-2 py-0.5 text-xs font-semibold text-sky-800">{{ $stateBadge }}</span>
+                <x-user-badge :value="$stateBadge" type="state" />
                 @if ($tierBadge)
-                    <span class="rounded bg-amber-100 px-2 py-0.5 text-xs font-semibold text-amber-800">{{ $tierBadge }}</span>
+                    <x-user-badge :value="$tierBadge" type="tier" />
                 @endif
                 <span class="font-mono text-[10px] uppercase tracking-[0.12em] text-ink/50">Terdaftar sejak: {{ $user->created_at->format('d F Y') }}</span>
             </div>

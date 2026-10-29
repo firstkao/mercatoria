@@ -91,13 +91,12 @@
                     <a href="{{ route('dashboard') }}" class="flex items-center gap-1.5 text-[#333] transition-colors hover:text-[#4FC3F7]" aria-label="Akun">
                         <x-icons.user width="18" height="18" />
                         @if (!empty($stateBadge))
-                            <span class="rounded px-1.5 py-0.5 text-[10px] font-semibold {{ ($stateBadgeClass ?? '') }}">{{ $stateBadge }}</span>
+                            <x-user-badge :value="$stateBadge" type="state" />
                         @endif
                         @if (!empty($tierBadge))
-                            <span class="inline-flex items-center gap-0.5 rounded px-1.5 py-0.5 text-[10px] font-semibold {{ ($tierBadgeClass ?? '') }}">
-                                <x-icons.trophy width="10" height="10" />
-                                {{ $tierBadge }}
-                                <span class="text-[8px]">▾</span>
+                            <span class="inline-flex items-center gap-0.5">
+                                <x-user-badge :value="$tierBadge" type="tier" />
+                                <span class="text-ink/45 text-[8px]">▾</span>
                             </span>
                         @endif
                     </a>
