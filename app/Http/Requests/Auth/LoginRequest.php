@@ -4,6 +4,7 @@ namespace App\Http\Requests\Auth;
 
 use App\Models\AuthLog;
 use App\Models\Spammer;
+use App\Models\SpammerIp;
 use Illuminate\Auth\Events\Lockout;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
@@ -52,6 +53,11 @@ class LoginRequest extends FormRequest
 
         if (Spammer::blocksIdentity($email, null)) {
             AuthLog::record(AuthLog::ACTION_LOGIN_FAILED, $email, null, 'identitas diblokir');
+
+            // PRD 10.5: IP yang mencoba login dengan identitas ter-block ikut dicatat.
+            if ($ip = get_real_ip($this)) {
+                SpammerIp::recordAttempt($ip, (string) $this->userAgent());
+            }
 
             throw ValidationException::withMessages([
                 'email' => 'Akun ini tidak dapat digunakan untuk login.',

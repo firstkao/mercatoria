@@ -4,6 +4,7 @@ namespace App\Http\Requests\Auth;
 
 use App\Models\Customer;
 use App\Models\Spammer;
+use App\Models\SpammerIp;
 use App\Models\User;
 use App\Services\Admin\AdminNotificationService;
 use Illuminate\Contracts\Validation\ValidationRule;
@@ -68,6 +69,13 @@ class RegisterRequest extends FormRequest
                 ->where('status', Spammer::STATUS_BLOCKED)
                 ->where('no_hp', $noHp)
                 ->exists();
+
+            if ($blockedEmail || $blockedPhone) {
+                // PRD 10.5: IP yang mencoba pakai identitas ter-block ikut dicatat.
+                if ($ip = get_real_ip($this)) {
+                    SpammerIp::recordAttempt($ip, (string) $this->userAgent());
+                }
+            }
 
             if ($blockedEmail) {
                 $validator->errors()->add('email', 'Email ini tidak dapat digunakan untuk mendaftar.');
