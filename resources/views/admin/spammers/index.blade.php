@@ -48,6 +48,27 @@
                                     </button>
                                 </form>
                             @endif
+                            @php($spammerUser = \App\Models\User::where('email', $spammer->email)->first())
+                            @if ($spammerUser && \Illuminate\Support\Facades\Route::has('office.users.forever-delete'))
+                                <button type="button" class="ml-2 text-sm font-semibold text-danger hover:underline"
+                                        onclick="document.getElementById('fdel-{{ $spammer->id }}').showModal()">
+                                    Forever Delete
+                                </button>
+                                <dialog id="fdel-{{ $spammer->id }}" class="rounded-xl border border-rule p-0">
+                                    <form method="POST" action="{{ route('office.users.forever-delete', $spammerUser) }}" class="p-5">
+                                        @csrf
+                                        <p class="text-sm font-semibold text-ink">Forever Delete &ldquo;{{ $spammerUser->name }}&rdquo;?</p>
+                                        <p class="mt-1 text-xs text-ink/60">Tidak dapat dibatalkan. Ketik email persis untuk konfirmasi.</p>
+                                        <input type="text" name="confirm_email" placeholder="{{ $spammerUser->email }}" required
+                                               oninput="this.form.querySelector('[type=submit]').disabled = this.value !== '{{ $spammerUser->email }}'"
+                                               class="mt-2 w-full rounded-lg border border-rule px-3 py-2 text-sm text-ink">
+                                        <div class="mt-3 flex justify-end gap-2">
+                                            <button type="button" class="rounded-lg border border-rule px-3 py-1.5 text-xs font-semibold text-ink" onclick="document.getElementById('fdel-{{ $spammer->id }}').close()">Batal</button>
+                                            <button type="submit" disabled class="rounded-lg bg-[#E53935] px-3 py-1.5 text-xs font-semibold text-white">Hapus Permanen</button>
+                                        </div>
+                                    </form>
+                                </dialog>
+                            @endif
                         </td>
                     </tr>
                 @empty
