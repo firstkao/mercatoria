@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Frontend;
 use App\Http\Controllers\Controller;
 use App\Models\Coin;
 use App\Models\CoinTransaction;
+use App\Models\ShareClick;
 use App\Models\User;
 use App\Models\UserNotification;
 use App\Models\UserVoucher;
@@ -141,6 +142,12 @@ class ProfileController extends Controller
         return view('frontend.profile.referral', [
             'user' => $request->user(),
             'referrals' => $request->user()->referrals()->orderByDesc('id')->get(),
+            'shareStats' => [
+                'opens' => ShareClick::where('user_id', $request->user()->id)->count(),
+                'coins' => (int) CoinTransaction::where('user_id', $request->user()->id)
+                    ->where('type', CoinTransaction::TYPE_EARNED_SHARE)
+                    ->sum('amount'),
+            ],
         ]);
     }
 
