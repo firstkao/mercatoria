@@ -48,14 +48,55 @@
 
                 <p class="px-3 pt-4 font-mono text-[9px] uppercase tracking-[0.18em] text-white/40">Lainnya</p>
                 <a href="{{ route('office.reports.index') }}" class="block rounded px-3 py-2 text-white/80 transition-colors hover:bg-white/10 hover:text-white">Laporan</a>
+                <a href="{{ route('office.payment-methods.index') }}" class="block rounded px-3 py-2 text-white/80 transition-colors hover:bg-white/10 hover:text-white">Metode Bayar</a>
+                <a href="{{ route('office.email-templates.index') }}" class="block rounded px-3 py-2 text-white/80 transition-colors hover:bg-white/10 hover:text-white">Template Email</a>
+                <a href="{{ route('office.spammers.index') }}" class="block rounded px-3 py-2 text-white/80 transition-colors hover:bg-white/10 hover:text-white">Spammers</a>
                 <a href="{{ route('office.settings.index') }}" class="block rounded px-3 py-2 text-white/80 transition-colors hover:bg-white/10 hover:text-white">Settings</a>
             </nav>
         </aside>
 
         <div class="flex flex-1 flex-col">
-            <header class="flex h-14 items-center justify-between border-b border-[#EAEAEA] bg-white px-6">
-                <span class="font-mono text-[11px] uppercase tracking-[0.16em] text-ink/55">@yield('title', 'Office')</span>
+            <header class="flex h-14 items-center justify-between gap-4 border-b border-[#EAEAEA] bg-white px-6">
+                <div class="flex items-center gap-3">
+                    <span class="font-mono text-[11px] uppercase tracking-[0.16em] text-ink/55">@yield('title', 'Office')</span>
+                    @if (\Illuminate\Support\Facades\Route::has('office.search'))
+                        <div class="relative" id="admin-search">
+                            <input type="text" id="admin-search-input" placeholder="Cari Produk/Order/User..."
+                                   class="w-56 rounded-lg border border-rule bg-white px-3 py-1.5 text-sm text-ink placeholder:text-ink/35 focus:border-ink focus:outline-none focus:ring-2 focus:ring-accent/45">
+                            <div id="admin-search-results" class="absolute left-0 top-full z-30 mt-1 hidden w-72 rounded-lg border border-rule bg-white shadow-sm"></div>
+                        </div>
+                    @endif
+                </div>
                 <div class="flex items-center gap-3 text-sm">
+                    @if (\Illuminate\Support\Facades\Route::has('office.notifications.read-all'))
+                        <details class="relative" id="admin-bell">
+                            <summary class="flex cursor-pointer list-none items-center gap-1 text-ink/70 transition-colors hover:text-ink" aria-label="Notifikasi">
+                                <x-icons.bell width="18" height="18" />
+                                @if (!empty($adminBellUnreadCount) && $adminBellUnreadCount > 0)
+                                    <span class="flex h-4 min-w-4 items-center justify-center rounded-full bg-[#E53935] px-1 text-[9px] font-semibold text-white">{{ $adminBellUnreadCount > 99 ? '99+' : $adminBellUnreadCount }}</span>
+                                @endif
+                            </summary>
+                            <div class="absolute right-0 top-full z-30 mt-1 w-80 rounded-lg border border-rule bg-white shadow-sm">
+                                <div class="flex items-center justify-between border-b border-rule px-3 py-2">
+                                    <p class="font-mono text-[10px] uppercase tracking-[0.14em] text-ink/55">Notifikasi</p>
+                                    <form method="POST" action="{{ route('office.notifications.read-all') }}">
+                                        @csrf
+                                        <button class="text-xs text-link underline decoration-link/35 underline-offset-4">Tandai semua dibaca</button>
+                                    </form>
+                                </div>
+                                <ul class="max-h-72 overflow-y-auto">
+                                    @forelse ($adminBellNotifications ?? [] as $notif)
+                                        <li class="border-b border-rule/50 px-3 py-2 text-sm {{ ($notif->is_read ?? false) ? 'opacity-60' : '' }}">
+                                            <p class="{{ ($notif->is_read ?? false) ? '' : 'font-semibold' }} text-ink">{{ $notif->title ?? $notif->message ?? '-' }}</p>
+                                            <p class="mt-0.5 font-mono text-[10px] uppercase tracking-[0.1em] text-ink/45">{{ isset($notif->created_at) ? $notif->created_at->diffForHumans() : '' }}</p>
+                                        </li>
+                                    @empty
+                                        <li class="px-4 py-6 text-center text-sm text-ink/45">Belum ada notifikasi.</li>
+                                    @endforelse
+                                </ul>
+                            </div>
+                        </details>
+                    @endif
                     <a href="/" class="font-medium text-link underline decoration-link/35 underline-offset-4 transition-colors hover:text-ink hover:decoration-ink">Lihat Frontend</a>
                     <span class="text-ink/75">{{ auth()->user()->name }}</span>
                     <form method="POST" action="{{ route('logout') }}">
@@ -76,5 +117,48 @@
             </main>
         </div>
     </div>
+    @if (\Illuminate\Support\Facades\Route::has('office.search'))
+    <script>
+        (function () {
+            var input = document.getElementById('admin-search-input');
+            var box = document.getElementById('admin-search-results');
+            if (!input || !box) return;
+            var t;
+            input.addEventListener('input', function () {
+                clearTimeout(t);
+                var q = input.value.trim();
+                if (q.length < 2) { box.classList.add('hidden'); box.innerHTML = ''; return; }
+                t = setTimeout(function () {
+                    fetch('{{ route("office.search") }}?q=' + encodeURIComponent(q), { headers: { 'Accept': 'application/json' } })
+                        .then(function (r) { return r.json(); })
+                        .then(function (d) {
+                            var html = '';
+                            function sec(label, items, render) {
+                                if (!items || !items.length) return;
+                                html += '<p class="px-3 py-1.5 font-mono text-[10px] uppercase tracking-[0.14em] text-ink/55">' + label + '</p>';
+                                items.forEach(function (x) { html += render(x); });
+                            }
+                            sec('Produk', d.products, function (x) {
+                                return '<a href="/office/products/' + x.id + '/edit" class="block px-3 py-1.5 text-sm text-ink hover:bg-paper">' + (x.name || '') + '</a>';
+                            });
+                            sec('Orders', d.orders, function (x) {
+                                return '<a href="/office/orders/' + (x.no_order || x.id) + '" class="block px-3 py-1.5 text-sm text-ink hover:bg-paper">' + (x.no_order || '') + '</a>';
+                            });
+                            sec('Users', d.users, function (x) {
+                                return '<a href="/office/users/' + x.id + '/edit" class="block px-3 py-1.5 text-sm text-ink hover:bg-paper">' + (x.name || x.email || '') + '</a>';
+                            });
+                            if (!html) html = '<p class="px-3 py-4 text-center text-sm text-ink/45">Tidak ada hasil.</p>';
+                            box.innerHTML = html;
+                            box.classList.remove('hidden');
+                        })
+                        .catch(function () { box.classList.add('hidden'); });
+                }, 250);
+            });
+            document.addEventListener('click', function (e) {
+                if (!e.target.closest('#admin-search')) box.classList.add('hidden');
+            });
+        })();
+    </script>
+    @endif
 </body>
 </html>
