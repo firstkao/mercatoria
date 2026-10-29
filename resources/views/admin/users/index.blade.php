@@ -34,6 +34,42 @@
                         <td class="px-3 py-2">{{ $user->role }}</td>
                         <td class="px-3 py-2 text-right">
                             <a href="{{ route('office.users.edit', $user) }}" class="text-sky-600 hover:underline">Edit</a>
+                            @if (\App\Models\Spammer::blocksIdentity($user->email, $user->no_hp))
+                                <button type="button" class="ml-2 text-red-600 hover:underline"
+                                        onclick="document.getElementById('del-{{ $user->id }}').showModal()">Hard Delete</button>
+                                <button type="button" class="ml-2 text-red-700 hover:underline"
+                                        onclick="document.getElementById('fdel-{{ $user->id }}').showModal()">Forever Delete</button>
+
+                                <dialog id="del-{{ $user->id }}" class="rounded-xl border border-gray-200 p-0">
+                                    <form method="POST" action="{{ route('office.users.destroy', $user) }}" class="p-5">
+                                        @csrf @method('DELETE')
+                                        <p class="text-sm font-semibold">Hard Delete &ldquo;{{ $user->name }}&rdquo;?</p>
+                                        <p class="mt-1 text-xs text-gray-500">Ketik email persis untuk konfirmasi.</p>
+                                        <input type="text" name="confirm_email" placeholder="{{ $user->email }}" required
+                                               oninput="this.form.querySelector('[type=submit]').disabled = this.value !== '{{ $user->email }}'"
+                                               class="mt-2 w-full rounded-lg border border-gray-200 px-3 py-2 text-sm">
+                                        <div class="mt-3 flex justify-end gap-2">
+                                            <button type="button" class="rounded-lg border border-gray-300 px-3 py-1.5 text-xs" onclick="document.getElementById('del-{{ $user->id }}').close()">Batal</button>
+                                            <button type="submit" disabled class="rounded-lg bg-red-600 px-3 py-1.5 text-xs text-white">Hapus</button>
+                                        </div>
+                                    </form>
+                                </dialog>
+
+                                <dialog id="fdel-{{ $user->id }}" class="rounded-xl border border-gray-200 p-0">
+                                    <form method="POST" action="{{ route('office.users.forever-delete', $user) }}" class="p-5">
+                                        @csrf
+                                        <p class="text-sm font-semibold">Forever Delete &ldquo;{{ $user->name }}&rdquo;?</p>
+                                        <p class="mt-1 text-xs text-gray-500">Tidak dapat dibatalkan. Ketik email persis untuk konfirmasi.</p>
+                                        <input type="text" name="confirm_email" placeholder="{{ $user->email }}" required
+                                               oninput="this.form.querySelector('[type=submit]').disabled = this.value !== '{{ $user->email }}'"
+                                               class="mt-2 w-full rounded-lg border border-gray-200 px-3 py-2 text-sm">
+                                        <div class="mt-3 flex justify-end gap-2">
+                                            <button type="button" class="rounded-lg border border-gray-300 px-3 py-1.5 text-xs" onclick="document.getElementById('fdel-{{ $user->id }}').close()">Batal</button>
+                                            <button type="submit" disabled class="rounded-lg bg-red-700 px-3 py-1.5 text-xs text-white">Hapus Permanen</button>
+                                        </div>
+                                    </form>
+                                </dialog>
+                            @endif
                         </td>
                     </tr>
                 @endforeach
