@@ -11,7 +11,9 @@ use App\Models\SplitBox;
 use App\Models\SplitBoxBatch;
 use App\Models\SplitBoxBatchSlot;
 use App\Models\SplitBoxSlot;
+use App\Models\User;
 use App\Services\Order\OrderStatusService;
+use App\Services\User\UserNotificationService;
 use Illuminate\Support\Facades\DB;
 
 class SplitBoxService
@@ -217,6 +219,17 @@ class SplitBoxService
                 'qty_total' => $slot->qty_per_box,
                 'qty_taken' => 0,
             ]);
+        }
+
+        // PRD 49.10: kloter yang dibuka otomatis mengirim notifikasi ke Admin
+        // ("Box sudah dibuka" — perlu beli box baru).
+        foreach (User::where('role', User::ROLE_ADMIN)->get() as $admin) {
+            app(UserNotificationService::class)->notify(
+                $admin,
+                'split_box_opened',
+                "Box sudah dibuka — Kloter #{$batch->batch_no} (produk {$splitBox->product_id})",
+                '/office/products/'.$splitBox->product_id.'/edit'
+            );
         }
     }
 

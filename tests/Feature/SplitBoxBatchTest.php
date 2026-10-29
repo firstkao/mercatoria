@@ -2,6 +2,7 @@
 
 use App\Models\SplitBoxBatch;
 use App\Models\User;
+use App\Models\UserNotification;
 use App\Services\SplitBox\SplitBoxService;
 use Illuminate\Http\UploadedFile;
 
@@ -28,6 +29,20 @@ test('auto open dibatasi max auto batches', function () {
     app(SplitBoxService::class)->lockSlotsForOrder($order);
 
     expect(SplitBoxBatch::where('split_box_id', $fx['splitBox']->id)->count())->toBe(1);
+});
+
+test('auto open kloter mengirim notifikasi box sudah dibuka ke admin', function () {
+    $admin = User::factory()->admin()->create();
+    $fx = splitBoxFixture(stockPerSlot: 1);
+
+    [, $order] = placeSplitBoxOrder($fx['user'], $fx['product'], [$fx['hot'], $fx['normalA'], $fx['normalB']]);
+    app(SplitBoxService::class)->lockSlotsForOrder($order);
+
+    $n = UserNotification::where('user_id', $admin->id)
+        ->where('type', 'split_box_opened')
+        ->firstOrFail();
+
+    expect($n->title)->toContain('Box sudah dibuka');
 });
 
 test('cron splitbox check batches berjalan', function () {
