@@ -25,7 +25,7 @@
                         </summary>
                         <div class="absolute left-0 top-full z-20 mt-2 max-h-80 w-56 overflow-y-auto rounded-lg border border-[#EAEAEA] bg-white py-2 shadow-sm">
                             @forelse ($navGames as $navGame)
-                                <a href="{{ route('catalog.game', $navGame->slug) }}" class="block px-3.5 py-1.5 text-[12px] text-[#333] transition-colors hover:bg-[#F5F7FA] hover:text-[#4FC3F7]">{{ $navGame->name }}</a>
+                                <a href="{{ route('catalog.game', $navGame->slug) }}" class="block px-3.5 py-1.5 text-[12px] text-[#333] transition-colors hover:bg-[#F5F7FA] hover:text-[#4FC3F7]">{{ $navGame->name }}@if (!empty($navGame->products_count)) ({{ $navGame->products_count }})@endif</a>
                             @empty
                                 <a href="{{ route('coming-soon') }}" class="block px-3.5 py-1.5 text-[12px] text-[#999]">Menyusul</a>
                             @endforelse
@@ -119,7 +119,7 @@
                         <div class="mt-1 border-t border-[#EAEAEA] pt-1">
                             <p class="px-4 py-1.5 font-mono text-[10px] uppercase tracking-wider text-ink/45">Game</p>
                             @foreach ($navGames as $navGame)
-                                <a href="{{ route('catalog.game', $navGame->slug) }}" class="block px-4 py-2 text-[12px] text-[#333]">{{ $navGame->name }}</a>
+                                <a href="{{ route('catalog.game', $navGame->slug) }}" class="block px-4 py-2 text-[12px] text-[#333]">{{ $navGame->name }}@if (!empty($navGame->products_count)) ({{ $navGame->products_count }})@endif</a>
                             @endforeach
                         </div>
 
