@@ -161,7 +161,7 @@
     {{-- Footer (Design Spec 4.4.5) --}}
     <footer class="bg-[#1E1E2D] text-white">
         <div class="mx-auto max-w-[1200px] px-4 py-14">
-            <div class="grid gap-10 md:grid-cols-2 lg:grid-cols-3">
+            <div class="grid gap-10 md:grid-cols-2 lg:grid-cols-4">
                 {{-- Kolom 1: Brand & Marketplace --}}
                 <div class="flex flex-col items-center">
                     <a href="{{ route('home') }}" class="inline-flex flex-col items-center no-underline">
@@ -262,6 +262,35 @@
                         </ul>
                     </details>
                 </div>
+
+                {{-- Kolom 4: Produk Terpopuler (DS 4.4.5) --}}
+                <details class="group" open>
+                    <summary class="flex cursor-pointer list-none items-center justify-between text-[14px] font-bold text-white marker:hidden lg:pointer-events-none lg:cursor-default">
+                        Produk Terpopuler
+                        <span class="text-[#B0B3C5] transition-transform group-open:rotate-180 lg:hidden">
+                            <x-icons.chevron-up width="14" height="14" />
+                        </span>
+                    </summary>
+                    <ul class="mt-3.5 space-y-2 text-[12px]">
+                        @isset($footerTopProducts)
+                            @foreach ($footerTopProducts as $product)
+                                <li class="flex items-center gap-2.5 border-b border-white/10 pb-2">
+                                    @if (data_get($product, 'image'))
+                                        <img src="{{ data_get($product, 'image') }}" alt="" class="h-12 w-12 shrink-0 rounded object-cover">
+                                    @endif
+                                    <div class="min-w-0">
+                                        <a href="{{ data_get($product, 'url') ?? '#' }}" class="block truncate text-[#B0B3C5] transition-colors hover:text-[#4FC3F7]">
+                                            {{ data_get($product, 'name') }}
+                                        </a>
+                                        @if (data_get($product, 'price') !== null)
+                                            <span class="text-white">{{ format_rp(data_get($product, 'price')) }}</span>
+                                        @endif
+                                    </div>
+                                </li>
+                            @endforeach
+                        @endisset
+                    </ul>
+                </details>
             </div>
         </div>
 
