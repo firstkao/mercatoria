@@ -10,6 +10,7 @@ use App\Models\ShareClick;
 use App\Models\User;
 use App\Models\UserNotification;
 use App\Models\UserVoucher;
+use App\Services\User\UserTierService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -31,11 +32,13 @@ class ProfileController extends Controller
             'stateBadge' => $customer?->current_state ?? ucfirst($user->role),
             'tierBadge' => $customer ? 'MVP '.ucfirst($customer->tier) : null,
             // PRD 50: progress bar antara batas tier saat ini dan berikutnya.
-            'tierProgress' => [
+            'tierProgress' => array_merge([
                 'belanja' => (float) ($customer->total_belanja ?? 0),
                 'gold' => (float) setting('tier_gold_threshold', 2000000),
                 'platinum' => (float) setting('tier_platinum_threshold', 5000000),
-            ],
+            ], $customer
+                ? app(UserTierService::class)->progress($customer)
+                : ['current_tier' => null, 'next_tier' => 'silver', 'progress_pct' => 0.0, 'belanja_sisa' => null]),
             'tagihan' => $user->orders()
                 ->whereIn('status', ['menunggu_pembayaran', 'menunggu_pelunasan_pengambilan'])
                 ->orderByDesc('id')
