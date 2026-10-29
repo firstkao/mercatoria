@@ -17,10 +17,54 @@
     <div class="mt-5 rounded-xl border border-rule bg-white p-6">
         <p class="font-mono text-[10px] uppercase tracking-[0.18em] text-ink/55">KODE UNDANGANMU</p>
         <p class="mt-2 font-mono text-2xl font-semibold tracking-[0.28em] text-ink">{{ $user->referral_code }}</p>
-        <p class="mt-2 text-xs text-ink/50">
+        <p class="mt-2 text-xs text-ink/50" id="referral-link">
             Link: {{ url('/register?ref='.$user->referral_code) }}
         </p>
+        <div class="mt-4 flex flex-wrap gap-3">
+            <button type="button" data-copy="{{ $user->referral_code }}"
+                    class="inline-flex items-center gap-1.5 rounded-lg border border-rule px-4 py-2 text-xs font-semibold text-ink transition-colors hover:border-ink">
+                <x-icons.clipboard width="14" height="14" />
+                Copy Kode
+            </button>
+            <button type="button" data-copy="{{ url('/register?ref='.$user->referral_code) }}"
+                    class="inline-flex items-center gap-1.5 rounded-lg border border-rule px-4 py-2 text-xs font-semibold text-ink transition-colors hover:border-ink">
+                <x-icons.link width="14" height="14" />
+                Copy Link Undang
+            </button>
+        </div>
     </div>
+
+    {{-- Reward Program (Design Spec 10.3 / PRD 9.2) --}}
+    <div class="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2">
+        <div class="rounded-xl border border-rule bg-white p-4">
+            <p class="font-mono text-[10px] uppercase tracking-[0.16em] text-ink/55">UNDANG TEMAN</p>
+            <p class="mt-1 text-lg font-semibold text-ink">+3.000 Koin</p>
+            <p class="mt-1 text-xs text-ink/60">Saat temanmu menyelesaikan order pertama. Teman mendapat +1.000 koin saat pembayaran pertama terverifikasi.</p>
+        </div>
+        <div class="rounded-xl border border-rule bg-white p-4">
+            <p class="font-mono text-[10px] uppercase tracking-[0.16em] text-ink/55">SHARE PRODUK</p>
+            <p class="mt-1 text-lg font-semibold text-ink">+5 Koin / Klik</p>
+            <p class="mt-1 text-xs text-ink/60">Per IP unik Indonesia saat membuka link produk yang kamu bagikan.</p>
+        </div>
+    </div>
+
+    {{-- Stats share (data BE menyusul) --}}
+    @isset($shareStats)
+        <div class="mt-5 grid grid-cols-2 gap-3 lg:grid-cols-3">
+            <div class="rounded-xl border border-rule bg-white p-4">
+                <p class="font-mono text-[10px] uppercase tracking-[0.16em] text-ink/55">LINK DIBUKA</p>
+                <p class="mt-1 text-2xl font-semibold text-ink">{{ $shareStats['opens'] ?? 0 }}</p>
+            </div>
+            <div class="rounded-xl border border-rule bg-white p-4">
+                <p class="font-mono text-[10px] uppercase tracking-[0.16em] text-ink/55">KOIN DARI SHARE</p>
+                <p class="mt-1 text-2xl font-semibold text-ink">{{ number_format($shareStats['coins'] ?? 0, 0, ',', '.') }}</p>
+            </div>
+            <div class="rounded-xl border border-rule bg-white p-4">
+                <p class="font-mono text-[10px] uppercase tracking-[0.16em] text-ink/55">REWARD</p>
+                <p class="mt-1 text-2xl font-semibold text-ink">5 / klik</p>
+            </div>
+        </div>
+    @endisset
 
     <div class="mt-5 rounded-xl border border-rule bg-white p-4">
         <h2 class="font-mono text-[11px] font-medium uppercase tracking-[0.16em] text-ink">Teman yang Diundang</h2>
@@ -37,4 +81,17 @@
             </ul>
         @endif
     </div>
+
+    <script>
+        (function () {
+            document.querySelectorAll('[data-copy]').forEach(function (btn) {
+                btn.addEventListener('click', function () {
+                    var value = btn.getAttribute('data-copy');
+                    if (navigator.clipboard && navigator.clipboard.writeText) {
+                        navigator.clipboard.writeText(value);
+                    }
+                });
+            });
+        })();
+    </script>
 @endsection
