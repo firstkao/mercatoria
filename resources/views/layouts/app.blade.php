@@ -50,7 +50,7 @@
                 </nav>
 
                 <a href="{{ route('home') }}" class="flex items-center justify-center no-underline">
-                    <img src="{{ asset('logo.png') }}" alt="Mercatoria" class="h-10 w-auto" width="1608" height="494">
+                    <img src="{{ asset('logo.png') }}" alt="Mercatoria" class="h-12 w-auto lg:h-16" width="1608" height="494">
                 </a>
 
                 <div class="flex items-center justify-end gap-3">
@@ -94,6 +94,7 @@
                             <span class="inline-flex items-center gap-0.5 rounded px-1.5 py-0.5 text-[10px] font-semibold {{ ($tierBadgeClass ?? '') }}">
                                 <x-icons.trophy width="10" height="10" />
                                 {{ $tierBadge }}
+                                <span class="text-[8px]">▾</span>
                             </span>
                         @endif
                     </a>
@@ -137,7 +138,7 @@
                 </details>
 
                 <a href="{{ route('home') }}" class="flex items-center no-underline">
-                    <img src="{{ asset('logo.png') }}" alt="Mercatoria" class="h-9 w-auto" width="1608" height="494">
+                    <img src="{{ asset('logo.png') }}" alt="Mercatoria" class="h-12 w-auto" width="1608" height="494">
                 </a>
 
                 <a href="{{ route('cart.index') }}" class="relative flex h-10 w-10 items-center justify-center text-[#333]" aria-label="Keranjang">
@@ -168,7 +169,7 @@
             <div class="grid gap-10 md:grid-cols-2 lg:grid-cols-3">
                 <div class="flex flex-col items-center">
                     <a href="{{ route('home') }}" class="inline-flex flex-col items-center no-underline">
-                        <img src="{{ asset('logo.png') }}" alt="Mercatoria" class="h-10 w-auto" width="1608" height="494">
+                        <img src="{{ asset('logo.png') }}" alt="Mercatoria" class="h-12 w-auto lg:h-14" width="1608" height="494">
                     </a>
 
                     <div class="mt-6 flex items-center justify-center gap-4">
@@ -270,12 +271,37 @@
                 <p>&copy; 2022 MERCATORIA</p>
                 <div class="flex items-center gap-4">
                     <p>Powered by MERCATORIA</p>
-                    <a href="#top" class="inline-flex h-7 w-7 items-center justify-center rounded border border-white/15 text-[#B0B3C5] transition-colors hover:border-white/35 hover:text-white" aria-label="Kembali ke atas">
-                        <x-icons.chevron-up width="12" height="12" />
-                    </a>
                 </div>
             </div>
         </div>
     </footer>
+
+    {{-- Back-to-top floating (muncul saat scroll > 400px) --}}
+    <button id="back-to-top" type="button"
+            class="fixed bottom-6 right-4 z-40 hidden h-11 w-11 items-center justify-center rounded-full border border-rule bg-white text-ink shadow-sm transition-colors hover:border-ink sm:right-6"
+            aria-label="Kembali ke atas">
+        <x-icons.chevron-up width="16" height="16" />
+    </button>
+
+    <script>
+        (function () {
+            var btn = document.getElementById('back-to-top');
+            if (!btn) return;
+            function onScroll() {
+                if (window.scrollY > 400) {
+                    btn.classList.remove('hidden');
+                    btn.classList.add('flex');
+                } else {
+                    btn.classList.add('hidden');
+                    btn.classList.remove('flex');
+                }
+            }
+            window.addEventListener('scroll', onScroll, { passive: true });
+            btn.addEventListener('click', function () {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            });
+            onScroll();
+        })();
+    </script>
 </body>
 </html>
