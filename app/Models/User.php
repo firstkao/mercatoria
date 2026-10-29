@@ -74,6 +74,14 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->is_migrated === true;
     }
 
+    /**
+     * PRD 7.21: modal edukasi 1x seumur hidup — setelah verifikasi email pertama.
+     */
+    public function shouldSeeTour(): bool
+    {
+        return $this->hasVerifiedEmail() && ! $this->has_seen_tour;
+    }
+
     public function hasCompletedProfile(): bool
     {
         return $this->tgl_lahir !== null;

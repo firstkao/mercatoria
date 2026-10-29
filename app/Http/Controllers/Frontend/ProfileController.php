@@ -152,6 +152,16 @@ class ProfileController extends Controller
     }
 
     /**
+     * PRD 7.21: modal edukasi ditandai sudah dilihat (1x seumur hidup).
+     */
+    public function markTourSeen(Request $request): RedirectResponse
+    {
+        $request->user()->forceFill(['has_seen_tour' => true])->save();
+
+        return back();
+    }
+
+    /**
      * PRD 43.6: halaman semua notifikasi (20/halaman).
      */
     public function notifications(Request $request): View

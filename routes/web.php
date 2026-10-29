@@ -217,6 +217,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile/undang', [ProfileController::class, 'referral'])->name('profile.referral');
     Route::get('/profile/notifications', [ProfileController::class, 'notifications'])->name('profile.notifications');
     Route::post('/profile/notifications/read-all', [ProfileController::class, 'readAllNotifications'])->name('profile.notifications.read-all');
+    Route::post('/profile/tour-seen', [ProfileController::class, 'markTourSeen'])->name('profile.tour-seen');
 
     Route::post('/share/{product:slug}', [ShareController::class, 'store'])->name('share.store');
 });
