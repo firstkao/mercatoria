@@ -4,6 +4,7 @@ use App\Http\Middleware\DetectBotCrawler;
 use App\Http\Middleware\EnforceIpBlacklist;
 use App\Http\Middleware\EnsureCheckoutReady;
 use App\Http\Middleware\EnsureUserIsAdmin;
+use App\Http\Middleware\ProtectImages;
 use App\Http\Middleware\RejectHoneypot;
 use App\Http\Middleware\TrackVisitor;
 use App\Http\Middleware\VerifyTurnstile;
@@ -34,6 +35,7 @@ return Application::configure(basePath: dirname(__DIR__))
             DetectBotCrawler::class,
             EnforceIpBlacklist::class,
             TrackVisitor::class,
+            ProtectImages::class,
         ]);
 
         // EnforceIpBlacklist harus jalan SEBELUM auth (guest kena blokir IP
