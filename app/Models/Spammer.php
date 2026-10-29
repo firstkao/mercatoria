@@ -13,6 +13,8 @@ class Spammer extends Model
 
     public const REASON_MANUAL = 'manual';
 
+    public const REASON_AUTO_BAN = 'auto_ban';
+
     public const STATUS_BLOCKED = 'blocked';
 
     public const STATUS_WATCHLIST = 'watchlist';

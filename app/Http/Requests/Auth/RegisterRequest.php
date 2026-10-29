@@ -5,8 +5,10 @@ namespace App\Http\Requests\Auth;
 use App\Models\Customer;
 use App\Models\Spammer;
 use App\Models\User;
+use App\Services\Admin\AdminNotificationService;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Validation\Validator;
 
 class RegisterRequest extends FormRequest
@@ -102,7 +104,55 @@ class RegisterRequest extends FormRequest
                     $validator->errors()->add('referral_code', 'Kode undangan tidak dapat digunakan untuk diri sendiri.');
                 }
             }
+
+            // PRD 7.3 + 10.8: gagal daftar berulang dengan identitas sama -> auto-ban.
+            $this->recordRegistrationFailure($email, $noHp);
         });
+    }
+
+    /**
+     * Hitung gagal daftar per identitas (email/no_hp yang sudah dikenal sistem).
+     * Mencapai 3x -> Spammer::create (reason=auto_ban, status=blocked) permanen (PRD 10.8).
+     */
+    private function recordRegistrationFailure(string $email, string $noHp): void
+    {
+        $known = User::where('email', $email)->orWhere('no_hp', $noHp)->exists()
+            || Customer::where('email', $email)->orWhere('no_hp', $noHp)->exists()
+            || Spammer::where('email', $email)->orWhere('no_hp', $noHp)->exists();
+
+        if (! $known) {
+            return;
+        }
+
+        foreach (array_filter([$email, $noHp]) as $anchor) {
+            $key = 'register_fail:'.sha1($anchor);
+            Cache::add($key, 0, now()->addDays(7));
+
+            if (Cache::increment($key) < 3) {
+                continue;
+            }
+
+            $spammer = Spammer::firstOrCreate(
+                ['email' => $email],
+                [
+                    'no_hp' => $noHp,
+                    'reason' => Spammer::REASON_AUTO_BAN,
+                    'status' => Spammer::STATUS_BLOCKED,
+                    'unblock_count' => 0,
+                    'banned_at' => now(),
+                ]
+            );
+
+            if ($spammer->wasRecentlyCreated) {
+                app(AdminNotificationService::class)->notify(
+                    'spammer_baru',
+                    'Spammer baru (auto-ban): '.$email,
+                    '/office/spammers'
+                );
+            }
+
+            return;
+        }
     }
 
     /**
