@@ -26,6 +26,19 @@
                     Tidak ada hasil ditemukan.
                 @endif
             </p>
+
+            @if ($results->total() === 0 && isset($games))
+                <div class="mt-4">
+                    <p class="font-mono text-[10px] uppercase tracking-[0.16em] text-ink/50">Coba jelajahi game</p>
+                    <div class="mt-2 flex flex-wrap gap-2">
+                        @foreach ($games->take(8) as $g)
+                            <a href="{{ route('search', ['game_id' => $g->id]) }}" class="rounded-full border border-rule px-3 py-1 text-xs text-ink/75 transition-colors hover:border-ink hover:text-ink">
+                                {{ $g->name }}
+                            </a>
+                        @endforeach
+                    </div>
+                </div>
+            @endif
         </div>
 
         <form method="GET" class="mt-4 flex flex-wrap items-center gap-2 rounded-xl border border-rule bg-white p-3">
