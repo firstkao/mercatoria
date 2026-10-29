@@ -3,23 +3,24 @@
 @section('title', $title.' — Mercatoria')
 
 @section('content')
-    <nav class="mb-4 text-sm text-gray-500">
-        <a href="/" class="hover:text-black">Beranda</a>
-        <span class="mx-1">/</span>
-        <span class="text-gray-800">{{ $title }}</span>
+    <nav class="mb-4 flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.14em] text-ink/50">
+        <a href="/" class="transition-colors hover:text-ink">Beranda</a>
+        <span class="text-ink/35">/</span>
+        <span class="text-ink">{{ $title }}</span>
     </nav>
 
-    <h1 class="text-2xl font-semibold">{{ $title }}</h1>
+    <p class="font-mono text-[10px] uppercase tracking-[0.22em] text-ink/45">Katalog</p>
+    <h1 class="mt-2 font-display text-[1.75rem] leading-tight font-semibold text-ink sm:text-3xl">{{ $title }}</h1>
 
     <div class="mt-6 flex flex-col gap-6 lg:flex-row">
         <aside class="w-full shrink-0 space-y-4 lg:w-1/4">
-            <div class="rounded-xl bg-white p-4 shadow-sm ring-1 ring-gray-100">
-                <h2 class="text-sm font-semibold">Kategori Game</h2>
+            <div class="rounded-xl border border-rule bg-white p-4">
+                <h2 class="font-mono text-[11px] font-medium uppercase tracking-[0.16em] text-ink">Kategori Game</h2>
                 <ul class="mt-2 space-y-1 text-sm">
                     @foreach ($games as $g)
                         <li>
                             <a href="/{{ $g->slug }}"
-                               class="block rounded px-2 py-1 hover:bg-gray-50 {{ ($game?->id ?? null) === $g->id ? 'font-semibold text-black' : 'text-gray-600' }}">
+                               class="block rounded px-2 py-1 transition-colors hover:bg-paper {{ ($game?->id ?? null) === $g->id ? 'font-semibold text-ink' : 'text-ink/65 hover:text-ink' }}">
                                 {{ $g->name }}
                             </a>
                         </li>
@@ -28,19 +29,19 @@
             </div>
 
             @if ($game)
-                <div class="rounded-xl bg-white p-4 shadow-sm ring-1 ring-gray-100">
-                    <h2 class="text-sm font-semibold">Kategori Merch</h2>
+                <div class="rounded-xl border border-rule bg-white p-4">
+                    <h2 class="font-mono text-[11px] font-medium uppercase tracking-[0.16em] text-ink">Kategori Merch</h2>
                     <ul class="mt-2 space-y-1 text-sm">
                         <li>
                             <a href="/{{ $game->slug }}"
-                               class="block rounded px-2 py-1 hover:bg-gray-50 {{ ! $activeCategory ? 'font-semibold text-black' : 'text-gray-600' }}">
+                               class="block rounded px-2 py-1 transition-colors hover:bg-paper {{ ! $activeCategory ? 'font-semibold text-ink' : 'text-ink/65 hover:text-ink' }}">
                                 Semua
                             </a>
                         </li>
                         @foreach ($categories as $category)
                             <li>
                                 <a href="/{{ $game->slug }}/kategori/{{ $category->slug }}"
-                                   class="block rounded px-2 py-1 hover:bg-gray-50 {{ ($activeCategory?->id ?? null) === $category->id ? 'font-semibold text-black' : 'text-gray-600' }}">
+                                   class="block rounded px-2 py-1 transition-colors hover:bg-paper {{ ($activeCategory?->id ?? null) === $category->id ? 'font-semibold text-ink' : 'text-ink/65 hover:text-ink' }}">
                                     {{ $category->name }}
                                 </a>
                             </li>
@@ -50,18 +51,18 @@
             @endif
 
             @if ($bestOffers->isNotEmpty())
-                <div class="rounded-xl bg-white p-4 shadow-sm ring-1 ring-gray-100">
-                    <h2 class="text-sm font-semibold">Penawaran Terbaik</h2>
+                <div class="rounded-xl border border-rule bg-white p-4">
+                    <h2 class="font-mono text-[11px] font-medium uppercase tracking-[0.16em] text-ink">Penawaran Terbaik</h2>
                     <ul class="mt-2 space-y-2">
                         @foreach ($bestOffers as $offer)
                             <li>
-                                <a href="/{{ $offer->game->slug }}/{{ $offer->slug }}" class="flex items-center gap-2 text-sm hover:text-black">
-                                    <span class="h-10 w-10 shrink-0 overflow-hidden rounded bg-gray-100">
+                                <a href="/{{ $offer->game->slug }}/{{ $offer->slug }}" class="flex items-center gap-2 text-sm transition-colors hover:text-ink">
+                                    <span class="h-10 w-10 shrink-0 overflow-hidden rounded bg-paper">
                                         @if ($offer->image_path)
                                             <img src="{{ Storage::url($offer->image_path) }}" alt="" class="h-full w-full object-cover">
                                         @endif
                                     </span>
-                                    <span class="line-clamp-2 text-xs">{{ $offer->name }}</span>
+                                    <span class="line-clamp-2 text-xs text-ink/75">{{ $offer->name }}</span>
                                 </a>
                             </li>
                         @endforeach
@@ -72,16 +73,16 @@
 
         <div class="flex-1">
             <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
-                <p class="text-sm text-gray-500">
+                <p class="font-mono text-[10px] uppercase tracking-[0.14em] text-ink/55">
                     Menampilkan
                     {{ $products->total() > 0 ? ($products->firstItem()).'–'.($products->lastItem()) : 0 }}
                     dari {{ $products->total() }} hasil
                 </p>
 
                 <form method="GET" class="flex items-center gap-2 text-sm">
-                    <label for="sort" class="text-gray-500">Urutkan</label>
+                    <label for="sort" class="font-mono text-[10px] uppercase tracking-[0.14em] text-ink/55">Urutkan</label>
                     <select name="sort" id="sort" onchange="this.form.submit()"
-                            class="rounded-lg border border-gray-200 px-3 py-1.5 text-sm focus:border-black focus:outline-none">
+                            class="rounded-lg border border-rule bg-white px-3 py-1.5 text-sm text-ink focus:border-ink focus:outline-none focus:ring-2 focus:ring-accent/45">
                         <option value="">Pengurutan standar</option>
                         <option value="termurah" @selected(request('sort') === 'termurah')>Termurah</option>
                         <option value="termahal" @selected(request('sort') === 'termahal')>Termahal</option>
@@ -90,7 +91,7 @@
             </div>
 
             @if ($products->isEmpty())
-                <div class="rounded-xl bg-white p-10 text-center text-sm text-gray-500 shadow-sm ring-1 ring-gray-100">
+                <div class="rounded-xl border border-rule bg-white p-10 text-center text-sm text-ink/45">
                     Tidak ada produk ditemukan.
                 </div>
             @else
