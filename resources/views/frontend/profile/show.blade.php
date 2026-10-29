@@ -148,25 +148,48 @@
 
     {{-- Modal Edukasi Cara Belanja (PRD 7.21 / 15) — 1x seumur hidup --}}
     @if (method_exists($user, 'shouldSeeTour') && $user->shouldSeeTour())
-        <dialog id="tour-modal" class="rounded-xl border border-rule bg-white p-0">
-            <div class="max-w-md p-6">
-                <p class="font-mono text-[10px] uppercase tracking-[0.22em] text-ink/45">Panduan</p>
-                <h2 class="mt-2 font-display text-xl font-semibold text-ink">Baru di Mercatoria?</h2>
-                <div class="mt-3 h-px bg-rule"></div>
-                <ol class="mt-4 space-y-2.5 text-sm text-ink/80">
-                    <li class="flex gap-2"><span class="font-mono text-[10px] text-ink/45">01</span><span>Pilih merch IP favoritmu. Harga yang tertera adalah harga bersih (sudah termasuk ongkir CN-ID dan bea).</span></li>
-                    <li class="flex gap-2"><span class="font-mono text-[10px] text-ink/45">02</span><span>Pilih skema pembayaran: Full Payment (100%) atau Down Payment (50%) via BCA, QRIS, atau ShopeePay.</span></li>
-                    <li class="flex gap-2"><span class="font-mono text-[10px] text-ink/45">03</span><span>Pilih platform pengiriman lokal: Toco atau Shopee.</span></li>
-                    <li class="flex gap-2"><span class="font-mono text-[10px] text-ink/45">04</span><span>Pantau status pesananmu dari gudang China hingga siap diambil di Indonesia.</span></li>
-                    <li class="flex gap-2"><span class="font-mono text-[10px] text-ink/45">05</span><span>Akun baru punya kuota melihat 10 detail produk. Order pertamamu langsung upgrade ke MVP.</span></li>
+        <dialog id="tour-modal" class="rounded-xl border border-rule bg-white p-0" style="margin:auto;max-width:560px;width:calc(100% - 2rem);">
+            <div class="p-6 sm:p-8">
+                <p class="flex items-center gap-2 font-display text-xl font-semibold text-ink">
+                    <x-icons.sparkles width="20" height="20" class="text-accent" />
+                    Baru di Mercatoria? Ini Cara Belanja di Mercatoria
+                </p>
+                <div class="mt-4 h-px bg-rule"></div>
+                <ol class="mt-5 space-y-3 text-sm leading-relaxed text-ink/85">
+                    <li class="flex gap-2.5">
+                        <span class="font-mono text-[11px] text-ink/45">1.</span>
+                        <span><strong class="text-ink">Pilih Merch IP Favoritmu</strong> — Semua harga yang tertera adalah HARGA BERSIH (sudah termasuk ongkir CN-ID &amp; bea).</span>
+                    </li>
+                    <li class="flex gap-2.5">
+                        <span class="font-mono text-[11px] text-ink/45">2.</span>
+                        <span><strong class="text-ink">Pilih Skema Pembayaran</strong> — Bisa Full Payment (100%) atau Down Payment (DP 50%) via BCA, QRIS, atau ShopeePay.</span>
+                    </li>
+                    <li class="flex gap-2.5">
+                        <span class="font-mono text-[11px] text-ink/45">3.</span>
+                        <span><strong class="text-ink">Pilih Platform Pengiriman Lokal</strong> — Toco atau Shopee.</span>
+                    </li>
+                    <li class="flex gap-2.5">
+                        <span class="font-mono text-[11px] text-ink/45">4.</span>
+                        <span><strong class="text-ink">Pantau Status Real-time</strong> — Barang diproses dari WH China hingga sampai WH Indonesia (pelunasan &amp; ambil ≤ 7 hari).</span>
+                    </li>
+                    <li class="flex gap-2.5">
+                        <span class="font-mono text-[11px] text-ink/45">5.</span>
+                        <span><strong class="text-ink">Kuota Akun Baru (Crush)</strong> — Kamu punya kuota melihat 10 detail produk. Order pertamamu langsung upgrade ke MVP!</span>
+                    </li>
                 </ol>
-                <form method="POST" action="{{ route('profile.tour-seen') }}" class="mt-6">
-                    @csrf
-                    <button type="submit"
-                            class="w-full rounded-lg bg-black py-3 text-sm font-semibold tracking-[0.12em] text-white transition-colors hover:bg-ink">
-                        Mengerti
-                    </button>
-                </form>
+                <div class="mt-7 flex flex-wrap items-center justify-end gap-3">
+                    <a href="{{ route('page.cara-belanja') }}" class="rounded-lg border border-rule px-5 py-2.5 text-sm font-semibold text-ink transition-colors hover:border-ink">
+                        Baca Selengkapnya
+                    </a>
+                    <form method="POST" action="{{ route('profile.tour-seen') }}" class="inline">
+                        @csrf
+                        <button type="submit"
+                                class="rounded-lg px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:opacity-90"
+                                style="background:#4FC3F7">
+                            Mengerti
+                        </button>
+                    </form>
+                </div>
             </div>
         </dialog>
         <script>
