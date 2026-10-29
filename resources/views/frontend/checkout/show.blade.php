@@ -177,6 +177,14 @@
                 el.addEventListener('change', refreshSummary);
                 el.addEventListener('input', refreshSummary);
             });
+
+            form.addEventListener('submit', function () {
+                var btn = form.querySelector('button[type="submit"]');
+                if (!btn || btn.disabled) return;
+                btn.disabled = true;
+                btn.dataset.originalText = btn.textContent;
+                btn.textContent = 'Memproses...';
+            });
         })();
     </script>
 @endsection
