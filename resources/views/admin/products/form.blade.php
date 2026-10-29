@@ -7,6 +7,7 @@
 
     <form method="POST"
           action="{{ $product->exists ? route('office.products.update', $product) : route('office.products.store') }}"
+          enctype="multipart/form-data"
           class="mt-4 space-y-4 rounded-xl bg-white p-6 shadow-sm ring-1 ring-gray-100">
         @csrf
         @if ($product->exists) @method('PUT') @endif
@@ -101,6 +102,23 @@
             <textarea name="description" rows="3" class="mt-1 w-full rounded-lg border border-gray-200 px-3 py-2 text-sm">{{ old('description', $product->description) }}</textarea>
         </div>
 
+        <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+            <div>
+                <label class="block text-sm font-medium">Gambar Produk</label>
+                <input type="file" name="image" accept=".jpg,.jpeg,.png,.webp"
+                       class="mt-1 w-full rounded-lg border border-gray-200 px-3 py-2 text-sm">
+                @if ($product->image_path)<p class="mt-1 text-xs text-gray-400">Saat ini: {{ $product->image_path }}</p>@endif
+                @error('image')<p class="text-sm text-red-600">{{ $message }}</p>@enderror
+            </div>
+            <div>
+                <label class="block text-sm font-medium">Gambar Deskripsi</label>
+                <input type="file" name="description_image" accept=".jpg,.jpeg,.png,.webp"
+                       class="mt-1 w-full rounded-lg border border-gray-200 px-3 py-2 text-sm">
+                @if ($product->description_image_path)<p class="mt-1 text-xs text-gray-400">Saat ini: {{ $product->description_image_path }}</p>@endif
+                @error('description_image')<p class="text-sm text-red-600">{{ $message }}</p>@enderror
+            </div>
+        </div>
+
         <div>
             <label class="block text-sm font-medium">Tag</label>
             <div class="mt-1 flex flex-wrap gap-3">
@@ -166,7 +184,7 @@
                 <button type="submit" class="rounded-lg border border-gray-300 px-4 py-2 text-sm hover:border-black">Apply</button>
             </form>
 
-            <form method="POST" action="{{ route('office.products.variants.store', $product) }}" class="mt-4 grid grid-cols-2 gap-2">
+            <form method="POST" action="{{ route('office.products.variants.store', $product) }}" class="mt-4 grid grid-cols-2 gap-2" enctype="multipart/form-data">
                 @csrf
                 <input type="text" name="name" placeholder="Nama varian" required class="rounded-lg border border-gray-200 px-3 py-2 text-sm">
                 <input type="text" name="sku" placeholder="SKU" required class="rounded-lg border border-gray-200 px-3 py-2 text-sm">
@@ -176,6 +194,7 @@
                     <option value="tersedia">Tersedia</option>
                     <option value="kosong">Kosong</option>
                 </select>
+                <input type="file" name="image" accept=".jpg,.jpeg,.png,.webp" class="rounded-lg border border-gray-200 px-3 py-2 text-sm">
                 <button type="submit" class="rounded-lg bg-black px-4 py-2 text-sm font-semibold text-white">+ Varian</button>
             </form>
         </div>
