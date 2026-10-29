@@ -48,6 +48,11 @@ class ProductController extends Controller
 
         $product = Product::create($data + ['sold_count' => 0]);
 
+        // PRD 14: auto-group kategori merch by keyword (override manual menang).
+        if (! $product->merch_category_id) {
+            $product->update(['merch_category_id' => MerchCategory::matchFor($product->name, $product->slug)?->id]);
+        }
+
         if ($request->filled('tags')) {
             $product->tags()->sync($request->input('tags'));
         }
@@ -76,6 +81,11 @@ class ProductController extends Controller
 
         $product->update($data);
         $product->tags()->sync($request->input('tags', []));
+
+        // PRD 14: auto-group kategori merch by keyword (override manual menang).
+        if (! $product->merch_category_id) {
+            $product->update(['merch_category_id' => MerchCategory::matchFor($product->name, $product->slug)?->id]);
+        }
 
         AdminLog::record($request->user(), 'update', 'Product', $product->id, $old, $new, 'Ubah produk');
 
