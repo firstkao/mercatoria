@@ -126,3 +126,27 @@ test('atribusi cookie tidak berlaku untuk self-referral', function () {
     $baru = User::where('email', 'self@example.com')->firstOrFail();
     expect($baru->referred_by)->toBeNull();
 });
+
+test('integrasi: format link copy ui cocok dengan track visitor dan mengatribusi register', function () {
+    $referrer = User::factory()->create();
+
+    // 1. Halaman undang merender link format /register?ref=KODE — kontrak tombol "Copy Link Undangan"
+    $html = $this->actingAs($referrer)->get('/profile/undang')->assertOk()->getContent();
+    $linkUndangan = url('/register?ref='.$referrer->referral_code);
+    expect($html)->toContain($linkUndangan);
+    auth()->logout();
+
+    // 2. TrackVisitor membaca param ?ref dari link yang sama → cookie atribusi
+    $this->get('/register?ref='.$referrer->referral_code)->assertOk();
+    $payload = json_decode(Cookie::queued('referral_attribution')->getValue(), true);
+    expect($payload['code'])->toBe($referrer->referral_code);
+
+    // 3. Funnel penuh: klik link undangan → daftar dalam 30 hari → referred_by tercatat
+    $this->withCookie('referral_attribution', json_encode($payload))
+        ->post('/register', registerPayload([
+            'email' => 'salinlink@example.com',
+            'no_hp' => '081234567010',
+        ]))->assertRedirect();
+
+    expect(User::where('email', 'salinlink@example.com')->firstOrFail()->referred_by)->toBe($referrer->id);
+});
