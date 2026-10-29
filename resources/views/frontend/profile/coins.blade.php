@@ -71,6 +71,42 @@
         </div>
     </div>
 
+    {{-- Voucher Saya (Design Spec 10.2) — data $vouchers dari controller --}}
+    <section class="mt-8">
+        <h2 class="font-mono text-[11px] font-medium uppercase tracking-[0.16em] text-ink">Voucher Saya</h2>
+        <div class="mt-3 space-y-3">
+            @isset($vouchers)
+                @forelse ($vouchers as $userVoucher)
+                    <div class="flex items-center justify-between gap-3 rounded-xl border border-rule bg-white p-4">
+                        <div>
+                            <p class="text-sm font-semibold text-ink">{{ $userVoucher->voucher->code ?? $userVoucher['code'] ?? '-' }}</p>
+                            <p class="text-xs text-ink/60">
+                                Potong {{ format_rp($userVoucher->voucher->nominal ?? $userVoucher['nominal'] ?? 0) }}
+                                · min. belanja {{ format_rp($userVoucher->voucher->min_belanja ?? $userVoucher['min_belanja'] ?? 0) }}
+                                @if ($userVoucher->expires_at ?? $userVoucher['expires_at'] ?? null)
+                                    · s/d {{ \Illuminate\Support\Carbon::parse($userVoucher->expires_at ?? $userVoucher['expires_at'])->format('d/m/Y') }}
+                                @endif
+                            </p>
+                        </div>
+                        @php($vStatus = $userVoucher->status ?? $userVoucher['status'] ?? null)
+                        <span class="rounded px-2 py-1 text-xs font-semibold
+                            {{ $vStatus === 'active' ? 'bg-green-100 text-green-700' : ($vStatus === 'hangus' ? 'bg-red-100 text-red-700' : 'bg-paper text-ink/60') }}">
+                            {{ strtoupper($vStatus ?? '-') }}
+                        </span>
+                    </div>
+                @empty
+                    <div class="rounded-xl border border-rule bg-white p-8 text-center text-sm text-ink/45">
+                        Belum ada voucher.
+                    </div>
+                @endforelse
+            @else
+                <div class="rounded-xl border border-rule bg-white p-8 text-center text-sm text-ink/45">
+                    Belum ada voucher.
+                </div>
+            @endisset
+        </div>
+    </section>
+
     <script>
         (function () {
             var tabs = document.querySelectorAll('.coin-tab');
