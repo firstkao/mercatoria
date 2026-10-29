@@ -5,7 +5,7 @@
 @section('width', 'w-full max-w-2xl')
 
 @section('content')
-    <div class="rounded-xl border border-rule bg-white px-6 py-8 sm:px-8">
+    <div class="rounded-xl border border-rule bg-white px-6 py-8 shadow-[0_1px_0_rgba(20,27,34,0.04)] sm:px-8">
         <p class="font-mono text-[10px] uppercase tracking-[0.22em] text-ink/45">Pendaftaran</p>
         <h1 class="mt-2 font-display text-[1.75rem] leading-tight font-semibold text-ink sm:text-3xl">
             Daftar Akun Baru
