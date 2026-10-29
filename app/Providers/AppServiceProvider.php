@@ -5,11 +5,13 @@ namespace App\Providers;
 use App\Models\Cart;
 use App\Models\Developer;
 use App\Models\Game;
+use App\Models\Product;
 use App\Models\UserNotification;
 use App\Services\Order\ShippingCalculatorService;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 
@@ -75,6 +77,26 @@ class AppServiceProvider extends ServiceProvider
             )->with(
                 'cartCount',
                 $cartCount
+            );
+        });
+
+        // Footer "Produk Terpopuler" (Design Spec 4.4.5) — {image, url, name, price}.
+        View::composer(['layouts.app', 'frontend.home.index'], function ($view): void {
+            $shipping = app(ShippingCalculatorService::class);
+
+            $view->with('footerTopProducts', Product::where('is_active', true)
+                ->with('game')
+                ->orderByDesc('sold_count')
+                ->orderByDesc('id')
+                ->limit(5)
+                ->get()
+                ->map(fn (Product $product) => [
+                    'image' => $product->image_path ? Storage::url($product->image_path) : null,
+                    'url' => $product->game ? '/'.$product->game->slug.'/'.$product->slug : null,
+                    'name' => $product->name,
+                    'price' => $shipping->calculateItemShipping($product)['final_price_bersih'],
+                ])
+                ->values()
             );
         });
     }

@@ -35,7 +35,11 @@ test('badge keranjang tersembunyi saat kosong', function () {
 test('total keranjang hanya milik user pemilik', function () {
     $user = User::factory()->create();
     $lain = User::factory()->create();
-    Cart::factory()->create(['user_id' => $lain->id, 'product_id' => productFinal255()->id, 'qty' => 1]);
+    $produk = productFinal255();
+    Cart::factory()->create(['user_id' => $lain->id, 'product_id' => $produk->id, 'qty' => 1]);
+
+    // Dorong produk itu keluar dari footer "Produk Terpopuler" (top 5 sold_count)
+    \App\Models\Product::factory()->count(5)->create(['sold_count' => 10, 'is_active' => true]);
 
     $html = $this->actingAs($user)->get('/cart')->assertOk()->getContent();
 
