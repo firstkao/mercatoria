@@ -73,6 +73,26 @@
     </div>
 
     <div class="mt-4 rounded-xl bg-white p-4 shadow-sm ring-1 ring-gray-100">
+        <h2 class="text-sm font-semibold">Pesan dari Admin</h2>
+        @if ($order->note_to_customer)
+            <div class="mt-2 rounded-lg border border-gray-200 bg-gray-50 p-3">
+                <p class="text-sm">{{ $order->note_to_customer }}</p>
+                @if ($order->note_to_customer_updated_at)
+                    <p class="mt-1 text-xs text-gray-400">Diperbarui {{ $order->note_to_customer_updated_at->format('d/m/Y H:i') }}</p>
+                @endif
+            </div>
+        @endif
+        <form method="POST" action="{{ route('office.orders.note-to-customer', $order->no_order) }}" class="mt-3">
+            @csrf
+            <textarea name="note_to_customer" rows="3" maxlength="1000" required
+                      placeholder="Pesan untuk customer (maks 1000 karakter)..."
+                      class="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm">{{ old('note_to_customer', $order->note_to_customer) }}</textarea>
+            @error('note_to_customer')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
+            <button class="mt-2 rounded-lg bg-black px-4 py-2 text-sm font-semibold text-white">Kirim Pesan</button>
+        </form>
+    </div>
+
+    <div class="mt-4 rounded-xl bg-white p-4 shadow-sm ring-1 ring-gray-100">
         <h2 class="text-sm font-semibold">Pembayaran</h2>
         <table class="mt-2 w-full text-sm">
             <thead class="border-b border-gray-100 text-left text-gray-500">
