@@ -39,6 +39,17 @@
     <form id="checkout-form" method="POST" action="{{ route('checkout.store') }}" class="mt-6 space-y-6">
         @csrf
 
+        {{-- Alamat Pengiriman (DS 8.2) --}}
+        <div class="rounded-xl border border-rule bg-white p-4">
+            <h2 class="font-mono text-[11px] font-medium uppercase tracking-[0.16em] text-ink">Alamat Pengiriman</h2>
+            <div class="mt-2 text-sm text-ink/80">
+                <p class="font-medium text-ink">{{ auth()->user()->name }}</p>
+                <p class="text-ink/70">{{ auth()->user()->alamat ?? '—' }}</p>
+                <p class="text-ink/60">{{ auth()->user()->no_hp ?? '—' }}</p>
+            </div>
+            <a href="{{ route('profile.edit') }}" class="mt-2 inline-block text-xs font-medium text-link underline decoration-link/35 underline-offset-4">Ubah di Edit Profil</a>
+        </div>
+
         @foreach ($items as $item)
             <input type="hidden" name="cart_item_ids[]" value="{{ $item->id }}">
         @endforeach
