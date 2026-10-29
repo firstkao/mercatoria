@@ -3,6 +3,7 @@
 use App\Http\Middleware\EnsureCheckoutReady;
 use App\Http\Middleware\EnsureUserIsAdmin;
 use App\Http\Middleware\RejectHoneypot;
+use App\Http\Middleware\TrackVisitor;
 use App\Http\Middleware\VerifyTurnstile;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -16,6 +17,10 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        $middleware->web(append: [
+            TrackVisitor::class,
+        ]);
+
         $middleware->alias([
             'admin' => EnsureUserIsAdmin::class,
             'honeypot' => RejectHoneypot::class,
