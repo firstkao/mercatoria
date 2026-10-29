@@ -3,14 +3,15 @@
 @section('title', $title.' — Mercatoria')
 
 @section('content')
-    <nav class="mb-4 flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.14em] text-ink/50">
+    <nav class="mb-2 flex items-center justify-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.14em] text-ink/50">
         <a href="/" class="transition-colors hover:text-ink">Beranda</a>
+        <span class="text-ink/35">/</span>
+        <a href="/" class="transition-colors hover:text-ink">Produk</a>
         <span class="text-ink/35">/</span>
         <span class="text-ink">{{ $title }}</span>
     </nav>
 
-    <p class="font-mono text-[10px] uppercase tracking-[0.22em] text-ink/45">Katalog</p>
-    <h1 class="mt-2 font-display text-[1.75rem] leading-tight font-semibold text-ink sm:text-3xl">{{ $title }}</h1>
+    <h1 class="text-center font-display text-[1.75rem] leading-tight font-semibold text-ink sm:text-3xl">{{ $title }}</h1>
 
     <div class="mt-6 flex flex-col gap-6 lg:flex-row">
         <aside class="w-full shrink-0 space-y-4 lg:w-1/4">
