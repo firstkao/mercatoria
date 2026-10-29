@@ -3,7 +3,10 @@
 @section('title', 'Orders')
 
 @section('content')
-    <h1 class="text-xl font-semibold">Orders</h1>
+    <div class="flex items-center justify-between">
+        <h1 class="text-xl font-semibold">Orders</h1>
+        <a href="{{ route('office.orders.inject') }}" class="rounded-lg bg-black px-4 py-2 text-sm font-semibold text-white">+ Tambah Pesanan (Inject)</a>
+    </div>
 
     <form method="POST" action="{{ route('office.orders.bulk-status') }}" class="mt-4">
         @csrf

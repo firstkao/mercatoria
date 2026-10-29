@@ -3,6 +3,7 @@
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Admin\DeveloperController as AdminDeveloperController;
 use App\Http\Controllers\Admin\GameController as AdminGameController;
+use App\Http\Controllers\Admin\InjectOrderController as AdminInjectOrderController;
 use App\Http\Controllers\Admin\LogController as AdminLogController;
 use App\Http\Controllers\Admin\MerchCategoryController as AdminMerchCategoryController;
 use App\Http\Controllers\Admin\OrderController as AdminOrderController;
@@ -134,6 +135,8 @@ Route::middleware(['auth', 'admin'])->prefix('office')->name('office.')->group(f
 
     // Transaksi
     Route::get('/orders', [AdminOrderController::class, 'index'])->name('orders.index');
+    Route::get('/orders/inject', [AdminInjectOrderController::class, 'index'])->name('orders.inject');
+    Route::post('/orders/inject', [AdminInjectOrderController::class, 'store'])->name('orders.inject.store');
     Route::post('/orders/bulk-status', [AdminOrderController::class, 'bulkStatus'])->name('orders.bulk-status');
     Route::get('/orders/{order:no_order}', [AdminOrderController::class, 'show'])->name('orders.show');
     Route::patch('/orders/{order:no_order}/status', [OrderStatusController::class, 'update'])->name('orders.status');
