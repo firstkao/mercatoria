@@ -11,6 +11,9 @@
             <div>
                 <p class="font-mono text-[10px] uppercase tracking-[0.14em] text-ink/50">Nomor Pesanan</p>
                 <p class="mt-1 text-lg font-semibold tracking-wide text-ink">{{ $order->no_order }}</p>
+                @if ($order->invoice_number)
+                    <p class="mt-0.5 font-mono text-xs text-ink/55">{{ $order->invoice_number }}</p>
+                @endif
             </div>
             <div class="flex items-center gap-2">
                 <x-order-status-badge :status="$order->status" size="lg" />
@@ -71,6 +74,18 @@
             <p class="mt-4 rounded-lg bg-paper p-3 text-sm text-ink/75">
                 Catatan: {{ $order->customer_note }}
             </p>
+        @endif
+
+        @if ($order->note_to_customer)
+            <div class="mt-4 rounded-lg border border-rule bg-white p-3">
+                <p class="font-mono text-[10px] uppercase tracking-[0.16em] text-ink/55">Pesan dari Admin</p>
+                <p class="mt-1.5 text-sm text-ink/80">{{ $order->note_to_customer }}</p>
+                @if ($order->note_to_customer_updated_at)
+                    <p class="mt-1.5 font-mono text-[10px] uppercase tracking-[0.12em] text-ink/45">
+                        Diperbarui {{ $order->note_to_customer_updated_at->format('d/m/Y H:i') }}
+                    </p>
+                @endif
+            </div>
         @endif
 
         @if ((float) $order->discount_amount > 0 && in_array($order->status, ['menunggu_pembayaran', 'ditahan'], true))
