@@ -6,8 +6,10 @@ use App\Models\Order;
 use App\Models\OrderStatus;
 use App\Models\Payment;
 use App\Models\User;
+use App\Notifications\PaymentProofAdminNotification;
 use App\Services\SplitBox\SplitBoxService;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
 
@@ -59,6 +61,14 @@ class PaymentProofService
             'status' => Payment::STATUS_PENDING,
             'uploaded_at' => now(),
         ]);
+
+        // PRD 17.11: email notif ke admin utama + cs@ saat bukti bayar masuk.
+        Notification::send(
+            User::where('role', User::ROLE_ADMIN)->get(),
+            new PaymentProofAdminNotification($order, $payment)
+        );
+        Notification::route('mail', 'cs@mercatoria.id')
+            ->notify(new PaymentProofAdminNotification($order, $payment));
 
         // Bukti denda (PRD 51.1) tidak mengunci slot Split Box — status tetap Menunggu Denda.
         if ($isPenalty) {
