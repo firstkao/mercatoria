@@ -8,6 +8,7 @@ use App\Models\Order;
 use App\Models\Payment;
 use App\Services\Order\LatePenaltyService;
 use App\Services\Order\OrderStatusService;
+use App\Services\User\UserNotificationService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -32,6 +33,33 @@ class OrderController extends Controller
         $order->load(['items.snapshot', 'payments', 'statusLogs', 'user', 'userVoucher']);
 
         return view('admin.orders.show', ['order' => $order]);
+    }
+
+    /**
+     * PRD 44: Note to Customer (1-way, max 1000) — bell only, tanpa email.
+     */
+    public function noteToCustomer(Request $request, Order $order): RedirectResponse
+    {
+        $data = $request->validate([
+            'note_to_customer' => ['required', 'string', 'max:1000'],
+        ]);
+
+        [$old, $new] = AdminLog::diff($order, ['note_to_customer'], $data);
+        $order->update([
+            'note_to_customer' => $data['note_to_customer'],
+            'note_to_customer_updated_at' => now(),
+        ]);
+
+        app(UserNotificationService::class)->notify(
+            $order->user,
+            'order_note',
+            'Pesan baru dari Admin untuk pesanan '.$order->no_order,
+            '/orders/'.$order->no_order
+        );
+
+        AdminLog::record($request->user(), 'note_to_customer', 'Order', $order->id, $old, $new, 'Kirim Note to Customer');
+
+        return redirect()->route('office.orders.show', $order)->with('status', 'Pesan terkirim ke customer.');
     }
 
     public function bulkStatus(Request $request): RedirectResponse

@@ -136,6 +136,7 @@ Route::middleware(['auth', 'admin'])->prefix('office')->name('office.')->group(f
 
     // Transaksi
     Route::get('/orders', [AdminOrderController::class, 'index'])->name('orders.index');
+    Route::post('/orders/{order:no_order}/note-to-customer', [AdminOrderController::class, 'noteToCustomer'])->name('orders.note-to-customer');
     Route::get('/orders/inject', [AdminInjectOrderController::class, 'index'])->name('orders.inject');
     Route::post('/orders/inject', [AdminInjectOrderController::class, 'store'])->name('orders.inject.store');
     Route::post('/orders/bulk-status', [AdminOrderController::class, 'bulkStatus'])->name('orders.bulk-status');
