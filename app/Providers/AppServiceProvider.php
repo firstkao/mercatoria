@@ -99,5 +99,16 @@ class AppServiceProvider extends ServiceProvider
                 ->values()
             );
         });
+
+        // Footer "Game" & "Developer" (pola $navGames) untuk layout yang memakai footer.
+        View::composer(['layouts.app', 'layouts.guest'], function ($view): void {
+            $view->with(
+                'footerGames',
+                Game::where('is_active', true)->orderBy('name')->get(['id', 'name', 'slug'])
+            )->with(
+                'footerDevelopers',
+                Developer::where('is_active', true)->orderBy('name')->get(['id', 'name', 'slug'])
+            );
+        });
     }
 }
