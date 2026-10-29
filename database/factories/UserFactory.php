@@ -30,7 +30,7 @@ class UserFactory extends Factory
             'password' => static::$password ??= 'password',
             'role' => User::ROLE_CUSTOMER,
             'tgl_lahir' => fake()->date('Y-m-d', '-18 years'),
-            'no_hp' => '628'.fake()->numerify('#########'),
+            'no_hp' => '628'.fake()->numberBetween(100000000, 999999999),
             'provinsi' => fake()->randomElement(['DKI Jakarta', 'Jawa Barat', 'Bali', 'Sumatera Utara']),
             'kota' => fake()->city(),
             'kecamatan' => fake()->streetName(),

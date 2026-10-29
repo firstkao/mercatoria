@@ -183,11 +183,14 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/checkout', [CheckoutController::class, 'show'])->name('checkout.show');
     Route::post('/checkout/summary', [CheckoutController::class, 'summary'])->name('checkout.summary');
-    Route::post('/checkout', [CheckoutController::class, 'store'])->name('checkout.store');
+    Route::post('/checkout', [CheckoutController::class, 'store'])
+        ->middleware('checkout.ready')
+        ->name('checkout.store');
 
     Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');
     Route::get('/orders/{order:no_order}', [OrderController::class, 'show'])->name('orders.show');
     Route::post('/orders/{order:no_order}/payments', [OrderController::class, 'storePayment'])
+        ->middleware('checkout.ready')
         ->name('orders.payments.store');
     Route::get('/orders/{order:no_order}/invoice', [OrderController::class, 'invoice'])
         ->name('orders.invoice');

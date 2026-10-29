@@ -79,6 +79,14 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->tgl_lahir !== null;
     }
 
+    /**
+     * PRD 48.4 / Skema DB 16.2: gate sebelum Buat Pesanan & Konfirmasi Pembayaran.
+     */
+    public function canOrderOrConfirmPayment(): bool
+    {
+        return $this->hasVerifiedEmail() && $this->hasCompletedProfile();
+    }
+
     public function crush(): HasOne
     {
         return $this->hasOne(Crush::class);

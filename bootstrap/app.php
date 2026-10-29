@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\EnsureCheckoutReady;
 use App\Http\Middleware\EnsureUserIsAdmin;
 use App\Http\Middleware\RejectHoneypot;
 use App\Http\Middleware\VerifyTurnstile;
@@ -19,6 +20,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'admin' => EnsureUserIsAdmin::class,
             'honeypot' => RejectHoneypot::class,
             'turnstile' => VerifyTurnstile::class,
+            'checkout.ready' => EnsureCheckoutReady::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
