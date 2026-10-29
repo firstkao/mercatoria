@@ -34,7 +34,39 @@
             <div class="hidden min-h-[72px] lg:grid lg:grid-cols-3 lg:items-center">
                 <nav class="flex items-center gap-5" aria-label="Menu utama">
                     <a href="{{ route('home') }}" class="text-[13px] font-medium text-[#4FC3F7]">Beranda</a>
-                    <a href="#game-grid" class="text-[13px] font-medium text-[#333] transition-colors hover:text-[#4FC3F7]">Game</a>
+
+                    <details class="group relative">
+                        <summary class="flex cursor-pointer list-none items-center gap-1 text-[13px] font-medium text-[#333] transition-colors hover:text-[#4FC3F7]">
+                            Game
+                            <span class="text-[10px] transition-transform group-open:rotate-180">▾</span>
+                        </summary>
+                        <div class="absolute left-0 top-full z-20 mt-2 max-h-80 w-56 overflow-y-auto rounded-lg border border-[#EAEAEA] bg-white py-2 shadow-sm">
+                            @forelse ($games as $g)
+                                <a href="{{ route('catalog.game', $g->slug) }}" class="block px-3.5 py-1.5 text-[12px] text-[#333] transition-colors hover:bg-[#F5F7FA] hover:text-[#4FC3F7]">{{ $g->name }}</a>
+                            @empty
+                                <span class="block px-3.5 py-1.5 text-[12px] text-[#999]">Belum ada game</span>
+                            @endforelse
+                        </div>
+                    </details>
+
+                    <details class="group relative">
+                        <summary class="flex cursor-pointer list-none items-center gap-1 text-[13px] font-medium text-[#333] transition-colors hover:text-[#4FC3F7]">
+                            Developer
+                            <span class="text-[10px] transition-transform group-open:rotate-180">▾</span>
+                        </summary>
+                        <div class="absolute left-0 top-full z-20 mt-2 max-h-80 w-56 overflow-y-auto rounded-lg border border-[#EAEAEA] bg-white py-2 shadow-sm">
+                            @isset($footerDevelopers)
+                                @forelse ($footerDevelopers as $dev)
+                                    <a href="{{ data_get($dev, 'url') ?? (data_get($dev, 'slug') ? route('catalog.developer', data_get($dev, 'slug')) : '#') }}" class="block px-3.5 py-1.5 text-[12px] text-[#333] transition-colors hover:bg-[#F5F7FA] hover:text-[#4FC3F7]">{{ data_get($dev, 'name') }}</a>
+                                @empty
+                                    <span class="block px-3.5 py-1.5 text-[12px] text-[#999]">Belum ada developer</span>
+                                @endforelse
+                            @else
+                                <span class="block px-3.5 py-1.5 text-[12px] text-[#999]">Belum ada developer</span>
+                            @endisset
+                        </div>
+                    </details>
+
                     <a href="#merch-baru" class="text-[13px] font-medium text-[#333] transition-colors hover:text-[#4FC3F7]">Pre-order Baru</a>
                 </nav>
 
@@ -63,9 +95,38 @@
             </div>
 
             <div class="flex min-h-[64px] items-center justify-between gap-3 lg:hidden">
+                <details class="relative">
+                    <summary class="flex h-10 w-10 cursor-pointer list-none items-center justify-center text-[#333]" aria-label="Menu">
+                        <x-icons.list width="22" height="22" />
+                    </summary>
+                    <div class="absolute left-0 top-full z-20 mt-2 w-64 rounded-lg border border-[#EAEAEA] bg-white py-2 shadow-sm">
+                        <a href="{{ route('home') }}" class="block px-4 py-2.5 text-[13px] font-medium text-[#4FC3F7]">Beranda</a>
+                        <a href="#game-grid" class="block px-4 py-2.5 text-[13px] text-[#333]">Game</a>
+                        <a href="#merch-baru" class="block px-4 py-2.5 text-[13px] text-[#333]">Pre-order Baru</a>
+                        <div class="mt-1 border-t border-[#EAEAEA] pt-1">
+                            <p class="px-4 py-1.5 font-mono text-[10px] uppercase tracking-wider text-ink/45">Game</p>
+                            @foreach ($games as $g)
+                                <a href="{{ route('catalog.game', $g->slug) }}" class="block px-4 py-2 text-[12px] text-[#333]">{{ $g->name }}</a>
+                            @endforeach
+                        </div>
+                        <div class="mt-1 border-t border-[#EAEAEA] pt-1">
+                            <p class="px-4 py-1.5 font-mono text-[10px] uppercase tracking-wider text-ink/45">Developer</p>
+                            @isset($footerDevelopers)
+                                @foreach ($footerDevelopers as $dev)
+                                    <a href="{{ data_get($dev, 'url') ?? (data_get($dev, 'slug') ? route('catalog.developer', data_get($dev, 'slug')) : '#') }}" class="block px-4 py-2 text-[12px] text-[#333]">{{ data_get($dev, 'name') }}</a>
+                                @endforeach
+                            @endisset
+                        </div>
+                        <div class="mt-1 border-t border-[#EAEAEA] pt-1">
+                            <a href="{{ route('login') }}" class="block px-4 py-2.5 text-[13px] font-medium text-[#333]">Masuk</a>
+                        </div>
+                    </div>
+                </details>
+
                 <a href="{{ route('home') }}" class="flex items-center no-underline">
                     <img src="{{ asset('logo.png') }}" alt="Mercatoria" class="h-12 w-auto" width="1608" height="494">
                 </a>
+
                 <a href="{{ route('login') }}" class="flex h-10 w-10 items-center justify-center text-[#333]" aria-label="Masuk">
                     <x-icons.user width="20" height="20" />
                 </a>
@@ -144,27 +205,33 @@
             </div>
         </section>
 
-        {{-- 5. Penawaran Terbaik (PRD 40.5) — data BE menyusul --}}
-        @isset($bestOffers)
+        {{-- 5. Penawaran Terbaik (PRD 40.5 / DS 4.6.3) --}}
+        @if(($bestOffers ?? collect())->isNotEmpty())
             <section id="penawaran-terbaik" class="mx-auto max-w-[1200px] px-4 pb-12">
                 <h2 class="text-center font-display text-[22px] font-semibold text-ink">Penawaran Terbaik</h2>
                 <div class="mt-6 grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-5">
                     @foreach ($bestOffers as $product)
-                        <a href="{{ route('product.show', [$product->game->slug, $product->slug]) }}" class="block rounded-lg border border-rule bg-white p-3">
-                            @if ($product->image_path)
-                                <img src="{{ \Illuminate\Support\Facades\Storage::url($product->image_path) }}" alt="{{ $product->name }}" class="aspect-square w-full rounded object-cover">
+                        <a href="{{ route('product.show', [$product->game->slug, $product->slug]) }}" class="group block">
+                            <div class="relative aspect-square overflow-hidden rounded-lg bg-paper">
+                                @if ($product->image_path)
+                                    <img src="{{ \Illuminate\Support\Facades\Storage::url($product->image_path) }}" alt="{{ $product->name }}" class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]">
+                                @endif
+                                <span class="absolute left-0 top-2 -rotate-45 bg-[#E53935] px-3 py-0.5 text-[9.5px] font-bold uppercase text-white">DISKON</span>
+                            </div>
+                            <p class="mt-2 text-[11.5px] font-bold leading-snug text-ink">
+                                <span class="text-ink/60">[{{ $product->game->name }}]</span> {{ $product->name }}
+                            </p>
+                            @if ($product->hasActiveDiscount() && !empty($product->price_idr))
+                                <p class="mt-0.5 text-xs text-ink/45 line-through">{{ format_rp($product->price_idr + (float) $product->discount_amount) }}</p>
+                                <p class="text-[11.5px] font-bold text-[#29B6F6]">{{ format_rp($product->price_idr) }}</p>
+                            @elseif(!empty($product->price_idr))
+                                <p class="mt-0.5 text-[11.5px] font-bold text-[#29B6F6]">{{ format_rp($product->price_idr) }}</p>
                             @endif
-                        <p class="mt-2 text-[11.5px] font-bold leading-snug text-ink">
-                            <span class="text-ink/60">[{{ $product->game->name }}]</span> {{ $product->name }}
-                        </p>
-                        @if (!empty($product->price_idr))
-                            <p class="mt-0.5 text-[11.5px] font-bold text-[#29B6F6]">{{ format_rp($product->price_idr) }}</p>
-                        @endif
-                    </a>
+                        </a>
                     @endforeach
                 </div>
             </section>
-        @endisset
+        @endif
 
         {{-- 6. MERCH BARU (PRD 40.6 / Design Spec 4.4.4) --}}
         <section id="merch-baru" class="mx-auto max-w-[1200px] px-4 pb-14">
