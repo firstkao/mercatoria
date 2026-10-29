@@ -147,6 +147,7 @@ Route::middleware(['auth', 'admin'])->prefix('office')->name('office.')->group(f
 
     // Transaksi
     Route::get('/orders', [AdminOrderController::class, 'index'])->name('orders.index');
+    Route::get('/orders/{order:no_order}/invoice', [AdminOrderController::class, 'invoice'])->name('orders.invoice');
     Route::get('/search', [AdminSearchController::class, '__invoke'])->name('search');
     Route::post('/notifications/read-all', [AdminNotificationController::class, 'readAll'])->name('notifications.read-all');
 

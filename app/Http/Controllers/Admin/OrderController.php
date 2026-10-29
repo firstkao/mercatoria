@@ -9,9 +9,11 @@ use App\Models\Payment;
 use App\Services\Order\LatePenaltyService;
 use App\Services\Order\OrderStatusService;
 use App\Services\User\UserNotificationService;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
+use Symfony\Component\HttpFoundation\Response;
 
 class OrderController extends Controller
 {
@@ -139,5 +141,21 @@ class OrderController extends Controller
         AdminLog::record($request->user(), 'create', 'Payment', $payment->id, null, $data, 'Catat pelunasan settlement');
 
         return redirect()->route('office.orders.show', $order)->with('status', 'Pelunasan dicatat.');
+    }
+
+    /**
+     * PRD 18.7/22.6: Download Invoice PDF (baca dari snapshot).
+     */
+    public function invoice(Order $order): Response
+    {
+        $order->load(['items.snapshot', 'user']);
+
+        $pdf = Pdf::loadView('frontend.order.invoice', ['order' => $order])
+            ->setPaper('a4');
+
+        return response($pdf->output(), 200, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'attachment; filename="'.$order->no_order.'.pdf"',
+        ]);
     }
 }
