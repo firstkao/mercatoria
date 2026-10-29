@@ -192,6 +192,7 @@ Route::middleware(['auth', 'admin'])->prefix('office')->name('office.')->group(f
     Route::post('/vouchers/{voucher}/issue', [AdminVoucherController::class, 'issue'])->name('vouchers.issue');
     Route::delete('/user-vouchers/{userVoucher}', [AdminVoucherController::class, 'revoke'])->name('user-vouchers.revoke');
     Route::get('/reports', [AdminReportController::class, 'index'])->name('reports.index');
+    Route::get('/reports/sales-chart', [AdminReportController::class, 'salesChart'])->name('reports.sales-chart');
     Route::post('/split-box-batches/{split_box_batch}/close-refund', [AdminSplitBoxBatchController::class, 'closeRefund'])
         ->name('split-box-batches.close-refund');
     Route::get('/admin-logs', [AdminLogController::class, 'admin'])->name('admin-logs');

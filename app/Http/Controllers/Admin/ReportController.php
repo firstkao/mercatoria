@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Order;
 use App\Models\Payment;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Carbon;
 use Illuminate\View\View;
 
 class ReportController extends Controller
@@ -36,5 +38,35 @@ class ReportController extends Controller
             'hangus' => $hangus,
             'dendaDiterima' => $dendaDiterima,
         ]);
+    }
+
+    /**
+     * PRD 22.3: data grafik penjualan 30 hari terakhir (revenue per hari).
+     * SUM(total) order per hari (created_at), kecuali pembayaran_gagal.
+     * Zero-filled 30 elemen — visualisasi menyusul dari UI.
+     */
+    public function salesChart(): JsonResponse
+    {
+        $start = Carbon::today()->subDays(29);
+
+        $rows = Order::query()
+            ->where('created_at', '>=', $start)
+            ->where('status', '!=', 'pembayaran_gagal')
+            ->groupByRaw('DATE(created_at)')
+            ->selectRaw('DATE(created_at) as date, SUM(total) as revenue')
+            ->pluck('revenue', 'date');
+
+        $data = collect(range(29, 0))
+            ->map(function (int $ago) use ($rows) {
+                $date = Carbon::today()->subDays($ago)->toDateString();
+
+                return [
+                    'date' => $date,
+                    'revenue' => (float) ($rows[$date] ?? 0),
+                ];
+            })
+            ->values();
+
+        return response()->json($data);
     }
 }
