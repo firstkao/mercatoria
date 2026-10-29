@@ -45,6 +45,11 @@
                        class="mt-2 w-full rounded-lg border border-rule bg-paper px-3.5 py-2.5 text-sm text-ink/55">
             </div>
             <div>
+                <label class="block font-mono text-[10px] font-medium uppercase tracking-[0.16em] text-ink/70">Kode Undangan Digunakan <span class="text-ink/45">(Terkunci)</span></label>
+                <input type="text" value="{{ $user->referrer?->referral_code ?? '-' }}" disabled
+                       class="mt-2 w-full rounded-lg border border-rule bg-paper px-3.5 py-2.5 text-sm text-ink/55">
+            </div>
+            <div>
                 <label class="block font-mono text-[10px] font-medium uppercase tracking-[0.16em] text-ink/70">Provinsi <span class="text-danger">*</span></label>
                 <input type="text" name="provinsi" value="{{ old('provinsi', $user->provinsi) }}" required
                        class="mt-2 w-full rounded-lg border border-rule bg-white px-3.5 py-2.5 text-sm text-ink focus:border-ink focus:outline-none focus:ring-2 focus:ring-accent/45">
