@@ -1,4 +1,4 @@
-﻿@extends('layouts.app')
+@extends('layouts.app')
 
 @section('title', 'Keranjang â€” Mercatoria')
 
@@ -18,7 +18,12 @@
                     <thead class="border-b border-rule text-left">
                         <tr>
                             <th class="w-10 px-4 py-3"></th>
-                            <th class="px-4 py-3 font-mono text-[10px] uppercase tracking-[0.14em] text-ink/55">Produk</th>
+                            <th class="px-4 py-3 font-mono text-[10px] uppercase tracking-[0.14em] text-ink/55">
+                                <label class="inline-flex items-center gap-1.5">
+                                    <input type="checkbox" checked class="rounded border-rule" onclick="document.querySelectorAll('input[name=&quot;items[]&quot;]').forEach(c=>c.checked=this.checked)">
+                                    Pilih Semua
+                                </label>
+                            </th>
                             <th class="px-4 py-3 font-mono text-[10px] uppercase tracking-[0.14em] text-ink/55">Harga</th>
                             <th class="px-4 py-3 font-mono text-[10px] uppercase tracking-[0.14em] text-ink/55">Qty</th>
                             <th class="px-4 py-3 font-mono text-[10px] uppercase tracking-[0.14em] text-ink/55">Subtotal</th>
