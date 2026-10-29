@@ -174,6 +174,7 @@ Route::middleware(['auth', 'admin'])->prefix('office')->name('office.')->group(f
     Route::post('/orders/{order:no_order}/unlock-penalty', [AdminOrderController::class, 'unlockPenalty'])->name('orders.unlock-penalty');
     Route::post('/orders/{order:no_order}/hangus-permanent', [AdminOrderController::class, 'hangusPermanent'])->name('orders.hangus-permanent');
     Route::post('/orders/{order:no_order}/refund', [AdminRefundController::class, 'requestFull'])->name('orders.refund.full');
+    Route::get('/refunds', [AdminRefundController::class, 'index'])->name('refunds.index');
     Route::post('/orders/{order:no_order}/refund/partial', [AdminRefundController::class, 'requestPartial'])->name('orders.refund.partial');
     Route::post('/refunds/{refund}/complete', [AdminRefundController::class, 'complete'])->name('refunds.complete');
     Route::post('/refunds/{refund}/reject', [AdminRefundController::class, 'reject'])->name('refunds.reject');

@@ -9,10 +9,28 @@ use App\Models\Refund;
 use App\Services\Payment\RefundService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\View\View;
 
 class RefundController extends Controller
 {
     public function __construct(private RefundService $refunds) {}
+
+    /**
+     * PRD 22.2/34: daftar semua refund + filter status.
+     */
+    public function index(Request $request): View
+    {
+        $status = (string) $request->query('status', '');
+
+        return view('admin.refunds.index', [
+            'refunds' => Refund::with('order')
+                ->when($status !== '', fn ($q) => $q->where('status', $status))
+                ->orderByDesc('id')
+                ->paginate(30)
+                ->withQueryString(),
+            'status' => $status,
+        ]);
+    }
 
     /**
      * PRD 34: request refund full (manual admin).
