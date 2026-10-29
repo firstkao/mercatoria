@@ -40,12 +40,12 @@
                 @error('no_hp')<p class="mt-1 text-sm text-danger">{{ $message }}</p>@enderror
             </div>
             <div>
-                <label class="block font-mono text-[10px] font-medium uppercase tracking-[0.16em] text-ink/70">Tanggal Lahir <span class="text-ink/45">(Terkunci)</span></label>
+                <label class="block font-mono text-[10px] font-medium uppercase tracking-[0.16em] text-ink/70">Tanggal Lahir <span class="text-ink/45">(Tidak dapat diubah)</span></label>
                 <input type="text" value="{{ $user->tgl_lahir?->format('d/m/Y') }}" disabled
                        class="mt-2 w-full rounded-lg border border-rule bg-paper px-3.5 py-2.5 text-sm text-ink/55">
             </div>
             <div>
-                <label class="block font-mono text-[10px] font-medium uppercase tracking-[0.16em] text-ink/70">Kode Undangan Digunakan <span class="text-ink/45">(Terkunci)</span></label>
+                <label class="block font-mono text-[10px] font-medium uppercase tracking-[0.16em] text-ink/70">Kode Undangan <span class="text-ink/45">(Tidak dapat diubah)</span></label>
                 <input type="text" value="{{ $user->referrer?->referral_code ?? '-' }}" disabled
                        class="mt-2 w-full rounded-lg border border-rule bg-paper px-3.5 py-2.5 text-sm text-ink/55">
             </div>
