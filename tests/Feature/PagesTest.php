@@ -66,3 +66,38 @@ test('perubahan halaman tercatat di admin logs', function () {
 
     expect(AdminLog::where('model', 'Page')->exists())->toBeTrue();
 });
+
+test('admin dapat menghapus halaman cms', function () {
+    $admin = User::factory()->admin()->create();
+    $page = Page::factory()->create(['slug' => 'dihapus']);
+
+    $this->actingAs($admin)->delete("/office/pages/{$page->id}")->assertRedirect();
+
+    expect(Page::where('slug', 'dihapus')->exists())->toBeFalse();
+});
+
+test('penghapusan halaman tercatat di admin logs', function () {
+    $admin = User::factory()->admin()->create();
+    $page = Page::factory()->create(['slug' => 'dihapus-log']);
+
+    $this->actingAs($admin)->delete("/office/pages/{$page->id}");
+
+    expect(AdminLog::where('model', 'Page')->where('action', 'delete')->exists())->toBeTrue();
+});
+
+test('non-admin ditolak 403 menghapus halaman', function () {
+    $customer = User::factory()->create();
+    $page = Page::factory()->create();
+
+    $this->actingAs($customer)->delete("/office/pages/{$page->id}")->assertForbidden();
+
+    expect(Page::whereKey($page->id)->exists())->toBeTrue();
+});
+
+test('guest tidak bisa menghapus halaman', function () {
+    $page = Page::factory()->create();
+
+    $this->delete("/office/pages/{$page->id}")->assertRedirect('/login');
+
+    expect(Page::whereKey($page->id)->exists())->toBeTrue();
+});

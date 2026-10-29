@@ -162,6 +162,7 @@ Route::middleware(['auth', 'admin'])->prefix('office')->name('office.')->group(f
     Route::get('/pages', [AdminPageController::class, 'index'])->name('pages.index');
     Route::post('/pages', [AdminPageController::class, 'store'])->name('pages.store');
     Route::put('/pages/{page}', [AdminPageController::class, 'update'])->name('pages.update');
+    Route::delete('/pages/{page}', [AdminPageController::class, 'destroy'])->name('pages.destroy');
     Route::get('/reports', [AdminReportController::class, 'index'])->name('reports.index');
     Route::post('/split-box-batches/{split_box_batch}/close-refund', [AdminSplitBoxBatchController::class, 'closeRefund'])
         ->name('split-box-batches.close-refund');

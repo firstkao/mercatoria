@@ -51,4 +51,12 @@ class PageController extends Controller
 
         return redirect()->route('office.pages.index')->with('status', 'Halaman diperbarui.');
     }
+
+    public function destroy(Request $request, Page $page): RedirectResponse
+    {
+        AdminLog::record($request->user(), 'delete', 'Page', $page->id, $page->only(['title', 'slug', 'content', 'meta_description', 'is_active']), null, 'Hapus halaman CMS');
+        $page->delete();
+
+        return redirect()->route('office.pages.index')->with('status', 'Halaman dihapus.');
+    }
 }
