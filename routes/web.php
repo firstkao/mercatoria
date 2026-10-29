@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Admin\DeveloperController as AdminDeveloperController;
+use App\Http\Controllers\Admin\EmailTemplateController as AdminEmailTemplateController;
 use App\Http\Controllers\Admin\GameController as AdminGameController;
 use App\Http\Controllers\Admin\HeroSlideController as AdminHeroSlideController;
 use App\Http\Controllers\Admin\InjectOrderController as AdminInjectOrderController;
@@ -148,6 +149,11 @@ Route::middleware(['auth', 'admin'])->prefix('office')->name('office.')->group(f
     Route::post('/payment-methods', [AdminPaymentMethodController::class, 'store'])->name('payment-methods.store');
     Route::put('/payment-methods/{paymentMethod}', [AdminPaymentMethodController::class, 'update'])->name('payment-methods.update');
     Route::delete('/payment-methods/{paymentMethod}', [AdminPaymentMethodController::class, 'destroy'])->name('payment-methods.destroy');
+
+    Route::get('/email-templates', [AdminEmailTemplateController::class, 'index'])->name('email-templates.index');
+    Route::post('/email-templates', [AdminEmailTemplateController::class, 'store'])->name('email-templates.store');
+    Route::put('/email-templates/{emailTemplate}', [AdminEmailTemplateController::class, 'update'])->name('email-templates.update');
+    Route::delete('/email-templates/{emailTemplate}', [AdminEmailTemplateController::class, 'destroy'])->name('email-templates.destroy');
     Route::post('/orders/{order:no_order}/note-to-customer', [AdminOrderController::class, 'noteToCustomer'])->name('orders.note-to-customer');
     Route::get('/orders/inject', [AdminInjectOrderController::class, 'index'])->name('orders.inject');
     Route::post('/orders/inject', [AdminInjectOrderController::class, 'store'])->name('orders.inject.store');

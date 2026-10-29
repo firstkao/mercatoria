@@ -2,6 +2,7 @@
 
 namespace App\Notifications;
 
+use App\Services\Mail\EmailTemplateService;
 use Illuminate\Auth\Notifications\VerifyEmail as BaseVerifyEmail;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
@@ -23,13 +24,21 @@ class VerifyEmailNotification extends BaseVerifyEmail
     {
         $verificationUrl = $this->verificationUrl($notifiable);
 
-        return (new MailMessage)
+        $default = (new MailMessage)
             ->from(Config::get('mail.from.address'), Config::get('mail.from.name'))
             ->subject('Verifikasi Email Mercatoria')
             ->line('Klik tombol di bawah untuk memverifikasi alamat email Anda.')
             ->line('Link verifikasi hanya berlaku selama 24 jam sejak pendaftaran.')
             ->action('Verifikasi Email', $verificationUrl)
             ->line('Jika Anda tidak merasa mendaftar di Mercatoria, abaikan email ini.');
+
+        // PRD 24: template aktif meng-override default.
+        return app(EmailTemplateService::class)->override('verify_email', [
+            'nama_user' => (string) ($notifiable->name ?? ''),
+            'email' => (string) ($notifiable->email ?? ''),
+            'no_hp' => (string) ($notifiable->no_hp ?? ''),
+            'link' => $verificationUrl,
+        ], $default);
     }
 
     /**
