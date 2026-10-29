@@ -49,3 +49,19 @@ test('halaman cms memiliki meta description', function () {
         ->assertOk()
         ->assertSee('name="description"', false);
 });
+
+test('command sitemap:generate menulis public sitemap xml', function () {
+    $game = Game::factory()->create(['slug' => 'genshin-impact', 'is_active' => true]);
+    Product::factory()->create(['game_id' => $game->id, 'slug' => 'cosmic-fragrance', 'is_active' => true]);
+
+    $this->artisan('sitemap:generate')->assertSuccessful();
+
+    $path = public_path('sitemap.xml');
+    expect(file_exists($path))->toBeTrue();
+
+    $content = (string) file_get_contents($path);
+    expect($content)->toContain('<urlset')
+        ->toContain('/genshin-impact/cosmic-fragrance');
+
+    @unlink($path);
+});

@@ -74,8 +74,10 @@ class SeoMetaService
             $urls[] = '/'.$game->slug;
         }
 
-        foreach (Product::where('is_active', true)->get(['slug']) as $product) {
-            $urls[] = '/'.$product->game->slug.'/'.$product->slug;
+        foreach (Product::where('is_active', true)->with('game')->get(['slug', 'game_id']) as $product) {
+            if ($product->game) {
+                $urls[] = '/'.$product->game->slug.'/'.$product->slug;
+            }
         }
 
         foreach (['tentang-kami', 'faq', 'cara-belanja', 'tnc', 'kebijakan-privasi'] as $slug) {
