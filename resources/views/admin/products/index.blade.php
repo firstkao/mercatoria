@@ -3,51 +3,86 @@
 @section('title', 'Semua Produk')
 
 @section('content')
-    <div class="flex items-center justify-between">
-        <h1 class="text-xl font-semibold">Semua Produk</h1>
-        <a href="{{ route('office.products.create') }}" class="rounded-lg bg-black px-4 py-2 text-sm font-semibold text-white">+ Tambah Produk</a>
+    <div class="flex flex-wrap items-end justify-between gap-3">
+        <div>
+            <p class="font-mono text-[10px] uppercase tracking-[0.22em] text-ink/45">Produk</p>
+            <h1 class="mt-2 font-display text-[1.5rem] font-semibold text-ink">Semua Produk</h1>
+        </div>
+        <a href="{{ route('office.products.create') }}" class="rounded-lg bg-black px-4 py-2 text-sm font-semibold tracking-[0.12em] text-white transition-colors hover:bg-ink">+ Tambah Produk</a>
     </div>
+
+    {{-- Filter + Search --}}
+    <form method="GET" class="mt-4 flex flex-wrap items-end gap-2">
+        <div>
+            <label for="filter-game" class="block font-mono text-[10px] font-medium uppercase tracking-[0.14em] text-ink/70">Game</label>
+            <select name="game_id" id="filter-game" onchange="this.form.submit()"
+                    class="mt-1 rounded-lg border border-rule bg-white px-3 py-2 text-sm text-ink">
+                <option value="">Semua Game</option>
+                @foreach (($navGames ?? collect()) as $g)
+                    <option value="{{ $g->id }}" @selected(request('game_id') == $g->id)>{{ $g->name }}</option>
+                @endforeach
+            </select>
+        </div>
+        <div>
+            <label for="filter-q" class="block font-mono text-[10px] font-medium uppercase tracking-[0.14em] text-ink/70">Cari</label>
+            <input type="text" name="q" id="filter-q" value="{{ request('q') }}" placeholder="Nama / SKU..."
+                   class="mt-1 w-56 rounded-lg border border-rule bg-white px-3 py-2 text-sm text-ink">
+        </div>
+        <button type="submit" class="rounded-lg border border-rule px-4 py-2 text-sm font-semibold text-ink transition-colors hover:border-ink">Terapkan</button>
+        @if (request()->has('game_id') || request()->has('q'))
+            <a href="{{ route('office.products.index') }}" class="px-2 py-2 text-sm text-link underline decoration-link/35 underline-offset-4">Reset</a>
+        @endif
+    </form>
 
     <form method="POST" action="{{ route('office.products.bulk') }}" class="mt-4">
         @csrf
-        <div class="overflow-hidden rounded-xl bg-white shadow-sm ring-1 ring-gray-100">
+        <div class="overflow-x-auto rounded-xl border border-rule bg-white">
             <table class="w-full text-sm">
-                <thead class="border-b border-gray-100 text-left text-gray-500">
+                <thead class="border-b border-rule text-left">
                     <tr>
                         <th class="w-10 px-3 py-2"></th>
-                        <th class="px-3 py-2">Nama</th>
-                        <th class="px-3 py-2">SKU</th>
-                        <th class="px-3 py-2">Game</th>
-                        <th class="px-3 py-2">Berat</th>
-                        <th class="px-3 py-2">Status</th>
+                        <th class="px-3 py-2 font-mono text-[10px] uppercase tracking-[0.14em] text-ink/55">Nama</th>
+                        <th class="px-3 py-2 font-mono text-[10px] uppercase tracking-[0.14em] text-ink/55">SKU</th>
+                        <th class="px-3 py-2 font-mono text-[10px] uppercase tracking-[0.14em] text-ink/55">Game</th>
+                        <th class="px-3 py-2 font-mono text-[10px] uppercase tracking-[0.14em] text-ink/55">Harga RMB</th>
+                        <th class="px-3 py-2 font-mono text-[10px] uppercase tracking-[0.14em] text-ink/55">Berat</th>
+                        <th class="px-3 py-2 font-mono text-[10px] uppercase tracking-[0.14em] text-ink/55">Status</th>
                         <th class="px-3 py-2"></th>
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach ($products as $product)
-                        <tr class="border-b border-gray-50">
-                            <td class="px-3 py-2"><input type="checkbox" name="ids[]" value="{{ $product->id }}" class="rounded border-gray-300"></td>
-                            <td class="px-3 py-2 font-medium">{{ $product->name }}</td>
-                            <td class="px-3 py-2">{{ $product->sku }}</td>
-                            <td class="px-3 py-2">{{ $product->game->name ?? '-' }}</td>
-                            <td class="px-3 py-2">{{ $product->weight_gram !== null ? number_format($product->weight_gram).' g' : '-' }}</td>
-                            <td class="px-3 py-2">{{ $product->is_active ? 'Aktif' : 'Nonaktif' }}</td>
+                    @forelse ($products as $product)
+                        <tr class="border-b border-rule/50">
+                            <td class="px-3 py-2"><input type="checkbox" name="ids[]" value="{{ $product->id }}" class="rounded border-rule"></td>
+                            <td class="px-3 py-2 font-medium text-ink">{{ $product->name }}</td>
+                            <td class="px-3 py-2 font-mono text-xs text-ink/60">{{ $product->sku }}</td>
+                            <td class="px-3 py-2 text-ink/80">{{ $product->game->name ?? '-' }}</td>
+                            <td class="px-3 py-2 text-ink/80">{{ $product->price_rmb !== null ? '¥'.number_format((float) $product->price_rmb, 2) : '—' }}</td>
+                            <td class="px-3 py-2 text-ink/80">{{ $product->weight_gram !== null ? number_format($product->weight_gram).' g' : '—' }}</td>
+                            <td class="px-3 py-2">
+                                <span class="rounded px-2 py-0.5 text-[10px] font-semibold {{ $product->is_active ? 'bg-[#43A047] text-white' : 'bg-[#9E9E9E] text-white' }}">
+                                    {{ $product->is_active ? 'Aktif' : 'Nonaktif' }}
+                                </span>
+                            </td>
                             <td class="px-3 py-2 text-right">
-                                <a href="{{ route('office.products.edit', $product) }}" class="text-sky-600 hover:underline">Edit</a>
+                                <a href="{{ route('office.products.edit', $product) }}" class="text-sm font-medium text-link underline decoration-link/35 underline-offset-4">Edit</a>
                             </td>
                         </tr>
-                    @endforeach
+                    @empty
+                        <tr><td colspan="8" class="py-8 text-center text-sm text-ink/45">Tidak ada produk ditemukan.</td></tr>
+                    @endforelse
                 </tbody>
             </table>
         </div>
 
-        <div class="mt-3 flex items-center gap-2">
-            <select name="action" class="rounded-lg border border-gray-200 px-3 py-2 text-sm">
+        <div class="mt-3 flex flex-wrap items-center gap-2">
+            <label class="font-mono text-[10px] uppercase tracking-[0.14em] text-ink/70">Aksi massal:</label>
+            <select name="action" class="rounded-lg border border-rule bg-white px-3 py-2 text-sm text-ink">
                 <option value="aktifkan">Aktifkan</option>
                 <option value="nonaktifkan">Nonaktifkan</option>
                 <option value="hapus">Hapus Permanen</option>
             </select>
-            <button type="submit" class="rounded-lg border border-gray-300 px-4 py-2 text-sm hover:border-black">Terapkan</button>
+            <button type="submit" class="rounded-lg border border-rule px-4 py-2 text-sm font-semibold text-ink transition-colors hover:border-ink">Terapkan</button>
         </div>
     </form>
 
