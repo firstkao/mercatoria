@@ -37,6 +37,7 @@ class CatalogController extends Controller
             ->when($request->sort !== 'termurah' && $request->sort !== 'termahal', fn ($q) => $q->orderByDesc('id'))
             ->paginate((int) setting('catalog_per_page', 30))
             ->withQueryString();
+        $this->attachPriceIdr($products);
 
         return $this->catalogView($developer->name, $products, null, null, $developer);
     }
@@ -56,8 +57,19 @@ class CatalogController extends Controller
             ->when($request->sort !== 'termurah' && $request->sort !== 'termahal', fn ($q) => $q->orderByDesc('id'))
             ->paginate((int) setting('catalog_per_page', 30))
             ->withQueryString();
+        $this->attachPriceIdr($products);
 
         return $this->catalogView($game->name, $products, $game, $category);
+    }
+
+    /**
+     * PRD 47.11 — customer cuma lihat harga final; dipasang di controller, bukan view.
+     */
+    private function attachPriceIdr($products): void
+    {
+        foreach ($products->getCollection() as $product) {
+            $product->setAttribute('price_idr', $this->shipping->calculateItemShipping($product)['final_price_bersih']);
+        }
     }
 
     private function catalogView(

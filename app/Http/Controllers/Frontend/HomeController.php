@@ -6,13 +6,17 @@ use App\Http\Controllers\Controller;
 use App\Models\Game;
 use App\Models\HeroSlide;
 use App\Models\Product;
+use App\Services\Order\ShippingCalculatorService;
 use App\Services\Seo\SeoMetaService;
 use Illuminate\Http\Response;
 use Illuminate\View\View;
 
 class HomeController extends Controller
 {
-    public function __construct(private SeoMetaService $seo) {}
+    public function __construct(
+        private SeoMetaService $seo,
+        private ShippingCalculatorService $shipping,
+    ) {}
 
     /**
      * Landing (PRD 40): Top Promo Bar · Hero · Jelajahi Game · Merch Baru · Footer.
@@ -25,6 +29,21 @@ class HomeController extends Controller
             ->orderByDesc('id')
             ->limit(14)
             ->get();
+
+        // PRD 40.5 Penawaran Terbaik — produk diskon.
+        $bestOffers = Product::where('is_active', true)
+            ->whereNotNull('discount_amount')
+            ->orderByDesc('discount_amount')
+            ->limit((int) setting('best_offers_count', 5))
+            ->with(['game', 'tags'])
+            ->get();
+
+        // PRD 47.11: customer cuma lihat harga final (final_price_bersih).
+        foreach ([$products, $bestOffers] as $set) {
+            foreach ($set as $product) {
+                $product->setAttribute('price_idr', $this->shipping->calculateItemShipping($product)['final_price_bersih']);
+            }
+        }
 
         // PRD 40.2 Hero Carousel — struktur {image, url} terurut sort_order.
         $heroSlides = HeroSlide::where('is_active', true)
@@ -40,6 +59,7 @@ class HomeController extends Controller
         return view('frontend.home.index', [
             'games' => $games,
             'products' => $products,
+            'bestOffers' => $bestOffers,
             'heroSlides' => $heroSlides,
             'seo' => $this->seo->meta('Mercatoria — Merch & Collectibles Store'),
             'jsonLd' => $this->seo->jsonLd(),
