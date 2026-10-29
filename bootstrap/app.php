@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\DetectBotCrawler;
 use App\Http\Middleware\EnsureCheckoutReady;
 use App\Http\Middleware\EnsureUserIsAdmin;
 use App\Http\Middleware\RejectHoneypot;
@@ -18,6 +19,7 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->web(append: [
+            DetectBotCrawler::class,
             TrackVisitor::class,
         ]);
 

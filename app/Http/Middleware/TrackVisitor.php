@@ -46,6 +46,11 @@ class TrackVisitor
      */
     private function shouldTrack(Request $request): bool
     {
+        // PRD 8.8: bot crawler tidak ditrack sebagai pengunjung.
+        if ($request->attributes->get('is_bot')) {
+            return false;
+        }
+
         if (! $request->isMethod('GET') || $request->ajax() || $request->expectsJson()) {
             return false;
         }
