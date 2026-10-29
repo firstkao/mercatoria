@@ -20,6 +20,7 @@ use App\Http\Controllers\Admin\RefundController as AdminRefundController;
 use App\Http\Controllers\Admin\ReportController as AdminReportController;
 use App\Http\Controllers\Admin\SearchController as AdminSearchController;
 use App\Http\Controllers\Admin\SettingsController as AdminSettingsController;
+use App\Http\Controllers\Admin\SpammerController as AdminSpammerController;
 use App\Http\Controllers\Admin\SplitBoxBatchController as AdminSplitBoxBatchController;
 use App\Http\Controllers\Admin\StoreController as AdminStoreController;
 use App\Http\Controllers\Admin\TagController as AdminTagController;
@@ -154,6 +155,10 @@ Route::middleware(['auth', 'admin'])->prefix('office')->name('office.')->group(f
     Route::post('/email-templates', [AdminEmailTemplateController::class, 'store'])->name('email-templates.store');
     Route::put('/email-templates/{emailTemplate}', [AdminEmailTemplateController::class, 'update'])->name('email-templates.update');
     Route::delete('/email-templates/{emailTemplate}', [AdminEmailTemplateController::class, 'destroy'])->name('email-templates.destroy');
+
+    Route::get('/spammers', [AdminSpammerController::class, 'index'])->name('spammers.index');
+    Route::post('/spammers', [AdminSpammerController::class, 'store'])->name('spammers.store');
+    Route::post('/spammers/{spammer}/unblock', [AdminSpammerController::class, 'unblock'])->name('spammers.unblock');
     Route::post('/orders/{order:no_order}/note-to-customer', [AdminOrderController::class, 'noteToCustomer'])->name('orders.note-to-customer');
     Route::get('/orders/inject', [AdminInjectOrderController::class, 'index'])->name('orders.inject');
     Route::post('/orders/inject', [AdminInjectOrderController::class, 'store'])->name('orders.inject.store');
