@@ -12,7 +12,7 @@ class EmailTemplateService
      *
      * @var array<int, string>
      */
-    private const VARIABLES = ['nama_user', 'email', 'no_hp', 'no_order', 'total', 'status', 'state', 'link'];
+    private const VARIABLES = ['nama_user', 'email', 'no_hp', 'no_order', 'total', 'status', 'state', 'link', 'tanggal', 'nama_toko'];
 
     /**
      * Render template aktif: ganti {{var}} dengan nilai. Null bila template tidak ada/nonaktif.
@@ -27,6 +27,11 @@ class EmailTemplateService
         if (! $template) {
             return null;
         }
+
+        $variables = array_merge([
+            'tanggal' => now()->format('d/m/Y'),
+            'nama_toko' => (string) config('app.name'),
+        ], $variables);
 
         return [
             'subject' => $this->replace($template->subject, $variables),
