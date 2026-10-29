@@ -66,6 +66,28 @@
         </div>
     @endisset
 
+    {{-- Stats Undang Teman (DS 10.3) --}}
+    @isset($referralStats)
+        <div class="mt-5 grid grid-cols-2 gap-3 lg:grid-cols-4">
+            <div class="rounded-xl border border-rule bg-white p-4">
+                <p class="font-mono text-[10px] uppercase tracking-[0.16em] text-ink/55">Total Diundang</p>
+                <p class="mt-1 text-2xl font-semibold text-ink">{{ $referralStats['total_diundang'] ?? 0 }}</p>
+            </div>
+            <div class="rounded-xl border border-rule bg-white p-4">
+                <p class="font-mono text-[10px] uppercase tracking-[0.16em] text-ink/55">Berhasil</p>
+                <p class="mt-1 text-2xl font-semibold text-ink">{{ $referralStats['berhasil'] ?? 0 }}</p>
+            </div>
+            <div class="rounded-xl border border-rule bg-white p-4">
+                <p class="font-mono text-[10px] uppercase tracking-[0.16em] text-ink/55">Menunggu Order</p>
+                <p class="mt-1 text-2xl font-semibold text-ink">{{ $referralStats['menunggu_order'] ?? 0 }}</p>
+            </div>
+            <div class="rounded-xl border border-rule bg-white p-4">
+                <p class="font-mono text-[10px] uppercase tracking-[0.16em] text-ink/55">Koin</p>
+                <p class="mt-1 text-2xl font-semibold text-ink">{{ number_format($referralStats['koin_didapat'] ?? 0, 0, ',', '.') }}</p>
+            </div>
+        </div>
+    @endisset
+
     <div class="mt-5 rounded-xl border border-rule bg-white p-4">
         <h2 class="font-mono text-[11px] font-medium uppercase tracking-[0.16em] text-ink">Teman yang Diundang</h2>
         @if ($referrals->isEmpty())
