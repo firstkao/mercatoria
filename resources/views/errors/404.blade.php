@@ -21,11 +21,11 @@
     <main class="flex flex-1 items-center justify-center px-4 py-16">
         <div class="w-full max-w-md rounded-xl border border-rule bg-white px-8 py-12 text-center">
             <p class="font-mono text-[10px] uppercase tracking-[0.22em] text-ink/45">Error 404</p>
-            <h1 class="mt-2 font-display text-[1.75rem] font-semibold text-ink">Halaman tidak ditemukan</h1>
+            <h1 class="mt-2 font-display text-[1.75rem] leading-tight font-semibold text-ink sm:text-3xl">Halaman tidak ditemukan</h1>
             <p class="mt-3 text-sm text-ink/65">
                 Alamat yang kamu buka tidak ada atau sudah dipindahkan.
             </p>
-            <a href="/" class="mt-6 inline-block rounded-lg bg-black px-6 py-2.5 text-sm font-semibold tracking-[0.08em] text-white transition-colors hover:bg-ink">
+            <a href="/" class="mt-6 inline-block rounded-lg bg-black px-6 py-2.5 text-sm font-semibold tracking-[0.12em] text-white transition-colors hover:bg-ink">
                 Kembali ke Beranda
             </a>
             <div class="mt-6 h-px bg-rule"></div>
