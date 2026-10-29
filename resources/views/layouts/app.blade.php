@@ -76,6 +76,9 @@
                         </a>
                     </div>
 
+                    @if (!empty($cartTotal))
+                        <span class="text-[13px] font-bold text-ink">{{ format_rp($cartTotal) }}</span>
+                    @endif
                     <a href="{{ route('cart.index') }}" class="relative text-[#333] transition-colors hover:text-[#4FC3F7]" aria-label="Keranjang">
                         <x-icons.shopping-cart width="18" height="18" />
                         @if (!empty($cartCount) && $cartCount > 0)
