@@ -12,6 +12,7 @@ use App\Models\ProductVariant;
 use App\Models\Store;
 use App\Models\Tag;
 use App\Services\Image\ImageWatermarkService;
+use App\Services\Order\ShippingCalculatorService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
@@ -20,7 +21,10 @@ use Illuminate\View\View;
 
 class ProductController extends Controller
 {
-    public function __construct(private ImageWatermarkService $watermark) {}
+    public function __construct(
+        private ImageWatermarkService $watermark,
+        private ShippingCalculatorService $shipping,
+    ) {}
 
     public function index(): View
     {
@@ -102,6 +106,55 @@ class ProductController extends Controller
         $product->delete();
 
         return redirect()->route('office.products.index')->with('status', 'Produk dihapus permanen.');
+    }
+
+    /**
+     * PRD 13.5/22.6: duplikat produk (field + varian) sebagai draft.
+     */
+    public function duplicate(Request $request, Product $product): RedirectResponse
+    {
+        $copy = $product->replicate(['sold_count']);
+        $copy->sku = $product->sku.'-COPY-'.Str::random(4);
+        $copy->slug = $product->slug.'-copy-'.Str::random(4);
+        $copy->is_active = false;
+        $copy->save();
+
+        foreach ($product->variants as $variant) {
+            $variantCopy = $variant->replicate();
+            $variantCopy->sku = $variant->sku.'-COPY-'.Str::random(4);
+            $variantCopy->product_id = $copy->id;
+            $variantCopy->save();
+        }
+
+        AdminLog::record($request->user(), 'create', 'Product', $copy->id, null, [
+            'duplicate_of' => $product->id,
+            'sku' => $copy->sku,
+        ], 'Duplikat produk (draft)');
+
+        return redirect()->route('office.products.edit', $copy)->with('status', 'Produk diduplikat sebagai draft.');
+    }
+
+    /**
+     * PRD 13.5/22.6: preview tampilan user sebelum publish.
+     */
+    public function preview(Product $product): View
+    {
+        $product->load(['variants', 'tags', 'merchCategory', 'game']);
+
+        return view('frontend.product.show', [
+            'game' => $product->game,
+            'product' => $product,
+            'variant' => null,
+            'pricing' => $this->shipping->calculateItemShipping($product),
+            'related' => Product::where('is_active', true)
+                ->where('game_id', $product->game_id)
+                ->where('id', '!=', $product->id)
+                ->inRandomOrder()
+                ->limit((int) setting('related_products_count', 6))
+                ->with(['game', 'tags'])
+                ->get(),
+            'shipping' => $this->shipping,
+        ]);
     }
 
     public function bulk(Request $request): RedirectResponse

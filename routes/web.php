@@ -111,6 +111,8 @@ Route::middleware(['auth', 'admin'])->prefix('office')->name('office.')->group(f
     // Produk (PRD 22.6)
     Route::get('/products', [AdminProductController::class, 'index'])->name('products.index');
     Route::get('/products/create', [AdminProductController::class, 'create'])->name('products.create');
+    Route::post('/products/{product}/duplicate', [AdminProductController::class, 'duplicate'])->name('products.duplicate');
+    Route::get('/products/{product}/preview', [AdminProductController::class, 'preview'])->name('products.preview');
     Route::post('/products', [AdminProductController::class, 'store'])->name('products.store');
     Route::post('/products/bulk', [AdminProductController::class, 'bulk'])->name('products.bulk');
     Route::get('/products/{product}/edit', [AdminProductController::class, 'edit'])->name('products.edit');
