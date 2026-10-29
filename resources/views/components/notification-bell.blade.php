@@ -33,7 +33,7 @@
                     </a>
                 </li>
             @empty
-                <li class="px-4 py-6 text-center text-sm text-gray-400">Belum ada notifikasi.</li>
+                <li class="px-4 py-6 text-center text-sm text-ink/45">Belum ada notifikasi.</li>
             @endforelse
         </ul>
 
