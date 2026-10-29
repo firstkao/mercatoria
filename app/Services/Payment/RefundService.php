@@ -8,6 +8,7 @@ use App\Models\OrderStatus;
 use App\Models\Refund;
 use App\Models\User;
 use App\Models\UserVoucher;
+use App\Services\Admin\AdminNotificationService;
 use App\Services\Order\OrderStatusService;
 use App\Services\User\CoinWalletService;
 use App\Services\User\UserNotificationService;
@@ -142,6 +143,13 @@ class RefundService
             'status' => Refund::STATUS_REQUESTED,
             'requested_by' => $admin->id,
         ]);
+
+        // PRD 41.1: bell admin — refund request.
+        app(AdminNotificationService::class)->notify(
+            'refund_request',
+            'Refund #'.$order->no_order.' diminta',
+            '/office/orders/'.$order->no_order
+        );
 
         $this->notifications->notify(
             $order->user,

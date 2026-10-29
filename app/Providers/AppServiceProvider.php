@@ -7,6 +7,7 @@ use App\Models\Developer;
 use App\Models\Game;
 use App\Models\Product;
 use App\Models\UserNotification;
+use App\Services\Admin\AdminNotificationService;
 use App\Services\Order\ShippingCalculatorService;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
@@ -109,6 +110,14 @@ class AppServiceProvider extends ServiceProvider
                 'footerDevelopers',
                 Developer::where('is_active', true)->orderBy('name')->get(['id', 'name', 'slug'])
             );
+        });
+
+        // Bell notifikasi admin (PRD 41.1) — 10 terbaru + unread count untuk topbar.
+        View::composer('admin.layouts.admin', function ($view): void {
+            $data = app(AdminNotificationService::class)->topbarData();
+
+            $view->with('adminBellNotifications', $data['notifications'])
+                ->with('adminBellUnreadCount', $data['unread']);
         });
     }
 }

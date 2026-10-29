@@ -7,6 +7,7 @@ use App\Models\OrderStatus;
 use App\Models\Payment;
 use App\Models\User;
 use App\Notifications\PaymentProofAdminNotification;
+use App\Services\Admin\AdminNotificationService;
 use App\Services\SplitBox\SplitBoxService;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Notification;
@@ -69,6 +70,13 @@ class PaymentProofService
         );
         Notification::route('mail', 'cs@mercatoria.id')
             ->notify(new PaymentProofAdminNotification($order, $payment));
+
+        // PRD 41.1: bell admin — bukti bayar diupload, butuh verifikasi.
+        app(AdminNotificationService::class)->notify(
+            'bukti_bayar',
+            'Bukti bayar #'.$order->no_order.' menunggu verifikasi',
+            '/office/orders/'.$order->no_order
+        );
 
         // Bukti denda (PRD 51.1) tidak mengunci slot Split Box — status tetap Menunggu Denda.
         if ($isPenalty) {

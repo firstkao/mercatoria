@@ -11,6 +11,7 @@ use App\Models\OrderStatus;
 use App\Models\SplitBoxSlot;
 use App\Models\User;
 use App\Models\UserVoucher;
+use App\Services\Admin\AdminNotificationService;
 use App\Services\Order\ShippingCalculatorService;
 use App\Services\SplitBox\SplitBoxService;
 use App\Services\User\CoinWalletService;
@@ -152,6 +153,13 @@ class CheckoutService
             if (! (bool) setting('pause_customer_emails', false)) {
                 Mail::to($user->email)->send(new OrderCreatedMail($order));
             }
+
+            // PRD 41.1: bell admin — order baru (user checkout).
+            app(AdminNotificationService::class)->notify(
+                'order_baru',
+                'Order baru #'.$order->no_order,
+                '/office/orders/'.$order->no_order
+            );
 
             return $order;
         });
