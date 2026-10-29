@@ -3,13 +3,14 @@
 @section('title', 'Menyusul — Mercatoria')
 
 @section('content')
-    <div class="mx-auto max-w-xl rounded-2xl bg-white p-10 text-center shadow-sm ring-1 ring-gray-100">
-        <h1 class="text-2xl font-semibold">Menyusul</h1>
-        <p class="mt-3 text-sm text-gray-600">
+    <div class="mx-auto max-w-xl rounded-xl border border-rule bg-white p-10 text-center">
+        <p class="font-mono text-[10px] uppercase tracking-[0.22em] text-ink/45">Info</p>
+        <h1 class="mt-2 font-display text-[1.75rem] font-semibold text-ink">Menyusul</h1>
+        <p class="mt-3 text-sm text-ink/65">
             Halaman ini belum dibangun. Fitur sedang dalam antrean pengembangan —
             tidak ada yang perlu dikhawatirkan dari pesananmu.
         </p>
-        <a href="/dashboard" class="mt-6 inline-block rounded-lg bg-black px-6 py-2.5 text-sm font-semibold text-white">
+        <a href="{{ route('dashboard') }}" class="mt-6 inline-block rounded-lg bg-black px-6 py-2.5 text-sm font-semibold tracking-[0.08em] text-white transition-colors hover:bg-ink">
             Kembali ke Dashboard
         </a>
     </div>
