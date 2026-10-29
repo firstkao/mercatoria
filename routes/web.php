@@ -264,6 +264,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile/wallet', [ProfileController::class, 'wallet'])->name('profile.wallet');
     Route::get('/profile/undang', [ProfileController::class, 'referral'])->name('profile.referral');
     Route::get('/profile/notifications', [ProfileController::class, 'notifications'])->name('profile.notifications');
+    Route::get('/profile/notifications/unread-count', [ProfileController::class, 'unreadCount'])->name('profile.notifications.unread-count');
     Route::post('/profile/notifications/read-all', [ProfileController::class, 'readAllNotifications'])->name('profile.notifications.read-all');
     Route::post('/profile/tour-seen', [ProfileController::class, 'markTourSeen'])->name('profile.tour-seen');
 

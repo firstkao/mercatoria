@@ -11,6 +11,7 @@ use App\Models\User;
 use App\Models\UserNotification;
 use App\Models\UserVoucher;
 use App\Services\User\UserTierService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -178,6 +179,18 @@ class ProfileController extends Controller
             'notifications' => UserNotification::where('user_id', $request->user()->id)
                 ->orderByDesc('id')
                 ->paginate(20),
+        ]);
+    }
+
+    /**
+     * PRD 43.8: polling badge bell real-time.
+     */
+    public function unreadCount(Request $request): JsonResponse
+    {
+        return response()->json([
+            'count' => UserNotification::where('user_id', $request->user()->id)
+                ->where('is_read', false)
+                ->count(),
         ]);
     }
 
