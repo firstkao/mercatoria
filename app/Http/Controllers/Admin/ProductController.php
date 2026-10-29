@@ -11,13 +11,17 @@ use App\Models\Product;
 use App\Models\ProductVariant;
 use App\Models\Store;
 use App\Models\Tag;
+use App\Services\Image\ImageWatermarkService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
 
 class ProductController extends Controller
 {
+    public function __construct(private ImageWatermarkService $watermark) {}
+
     public function index(): View
     {
         return view('admin.products.index', [
@@ -40,6 +44,7 @@ class ProductController extends Controller
     {
         $data = $this->validateProduct($request);
         $data['slug'] = $data['slug'] ?: Str::slug($data['name']).'-'.Str::random(4);
+        $data = $this->processUploads($request, $data, null);
 
         $product = Product::create($data + ['sold_count' => 0]);
 
@@ -66,6 +71,7 @@ class ProductController extends Controller
     public function update(Request $request, Product $product): RedirectResponse
     {
         $data = $this->validateProduct($request, $product);
+        $data = $this->processUploads($request, $data, $product);
         [$old, $new] = AdminLog::diff($product, array_keys($data), $data);
 
         $product->update($data);
@@ -120,7 +126,15 @@ class ProductController extends Controller
             'price_rmb' => ['nullable', 'numeric', 'min:0'],
             'weight_gram' => ['nullable', 'integer', 'min:0'],
             'availability' => ['required', 'in:tersedia,kosong'],
+            // PRD 13.6: foto varian 1 per varian, max 1MB.
+            'image' => ['nullable', 'file', 'mimes:jpg,jpeg,png', 'max:1024'],
+            'image_path' => ['nullable', 'string', 'max:255'],
         ]);
+
+        if ($request->hasFile('image')) {
+            $data['image_path'] = $this->storeImage($request->file('image'), 'var', null);
+        }
+        unset($data['image']);
 
         $variant = $product->variants()->create($data);
 
@@ -170,11 +184,58 @@ class ProductController extends Controller
             'discount_end' => ['nullable', 'date'],
             'availability' => ['required', 'in:tersedia,kosong'],
             'is_active' => ['nullable', 'boolean'],
+            // PRD 13.6: 1 file, max 1MB, jpg/jpeg/png. Field path manual tetap kompatibel.
+            'image' => ['nullable', 'file', 'mimes:jpg,jpeg,png', 'max:1024'],
+            'description_image' => ['nullable', 'file', 'mimes:jpg,jpeg,png', 'max:1024'],
+            'image_path' => ['nullable', 'string', 'max:255'],
+            'description_image_path' => ['nullable', 'string', 'max:255'],
         ]);
 
         $data['is_active'] = $request->boolean('is_active');
         $data['slug'] = $data['slug'] ?? '';
 
         return $data;
+    }
+
+    /**
+     * PRD 13.6: upload gambar → watermark + master asli; path manual lama tetap berlaku.
+     *
+     * @param  array<string, mixed>  $data
+     * @return array<string, mixed>
+     */
+    private function processUploads(Request $request, array $data, ?Product $product): array
+    {
+        if ($request->hasFile('image')) {
+            $data['image_path'] = $this->storeImage($request->file('image'), 'img', $product?->image_path);
+        }
+
+        if ($request->hasFile('description_image')) {
+            $data['description_image_path'] = $this->storeImage($request->file('description_image'), 'desc', $product?->description_image_path);
+        }
+
+        // Jangan bawa objek file ke create/diff/admin_logs.
+        unset($data['image'], $data['description_image']);
+
+        return $data;
+    }
+
+    /**
+     * Simpan via ImageWatermarkService (master → private/originals, versi tayang ter-watermark).
+     */
+    private function storeImage(UploadedFile $file, string $prefix, ?string $oldPath): string
+    {
+        $ext = strtolower($file->getClientOriginalExtension() ?: 'jpg');
+        $target = $this->watermark->watermark(
+            $file->getRealPath(),
+            'products/'.sprintf('%s-%s.%s', $prefix, Str::random(20), $ext)
+        );
+
+        // PRD 13.6: auto-delete foto lama saat override (snapshot order tidak tersentuh).
+        if ($oldPath && $oldPath !== $target && str_starts_with($oldPath, 'products/')) {
+            @unlink(storage_path('app/private/'.$oldPath));
+            @unlink(storage_path('app/private/originals/'.$oldPath));
+        }
+
+        return $target;
     }
 }
