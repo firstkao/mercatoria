@@ -33,7 +33,7 @@
             </nav>
 
             <p class="mt-3 font-mono text-[10px] uppercase tracking-[0.16em] text-ink/50">[{{ $game->name }}]</p>
-            <h1 class="mt-1 font-display text-2xl font-semibold text-ink">{{ $product->name }}</h1>
+            <h1 class="mt-2 font-display text-[1.75rem] leading-tight font-semibold text-ink sm:text-3xl">{{ $product->name }}</h1>
 
             <div class="mt-2 flex flex-wrap gap-2">
                 @foreach ($product->tags as $tag)

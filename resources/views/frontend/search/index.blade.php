@@ -6,7 +6,7 @@
     <div class="mx-auto max-w-[1200px]">
         <div class="rounded-xl border border-rule bg-white p-6">
             <p class="font-mono text-[10px] uppercase tracking-[0.22em] text-ink/45">Pencarian</p>
-            <h1 class="mt-2 font-display text-xl font-semibold text-ink">
+            <h1 class="mt-2 font-display text-[1.75rem] leading-tight font-semibold text-ink sm:text-3xl">
                 Hasil Pencarian
                 @if ($q !== '') untuk &ldquo;{{ $q }}&rdquo; @endif
             </h1>
