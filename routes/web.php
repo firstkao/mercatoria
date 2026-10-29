@@ -19,6 +19,7 @@ use App\Http\Controllers\Admin\SplitBoxBatchController as AdminSplitBoxBatchCont
 use App\Http\Controllers\Admin\StoreController as AdminStoreController;
 use App\Http\Controllers\Admin\TagController as AdminTagController;
 use App\Http\Controllers\Admin\UserController as AdminUserController;
+use App\Http\Controllers\Admin\VoucherController as AdminVoucherController;
 use App\Http\Controllers\Auth\ForgotPasswordController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
@@ -172,6 +173,13 @@ Route::middleware(['auth', 'admin'])->prefix('office')->name('office.')->group(f
     Route::post('/hero-slides', [AdminHeroSlideController::class, 'store'])->name('hero-slides.store');
     Route::put('/hero-slides/{heroSlide}', [AdminHeroSlideController::class, 'update'])->name('hero-slides.update');
     Route::delete('/hero-slides/{heroSlide}', [AdminHeroSlideController::class, 'destroy'])->name('hero-slides.destroy');
+
+    Route::get('/vouchers', [AdminVoucherController::class, 'index'])->name('vouchers.index');
+    Route::post('/vouchers', [AdminVoucherController::class, 'store'])->name('vouchers.store');
+    Route::put('/vouchers/{voucher}', [AdminVoucherController::class, 'update'])->name('vouchers.update');
+    Route::delete('/vouchers/{voucher}', [AdminVoucherController::class, 'destroy'])->name('vouchers.destroy');
+    Route::post('/vouchers/{voucher}/issue', [AdminVoucherController::class, 'issue'])->name('vouchers.issue');
+    Route::delete('/user-vouchers/{userVoucher}', [AdminVoucherController::class, 'revoke'])->name('user-vouchers.revoke');
     Route::get('/reports', [AdminReportController::class, 'index'])->name('reports.index');
     Route::post('/split-box-batches/{split_box_batch}/close-refund', [AdminSplitBoxBatchController::class, 'closeRefund'])
         ->name('split-box-batches.close-refund');

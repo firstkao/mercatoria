@@ -16,6 +16,7 @@ class Voucher extends Model
         'type',
         'nominal',
         'min_belanja',
+        'valid_days',
         'is_active',
     ];
 
@@ -24,6 +25,7 @@ class Voucher extends Model
         return [
             'nominal' => 'decimal:2',
             'min_belanja' => 'decimal:2',
+            'valid_days' => 'integer',
             'is_active' => 'boolean',
         ];
     }
