@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Frontend;
 
 use App\Http\Controllers\Controller;
 use App\Models\Game;
+use App\Models\HeroSlide;
 use App\Models\Product;
 use App\Services\Seo\SeoMetaService;
 use Illuminate\Http\Response;
@@ -25,9 +26,21 @@ class HomeController extends Controller
             ->limit(14)
             ->get();
 
+        // PRD 40.2 Hero Carousel — struktur {image, url} terurut sort_order.
+        $heroSlides = HeroSlide::where('is_active', true)
+            ->orderBy('sort_order')
+            ->orderBy('id')
+            ->get()
+            ->map(fn (HeroSlide $slide) => [
+                'image' => $slide->image,
+                'url' => $slide->url,
+            ])
+            ->values();
+
         return view('frontend.home.index', [
             'games' => $games,
             'products' => $products,
+            'heroSlides' => $heroSlides,
             'seo' => $this->seo->meta('Mercatoria — Merch & Collectibles Store'),
             'jsonLd' => $this->seo->jsonLd(),
         ]);

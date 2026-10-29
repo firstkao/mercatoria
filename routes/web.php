@@ -3,6 +3,7 @@
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Admin\DeveloperController as AdminDeveloperController;
 use App\Http\Controllers\Admin\GameController as AdminGameController;
+use App\Http\Controllers\Admin\HeroSlideController as AdminHeroSlideController;
 use App\Http\Controllers\Admin\InjectOrderController as AdminInjectOrderController;
 use App\Http\Controllers\Admin\LogController as AdminLogController;
 use App\Http\Controllers\Admin\MerchCategoryController as AdminMerchCategoryController;
@@ -163,6 +164,11 @@ Route::middleware(['auth', 'admin'])->prefix('office')->name('office.')->group(f
     Route::post('/pages', [AdminPageController::class, 'store'])->name('pages.store');
     Route::put('/pages/{page}', [AdminPageController::class, 'update'])->name('pages.update');
     Route::delete('/pages/{page}', [AdminPageController::class, 'destroy'])->name('pages.destroy');
+
+    Route::get('/hero-slides', [AdminHeroSlideController::class, 'index'])->name('hero-slides.index');
+    Route::post('/hero-slides', [AdminHeroSlideController::class, 'store'])->name('hero-slides.store');
+    Route::put('/hero-slides/{heroSlide}', [AdminHeroSlideController::class, 'update'])->name('hero-slides.update');
+    Route::delete('/hero-slides/{heroSlide}', [AdminHeroSlideController::class, 'destroy'])->name('hero-slides.destroy');
     Route::get('/reports', [AdminReportController::class, 'index'])->name('reports.index');
     Route::post('/split-box-batches/{split_box_batch}/close-refund', [AdminSplitBoxBatchController::class, 'closeRefund'])
         ->name('split-box-batches.close-refund');
