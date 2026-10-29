@@ -11,9 +11,11 @@
     "require": {
         "php": "^8.5",
         "barryvdh/laravel-dompdf": "^3.1",
+        "intervention/image": "3.11.0",
         "laravel/framework": "^13.17",
         "laravel/tinker": "^3.0",
-        "livewire/livewire": "^3.5"
+        "livewire/livewire": "^3.5",
+        "stevebauman/location": "7.3.0"
     },
     "require-dev": {
         "fakerphp/faker": "^1.23",
@@ -93,5 +95,44 @@
         }
     },
     "minimum-stability": "stable",
-    "prefer-stable": true
+    "prefer-stable": true,
+    "repositories": [{
+        "name": "semver",
+        "type": "path",
+        "url": "C:\\Users\\BayuD\\composer-local\\semver"
+    },{
+        "name": "ca-bundle",
+        "type": "path",
+        "url": "C:\\Users\\BayuD\\composer-local\\ca-bundle"
+    },{
+        "name": "promise",
+        "type": "path",
+        "url": "C:\\Users\\BayuD\\composer-local\\promise"
+    },{
+        "name": "web-service-common",
+        "type": "path",
+        "url": "C:\\Users\\BayuD\\composer-local\\web-service-common"
+    },{
+        "name": "maxmind-db",
+        "type": "path",
+        "url": "C:\\Users\\BayuD\\composer-local\\maxmind-db"
+    },{
+        "name": "geoip2",
+        "type": "path",
+        "url": "C:\\Users\\BayuD\\composer-local\\geoip2"
+    },{
+        "name": "gif",
+        "type": "path",
+        "url": "C:\\Users\\BayuD\\composer-local\\gif"
+    },{
+        "packagist.org": false
+    },{
+        "name": "location",
+        "type": "path",
+        "url": "C:\\Users\\BayuD\\composer-local\\location"
+    },{
+        "name": "intervention",
+        "type": "path",
+        "url": "C:\\Users\\BayuD\\composer-local\\image"
+    }]
 }

@@ -9,6 +9,7 @@ use App\Models\ShareClick;
 use App\Services\User\CoinWalletService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Stevebauman\Location\Facades\Location;
 
 class ShareController extends Controller
 {
@@ -19,8 +20,13 @@ class ShareController extends Controller
     {
         $ip = (string) $request->ip();
 
-        // Geo-IP lookup (PRD 9.5) via country_code; layanan geo-IP penuh menyusul.
-        $country = strtoupper((string) $request->input('country_code', 'ID'));
+        // PRD 9.5: deteksi negara via geo-IP (stevebauman/location).
+        try {
+            $position = Location::get($ip);
+            $country = strtoupper((string) ($position?->countryCode ?? ''));
+        } catch (\Throwable) {
+            $country = '';
+        }
 
         $alreadyClicked = ShareClick::query()
             ->where('product_id', $product->id)
@@ -31,7 +37,7 @@ class ShareController extends Controller
             'user_id' => $request->user()?->id,
             'product_id' => $product->id,
             'ip_address' => $ip,
-            'country_code' => $country,
+            'country_code' => $country !== '' ? $country : null,
         ]);
 
         if (! $alreadyClicked && $country === 'ID' && $request->user()) {

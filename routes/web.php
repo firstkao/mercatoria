@@ -8,6 +8,7 @@ use App\Http\Controllers\Admin\MerchCategoryController as AdminMerchCategoryCont
 use App\Http\Controllers\Admin\OrderController as AdminOrderController;
 use App\Http\Controllers\Admin\OrderPaymentController;
 use App\Http\Controllers\Admin\OrderStatusController;
+use App\Http\Controllers\Admin\PageController as AdminPageController;
 use App\Http\Controllers\Admin\PaymentController as AdminPaymentController;
 use App\Http\Controllers\Admin\ProductController as AdminProductController;
 use App\Http\Controllers\Admin\ReportController as AdminReportController;
@@ -25,32 +26,47 @@ use App\Http\Controllers\ComingSoonController;
 use App\Http\Controllers\Frontend\CartController;
 use App\Http\Controllers\Frontend\CatalogController;
 use App\Http\Controllers\Frontend\CheckoutController;
+use App\Http\Controllers\Frontend\HomeController;
 use App\Http\Controllers\Frontend\OrderController;
+use App\Http\Controllers\Frontend\PageController;
 use App\Http\Controllers\Frontend\ProductController;
 use App\Http\Controllers\Frontend\ProfileController;
 use App\Http\Controllers\Frontend\SearchController;
 use App\Http\Controllers\Frontend\ShareController;
+use App\Http\Controllers\TwoFactorController;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', fn () => view('welcome'))->name('home');
+Route::get('/', [HomeController::class, 'index'])->name('home');
+Route::get('/sitemap.xml', [HomeController::class, 'sitemap'])->name('sitemap');
+Route::get('/robots.txt', [HomeController::class, 'robots'])->name('robots');
 
 // Placeholder jujur untuk fitur/halaman yang belum dibangun (antrean).
 Route::get('/menyusul', ComingSoonController::class)->name('coming-soon');
+
+// Halaman CMS publik (PRD 25/36) — fallback placeholder bila belum ada isinya.
 foreach (['tentang-kami', 'faq', 'cara-belanja', 'tnc', 'kebijakan-privasi'] as $staticPage) {
-    Route::get('/'.$staticPage, ComingSoonController::class)->name('page.'.$staticPage);
+    Route::get('/'.$staticPage, [PageController::class, 'show'])
+        ->defaults('slug', $staticPage)
+        ->name('page.'.$staticPage);
 }
+
+// 2FA Admin (PRD 8.3)
+Route::middleware('guest')->group(function () {
+    Route::get('/2fa/verify', [TwoFactorController::class, 'show'])->name('2fa.verify');
+    Route::post('/2fa/verify', [TwoFactorController::class, 'verify'])->name('2fa.verify.store');
+});
 
 Route::middleware('guest')->group(function () {
     Route::get('/login', [LoginController::class, 'create'])->name('login');
 
     Route::post('/login', [LoginController::class, 'store'])
-        ->middleware(['honeypot', 'throttle:login'])
+        ->middleware(['honeypot', 'turnstile', 'throttle:login'])
         ->name('login.store');
 
     Route::get('/register', [RegisterController::class, 'create'])->name('register');
 
     Route::post('/register', [RegisterController::class, 'store'])
-        ->middleware(['honeypot', 'throttle:register'])
+        ->middleware(['honeypot', 'turnstile', 'throttle:register'])
         ->name('register.store');
 
     Route::get('/forgot-password', [ForgotPasswordController::class, 'create'])->name('password.request');
@@ -140,6 +156,9 @@ Route::middleware(['auth', 'admin'])->prefix('office')->name('office.')->group(f
     // Settings, laporan, log
     Route::get('/settings', [AdminSettingsController::class, 'index'])->name('settings.index');
     Route::post('/settings', [AdminSettingsController::class, 'update'])->name('settings.update');
+    Route::get('/pages', [AdminPageController::class, 'index'])->name('pages.index');
+    Route::post('/pages', [AdminPageController::class, 'store'])->name('pages.store');
+    Route::put('/pages/{page}', [AdminPageController::class, 'update'])->name('pages.update');
     Route::get('/reports', [AdminReportController::class, 'index'])->name('reports.index');
     Route::post('/split-box-batches/{split_box_batch}/close-refund', [AdminSplitBoxBatchController::class, 'closeRefund'])
         ->name('split-box-batches.close-refund');

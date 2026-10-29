@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\TwoFactorController;
 use App\Http\Requests\Auth\LoginRequest;
 use App\Models\AuthLog;
 use Illuminate\Http\RedirectResponse;
@@ -21,14 +22,26 @@ class LoginController extends Controller
     {
         $request->authenticate();
 
+        $user = $request->user();
+
+        // PRD 8.3: 2FA Admin wajib — OTP 6 digit via email, berlaku 5 menit.
+        if ($user->isAdmin()) {
+            Auth::logout();
+            $request->session()->forget('password_hash_web');
+            TwoFactorController::issue($user);
+            $request->session()->put('admin_2fa_id', $user->id);
+
+            return redirect('/2fa/verify');
+        }
+
         $request->session()->regenerate();
 
-        $request->user()->forceFill(['last_login' => now()])->save();
+        $user->forceFill(['last_login' => now()])->save();
 
         AuthLog::record(
             AuthLog::ACTION_LOGIN_SUCCESS,
             (string) $request->input('email'),
-            $request->user()->id,
+            $user->id,
         );
 
         return redirect()->intended(route('dashboard'));
