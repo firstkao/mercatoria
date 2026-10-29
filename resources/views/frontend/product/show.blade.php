@@ -3,15 +3,7 @@
 @section('title', $product->name.' — Mercatoria')
 
 @section('content')
-    <nav class="mb-4 flex flex-wrap items-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.14em] text-ink/50">
-        <a href="/" class="transition-colors hover:text-ink">Beranda</a>
-        <span class="text-ink/35">/</span>
-        <a href="/{{ $game->slug }}" class="transition-colors hover:text-ink">{{ $game->name }}</a>
-        <span class="text-ink/35">/</span>
-        <span class="text-ink">{{ $product->name }}</span>
-    </nav>
-
-    <div class="grid grid-cols-1 gap-8 lg:grid-cols-2">
+    <div class="grid grid-cols-1 gap-8 lg:grid-cols-[48%_52%]">
         <div>
             <div class="overflow-hidden rounded-xl border border-rule bg-white">
                 @if (($variant?->image_path) ?? $product->image_path)
@@ -32,7 +24,15 @@
         </div>
 
         <div>
-            <p class="font-mono text-[10px] uppercase tracking-[0.16em] text-ink/50">[{{ $game->name }}]</p>
+            <nav class="flex flex-wrap items-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.14em] text-ink/50">
+                <a href="/" class="transition-colors hover:text-ink">Beranda</a>
+                <span class="text-ink/35">/</span>
+                <a href="/{{ $game->slug }}" class="transition-colors hover:text-ink">{{ $game->name }}</a>
+                <span class="text-ink/35">/</span>
+                <span class="text-ink">{{ $product->name }}</span>
+            </nav>
+
+            <p class="mt-3 font-mono text-[10px] uppercase tracking-[0.16em] text-ink/50">[{{ $game->name }}]</p>
             <h1 class="mt-1 font-display text-2xl font-semibold text-ink">{{ $product->name }}</h1>
 
             <div class="mt-2 flex flex-wrap gap-2">
@@ -87,6 +87,27 @@
                     <dd class="text-ink">{{ number_format($pricing['weight_gram']) }} gram</dd>
                 </div>
             </dl>
+
+            {{-- Quantity + CTA (Design Spec 6.1) --}}
+            @unless ($product->is_split_box && $product->splitBox)
+                <form method="POST" action="{{ route('cart.store') }}" class="mt-6 flex flex-wrap items-end gap-3">
+                    @csrf
+                    <input type="hidden" name="product_id" value="{{ $product->id }}">
+                    @if ($variant)
+                        <input type="hidden" name="variant_id" value="{{ $variant->id }}">
+                    @endif
+                    <div>
+                        <label for="qty" class="block font-mono text-[10px] font-medium uppercase tracking-[0.16em] text-ink/70">Jumlah</label>
+                        <input type="number" name="qty" id="qty" value="1" min="1" max="999"
+                               class="mt-2 w-24 rounded-lg border border-rule bg-white px-3 py-2.5 text-center text-sm text-ink focus:border-ink focus:outline-none focus:ring-2 focus:ring-accent/45">
+                    </div>
+                    <button type="submit"
+                            class="rounded-lg px-6 py-2.5 text-sm font-semibold tracking-[0.08em] text-white transition-colors hover:opacity-90"
+                            style="background:#4FC3F7">
+                        TAMBAH KE KERANJANG
+                    </button>
+                </form>
+            @endunless
         </div>
     </div>
 
