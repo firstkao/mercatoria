@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\AdminLog;
+use App\Models\Spammer;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -87,6 +88,52 @@ class UserController extends Controller
         AdminLog::record($request->user(), 'force_verify_email', 'User', $user->id, ['email_verified_at' => null], ['email_verified_at' => (string) $user->email_verified_at], 'Verifikasi email manual');
 
         return redirect()->route('office.users.index')->with('status', 'Email user diverifikasi.');
+    }
+
+    /**
+     * PRD 22.6/7.10: hard delete akun — permanen, koin ikut terhapus, tidak bisa restore.
+     * Ditolak bila user punya order (riwayat finansial tidak boleh lenyap, orders FK cascade).
+     */
+    public function destroy(Request $request, User $user): RedirectResponse
+    {
+        if ($user->orders()->exists()) {
+            return back()->withErrors(['delete' => 'User memiliki riwayat order dan tidak dapat dihapus.']);
+        }
+
+        AdminLog::record($request->user(), 'delete', 'User', $user->id, $user->only(['name', 'email', 'role']), null, 'Hard delete user');
+        $user->delete();
+
+        return redirect()->route('office.users.index')->with('status', 'User dihapus permanen.');
+    }
+
+    /**
+     * PRD 10.6: Forever Delete — HANYA user di spammer list.
+     * Konfirmasi keras = email user; data spammers tetap aktif selamanya.
+     */
+    public function foreverDelete(Request $request, User $user): RedirectResponse
+    {
+        $data = $request->validate([
+            'confirmation' => ['required', 'string'],
+        ]);
+
+        $inSpammerList = Spammer::where('email', $user->email)->exists();
+
+        if (! $inSpammerList) {
+            return back()->withErrors(['confirmation' => 'Forever Delete hanya untuk user di spammer list.']);
+        }
+
+        if ($data['confirmation'] !== $user->email) {
+            return back()->withErrors(['confirmation' => 'Konfirmasi harus persis berupa email user.']);
+        }
+
+        if ($user->orders()->exists()) {
+            return back()->withErrors(['confirmation' => 'User memiliki riwayat order dan tidak dapat dihapus.']);
+        }
+
+        AdminLog::record($request->user(), 'forever_delete', 'User', $user->id, $user->only(['name', 'email', 'role']), null, 'Forever Delete (data spammer tetap)');
+        $user->delete();
+
+        return redirect()->route('office.users.index')->with('status', 'Akun dihapus permanen; data spammer tetap aktif.');
     }
 
     public function edit(User $user): View
