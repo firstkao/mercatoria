@@ -84,9 +84,10 @@
                     <label for="sort" class="font-mono text-[10px] uppercase tracking-[0.14em] text-ink/55">Urutkan</label>
                     <select name="sort" id="sort" onchange="this.form.submit()"
                             class="rounded-lg border border-rule bg-white px-3 py-1.5 text-sm text-ink focus:border-ink focus:outline-none focus:ring-2 focus:ring-accent/45">
-                        <option value="">Pengurutan standar</option>
+                        <option value="">Relevansi</option>
                         <option value="termurah" @selected(request('sort') === 'termurah')>Termurah</option>
                         <option value="termahal" @selected(request('sort') === 'termahal')>Termahal</option>
+                        <option value="terbaru" @selected(request('sort') === 'terbaru')>Terbaru</option>
                     </select>
                 </form>
             </div>

@@ -66,6 +66,14 @@
                     <option value="{{ $t->slug }}" @selected($filters['tag'] === $t->slug)>{{ $t->name }}</option>
                 @endforeach
             </select>
+
+            <label for="sort" class="ml-auto font-mono text-[10px] uppercase tracking-[0.14em] text-ink/55">Urutkan</label>
+            <select name="sort" id="sort" onchange="this.form.submit()" class="rounded-lg border border-rule bg-white px-3 py-1.5 text-sm text-ink">
+                <option value="">Relevansi</option>
+                <option value="termurah" @selected(request('sort') === 'termurah')>Termurah</option>
+                <option value="termahal" @selected(request('sort') === 'termahal')>Termahal</option>
+                <option value="terbaru" @selected(request('sort') === 'terbaru')>Terbaru</option>
+            </select>
         </form>
 
         @if ($results->isNotEmpty())
