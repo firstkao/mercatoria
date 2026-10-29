@@ -5,8 +5,11 @@ namespace App\Console\Commands;
 use App\Models\CoinTransaction;
 use App\Models\User;
 use App\Models\UserNotification;
+use App\Models\UserVoucher;
+use App\Notifications\VoucherExpiringNotification;
 use App\Services\User\UserNotificationService;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Notification;
 
 class NotifyExpiringCoins extends Command
 {
@@ -22,7 +25,7 @@ class NotifyExpiringCoins extends Command
      *
      * @var string
      */
-    protected $description = 'Notifikasi H-30 koin akan expired (PRD 9.3)';
+    protected $description = 'Notifikasi H-30 koin & voucher akan expired (PRD 9.3)';
 
     public function handle(UserNotificationService $notifications): int
     {
@@ -59,8 +62,50 @@ class NotifyExpiringCoins extends Command
             );
         }
 
-        $this->info(count($expiring).' user diperingatkan H-30 expiry koin.');
+        $voucherCount = $this->notifyExpiringVouchers($notifications);
+
+        $this->info(count($expiring).' user diperingatkan H-30 expiry koin, '.$voucherCount.' voucher diperingatkan.');
 
         return self::SUCCESS;
+    }
+
+    /**
+     * PRD 9.3: voucher aktif yang akan expired (H-30) -> bell + email.
+     */
+    private function notifyExpiringVouchers(UserNotificationService $notifications): int
+    {
+        $expiringVouchers = UserVoucher::query()
+            ->where('status', UserVoucher::STATUS_ACTIVE)
+            ->whereNotNull('expires_at')
+            ->whereBetween('expires_at', [now(), now()->addDays(30)])
+            ->get()
+            ->groupBy('user_id');
+
+        $count = 0;
+
+        foreach ($expiringVouchers as $userId => $vouchers) {
+            $alreadyNotified = UserNotification::where('user_id', $userId)
+                ->where('type', 'voucher_expiring')
+                ->whereDate('created_at', today())
+                ->exists();
+
+            if ($alreadyNotified) {
+                continue;
+            }
+
+            $user = User::findOrFail($userId);
+            $tanggal = $vouchers->min('expires_at')->format('d/m/Y');
+
+            $notifications->notify(
+                $user,
+                'voucher_expiring',
+                'Voucher kamu akan expired pada '.$tanggal,
+                '/profile/wallet'
+            );
+            Notification::send($user, new VoucherExpiringNotification($tanggal));
+            $count++;
+        }
+
+        return $count;
     }
 }
