@@ -145,4 +145,35 @@
             @endforelse
         </div>
     </section>
+
+    {{-- Modal Edukasi Cara Belanja (PRD 7.21 / 15) — 1x seumur hidup --}}
+    @if (method_exists($user, 'shouldSeeTour') && $user->shouldSeeTour())
+        <dialog id="tour-modal" class="rounded-xl border border-rule bg-white p-0">
+            <div class="max-w-md p-6">
+                <p class="font-mono text-[10px] uppercase tracking-[0.22em] text-ink/45">Panduan</p>
+                <h2 class="mt-2 font-display text-xl font-semibold text-ink">Baru di Mercatoria?</h2>
+                <div class="mt-3 h-px bg-rule"></div>
+                <ol class="mt-4 space-y-2.5 text-sm text-ink/80">
+                    <li class="flex gap-2"><span class="font-mono text-[10px] text-ink/45">01</span><span>Pilih merch IP favoritmu. Harga yang tertera adalah harga bersih (sudah termasuk ongkir CN-ID dan bea).</span></li>
+                    <li class="flex gap-2"><span class="font-mono text-[10px] text-ink/45">02</span><span>Pilih skema pembayaran: Full Payment (100%) atau Down Payment (50%) via BCA, QRIS, atau ShopeePay.</span></li>
+                    <li class="flex gap-2"><span class="font-mono text-[10px] text-ink/45">03</span><span>Pilih platform pengiriman lokal: Toco atau Shopee.</span></li>
+                    <li class="flex gap-2"><span class="font-mono text-[10px] text-ink/45">04</span><span>Pantau status pesananmu dari gudang China hingga siap diambil di Indonesia.</span></li>
+                    <li class="flex gap-2"><span class="font-mono text-[10px] text-ink/45">05</span><span>Akun baru punya kuota melihat 10 detail produk. Order pertamamu langsung upgrade ke MVP.</span></li>
+                </ol>
+                <form method="POST" action="{{ route('profile.tour-seen') }}" class="mt-6">
+                    @csrf
+                    <button type="submit"
+                            class="w-full rounded-lg bg-black py-3 text-sm font-semibold tracking-[0.12em] text-white transition-colors hover:bg-ink">
+                        Mengerti
+                    </button>
+                </form>
+            </div>
+        </dialog>
+        <script>
+            (function () {
+                var modal = document.getElementById('tour-modal');
+                if (modal && typeof modal.showModal === 'function') modal.showModal();
+            })();
+        </script>
+    @endif
 @endsection
