@@ -14,6 +14,7 @@ use App\Http\Controllers\Admin\PageController as AdminPageController;
 use App\Http\Controllers\Admin\PaymentController as AdminPaymentController;
 use App\Http\Controllers\Admin\ProductController as AdminProductController;
 use App\Http\Controllers\Admin\RefundController as AdminRefundController;
+use App\Http\Controllers\Admin\SearchController as AdminSearchController;
 use App\Http\Controllers\Admin\ReportController as AdminReportController;
 use App\Http\Controllers\Admin\SettingsController as AdminSettingsController;
 use App\Http\Controllers\Admin\SplitBoxBatchController as AdminSplitBoxBatchController;
@@ -138,6 +139,7 @@ Route::middleware(['auth', 'admin'])->prefix('office')->name('office.')->group(f
 
     // Transaksi
     Route::get('/orders', [AdminOrderController::class, 'index'])->name('orders.index');
+    Route::get('/search', [AdminSearchController::class, '__invoke'])->name('search');
     Route::post('/orders/{order:no_order}/note-to-customer', [AdminOrderController::class, 'noteToCustomer'])->name('orders.note-to-customer');
     Route::get('/orders/inject', [AdminInjectOrderController::class, 'index'])->name('orders.inject');
     Route::post('/orders/inject', [AdminInjectOrderController::class, 'store'])->name('orders.inject.store');
