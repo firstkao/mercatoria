@@ -37,3 +37,8 @@ test('enum label dan helper satu sumber', function () {
         expect($status->label())->toBe(order_status_label($status->value));
     }
 });
+
+test('slot_sold punya label dan warna merah di satu sumber', function () {
+    expect(order_status_label('slot_sold'))->toBe('Slot Sold')
+        ->and(order_status_color('slot_sold'))->toContain('red');
+});

@@ -26,4 +26,5 @@ return [
     'hangus' => ['label' => 'Hangus', 'color' => 'bg-red-100 text-red-800'],
     'menunggu_denda' => ['label' => 'Menunggu Denda', 'color' => 'bg-amber-100 text-amber-800'],
     'hangus_permanen' => ['label' => 'Hangus Permanen', 'color' => 'bg-red-100 text-red-800'],
+    'slot_sold' => ['label' => 'Slot Sold', 'color' => 'bg-red-100 text-red-800'],
 ];
