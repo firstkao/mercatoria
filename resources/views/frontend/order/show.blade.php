@@ -13,9 +13,7 @@
                 <p class="mt-1 text-lg font-semibold tracking-wide text-ink">{{ $order->no_order }}</p>
             </div>
             <div class="flex items-center gap-2">
-                <span class="rounded bg-amber-100 px-3 py-1 text-sm font-medium text-amber-800">
-                    {{ ucwords(str_replace(['_', 'wh'], [' ', 'WH'], $order->status)) }}
-                </span>
+                <x-order-status-badge :status="$order->status" size="lg" />
                 <a href="{{ route('orders.invoice', $order->no_order) }}"
                    class="rounded-lg border border-rule px-3 py-1.5 text-sm text-ink transition-colors hover:border-ink">
                     Download Invoice PDF
@@ -93,7 +91,7 @@
             </p>
 
             <form method="POST" action="{{ route('orders.payments.store', $order->no_order) }}" enctype="multipart/form-data"
-                  class="mt-4 space-y-3">
+                  class="mt-4 space-y-3" id="upload-proof-form">
                 @csrf
                 <input type="file" name="proof" accept=".jpg,.jpeg,.png" required
                        class="block w-full text-sm text-ink/70 file:mr-3 file:rounded-lg file:border file:border-rule file:bg-white file:px-3 file:py-2 file:text-xs file:font-semibold file:text-ink">
@@ -104,6 +102,18 @@
                     UNGGAH BUKTI
                 </button>
             </form>
+            <script>
+                (function () {
+                    var form = document.getElementById('upload-proof-form');
+                    if (!form) return;
+                    form.addEventListener('submit', function () {
+                        var btn = form.querySelector('button[type="submit"]');
+                        if (!btn || btn.disabled) return;
+                        btn.disabled = true;
+                        btn.textContent = 'Memproses...';
+                    });
+                })();
+            </script>
         </div>
     @elseif ($order->status === 'ditahan')
         <div class="mt-6 rounded-xl border border-sky-200 bg-sky-50 p-6">
@@ -121,7 +131,7 @@
                 <li class="relative">
                     <span class="absolute -left-[21px] top-1.5 h-2.5 w-2.5 rounded-full {{ $loop->last ? 'bg-ink' : 'bg-rule' }}"></span>
                     <p class="text-sm {{ $loop->last ? 'font-semibold text-ink' : 'text-ink/75' }}">
-                        {{ ucwords(str_replace(['_', 'wh'], [' ', 'WH'], $log->status)) }}
+                        <x-order-status-badge :status="$log->status" />
                     </p>
                     <p class="font-mono text-[10px] uppercase tracking-[0.1em] text-ink/45">
                         {{ $log->created_at->format('d/m/Y H:i') }} · oleh {{ $log->changed_by }}

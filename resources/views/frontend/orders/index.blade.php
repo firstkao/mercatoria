@@ -29,7 +29,7 @@
                             <td class="px-4 py-3 font-medium text-ink">{{ $order->no_order }}</td>
                             <td class="px-4 py-3 text-ink/70">{{ $order->created_at->format('d/m/Y H:i') }}</td>
                             <td class="px-4 py-3 text-ink/80">{{ format_rp($order->total) }}</td>
-                            <td class="px-4 py-3 text-ink/80">{{ ucwords(str_replace('_', ' ', $order->status)) }}</td>
+                            <td class="px-4 py-3"><x-order-status-badge :status="$order->status" /></td>
                             <td class="px-4 py-3 text-right">
                                 <a href="{{ route('orders.show', $order->no_order) }}" class="text-sm font-medium text-link underline decoration-link/35 underline-offset-4 transition-colors hover:text-ink hover:decoration-ink">Detail</a>
                             </td>

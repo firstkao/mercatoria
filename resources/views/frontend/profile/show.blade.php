@@ -134,7 +134,7 @@
                     <div class="text-sm">
                         <span class="font-semibold text-ink">{{ $order->no_order }}</span>
                         <span class="text-ink/50">· {{ $order->created_at->format('d M Y') }} · {{ format_rp($order->total) }}</span>
-                        <span class="ml-1 rounded bg-paper px-2 py-0.5 text-[11px] text-ink/70">{{ ucwords(str_replace('_', ' ', $order->status)) }}</span>
+                        <x-order-status-badge :status="$order->status" />
                     </div>
                     <a href="{{ route('orders.show', $order->no_order) }}" class="text-xs font-medium text-link underline decoration-link/35 underline-offset-4 transition-colors hover:text-ink hover:decoration-ink">Lihat</a>
                 </div>
