@@ -18,6 +18,8 @@ class PaymentMethod extends Model
     protected $fillable = [
         'code',
         'name',
+        'type',
+        'fee',
         'instructions',
         'is_active',
     ];
@@ -25,6 +27,7 @@ class PaymentMethod extends Model
     protected function casts(): array
     {
         return [
+            'fee' => 'decimal:2',
             'is_active' => 'boolean',
         ];
     }

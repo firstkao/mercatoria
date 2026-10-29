@@ -8,6 +8,7 @@ use App\Http\Controllers\Admin\InjectOrderController as AdminInjectOrderControll
 use App\Http\Controllers\Admin\LogController as AdminLogController;
 use App\Http\Controllers\Admin\MerchCategoryController as AdminMerchCategoryController;
 use App\Http\Controllers\Admin\NotificationController as AdminNotificationController;
+use App\Http\Controllers\Admin\PaymentMethodController as AdminPaymentMethodController;
 use App\Http\Controllers\Admin\OrderController as AdminOrderController;
 use App\Http\Controllers\Admin\OrderPaymentController;
 use App\Http\Controllers\Admin\OrderStatusController;
@@ -142,6 +143,11 @@ Route::middleware(['auth', 'admin'])->prefix('office')->name('office.')->group(f
     Route::get('/orders', [AdminOrderController::class, 'index'])->name('orders.index');
     Route::get('/search', [AdminSearchController::class, '__invoke'])->name('search');
     Route::post('/notifications/read-all', [AdminNotificationController::class, 'readAll'])->name('notifications.read-all');
+
+    Route::get('/payment-methods', [AdminPaymentMethodController::class, 'index'])->name('payment-methods.index');
+    Route::post('/payment-methods', [AdminPaymentMethodController::class, 'store'])->name('payment-methods.store');
+    Route::put('/payment-methods/{paymentMethod}', [AdminPaymentMethodController::class, 'update'])->name('payment-methods.update');
+    Route::delete('/payment-methods/{paymentMethod}', [AdminPaymentMethodController::class, 'destroy'])->name('payment-methods.destroy');
     Route::post('/orders/{order:no_order}/note-to-customer', [AdminOrderController::class, 'noteToCustomer'])->name('orders.note-to-customer');
     Route::get('/orders/inject', [AdminInjectOrderController::class, 'index'])->name('orders.inject');
     Route::post('/orders/inject', [AdminInjectOrderController::class, 'store'])->name('orders.inject.store');
