@@ -11,17 +11,11 @@
 </head>
 <body id="top" class="flex min-h-screen flex-col font-sans text-ink antialiased">
 {{-- Top Promo Bar (DS 4.4.1 / PRD 40.1) --}}
-    {{-- Top Promo Bar (DS 4.4.1 / PRD 40.1) --}}
-    @if (setting('promo_bar_active', '1') !== '0')
+       @if (setting('promo_bar_active', '1') !== '0')
         <div id="promo-bar" class="relative bg-[#F2EFE8] px-10 py-2 text-center border-b border-[#D8D2C4]">
             <p class="text-[13px] text-ink">
-                {{ setting('promo_bar_text', 'Gunakan kode promo') }} <strong class="font-semibold text-danger">{{ setting('promo_bar_discount', 'NEWWEB') }}</strong> dan nikmati potongan harga sebesar <strong class="font-semibold italic">{{ setting('promo_bar_min_purchase', 'Rp 25.000') }}</strong> dengan minimal pembelanjaan <strong class="font-semibold italic">Rp 150.000</strong>.
+                Gunakan kode promo <strong class="font-semibold text-danger">NEWWEB</strong> dan nikmati potongan harga sebesar <strong class="font-semibold italic">Rp 25.000</strong> dengan minimal pembelanjaan <strong class="font-semibold italic">Rp 150.000</strong>.
             </p>
-            <button type="button" id="promo-bar-close"
-                    class="absolute right-3 top-1/2 -translate-y-1/2 text-ink/50 transition-colors hover:text-ink"
-                    aria-label="Tutup">
-                <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8z"/></svg>
-            </button>
         </div>
     @endif
 
