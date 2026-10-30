@@ -22,6 +22,7 @@ class IndonesiaRegion extends Model
         'parent_id',
         'type',
         'name',
+        'code',
         'subtype',
     ];
 
