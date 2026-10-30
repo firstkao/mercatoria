@@ -14,6 +14,7 @@ Schedule::command('customer:update-tier')->dailyAt('02:30')->timezone('Asia/Jaka
 // Jadwal cron (PRD 37.3–39.10, WIB) — timezone Asia/Jakarta.
 Schedule::command('log:purge')->dailyAt('03:00')->timezone('Asia/Jakarta');
 Schedule::command('notification:purge')->dailyAt('03:30')->timezone('Asia/Jakarta');
+Schedule::command('payments:purge-proofs')->dailyAt('03:45')->timezone('Asia/Jakarta');
 Schedule::command('sitemap:generate')->dailyAt('06:00')->timezone('Asia/Jakarta');
 Schedule::command('user:birthday-bonus')->dailyAt('07:00')->timezone('Asia/Jakarta');
 Schedule::command('coin:expire')->dailyAt('08:10')->timezone('Asia/Jakarta');
