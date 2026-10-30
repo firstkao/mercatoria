@@ -37,6 +37,17 @@ class ProfileController extends Controller
         $viewLimited = $state->isViewLimited($user);
         $viewUsage = $viewLimited ? $state->viewUsage($user) : null;
 
+        // PRD 7.20: pesan WA prefill sesuai state (PR UI).
+        $waMessage = match (true) {
+            $viewLimited => 'Halo Admin, saya mau minta reset view produk.',
+            $userState === 'blocked' => 'Halo Admin, saya mau minta unblock akun.',
+            default => null,
+        };
+        $waUrl = setting('url_whatsapp');
+        $waUrlPrefill = $waMessage && $waUrl
+            ? $waUrl.(str_contains((string) $waUrl, '?') ? '&' : '?').'text='.rawurlencode($waMessage)
+            : null;
+
         return view('frontend.profile.show', [
             'user' => $user,
             'stateBadge' => $customer?->current_state ?? ucfirst($user->role),
@@ -45,6 +56,7 @@ class ProfileController extends Controller
             'kuotaViewTotal' => $viewUsage['total'] ?? null,
             'countdownState' => $viewLimited ? $state->countdownLabel($user) : null,
             'waUrl' => $viewLimited ? setting('url_whatsapp') : null,
+            'waUrlPrefill' => $waUrlPrefill,
             'tierBadge' => $customer ? 'MVP '.ucfirst($customer->tier) : null,
             // PRD 50: progress bar antara batas tier saat ini dan berikutnya.
             'tierProgress' => array_merge([
