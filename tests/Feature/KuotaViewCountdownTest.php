@@ -47,10 +47,16 @@ test('countdown state format sisa waktu hari jam', function () {
     $this->travelTo(now()->startOfDay()->addHours(12));
     $user = User::factory()->create([
         'role' => User::ROLE_CRUSH,
-        'created_at' => now()->subDays(5)->subHours(18),
+        'email_verified_at' => now()->subDays(5)->subHours(18),
     ]);
 
     $dashboard = $this->actingAs($user)->get('/dashboard')->assertOk();
 
     expect($dashboard->viewData('countdownState'))->toBe('Sisa waktu: 24 Hari 6 Jam');
+
+    // Belum verifikasi: countdown tidak dihitung (PRD 7.10 dihitung sejak verifikasi).
+    $belum = User::factory()->unverified()->create(['role' => User::ROLE_CRUSH]);
+    $dashboardBelum = $this->actingAs($belum)->get('/dashboard')->assertOk();
+
+    expect($dashboardBelum->viewData('countdownState'))->toBe('Belum verifikasi');
 });
