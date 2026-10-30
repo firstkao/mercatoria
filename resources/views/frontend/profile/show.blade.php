@@ -47,6 +47,7 @@
         </div>
 
         <div class="flex items-center gap-2">
+            <x-notification-bell :notifications="$bellNotifications ?? []" :unread-count="$bellUnreadCount ?? 0" />
             <form method="POST" action="{{ route('logout') }}">
                 @csrf
                 <button type="submit" class="rounded-lg border border-rule px-4 py-2 text-xs font-semibold text-ink transition-colors hover:border-ink">
