@@ -3,6 +3,16 @@
 @section('title', $product->name.' — Mercatoria')
 
 @section('content')
+    {{-- Banner Sisa Kuota View (PRD 7.19) --}}
+    @if (in_array($userState ?? '', ['crush', 'ex', 'ons']) && isset($kuotaViewTotal))
+        <div class="mb-4 rounded-lg border border-amber-300 bg-amber-50 px-4 py-3">
+            <p class="flex items-start gap-2 text-sm text-amber-900">
+                <x-icons.exclamation-triangle-fill class="mt-0.5 shrink-0" width="16" height="16" />
+                <span>Kuota jelajah katalog kamu tersisa {{ ($kuotaViewTotal - ($kuotaViewUsed ?? 0)) }} dari {{ $kuotaViewTotal }} produk.</span>
+            </p>
+        </div>
+    @endif
+
     <div class="grid grid-cols-1 gap-8 lg:grid-cols-[48%_52%]">
         <div>
             <div class="overflow-hidden rounded-xl border border-rule bg-white">
