@@ -27,13 +27,22 @@
                     @if (!empty($countdownState))
                         <span class="text-xs text-ink/60">{{ $countdownState }}</span>
                     @endif
-                    @if ($kuotaHabis && !empty($waUrl))
-                        <a href="{{ $waUrl }}" target="_blank" rel="noopener"
+                    @if ($kuotaHabis && !empty($waUrlPrefill))
+                        <a href="{{ $waUrlPrefill }}" target="_blank" rel="noopener"
                            class="inline-flex items-center gap-1.5 rounded-lg bg-[#43A047] px-3.5 py-1.5 text-xs font-semibold text-white transition-colors hover:opacity-90">
                             <x-icons.chat-bubble width="14" height="14" />
                             WA
                         </a>
                     @endif
+                </div>
+            @endif
+            @if (($userState ?? '') === 'blocked' && !empty($waUrlPrefill))
+                <div class="mt-3">
+                    <a href="{{ $waUrlPrefill }}" target="_blank" rel="noopener"
+                       class="inline-flex items-center gap-1.5 rounded-lg bg-[#43A047] px-3.5 py-1.5 text-xs font-semibold text-white transition-colors hover:opacity-90">
+                        <x-icons.chat-bubble width="14" height="14" />
+                        WA
+                    </a>
                 </div>
             @endif
             @isset($tierProgress)
