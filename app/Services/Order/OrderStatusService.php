@@ -8,6 +8,7 @@ use App\Models\Customer;
 use App\Models\Order;
 use App\Models\OrderStatus;
 use App\Models\OrderStatusLog;
+use App\Models\Refund;
 use App\Models\User;
 use App\Services\SplitBox\SplitBoxService;
 use App\Services\User\CoinWalletService;
@@ -113,9 +114,22 @@ class OrderStatusService
             app(UserTierService::class)->countOrder($order);
         }
 
-        // PRD 50: refund full & hangus mengurangi total belanja.
+        // PRD 50: Dana Dikembalikan — full = reversal penuh, partial = sesuai nominal refund.
+        if ($toValue === OrderStatus::DanaDikembalikan->value) {
+            $refund = Refund::query()
+                ->where('order_id', $order->id)
+                ->where('status', Refund::STATUS_COMPLETED)
+                ->latest('id')
+                ->first();
+
+            app(UserTierService::class)->uncount(
+                $order,
+                $refund?->type === Refund::TYPE_PARTIAL ? (float) $refund->amount : null
+            );
+        }
+
+        // PRD 50: Hangus / Hangus Permanen — reversal penuh.
         if (in_array($toValue, [
-            OrderStatus::DanaDikembalikan->value,
             OrderStatus::Hangus->value,
             OrderStatus::HangusPermanen->value,
         ], true)) {
