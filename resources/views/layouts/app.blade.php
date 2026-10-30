@@ -10,6 +10,28 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body id="top" class="flex min-h-screen flex-col bg-[#F5F7FA] font-sans text-ink antialiased">
+    {{-- Top Promo Bar (DS 4.4.1 / PRD 40.1) --}}
+    @if (setting('promo_bar_active', '1') !== '0')
+        <div id="promo-bar" class="relative bg-[#FFC107] px-10 py-2.5 text-center">
+            <p class="text-[13px] font-semibold text-[#1a1a1a]">
+                <span class="font-mono text-[11px] uppercase tracking-[0.14em] text-[#8B6914]">KODE:</span>
+                <strong class="mx-1 font-mono text-[13px] tracking-[0.08em] text-[#1a1a1a]">
+                    {{ setting('promo_bar_text', 'NEWWEB') }}
+                </strong>
+                @if (setting('promo_bar_link'))
+                    <a href="{{ setting('promo_bar_link') }}" class="ml-2 font-medium text-[#1a1a1a] underline decoration-[#8B6914]/50 underline-offset-2 hover:decoration-[#1a1a1a]">
+                        Lihat Promo
+                    </a>
+                @endif
+            </p>
+            <button type="button" id="promo-bar-close"
+                    class="absolute right-3 top-1/2 -translate-y-1/2 text-[#1a1a1a]/60 transition-colors hover:text-[#1a1a1a]"
+                    aria-label="Tutup">
+                <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8z"/></svg>
+            </button>
+        </div>
+    @endif
+
     {{-- Navbar user login (Design Spec 4.6.2) --}}
     <header class="border-b border-[#EAEAEA] bg-white">
         <div class="mx-auto max-w-[1200px] px-4">
@@ -299,7 +321,7 @@
 
         <div class="border-t border-white/[0.08]">
             <div class="mx-auto flex max-w-[1200px] flex-wrap items-center justify-between gap-3 px-4 py-[18px] text-[11px] text-[#888]">
-                <p>&copy; 2022 MERCATORIA</p>
+                <p>&copy; {{ now()->year }} MERCATORIA</p>
                 <div class="flex items-center gap-4">
                     <p>Powered by MERCATORIA</p>
                 </div>
@@ -332,6 +354,20 @@
                 window.scrollTo({ top: 0, behavior: 'smooth' });
             });
             onScroll();
+        })();
+
+        (function () {
+            var bar = document.getElementById('promo-bar');
+            var closeBtn = document.getElementById('promo-bar-close');
+            if (bar && localStorage.getItem('promo-bar-dismissed') === '1') {
+                bar.style.display = 'none';
+            }
+            if (closeBtn) {
+                closeBtn.addEventListener('click', function () {
+                    if (bar) bar.style.display = 'none';
+                    localStorage.setItem('promo-bar-dismissed', '1');
+                });
+            }
         })();
     </script>
 </body>
