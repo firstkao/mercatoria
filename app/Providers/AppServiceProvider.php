@@ -117,7 +117,9 @@ class AppServiceProvider extends ServiceProvider
             $data = app(AdminNotificationService::class)->topbarData();
 
             $view->with('adminBellNotifications', $data['notifications'])
-                ->with('adminBellUnreadCount', $data['unread']);
+                ->with('adminBellUnreadCount', $data['unread'])
+                // PRD 24.5: indikator topbar kill-switch email customer (PR UI).
+                ->with('customerEmailsPaused', (bool) setting('pause_customer_emails', false));
         });
     }
 }
