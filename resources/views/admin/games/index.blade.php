@@ -6,17 +6,24 @@
     <p class="font-mono text-[10px] uppercase tracking-[0.22em] text-ink/45">Katalog</p>
     <h1 class="mt-2 font-display text-[1.5rem] font-semibold text-ink">Game</h1>
 
-    <form method="POST" action="{{ route('office.games.store') }}" class="mt-4 flex flex-wrap items-end gap-2 rounded-xl border border-rule bg-white p-4">
+    <form method="POST" action="{{ route('office.games.store') }}" enctype="multipart/form-data" class="mt-4 rounded-xl border border-rule bg-white p-4">
         @csrf
-        <input type="text" name="name" placeholder="Nama game" required class="rounded-lg border border-rule px-3 py-2 text-sm text-ink">
-        <select name="default_store_id" class="rounded-lg border border-rule px-3 py-2 text-sm text-ink">
-            <option value="">Default store</option>
-            @foreach ($stores as $store)
-                <option value="{{ $store->id }}">{{ $store->name }}</option>
-            @endforeach
-        </select>
-        <label class="flex items-center gap-1 text-sm text-ink/80"><input type="checkbox" name="is_active" value="1" checked class="rounded border-rule"> Aktif</label>
-        <button class="rounded-lg bg-black px-4 py-2 text-sm font-semibold tracking-[0.12em] text-white transition-colors hover:bg-ink">+ Tambah</button>
+        <div class="flex flex-wrap items-end gap-2">
+            <input type="text" name="name" placeholder="Nama game" required class="rounded-lg border border-rule px-3 py-2 text-sm text-ink">
+            <input type="text" name="slug" placeholder="slug (opsional)" class="w-40 rounded-lg border border-rule px-3 py-2 text-sm text-ink">
+            <select name="default_store_id" class="rounded-lg border border-rule px-3 py-2 text-sm text-ink">
+                <option value="">Default store</option>
+                @foreach ($stores as $store)
+                    <option value="{{ $store->id }}">{{ $store->name }}</option>
+                @endforeach
+            </select>
+            <div>
+                <label class="block text-xs text-ink/55">Logo</label>
+                <input type="file" name="logo" accept=".jpg,.jpeg,.png,.webp" class="block rounded-lg border border-rule px-2 py-1 text-xs text-ink">
+            </div>
+            <label class="flex items-center gap-1 text-sm text-ink/80"><input type="checkbox" name="is_active" value="1" checked class="rounded border-rule"> Aktif</label>
+            <button class="rounded-lg bg-black px-4 py-2 text-sm font-semibold tracking-[0.12em] text-white transition-colors hover:bg-ink">+ Tambah</button>
+        </div>
     </form>
 
     <div class="mt-4 flex flex-wrap items-center gap-2">
@@ -33,15 +40,26 @@
             <div class="rounded-xl border border-rule bg-white p-4" data-game-row>
                 <div class="flex flex-wrap items-center gap-2">
                     <input type="checkbox" class="game-checkbox rounded border-rule" data-id="{{ $game->id }}">
+                    @if ($game->logo_path)
+                        <img src="{{ \Illuminate\Support\Facades\Storage::url($game->logo_path) }}" alt="{{ $game->name }}"
+                             class="h-10 w-10 rounded border border-rule object-cover">
+                    @else
+                        <div class="flex h-10 w-10 items-center justify-center rounded border border-rule bg-paper text-[10px] text-ink/30">N/A</div>
+                    @endif
                     <input type="text" value="{{ $game->name }}" data-field="name" data-orig="{{ $game->name }}"
-                           class="w-48 rounded-lg border border-rule px-2 py-1.5 text-sm text-ink">
-                    <span class="py-2 text-xs text-ink/45">{{ $game->slug }}</span>
+                           class="w-40 rounded-lg border border-rule px-2 py-1.5 text-sm text-ink">
+                    <input type="text" value="{{ $game->slug }}" data-field="slug" data-orig="{{ $game->slug }}" placeholder="slug"
+                           class="w-36 rounded-lg border border-rule px-2 py-1.5 text-sm text-ink">
                     <select data-field="default_store_id" data-orig="{{ $game->default_store_id }}" class="rounded-lg border border-rule px-2 py-1.5 text-sm text-ink">
                         <option value="">Default store</option>
                         @foreach ($stores as $store)
                             <option value="{{ $store->id }}" @selected($game->default_store_id == $store->id)>{{ $store->name }}</option>
                         @endforeach
                     </select>
+                    <div>
+                        <label class="block text-[9px] text-ink/40">Logo baru</label>
+                        <input type="file" data-field="logo" accept=".jpg,.jpeg,.png,.webp" class="block w-32 rounded border border-rule px-1 py-0.5 text-[10px] text-ink">
+                    </div>
                     <label class="flex items-center gap-1 py-2 text-sm text-ink/80">
                         <input type="checkbox" data-field="is_active" data-orig="{{ $game->is_active ? '1' : '0' }}" @checked($game->is_active) class="rounded border-rule"> Aktif
                     </label>
@@ -57,7 +75,7 @@
             if (!list) return;
             var selectAll = document.getElementById('game-select-all');
             selectAll.addEventListener('change', function () {
-                list.querySelectorAll('.game-checkbox').forEach(function (cb) { cb.checked = selectAll.checked; });
+                list.querySelectorAll('.game-checkbox').forEach(function (cb) { cb.checked = this.checked; }.bind(this));
             });
 
             document.getElementById('game-bulk-save').addEventListener('click', function () {
@@ -66,6 +84,10 @@
                 rows.forEach(function (row) {
                     var fields = {}; var changed = false;
                     row.querySelectorAll('[data-field]').forEach(function (el) {
+                        if (el.type === 'file') {
+                            if (el.files && el.files.length) changed = true;
+                            return;
+                        }
                         var val = el.type === 'checkbox' ? (el.checked ? '1' : '0') : el.value;
                         if (val !== el.getAttribute('data-orig')) changed = true;
                         fields[el.getAttribute('data-field')] = val;
@@ -80,11 +102,17 @@
                     form.append('_token', '{{ csrf_token() }}');
                     form.append('_method', 'PUT');
                     form.append('name', item.fields.name);
+                    form.append('slug', item.fields.slug || '');
                     form.append('default_store_id', item.fields.default_store_id);
                     form.append('is_active', item.fields.is_active);
+                    var logoInput = item.row.querySelector('input[data-field="logo"]');
+                    if (logoInput && logoInput.files && logoInput.files.length) {
+                        form.append('logo', logoInput.files[0]);
+                    }
                     fetch('{{ route("office.games.index") }}/' + item.id, { method: 'POST', body: form })
                         .then(function () {
                             item.row.querySelectorAll('[data-field]').forEach(function (el) {
+                                if (el.type === 'file') { el.value = ''; return; }
                                 el.setAttribute('data-orig', el.type === 'checkbox' ? (el.checked ? '1' : '0') : el.value);
                             });
                             item.row.querySelector('.game-status').textContent = '\u2713';
