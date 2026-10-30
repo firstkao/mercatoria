@@ -29,6 +29,10 @@ test('daftar refund tampil dengan filter status', function () {
     $html = $this->actingAs($admin)->get('/office/refunds')->assertOk()->getContent();
     expect($html)->toContain($orderA->no_order)->toContain($orderB->no_order);
 
+    // Kolom bell admin di layout bisa memuat judul notif berisi no_order —
+    // bersihkan agar asersi filter hanya menilai tabel daftar refund.
+    \App\Models\AdminNotification::query()->delete();
+
     $filtered = $this->actingAs($admin)->get('/office/refunds?status=completed')->assertOk()->getContent();
     expect($filtered)->toContain($orderB->no_order)
         ->and($filtered)->not->toContain($orderA->no_order);
