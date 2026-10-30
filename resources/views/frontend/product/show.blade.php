@@ -169,6 +169,10 @@
         </div>
     </div>
 
+    @if (\Illuminate\Support\Facades\Route::has('protected-images.show'))
+        <script src="{{ asset('js/image-protection.js') }}" defer></script>
+    @endif
+
     <script>
         (function () {
             document.querySelectorAll('[data-copy]').forEach(function (btn) {
