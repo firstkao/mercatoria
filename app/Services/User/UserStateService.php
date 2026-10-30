@@ -60,12 +60,17 @@ class UserStateService
     }
 
     /**
-     * Sisa waktu sebelum auto-delete Crush (PRD 7.10) — "Sisa waktu: 24 Hari 6 Jam".
+     * Sisa waktu sebelum auto-delete Crush (PRD 7.10: 30 hari SETELAH VERIFIKASI)
+     * — "Sisa waktu: 24 Hari 6 Jam".
      */
     public function countdownLabel(User $user): string
     {
+        if ($user->email_verified_at === null) {
+            return 'Belum verifikasi';
+        }
+
         $days = (int) setting('auto_delete_crush_days', 30);
-        $deadline = $user->created_at->copy()->addDays($days);
+        $deadline = $user->email_verified_at->copy()->addDays($days);
         $remaining = (int) max(0, now()->diffInSeconds($deadline, false));
 
         $hari = intdiv($remaining, 86400);
