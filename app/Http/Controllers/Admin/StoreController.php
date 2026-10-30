@@ -8,6 +8,7 @@ use App\Models\Store;
 use App\Services\Product\StoreService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
 class StoreController extends Controller
@@ -57,5 +58,66 @@ class StoreController extends Controller
         $this->stores->delete($store);
 
         return redirect()->route('office.stores.index')->with('status', 'Store dihapus. Referensi produk/game jadi NULL.');
+    }
+
+    /**
+     * Bulk store: item dengan id = update, tanpa id = create (validasi per item).
+     */
+    public function bulk(Request $request): RedirectResponse
+    {
+        $data = $request->validate([
+            'stores' => ['required', 'array', 'min:1'],
+            'stores.*.id' => ['nullable', 'integer', 'exists:stores,id'],
+            'stores.*.name' => ['required', 'string', 'max:100'],
+            'stores.*.min_belanja_rmb' => ['required', 'numeric', 'min:0'],
+            'stores.*.ongkir_rmb' => ['required', 'numeric', 'min:0'],
+        ]);
+
+        $diperbarui = 0;
+        $dibuat = 0;
+
+        foreach ($data['stores'] as $item) {
+            if (! empty($item['id'])) {
+                $store = Store::findOrFail($item['id']);
+                [$old, $new] = AdminLog::diff($store, ['name', 'min_belanja_rmb', 'ongkir_rmb'], $item);
+                $this->stores->update($store, $item);
+                AdminLog::record($request->user(), 'update', 'Store', $store->id, $old, $new, 'Bulk ubah store');
+                $diperbarui++;
+            } else {
+                $store = $this->stores->create($item);
+                AdminLog::record($request->user(), 'create', 'Store', $store->id, null, $item, 'Bulk tambah store');
+                $dibuat++;
+            }
+        }
+
+        return redirect()->route('office.stores.index')
+            ->with('status', "{$diperbarui} store diperbarui, {$dibuat} store dibuat.");
+    }
+
+    /**
+     * Bulk hapus store — ditolak bila ada store yang masih punya produk/game.
+     */
+    public function bulkDelete(Request $request): RedirectResponse
+    {
+        $data = $request->validate([
+            'ids' => ['required', 'array', 'min:1'],
+            'ids.*' => ['integer', 'exists:stores,id'],
+        ]);
+
+        $stores = Store::withCount(['products', 'games'])->whereIn('id', $data['ids'])->get();
+        $terpakai = $stores->filter(fn (Store $store) => $store->products_count > 0 || $store->games_count > 0);
+
+        if ($terpakai->isNotEmpty()) {
+            throw ValidationException::withMessages([
+                'ids' => 'Store '.implode(', ', $terpakai->pluck('name')->all()).' masih punya produk/game.',
+            ]);
+        }
+
+        foreach ($stores as $store) {
+            AdminLog::record($request->user(), 'delete', 'Store', $store->id, $store->only(['name']), null, 'Bulk hapus store');
+            $this->stores->delete($store);
+        }
+
+        return redirect()->route('office.stores.index')->with('status', $stores->count().' store dihapus.');
     }
 }

@@ -147,6 +147,8 @@ Route::middleware(['auth', 'admin'])->prefix('office')->name('office.')->group(f
 
     Route::get('/stores', [AdminStoreController::class, 'index'])->name('stores.index');
     Route::post('/stores', [AdminStoreController::class, 'store'])->name('stores.store');
+Route::post('/stores/bulk', [AdminStoreController::class, 'bulk'])->name('stores.bulk');
+Route::post('/stores/bulk-delete', [AdminStoreController::class, 'bulkDelete'])->name('stores.bulk-delete');
     Route::put('/stores/{store}', [AdminStoreController::class, 'update'])->name('stores.update');
     Route::delete('/stores/{store}', [AdminStoreController::class, 'destroy'])->name('stores.destroy');
 
