@@ -203,7 +203,7 @@ class ProductController extends Controller
             'weight_gram' => ['nullable', 'integer', 'min:0'],
             'availability' => ['required', 'in:tersedia,kosong'],
             // PRD 13.6: foto varian 1 per varian, max 1MB.
-            'image' => ['nullable', 'file', 'mimes:jpg,jpeg,png', 'max:1024'],
+            'image' => ['nullable', 'file', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
             'image_path' => ['nullable', 'string', 'max:255'],
         ]);
 
@@ -261,8 +261,8 @@ class ProductController extends Controller
             'availability' => ['required', 'in:tersedia,kosong'],
             'is_active' => ['nullable', 'boolean'],
             // PRD 13.6: 1 file, max 1MB, jpg/jpeg/png. Field path manual tetap kompatibel.
-            'image' => ['nullable', 'file', 'mimes:jpg,jpeg,png', 'max:1024'],
-            'description_image' => ['nullable', 'file', 'mimes:jpg,jpeg,png', 'max:1024'],
+            'image' => ['nullable', 'file', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
+            'description_image' => ['nullable', 'file', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
             'image_path' => ['nullable', 'string', 'max:255'],
             'description_image_path' => ['nullable', 'string', 'max:255'],
         ]);
