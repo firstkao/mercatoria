@@ -12,20 +12,19 @@
 <body id="top" class="flex min-h-screen flex-col bg-[#F5F7FA] font-sans text-ink antialiased">
     {{-- Top Promo Bar (DS 4.4.1 / PRD 40.1) --}}
     @if (setting('promo_bar_active', '1') !== '0')
-        <div id="promo-bar" class="relative bg-[#FFC107] px-10 py-2.5 text-center">
-            <p class="text-[13px] font-semibold text-[#1a1a1a]">
-                <span class="font-mono text-[11px] uppercase tracking-[0.14em] text-[#8B6914]">KODE:</span>
-                <strong class="mx-1 font-mono text-[13px] tracking-[0.08em] text-[#1a1a1a]">
+        <div id="promo-bar" class="relative bg-[#F2EFE8] px-10 py-2 text-center border-b border-[#D8D2C4]">
+            <p class="text-[13px] text-ink">
+                <strong class="font-semibold">
                     {{ setting('promo_bar_text', 'NEWWEB') }}
                 </strong>
                 @if (setting('promo_bar_link'))
-                    <a href="{{ setting('promo_bar_link') }}" class="ml-2 font-medium text-[#1a1a1a] underline decoration-[#8B6914]/50 underline-offset-2 hover:decoration-[#1a1a1a]">
+                    <a href="{{ setting('promo_bar_link') }}" class="font-medium text-link underline decoration-link/35 underline-offset-2 hover:text-ink">
                         Lihat Promo
                     </a>
                 @endif
             </p>
             <button type="button" id="promo-bar-close"
-                    class="absolute right-3 top-1/2 -translate-y-1/2 text-[#1a1a1a]/60 transition-colors hover:text-[#1a1a1a]"
+                    class="absolute right-3 top-1/2 -translate-y-1/2 text-ink/50 transition-colors hover:text-ink"
                     aria-label="Tutup">
                 <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8z"/></svg>
             </button>
@@ -43,7 +42,7 @@
                     <details class="group relative">
                         <summary class="flex cursor-pointer list-none items-center gap-1 text-[13px] font-medium text-[#333] transition-colors hover:text-[#4FC3F7]">
                             Game
-                            <span class="text-[10px] transition-transform group-open:rotate-180">▾</span>
+                            <span class="text-[10px] transition-transform group-open:rotate-180">â–¾</span>
                         </summary>
                         <div class="absolute left-0 top-full z-20 mt-2 max-h-80 w-56 overflow-y-auto rounded-lg border border-[#EAEAEA] bg-white py-2 shadow-sm">
                             @forelse ($navGames as $navGame)
@@ -57,7 +56,7 @@
                     <details class="group relative">
                         <summary class="flex cursor-pointer list-none items-center gap-1 text-[13px] font-medium text-[#333] transition-colors hover:text-[#4FC3F7]">
                             Developer
-                            <span class="text-[10px] transition-transform group-open:rotate-180">▾</span>
+                            <span class="text-[10px] transition-transform group-open:rotate-180">â–¾</span>
                         </summary>
                         <div class="absolute left-0 top-full z-20 mt-2 max-h-80 w-56 overflow-y-auto rounded-lg border border-[#EAEAEA] bg-white py-2 shadow-sm">
                             @forelse ($navDevelopers as $navDeveloper)
@@ -118,7 +117,7 @@
                         @if (!empty($tierBadge))
                             <span class="inline-flex items-center gap-0.5">
                                 <x-user-badge :value="$tierBadge" type="tier" />
-                                <span class="text-ink/45 text-[8px]">▾</span>
+                                <span class="text-ink/45 text-[8px]">â–¾</span>
                             </span>
                         @endif
                     </a>
@@ -187,7 +186,7 @@
         @yield('content')
     </main>
 
-    {{-- Footer (sama dengan guest — Design Spec 4.4.5) --}}
+    {{-- Footer (sama dengan guest â€” Design Spec 4.4.5) --}}
     <footer class="bg-[#1E1E2D] text-white">
         <div class="mx-auto max-w-[1200px] px-4 py-14">
             <div class="grid gap-10 md:grid-cols-2 lg:grid-cols-4">
@@ -355,6 +354,23 @@
             });
             onScroll();
         })();
+
+        @if (\Illuminate\Support\Facades\Route::has('profile.notifications.unread-count'))
+        (function () {
+            var badge = document.querySelector('[data-unread]');
+            if (!badge) return;
+            setInterval(function () {
+                fetch('{{ route("profile.notifications.unread-count") }}', { headers: { 'Accept': 'application/json' } })
+                    .then(function (r) { return r.json(); })
+                    .then(function (d) {
+                        var n = d.count ?? d.unread ?? 0;
+                        badge.textContent = n > 99 ? '99+' : n;
+                        badge.style.display = n > 0 ? '' : 'none';
+                    })
+                    .catch(function () {});
+            }, 60000);
+        })();
+        @endif
 
         (function () {
             var bar = document.getElementById('promo-bar');

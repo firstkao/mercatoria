@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="id">
 <head>
     <meta charset="utf-8">
@@ -12,20 +12,19 @@
 <body id="top" class="flex min-h-screen flex-col bg-white font-sans text-ink antialiased">
     {{-- 1. Top Promo Bar (DS 4.4.1 / PRD 40.1) --}}
     @if (setting('promo_bar_active', '1') !== '0')
-        <div id="promo-bar" class="relative bg-[#FFC107] px-10 py-2.5 text-center">
-            <p class="text-[13px] font-semibold text-[#1a1a1a]">
-                <span class="font-mono text-[11px] uppercase tracking-[0.14em] text-[#8B6914]">KODE:</span>
-                <strong class="mx-1 font-mono text-[13px] tracking-[0.08em] text-[#1a1a1a]">
+        <div id="promo-bar" class="relative bg-[#F2EFE8] px-10 py-2 text-center border-b border-[#D8D2C4]">
+            <p class="text-[13px] text-ink">
+                <strong class="font-semibold">
                     {{ setting('promo_bar_text', 'NEWWEB') }}
                 </strong>
                 @if (setting('promo_bar_link'))
-                    <a href="{{ setting('promo_bar_link') }}" class="ml-2 font-medium text-[#1a1a1a] underline decoration-[#8B6914]/50 underline-offset-2 hover:decoration-[#1a1a1a]">
+                    <a href="{{ setting('promo_bar_link') }}" class="font-medium text-link underline decoration-link/35 underline-offset-2 hover:text-ink">
                         Lihat Promo
                     </a>
                 @endif
             </p>
             <button type="button" id="promo-bar-close"
-                    class="absolute right-3 top-1/2 -translate-y-1/2 text-[#1a1a1a]/60 transition-colors hover:text-[#1a1a1a]"
+                    class="absolute right-3 top-1/2 -translate-y-1/2 text-ink/50 transition-colors hover:text-ink"
                     aria-label="Tutup">
                 <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8z"/></svg>
             </button>
@@ -42,7 +41,7 @@
                     <details class="group relative">
                         <summary class="flex cursor-pointer list-none items-center gap-1 text-[13px] font-medium text-[#333] transition-colors hover:text-[#4FC3F7]">
                             Game
-                            <span class="text-[10px] transition-transform group-open:rotate-180">▾</span>
+                            <span class="text-[10px] transition-transform group-open:rotate-180">â–¾</span>
                         </summary>
                         <div class="absolute left-0 top-full z-20 mt-2 max-h-80 w-56 overflow-y-auto rounded-lg border border-[#EAEAEA] bg-white py-2 shadow-sm">
                             @forelse ($games as $g)
@@ -56,7 +55,7 @@
                     <details class="group relative">
                         <summary class="flex cursor-pointer list-none items-center gap-1 text-[13px] font-medium text-[#333] transition-colors hover:text-[#4FC3F7]">
                             Developer
-                            <span class="text-[10px] transition-transform group-open:rotate-180">▾</span>
+                            <span class="text-[10px] transition-transform group-open:rotate-180">â–¾</span>
                         </summary>
                         <div class="absolute left-0 top-full z-20 mt-2 max-h-80 w-56 overflow-y-auto rounded-lg border border-[#EAEAEA] bg-white py-2 shadow-sm">
                             @isset($footerDevelopers)
@@ -171,14 +170,14 @@
                     <div class="rounded-lg border border-rule bg-[#F5F7FA] px-8 py-16 text-center">
                         <p class="font-mono text-[10px] uppercase tracking-[0.22em] text-ink/45">Mercatoria</p>
                         <h1 class="mt-2 font-display text-3xl font-semibold text-ink">Merch &amp; Collectibles untuk IP Favoritmu</h1>
-                        <p class="mt-2 text-sm text-ink/65">Harga bersih — sudah termasuk ongkir CN-ID &amp; bea.</p>
+                        <p class="mt-2 text-sm text-ink/65">Harga bersih â€” sudah termasuk ongkir CN-ID &amp; bea.</p>
                     </div>
                 @endif
             @else
                 <div class="rounded-lg border border-rule bg-[#F5F7FA] px-8 py-16 text-center">
                     <p class="font-mono text-[10px] uppercase tracking-[0.22em] text-ink/45">Mercatoria</p>
                     <h1 class="mt-2 font-display text-3xl font-semibold text-ink">Merch &amp; Collectibles untuk IP Favoritmu</h1>
-                    <p class="mt-2 text-sm text-ink/65">Harga bersih — sudah termasuk ongkir CN-ID &amp; bea.</p>
+                    <p class="mt-2 text-sm text-ink/65">Harga bersih â€” sudah termasuk ongkir CN-ID &amp; bea.</p>
                 </div>
             @endisset
             <div class="mt-3 h-px bg-rule"></div>

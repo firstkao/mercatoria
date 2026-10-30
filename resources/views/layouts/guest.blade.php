@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="id">
 <head>
     <meta charset="utf-8">
@@ -12,20 +12,19 @@
 <body id="top" class="flex min-h-screen flex-col font-sans text-ink antialiased">
     {{-- Top Promo Bar (DS 4.4.1 / PRD 40.1) --}}
     @if (setting('promo_bar_active', '1') !== '0')
-        <div id="promo-bar" class="relative bg-[#FFC107] px-10 py-2.5 text-center">
-            <p class="text-[13px] font-semibold text-[#1a1a1a]">
-                <span class="font-mono text-[11px] uppercase tracking-[0.14em] text-[#8B6914]">KODE:</span>
-                <strong class="mx-1 font-mono text-[13px] tracking-[0.08em] text-[#1a1a1a]">
+        <div id="promo-bar" class="relative bg-[#F2EFE8] px-10 py-2 text-center border-b border-[#D8D2C4]">
+            <p class="text-[13px] text-ink">
+                <strong class="font-semibold">
                     {{ setting('promo_bar_text', 'NEWWEB') }}
                 </strong>
                 @if (setting('promo_bar_link'))
-                    <a href="{{ setting('promo_bar_link') }}" class="ml-2 font-medium text-[#1a1a1a] underline decoration-[#8B6914]/50 underline-offset-2 hover:decoration-[#1a1a1a]">
+                    <a href="{{ setting('promo_bar_link') }}" class="font-medium text-link underline decoration-link/35 underline-offset-2 hover:text-ink">
                         Lihat Promo
                     </a>
                 @endif
             </p>
             <button type="button" id="promo-bar-close"
-                    class="absolute right-3 top-1/2 -translate-y-1/2 text-[#1a1a1a]/60 transition-colors hover:text-[#1a1a1a]"
+                    class="absolute right-3 top-1/2 -translate-y-1/2 text-ink/50 transition-colors hover:text-ink"
                     aria-label="Tutup">
                 <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8z"/></svg>
             </button>
@@ -35,7 +34,7 @@
     {{-- Main Navbar guest (Design Spec 4.4.1 + 4.6.2) --}}
     <header class="border-b border-[#EAEAEA] bg-white">
         <div class="mx-auto max-w-[1200px] px-4">
-            {{-- Desktop 3-kolom: Menu Kiri · Logo Tengah · Utility Kanan --}}
+            {{-- Desktop 3-kolom: Menu Kiri Â· Logo Tengah Â· Utility Kanan --}}
             <div class="hidden min-h-[72px] lg:grid lg:grid-cols-3 lg:items-center">
                 <nav class="flex items-center gap-5" aria-label="Menu utama">
                     <a href="{{ route('home') }}" class="text-[14px] font-medium text-[#4FC3F7]">Beranda</a>
@@ -43,7 +42,7 @@
                     <details class="group relative">
                         <summary class="flex cursor-pointer list-none items-center gap-1 text-[14px] font-medium text-[#333] transition-colors hover:text-[#4FC3F7]">
                             Game
-                            <span class="text-[12px] transition-transform group-open:rotate-180">▾</span>
+                            <span class="text-[12px] transition-transform group-open:rotate-180">â–¾</span>
                         </summary>
                         <div class="absolute left-0 top-full z-20 mt-2 max-h-80 w-56 overflow-y-auto rounded-lg border border-[#EAEAEA] bg-white py-2 shadow-sm">
                             @isset($footerGames)
@@ -63,7 +62,7 @@
                     <details class="group relative">
                         <summary class="flex cursor-pointer list-none items-center gap-1 text-[14px] font-medium text-[#333] transition-colors hover:text-[#4FC3F7]">
                             Developer
-                            <span class="text-[10px] transition-transform group-open:rotate-180">▾</span>
+                            <span class="text-[10px] transition-transform group-open:rotate-180">â–¾</span>
                         </summary>
                         <div class="absolute left-0 top-full z-20 mt-2 max-h-80 w-56 overflow-y-auto rounded-lg border border-[#EAEAEA] bg-white py-2 shadow-sm">
                             @isset($footerDevelopers)
@@ -116,7 +115,7 @@
                 </div>
             </div>
 
-            {{-- Mobile: Hamburger · Logo · User --}}
+            {{-- Mobile: Hamburger Â· Logo Â· User --}}
             <div class="flex min-h-[64px] items-center justify-between gap-3 lg:hidden">
                 <details class="relative">
                     <summary class="flex h-10 w-10 cursor-pointer list-none items-center justify-center text-[#333]" aria-label="Menu">
@@ -190,7 +189,7 @@
                         <img src="{{ asset('logo.png') }}" alt="Mercatoria" class="h-10 w-auto" width="1608" height="494">
                     </a>
 
-                    {{-- Sosmed — urutan IG, FB, X, Threads, WA (spec 4.6) --}}
+                    {{-- Sosmed â€” urutan IG, FB, X, Threads, WA (spec 4.6) --}}
                     <div class="mt-6 flex items-center justify-center gap-4">
                         <a href="{{ setting('url_instagram', '#') }}" class="text-[#B0B3C5] transition-colors hover:text-[#4FC3F7]" aria-label="Instagram">
                             <x-icons.instagram width="18" height="18" />
