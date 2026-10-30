@@ -117,3 +117,31 @@ test('edit profil dengan rantai valid memperbarui id dan nama alamat', function 
         ->and($user->kecamatan_id)->toBe($kec->id)
         ->and($user->kode_pos)->toBe('20111');
 });
+
+test('data wilayah lengkap: 38 provinsi, lebih dari 500 kota, lebih dari 5000 kecamatan', function () {
+    $this->seed(IndonesiaRegionsSeeder::class);
+
+    expect(IndonesiaRegion::type('provinsi')->count())->toBe(38)
+        ->and(IndonesiaRegion::type('kota')->count())->toBeGreaterThan(500)
+        ->and(IndonesiaRegion::type('kecamatan')->count())->toBeGreaterThan(5000)
+        ->and(IndonesiaRegion::type('kode_pos')->count())->toBeGreaterThan(80000);
+});
+
+test('chain check data lengkap menolak kota Jakarta dengan kecamatan Medan', function () {
+    $this->seed(IndonesiaRegionsSeeder::class);
+
+    $jakarta = IndonesiaRegion::type('provinsi')->where('name', 'DKI Jakarta')->firstOrFail();
+    $jakpus = IndonesiaRegion::type('kota')->where('name', 'Kota Jakarta Pusat')->firstOrFail();
+    $medanKota = IndonesiaRegion::type('kecamatan')->where('name', 'Medan Kota')->firstOrFail();
+
+    expect(IndonesiaRegion::chainErrors($jakarta->id, $jakpus->id, $medanKota->id))
+        ->toHaveKey('kecamatan_id');
+
+    $this->post('/register', registerPayload([
+        'email' => 'rantai-berantai@example.com',
+        'no_hp' => '081234567043',
+        'provinsi_id' => $jakarta->id,
+        'kota_id' => $jakpus->id,
+        'kecamatan_id' => $medanKota->id,
+    ]))->assertSessionHasErrors('kecamatan_id');
+});
