@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Verifikasi OTP &mdash; Mercatoria')
+@section('title', 'Verifikasi OTP — Mercatoria')
 
 @section('content')
     <div class="mx-auto max-w-md rounded-xl border border-rule bg-white p-8">
