@@ -67,19 +67,18 @@
             </div>
             <div>
                 <label class="block font-mono text-[10px] font-medium uppercase tracking-[0.16em] text-ink/70">Kecamatan <span class="text-danger">*</span></label>
-                <div class="relative">
-                    <input type="text" name="kecamatan" id="kecamatan" value="{{ old('kecamatan', $user->kecamatan) }}" required maxlength="100"
-                           placeholder="Ketik untuk cari..." autocomplete="off"
-                           class="mt-2 w-full rounded-lg border border-rule bg-white px-3.5 py-2.5 text-sm text-ink focus:border-ink focus:outline-none focus:ring-2 focus:ring-accent/45">
-                    <div id="kecamatan-suggestions" class="absolute left-0 top-full z-20 mt-1 hidden max-h-48 w-full overflow-y-auto rounded-lg border border-rule bg-white shadow-sm"></div>
-                </div>
+                <select name="kecamatan" id="kecamatan" required disabled
+                        class="mt-2 w-full rounded-lg border border-rule bg-white px-3.5 py-2.5 text-sm text-ink opacity-50 focus:border-ink focus:outline-none focus:ring-2 focus:ring-accent/45 disabled:cursor-not-allowed">
+                    <option value="{{ old('kecamatan', $user->kecamatan) }}" selected>{{ old('kecamatan', $user->kecamatan) ?: 'Pilih Kota dulu' }}</option>
+                </select>
                 <input type="hidden" name="kecamatan_id" id="kecamatan_id" value="{{ old('kecamatan_id') }}">
             </div>
             <div>
                 <label class="block font-mono text-[10px] font-medium uppercase tracking-[0.16em] text-ink/70">Kode Pos <span class="text-danger">*</span></label>
-                <input type="text" name="kode_pos" id="kode_pos" value="{{ old('kode_pos', $user->kode_pos) }}" required
-                       maxlength="5" inputmode="numeric" pattern="[0-9]{5}" placeholder="11xxx"
-                       class="mt-2 w-full rounded-lg border border-rule bg-white px-3.5 py-2.5 text-sm text-ink focus:border-ink focus:outline-none focus:ring-2 focus:ring-accent/45">
+                <select name="kode_pos" id="kode_pos" required disabled
+                        class="mt-2 w-full rounded-lg border border-rule bg-white px-3.5 py-2.5 text-sm text-ink opacity-50 focus:border-ink focus:outline-none focus:ring-2 focus:ring-accent/45 disabled:cursor-not-allowed">
+                    <option value="{{ old('kode_pos', $user->kode_pos) }}" selected>{{ old('kode_pos', $user->kode_pos) ?: 'Pilih Kecamatan dulu' }}</option>
+                </select>
             </div>
         </div>
 
@@ -87,12 +86,11 @@
             (function () {
                 var provSel = document.getElementById('provinsi');
                 var kotaSel = document.getElementById('kota');
-                var kecInput = document.getElementById('kecamatan');
-                var kecBox = document.getElementById('kecamatan-suggestions');
+                var kecSel = document.getElementById('kecamatan');
+                var posSel = document.getElementById('kode_pos');
                 var provId = document.getElementById('provinsi_id');
                 var kotaId = document.getElementById('kota_id');
                 var kecId = document.getElementById('kecamatan_id');
-                var kodePos = document.getElementById('kode_pos');
                 if (!provSel) return;
 
                 function fetchJson(url) {
@@ -103,6 +101,7 @@
                 }
 
                 function fillSelect(sel, items, placeholder, valueKey, labelKey) {
+                    var prev = sel.value;
                     sel.innerHTML = '<option value="">' + placeholder + '</option>';
                     (items || []).forEach(function (item) {
                         var opt = document.createElement('option');
@@ -111,87 +110,86 @@
                         opt.dataset.id = item.id || '';
                         sel.appendChild(opt);
                     });
+                    if (prev) sel.value = prev;
+                }
+
+                function fallbackInput(sel, name, val) {
+                    sel.outerHTML = '<input type="text" name="' + name + '" id="' + name + '" value="' + (val || '') + '" required maxlength="100" class="mt-2 w-full rounded-lg border border-rule bg-white px-3.5 py-2.5 text-sm text-ink focus:border-ink focus:outline-none focus:ring-2 focus:ring-accent/45">';
                 }
 
                 fetchJson('{{ route("api.regions.provinces") }}')
                     .then(function (data) {
-                        var current = provSel.value;
                         fillSelect(provSel, data, 'Pilih Provinsi', 'nama', 'nama');
-                        if (current) provSel.value = current;
                     })
                     .catch(function () {
-                        provSel.outerHTML = '<input type="text" name="provinsi" id="provinsi" value="{{ old("provinsi", $user->provinsi) }}" required maxlength="100" class="mt-2 w-full rounded-lg border border-rule bg-white px-3.5 py-2.5 text-sm text-ink focus:border-ink focus:outline-none focus:ring-2 focus:ring-accent/45">';
+                        fallbackInput(provSel, 'provinsi', '{{ old("provinsi", $user->provinsi) }}');
                     });
 
                 provSel.addEventListener('change', function () {
                     var opt = provSel.options[provSel.selectedIndex];
                     provId.value = opt ? (opt.dataset.id || '') : '';
-                    kotaSel.disabled = true;
-                    kotaSel.classList.add('opacity-50');
+                    kotaSel.disabled = true; kotaSel.classList.add('opacity-50');
+                    kecSel.disabled = true; kecSel.classList.add('opacity-50');
+                    posSel.disabled = true; posSel.classList.add('opacity-50');
                     kotaSel.innerHTML = '<option value="">Memuat...</option>';
+                    kecSel.innerHTML = '<option value="">Pilih Kota dulu</option>';
+                    posSel.innerHTML = '<option value="">Pilih Kecamatan dulu</option>';
                     if (!provSel.value) {
                         kotaSel.innerHTML = '<option value="">Pilih Provinsi dulu</option>';
                         return;
                     }
                     fetchJson('{{ route("api.regions.regencies", ["province" => "__ID__"]) }}'.replace('__ID__', provId.value))
                         .then(function (data) {
-                            var current = kotaSel.value;
                             fillSelect(kotaSel, data, 'Pilih Kota/Kabupaten', 'nama', 'nama');
-                            if (current) kotaSel.value = current;
-                            kotaSel.disabled = false;
-                            kotaSel.classList.remove('opacity-50');
+                            kotaSel.disabled = false; kotaSel.classList.remove('opacity-50');
                         })
                         .catch(function () {
-                            kotaSel.disabled = false;
-                            kotaSel.classList.remove('opacity-50');
-                            kotaSel.outerHTML = '<input type="text" name="kota" id="kota" value="{{ old("kota", $user->kota) }}" required maxlength="100" class="mt-2 w-full rounded-lg border border-rule bg-white px-3.5 py-2.5 text-sm text-ink focus:border-ink focus:outline-none focus:ring-2 focus:ring-accent/45">';
+                            kotaSel.disabled = false; kotaSel.classList.remove('opacity-50');
+                            fallbackInput(kotaSel, 'kota', '{{ old("kota", $user->kota) }}');
                         });
                 });
 
                 kotaSel.addEventListener('change', function () {
                     var opt = kotaSel.options[kotaSel.selectedIndex];
                     kotaId.value = opt ? (opt.dataset.id || '') : '';
-                });
-
-                var kecTimer;
-                kecInput.addEventListener('input', function () {
-                    clearTimeout(kecTimer);
-                    var q = kecInput.value.trim();
-                    if (q.length < 2 || !kotaId.value) { kecBox.classList.add('hidden'); return; }
-                    kecTimer = setTimeout(function () {
-                        fetchJson('{{ route("api.regions.districts", ["regency" => "__ID__"]) }}'.replace('__ID__', kotaId.value))
-                            .then(function (data) {
-                                var items = (data || []).filter(function (d) {
-                                    return (d.nama || '').toLowerCase().indexOf(q.toLowerCase()) > -1;
-                                }).slice(0, 8);
-                                kecBox.innerHTML = items.map(function (d) {
-                                    return '<button type="button" class="block w-full px-3.5 py-2 text-left text-sm text-ink hover:bg-paper" data-id="' + (d.id || '') + '" data-nama="' + (d.nama || '') + '">' + (d.nama || '') + '</button>';
-                                }).join('') || '<p class="px-3.5 py-2 text-sm text-ink/45">Tidak ditemukan</p>';
-                                kecBox.classList.remove('hidden');
-                            })
-                            .catch(function () { kecBox.classList.add('hidden'); });
-                    }, 250);
-                });
-
-                kecBox.addEventListener('click', function (e) {
-                    var btn = e.target.closest('[data-nama]');
-                    if (!btn) return;
-                    kecInput.value = btn.dataset.nama || '';
-                    kecId.value = btn.dataset.id || '';
-                    kecBox.classList.add('hidden');
-                });
-
-                document.addEventListener('click', function (e) {
-                    if (!e.target.closest('#kecamatan') && !e.target.closest('#kecamatan-suggestions')) {
-                        kecBox.classList.add('hidden');
+                    kecSel.disabled = true; kecSel.classList.add('opacity-50');
+                    posSel.disabled = true; posSel.classList.add('opacity-50');
+                    kecSel.innerHTML = '<option value="">Memuat...</option>';
+                    posSel.innerHTML = '<option value="">Pilih Kecamatan dulu</option>';
+                    if (!kotaSel.value) {
+                        kecSel.innerHTML = '<option value="">Pilih Kota dulu</option>';
+                        return;
                     }
+                    fetchJson('{{ route("api.regions.districts", ["regency" => "__ID__"]) }}'.replace('__ID__', kotaId.value))
+                        .then(function (data) {
+                            fillSelect(kecSel, data, 'Pilih Kecamatan', 'nama', 'nama');
+                            kecSel.disabled = false; kecSel.classList.remove('opacity-50');
+                        })
+                        .catch(function () {
+                            kecSel.disabled = false; kecSel.classList.remove('opacity-50');
+                            fallbackInput(kecSel, 'kecamatan', '{{ old("kecamatan", $user->kecamatan) }}');
+                        });
                 });
 
-                if (kodePos) {
-                    kodePos.addEventListener('input', function () {
-                        this.value = this.value.replace(/[^0-9]/g, '').slice(0, 5);
-                    });
-                }
+                kecSel.addEventListener('change', function () {
+                    var opt = kecSel.options[kecSel.selectedIndex];
+                    kecId.value = opt ? (opt.dataset.id || '') : '';
+                    posSel.disabled = true; posSel.classList.add('opacity-50');
+                    posSel.innerHTML = '<option value="">Memuat...</option>';
+                    if (!kecSel.value) {
+                        posSel.innerHTML = '<option value="">Pilih Kecamatan dulu</option>';
+                        return;
+                    }
+                    fetchJson('{{ route("api.regions.postalCodes", ["district" => "__ID__"]) }}'.replace('__ID__', kecId.value))
+                        .then(function (data) {
+                            fillSelect(posSel, data, 'Pilih Kode Pos', 'kode_pos', 'kode_pos');
+                            posSel.disabled = false; posSel.classList.remove('opacity-50');
+                        })
+                        .catch(function () {
+                            posSel.disabled = false; posSel.classList.remove('opacity-50');
+                            fallbackInput(posSel, 'kode_pos', '{{ old("kode_pos", $user->kode_pos) }}');
+                        });
+                });
             })();
         </script>
 

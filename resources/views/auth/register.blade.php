@@ -129,12 +129,10 @@
                         Kecamatan
                         <span class="text-danger">*</span>
                     </label>
-                    <div class="relative">
-                        <input type="text" name="kecamatan" id="kecamatan" value="{{ old('kecamatan') }}" required maxlength="100"
-                               placeholder="Ketik untuk cari..." autocomplete="off"
-                               class="mt-2 w-full rounded-lg border border-rule bg-white px-3.5 py-2.5 text-sm text-ink placeholder:text-ink/35 transition-colors focus:border-ink focus:outline-none focus:ring-2 focus:ring-accent/45">
-                        <div id="kecamatan-suggestions" class="absolute left-0 top-full z-20 mt-1 hidden max-h-48 w-full overflow-y-auto rounded-lg border border-rule bg-white shadow-sm"></div>
-                    </div>
+                    <select name="kecamatan" id="kecamatan" required data-region="district" disabled
+                            class="mt-2 w-full rounded-lg border border-rule bg-white px-3.5 py-2.5 text-sm text-ink opacity-50 transition-colors focus:border-ink focus:outline-none focus:ring-2 focus:ring-accent/45 disabled:cursor-not-allowed">
+                        <option value="">Pilih Kota dulu</option>
+                    </select>
                     <input type="hidden" name="kecamatan_id" id="kecamatan_id" value="{{ old('kecamatan_id') }}">
                     @error('kecamatan')<p class="mt-1.5 text-sm text-danger">{{ $message }}</p>@enderror
                 </div>
@@ -144,9 +142,10 @@
                         Kode Pos
                         <span class="text-danger">*</span>
                     </label>
-                    <input type="text" name="kode_pos" id="kode_pos" value="{{ old('kode_pos') }}" required
-                           maxlength="5" inputmode="numeric" pattern="[0-9]{5}" placeholder="11xxx"
-                           class="mt-2 w-full rounded-lg border border-rule bg-white px-3.5 py-2.5 text-sm text-ink placeholder:text-ink/35 transition-colors focus:border-ink focus:outline-none focus:ring-2 focus:ring-accent/45">
+                    <select name="kode_pos" id="kode_pos" required disabled
+                            class="mt-2 w-full rounded-lg border border-rule bg-white px-3.5 py-2.5 text-sm text-ink opacity-50 transition-colors focus:border-ink focus:outline-none focus:ring-2 focus:ring-accent/45 disabled:cursor-not-allowed">
+                        <option value="">Pilih Kecamatan dulu</option>
+                    </select>
                     @error('kode_pos')<p class="mt-1.5 text-sm text-danger">{{ $message }}</p>@enderror
                 </div>
             </div>
@@ -155,12 +154,11 @@
                 (function () {
                     var provSel = document.getElementById('provinsi');
                     var kotaSel = document.getElementById('kota');
-                    var kecInput = document.getElementById('kecamatan');
-                    var kecBox = document.getElementById('kecamatan-suggestions');
+                    var kecSel = document.getElementById('kecamatan');
+                    var posSel = document.getElementById('kode_pos');
                     var provId = document.getElementById('provinsi_id');
                     var kotaId = document.getElementById('kota_id');
                     var kecId = document.getElementById('kecamatan_id');
-                    var kodePos = document.getElementById('kode_pos');
                     if (!provSel) return;
 
                     function fetchJson(url) {
@@ -181,22 +179,28 @@
                         });
                     }
 
+                    function fallbackInput(sel, name, val) {
+                        sel.outerHTML = '<input type="text" name="' + name + '" id="' + name + '" value="' + (val || '') + '" required maxlength="100" class="mt-2 w-full rounded-lg border border-rule bg-white px-3.5 py-2.5 text-sm text-ink focus:border-ink focus:outline-none focus:ring-2 focus:ring-accent/45">';
+                    }
+
                     // Load provinces
                     fetchJson('{{ route("api.regions.provinces") }}')
                         .then(function (data) {
                             fillSelect(provSel, data, 'Pilih Provinsi', 'nama', 'nama');
                         })
                         .catch(function () {
-                            // fallback: manual text input
-                            provSel.outerHTML = '<input type="text" name="provinsi" id="provinsi" value="{{ old("provinsi") }}" required maxlength="100" placeholder="Ketik Provinsi..." class="mt-2 w-full rounded-lg border border-rule bg-white px-3.5 py-2.5 text-sm text-ink placeholder:text-ink/35 focus:border-ink focus:outline-none focus:ring-2 focus:ring-accent/45">';
+                            fallbackInput(provSel, 'provinsi', '{{ old("provinsi") }}');
                         });
 
                     provSel.addEventListener('change', function () {
                         var opt = provSel.options[provSel.selectedIndex];
                         provId.value = opt ? (opt.dataset.id || '') : '';
-                        kotaSel.disabled = true;
-                        kotaSel.classList.add('opacity-50');
+                        kotaSel.disabled = true; kotaSel.classList.add('opacity-50');
+                        kecSel.disabled = true; kecSel.classList.add('opacity-50');
+                        posSel.disabled = true; posSel.classList.add('opacity-50');
                         kotaSel.innerHTML = '<option value="">Memuat...</option>';
+                        kecSel.innerHTML = '<option value="">Pilih Kota dulu</option>';
+                        posSel.innerHTML = '<option value="">Pilih Kecamatan dulu</option>';
                         if (!provSel.value) {
                             kotaSel.innerHTML = '<option value="">Pilih Provinsi dulu</option>';
                             return;
@@ -204,62 +208,55 @@
                         fetchJson('{{ route("api.regions.regencies", ["province" => "__ID__"]) }}'.replace('__ID__', provId.value))
                             .then(function (data) {
                                 fillSelect(kotaSel, data, 'Pilih Kota/Kabupaten', 'nama', 'nama');
-                                kotaSel.disabled = false;
-                                kotaSel.classList.remove('opacity-50');
+                                kotaSel.disabled = false; kotaSel.classList.remove('opacity-50');
                             })
                             .catch(function () {
-                                kotaSel.disabled = false;
-                                kotaSel.classList.remove('opacity-50');
-                                kotaSel.outerHTML = '<input type="text" name="kota" id="kota" value="{{ old("kota") }}" required maxlength="100" placeholder="Ketik Kota/Kab..." class="mt-2 w-full rounded-lg border border-rule bg-white px-3.5 py-2.5 text-sm text-ink placeholder:text-ink/35 focus:border-ink focus:outline-none focus:ring-2 focus:ring-accent/45">';
+                                kotaSel.disabled = false; kotaSel.classList.remove('opacity-50');
+                                fallbackInput(kotaSel, 'kota', '{{ old("kota") }}');
                             });
                     });
 
                     kotaSel.addEventListener('change', function () {
                         var opt = kotaSel.options[kotaSel.selectedIndex];
                         kotaId.value = opt ? (opt.dataset.id || '') : '';
-                    });
-
-                    // Kecamatan autocomplete
-                    var kecTimer;
-                    kecInput.addEventListener('input', function () {
-                        clearTimeout(kecTimer);
-                        var q = kecInput.value.trim();
-                        if (q.length < 2 || !kotaId.value) { kecBox.classList.add('hidden'); return; }
-                        kecTimer = setTimeout(function () {
-                            fetchJson('{{ route("api.regions.districts", ["regency" => "__ID__"]) }}'.replace('__ID__', kotaId.value))
-                                .then(function (data) {
-                                    var items = (data || []).filter(function (d) {
-                                        return (d.nama || '').toLowerCase().indexOf(q.toLowerCase()) === 0 || (d.nama || '').toLowerCase().indexOf(q.toLowerCase()) > -1;
-                                    }).slice(0, 8);
-                                    kecBox.innerHTML = items.map(function (d) {
-                                        return '<button type="button" class="block w-full px-3.5 py-2 text-left text-sm text-ink hover:bg-paper" data-id="' + (d.id || '') + '" data-nama="' + (d.nama || '') + '">' + (d.nama || '') + '</button>';
-                                    }).join('') || '<p class="px-3.5 py-2 text-sm text-ink/45">Tidak ditemukan</p>';
-                                    kecBox.classList.remove('hidden');
-                                })
-                                .catch(function () { kecBox.classList.add('hidden'); });
-                        }, 250);
-                    });
-
-                    kecBox.addEventListener('click', function (e) {
-                        var btn = e.target.closest('[data-nama]');
-                        if (!btn) return;
-                        kecInput.value = btn.dataset.nama || '';
-                        kecId.value = btn.dataset.id || '';
-                        kecBox.classList.add('hidden');
-                    });
-
-                    document.addEventListener('click', function (e) {
-                        if (!e.target.closest('#kecamatan') && !e.target.closest('#kecamatan-suggestions')) {
-                            kecBox.classList.add('hidden');
+                        kecSel.disabled = true; kecSel.classList.add('opacity-50');
+                        posSel.disabled = true; posSel.classList.add('opacity-50');
+                        kecSel.innerHTML = '<option value="">Memuat...</option>';
+                        posSel.innerHTML = '<option value="">Pilih Kecamatan dulu</option>';
+                        if (!kotaSel.value) {
+                            kecSel.innerHTML = '<option value="">Pilih Kota dulu</option>';
+                            return;
                         }
+                        fetchJson('{{ route("api.regions.districts", ["regency" => "__ID__"]) }}'.replace('__ID__', kotaId.value))
+                            .then(function (data) {
+                                fillSelect(kecSel, data, 'Pilih Kecamatan', 'nama', 'nama');
+                                kecSel.disabled = false; kecSel.classList.remove('opacity-50');
+                            })
+                            .catch(function () {
+                                kecSel.disabled = false; kecSel.classList.remove('opacity-50');
+                                fallbackInput(kecSel, 'kecamatan', '{{ old("kecamatan") }}');
+                            });
                     });
 
-                    // Kode Pos: auto-format 5 digit
-                    if (kodePos) {
-                        kodePos.addEventListener('input', function () {
-                            this.value = this.value.replace(/[^0-9]/g, '').slice(0, 5);
-                        });
-                    }
+                    kecSel.addEventListener('change', function () {
+                        var opt = kecSel.options[kecSel.selectedIndex];
+                        kecId.value = opt ? (opt.dataset.id || '') : '';
+                        posSel.disabled = true; posSel.classList.add('opacity-50');
+                        posSel.innerHTML = '<option value="">Memuat...</option>';
+                        if (!kecSel.value) {
+                            posSel.innerHTML = '<option value="">Pilih Kecamatan dulu</option>';
+                            return;
+                        }
+                        fetchJson('{{ route("api.regions.postalCodes", ["district" => "__ID__"]) }}'.replace('__ID__', kecId.value))
+                            .then(function (data) {
+                                fillSelect(posSel, data, 'Pilih Kode Pos', 'kode_pos', 'kode_pos');
+                                posSel.disabled = false; posSel.classList.remove('opacity-50');
+                            })
+                            .catch(function () {
+                                posSel.disabled = false; posSel.classList.remove('opacity-50');
+                                fallbackInput(posSel, 'kode_pos', '{{ old("kode_pos") }}');
+                            });
+                    });
                 })();
             </script>
 
