@@ -23,6 +23,9 @@
 
     {{-- Bulk Actions --}}
     <div class="mt-4 flex flex-wrap items-center gap-2">
+        <label class="flex items-center gap-2 text-sm text-ink/70">
+            <input type="checkbox" id="pm-select-all" class="rounded border-rule"> Pilih Semua
+        </label>
         <button type="button" id="pm-bulk-save" class="rounded-lg bg-black px-4 py-2 text-sm font-semibold tracking-[0.12em] text-white transition-colors hover:bg-ink">Simpan Semua</button>
         <button type="button" id="pm-bulk-delete" class="rounded-lg border border-danger/40 px-4 py-2 text-sm font-semibold text-danger transition-colors hover:border-danger">Hapus Terpilih</button>
         <span class="text-xs text-ink/45">Centang untuk hapus</span>
@@ -59,6 +62,10 @@
         (function () {
             var list = document.getElementById('pm-list');
             if (!list) return;
+
+            document.getElementById('pm-select-all').addEventListener('change', function () {
+                list.querySelectorAll('.pm-checkbox').forEach(function (cb) { cb.checked = this.checked; }.bind(this));
+            });
 
             document.getElementById('pm-bulk-save').addEventListener('click', function () {
                 var rows = list.querySelectorAll('[data-pm-row]');

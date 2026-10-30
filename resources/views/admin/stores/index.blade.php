@@ -17,6 +17,9 @@
 
     {{-- Bulk Actions --}}
     <div class="mt-4 flex flex-wrap items-center gap-2">
+        <label class="flex items-center gap-2 text-sm text-ink/70">
+            <input type="checkbox" id="store-select-all" class="rounded border-rule"> Pilih Semua
+        </label>
         <button type="button" id="bulk-save" class="rounded-lg bg-black px-4 py-2 text-sm font-semibold tracking-[0.12em] text-white transition-colors hover:bg-ink">Simpan Semua</button>
         <button type="button" id="bulk-delete" class="rounded-lg border border-danger/40 px-4 py-2 text-sm font-semibold text-danger transition-colors hover:border-danger">Hapus Terpilih</button>
         <span class="text-xs text-ink/45">Centang store untuk hapus</span>
@@ -43,6 +46,11 @@
     <script>
         (function () {
             var list = document.getElementById('stores-list');
+            if (!list) return;
+
+            document.getElementById('store-select-all').addEventListener('change', function () {
+                list.querySelectorAll('.store-checkbox').forEach(function (cb) { cb.checked = this.checked; }.bind(this));
+            });
             if (!list) return;
 
             document.getElementById('bulk-save').addEventListener('click', function () {

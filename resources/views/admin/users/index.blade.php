@@ -18,6 +18,9 @@
     </form>
 
     <div class="mt-4 flex flex-wrap items-center gap-2">
+        <label class="flex items-center gap-2 text-sm text-ink/70">
+            <input type="checkbox" id="user-select-all" class="rounded border-rule"> Pilih Semua
+        </label>
         <button type="button" id="user-bulk-save" class="rounded-lg bg-black px-4 py-2 text-sm font-semibold tracking-[0.12em] text-white transition-colors hover:bg-ink">Simpan Semua</button>
         <span class="text-xs text-ink/45">Edit nama / email / role langsung di tabel, lalu Simpan Semua.</span>
     </div>
@@ -130,6 +133,10 @@
             var list = document.getElementById('user-list');
             if (!list) return;
             var saveBtn = document.getElementById('user-bulk-save');
+
+            document.getElementById('user-select-all').addEventListener('change', function () {
+                list.querySelectorAll('.user-checkbox').forEach(function (cb) { cb.checked = this.checked; }.bind(this));
+            });
 
             saveBtn.addEventListener('click', function () {
                 var rows = list.querySelectorAll('[data-user-row]');
