@@ -1,4 +1,4 @@
-﻿@extends('admin.layouts.admin')
+@extends('admin.layouts.admin')
 
 @section('title', $product->exists ? 'Edit Produk' : 'Tambah Produk')
 
@@ -137,9 +137,21 @@
             Produk aktif
         </label>
 
-        <button type="submit" class="rounded-lg bg-black px-6 py-2.5 text-sm font-semibold tracking-[0.12em] text-white transition-colors hover:bg-ink">
-            {{ $product->exists ? 'SIMPAN PERUBAHAN' : 'SIMPAN PRODUK' }}
-        </button>
+        <div class="flex flex-wrap items-center gap-2">
+            <button type="submit" class="rounded-lg bg-black px-6 py-2.5 text-sm font-semibold tracking-[0.12em] text-white transition-colors hover:bg-ink">
+                {{ $product->exists ? 'SIMPAN PERUBAHAN' : 'SIMPAN PRODUK' }}
+            </button>
+            @if ($product->exists && \Illuminate\Support\Facades\Route::has('office.products.duplicate'))
+                <form method="POST" action="{{ route('office.products.duplicate', $product) }}" class="inline">
+                    @csrf
+                    <button type="submit" class="rounded-lg border border-rule px-4 py-2.5 text-sm font-semibold text-ink transition-colors hover:border-ink">Duplicate</button>
+                </form>
+            @endif
+            @if ($product->exists && \Illuminate\Support\Facades\Route::has('office.products.preview'))
+                <a href="{{ route('office.products.preview', $product) }}" target="_blank"
+                   class="rounded-lg border border-rule px-4 py-2.5 text-sm font-semibold text-ink transition-colors hover:border-ink">Preview</a>
+            @endif
+        </div>
     </form>
 
     @if ($product->exists)
