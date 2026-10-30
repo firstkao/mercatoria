@@ -109,6 +109,13 @@
                 </div>
             </header>
 
+            {{-- Topbar Banner Kill-Switch (PRD 24.5) --}}
+            @if (!empty($customerEmailsPaused))
+                <div class="bg-[#E53935] px-4 py-2 text-center">
+                    <p class="text-sm font-semibold text-white">STOP EMAIL CUSTOMER AKTIF</p>
+                </div>
+            @endif
+
             <main class="flex-1 p-6">
                 @if (session('status'))
                     <div class="mb-4 rounded-lg border border-rule bg-white px-4 py-3 text-sm text-ink">
