@@ -25,7 +25,7 @@ class DeveloperController extends Controller
         $data = $request->validate([
             'name' => ['required', 'string', 'max:100'],
             'is_active' => ['nullable', 'boolean'],
-            'logo' => ['nullable', 'file', 'mimes:jpg,jpeg,png,webp', 'max:1024'],
+            'logo' => ['nullable', 'file', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
         ]);
         $data['slug'] = $this->uniqueSlug($data['name']);
         $data['logo_path'] = $request->hasFile('logo') ? $request->file('logo')->store('developers') : null;
@@ -44,7 +44,7 @@ class DeveloperController extends Controller
             'name' => ['required', 'string', 'max:100'],
             'slug' => ['nullable', 'string', 'max:120', 'unique:developers,slug,'.$developer->id],
             'is_active' => ['nullable', 'boolean'],
-            'logo' => ['nullable', 'file', 'mimes:jpg,jpeg,png,webp', 'max:1024'],
+            'logo' => ['nullable', 'file', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
         ]);
 
         // Slug manual bila diisi; dikosongkan -> auto-generate dari nama; tidak dikirim -> tetap.
