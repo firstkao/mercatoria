@@ -1,0 +1,4 @@
+<svg <?php echo e($attributes->merge(['class' => 'shrink-0'])); ?> width="16" height="16" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg">
+    <path d="M8 1a2 2 0 0 1 2 2v4H6V3a2 2 0 0 1 2-2m3 6V3a3 3 0 0 0-6 0v4a2 2 0 0 0-2 2v5a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2"/>
+</svg>
+<?php /**PATH C:\Users\BayuD\OneDrive\Documents\GitHub\v2\mercatoria\resources\views/components/icons/lock-fill.blade.php ENDPATH**/ ?>
