@@ -68,4 +68,18 @@
             {{ $user->exists ? 'SIMPAN PERUBAHAN' : 'SIMPAN USER' }}
         </button>
     </form>
+
+    @isset($visit)
+        @if (data_get($visit, 'source') || data_get($visit, 'landing_page'))
+            <div class="mt-4 rounded-xl border border-rule bg-white p-4">
+                <h2 class="font-mono text-[11px] font-medium uppercase tracking-[0.16em] text-ink">Sumber Referral</h2>
+                @if (data_get($visit, 'source'))
+                    <p class="mt-2 text-sm text-ink/80">{{ data_get($visit, 'source') }}</p>
+                @endif
+                @if (data_get($visit, 'landing_page'))
+                    <p class="text-xs text-ink/50">{{ data_get($visit, 'landing_page') }}</p>
+                @endif
+            </div>
+        @endif
+    @endisset
 @endsection
