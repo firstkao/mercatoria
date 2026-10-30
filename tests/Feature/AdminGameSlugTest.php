@@ -14,6 +14,6 @@ test('post game tanpa slug menghasilkan slug otomatis dari nama', function () {
 
     $game = Game::where('name', 'Game Uji Slug')->firstOrFail();
 
-    expect($game->slug)->toStartWith(Str::slug('Game Uji Slug').'-')
+    expect($game->slug)->toBe(Str::slug('Game Uji Slug'))
         ->and(strlen($game->slug))->toBeLessThanOrEqual(120);
 });

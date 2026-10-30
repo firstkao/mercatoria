@@ -28,8 +28,7 @@ class GameController extends Controller
             'default_store_id' => ['nullable', 'exists:stores,id'],
             'is_active' => ['nullable', 'boolean'],
         ]);
-        // Slug selalu auto-generate dari nama (form tidak mengirim field slug).
-        $data['slug'] = Str::slug($data['name']).'-'.Str::random(4);
+        $data['slug'] = $this->uniqueSlug($data['name']);
         $data['is_active'] = $request->boolean('is_active', true);
 
         $game = Game::create($data);
@@ -60,5 +59,24 @@ class GameController extends Controller
         $game->delete();
 
         return redirect()->route('office.games.index')->with('status', 'Game dihapus.');
+    }
+
+    /**
+     * Generate slug bersih dari nama — ala WordPress.
+     * Contoh: "Honkai: Star Rail" → "honkai-star-rail"
+     * Duplikat: "honkai-star-rail" sudah ada → "honkai-star-rail-2"
+     */
+    private function uniqueSlug(string $name): string
+    {
+        $slug = Str::slug($name);
+        $original = $slug;
+        $counter = 2;
+
+        while (Game::where('slug', $slug)->exists()) {
+            $slug = $original.'-'.$counter;
+            $counter++;
+        }
+
+        return $slug;
     }
 }

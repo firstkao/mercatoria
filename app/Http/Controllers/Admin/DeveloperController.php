@@ -23,10 +23,9 @@ class DeveloperController extends Controller
     {
         $data = $request->validate([
             'name' => ['required', 'string', 'max:100'],
-            'slug' => ['nullable', 'string', 'max:120', 'unique:developers,slug'],
             'is_active' => ['nullable', 'boolean'],
         ]);
-        $data['slug'] = $data['slug'] ?: Str::slug($data['name']).'-'.Str::random(4);
+        $data['slug'] = $this->uniqueSlug($data['name']);
         $data['is_active'] = $request->boolean('is_active', true);
 
         $developer = Developer::create($data);
@@ -56,5 +55,24 @@ class DeveloperController extends Controller
         $developer->delete();
 
         return redirect()->route('office.developers.index')->with('status', 'Developer dihapus.');
+    }
+
+    /**
+     * Generate slug bersih dari nama — ala WordPress.
+     * Contoh: "MiHoYo" → "mihoyo"
+     * Duplikat: "mihoyo" sudah ada → "mihoyo-2"
+     */
+    private function uniqueSlug(string $name): string
+    {
+        $slug = Str::slug($name);
+        $original = $slug;
+        $counter = 2;
+
+        while (Developer::where('slug', $slug)->exists()) {
+            $slug = $original.'-'.$counter;
+            $counter++;
+        }
+
+        return $slug;
     }
 }
