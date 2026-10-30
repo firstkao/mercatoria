@@ -1,10 +1,10 @@
 @extends('layouts.app')
 
-@section('title', 'Koin Saya — Mercatoria')
+@section('title', 'Koin Saya & Voucher — Mercatoria')
 
 @section('content')
     <p class="font-mono text-[10px] uppercase tracking-[0.22em] text-ink/45">Akun</p>
-    <h1 class="mt-2 font-display text-[1.75rem] leading-tight font-semibold text-ink sm:text-3xl">Koin Saya</h1>
+    <h1 class="mt-2 font-display text-[1.75rem] leading-tight font-semibold text-ink sm:text-3xl">Koin Saya &amp; Voucher</h1>
     <p class="mt-1 text-sm text-ink/65">1 Koin = Rp1. Bisa dipakai maksimal 5% dari total pesanan.</p>
 
     <div class="mt-5 flex flex-wrap gap-1 border-b border-rule">
@@ -19,7 +19,7 @@
         <p class="mt-2 font-display text-5xl font-semibold text-ink">{{ number_format($balance, 0, ',', '.') }}</p>
     </div>
 
-    {{-- Sub-tab (Design Spec 10.2) --}}
+    {{-- Sub-tab Voucher (DS 10.2: Aktif / Akan Expired / Riwayat) --}}
     <div class="mt-5 flex flex-wrap gap-1 border-b border-rule" role="tablist">
         <button type="button" data-coin-tab="aktif" class="coin-tab border-b-2 border-ink px-4 py-2 text-sm font-semibold text-ink">Aktif</button>
         <button type="button" data-coin-tab="expiring" class="coin-tab border-b-2 border-transparent px-4 py-2 text-sm text-ink/55 transition-colors hover:text-ink">Akan Expired</button>
@@ -74,23 +74,37 @@
     {{-- Voucher Saya (Design Spec 10.2) — data $vouchers dari controller --}}
     <section class="mt-8">
         <h2 class="font-mono text-[11px] font-medium uppercase tracking-[0.16em] text-ink">Voucher Saya</h2>
+
+        {{-- Sub-tab Voucher (DS 10.2: Aktif / Akan Expired / Riwayat) --}}
+        <div class="mt-3 flex flex-wrap gap-1 border-b border-rule" role="tablist">
+            <button type="button" data-voucher-tab="aktif" class="voucher-tab border-b-2 border-ink px-4 py-2 text-sm font-semibold text-ink">Aktif</button>
+            <button type="button" data-voucher-tab="expiring" class="voucher-tab border-b-2 border-transparent px-4 py-2 text-sm text-ink/55 transition-colors hover:text-ink">Akan Expired</button>
+            <button type="button" data-voucher-tab="riwayat" class="voucher-tab border-b-2 border-transparent px-4 py-2 text-sm text-ink/55 transition-colors hover:text-ink">Riwayat</button>
+        </div>
+
         <div class="mt-3 space-y-3">
             @isset($vouchers)
                 @forelse ($vouchers as $userVoucher)
-                    <div class="flex items-center justify-between gap-3 rounded-xl border border-rule bg-white p-4">
+                    @php
+                        $vStatus = $userVoucher->status ?? $userVoucher['status'] ?? null;
+                        $vExp = $userVoucher->expires_at ?? $userVoucher['expires_at'] ?? null;
+                        $isExpired = $vExp && \Illuminate\Support\Carbon::parse($vExp)->isPast();
+                        $isExpiring = $vExp && ! $isExpired && \Illuminate\Support\Carbon::parse($vExp)->diffInDays(now()) <= 30;
+                        $vTabClass = $isExpired ? 'riwayat' : ($isExpiring ? 'expiring' : 'aktif');
+                    @endphp
+                    <div class="flex items-center justify-between gap-3 rounded-xl border border-rule bg-white p-4" data-voucher-item="{{ $vTabClass }}">
                         <div>
                             <p class="text-sm font-semibold text-ink">{{ $userVoucher->voucher->code ?? $userVoucher['code'] ?? '-' }}</p>
                             <p class="text-xs text-ink/60">
                                 Potong {{ format_rp($userVoucher->voucher->nominal ?? $userVoucher['nominal'] ?? 0) }}
                                 · min. belanja {{ format_rp($userVoucher->voucher->min_belanja ?? $userVoucher['min_belanja'] ?? 0) }}
-                                @if ($userVoucher->expires_at ?? $userVoucher['expires_at'] ?? null)
-                                    · s/d {{ \Illuminate\Support\Carbon::parse($userVoucher->expires_at ?? $userVoucher['expires_at'])->format('d/m/Y') }}
+                                @if ($vExp)
+                                    · s/d {{ \Illuminate\Support\Carbon::parse($vExp)->format('d/m/Y') }}
                                 @endif
                             </p>
                         </div>
-                        @php($vStatus = $userVoucher->status ?? $userVoucher['status'] ?? null)
                         <span class="rounded px-2 py-1 text-xs font-semibold
-                            {{ $vStatus === 'active' ? 'bg-green-100 text-green-700' : ($vStatus === 'hangus' ? 'bg-red-100 text-red-700' : 'bg-paper text-ink/60') }}">
+                            {{ $vStatus === 'active' ? 'bg-[#43A047] text-white' : ($vStatus === 'hangus' ? 'bg-[#E53935] text-white' : 'bg-paper text-ink/60') }}">
                             {{ strtoupper($vStatus ?? '-') }}
                         </span>
                     </div>
@@ -132,6 +146,31 @@
                 });
             });
             show('aktif');
+        })();
+
+        // Voucher tabs (DS 10.2)
+        (function () {
+            var tabs = document.querySelectorAll('.voucher-tab');
+            var items = document.querySelectorAll('[data-voucher-item]');
+            if (!tabs.length) return;
+            tabs.forEach(function (tab) {
+                tab.addEventListener('click', function () {
+                    tabs.forEach(function (t) {
+                        t.classList.remove('border-ink', 'font-semibold', 'text-ink');
+                        t.classList.add('border-transparent', 'text-ink/55');
+                    });
+                    tab.classList.remove('border-transparent', 'text-ink/55');
+                    tab.classList.add('border-ink', 'font-semibold', 'text-ink');
+                    var mode = tab.getAttribute('data-voucher-tab');
+                    items.forEach(function (item) {
+                        item.style.display = item.getAttribute('data-voucher-item') === mode ? '' : 'none';
+                    });
+                });
+            });
+            // Default: show aktif
+            items.forEach(function (item) {
+                item.style.display = item.getAttribute('data-voucher-item') === 'aktif' ? '' : 'none';
+            });
         })();
     </script>
 @endsection
