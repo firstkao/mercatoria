@@ -22,7 +22,7 @@
             <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
                 <p class="font-mono text-[10px] uppercase tracking-[0.14em] text-ink/55">
                     @if ($results->total() > 0)
-                        Menampilkan {{ $results->firstItem() }}–{{ $results->lastItem() }} dari {{ $results->total() }} hasil
+                        Menampilkan {{ $results->firstItem() }}&ndash;{{ $results->lastItem() }} dari {{ $results->total() }} hasil
                     @else
                         Tidak ada hasil ditemukan.
                     @endif

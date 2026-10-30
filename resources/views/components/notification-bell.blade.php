@@ -1,6 +1,6 @@
 @props(['notifications', 'unreadCount'])
 
-{{-- Bell notifikasi (PRD 43.2–43.4): navbar &mdash; badge merah #E53935, dropdown 10 terbaru --}}
+{{-- Bell notifikasi (PRD 43.2&ndash;43.4): navbar &mdash; badge merah #E53935, dropdown 10 terbaru --}}
 <details class="notification-bell relative">
     <summary class="relative list-none cursor-pointer text-[#333] transition-colors hover:text-[#4FC3F7]" aria-label="Notifikasi">
         <x-icons.bell width="18" height="18" />

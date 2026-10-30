@@ -101,7 +101,7 @@
             <p class="mt-1 text-sm text-ink/70">
                 Tagihan: <strong class="text-ink">{{ format_rp($order->tagihan_web) }}</strong>
                 @if ($order->payment_deadline_at)
-                    Â· Batas waktu: {{ $order->payment_deadline_at->format('d/m/Y H:i') }}
+                    &middot; Batas waktu: {{ $order->payment_deadline_at->format('d/m/Y H:i') }}
                 @endif
             </p>
 
@@ -149,7 +149,7 @@
                         <x-order-status-badge :status="$log->status" />
                     </p>
                     <p class="font-mono text-[10px] uppercase tracking-[0.12em] text-ink/45">
-                        {{ $log->created_at->format('d/m/Y H:i') }} Â· oleh {{ $log->changed_by }}
+                        {{ $log->created_at->format('d/m/Y H:i') }} &middot; oleh {{ $log->changed_by }}
                         @if ($log->note) &mdash; {{ $log->note }} @endif
                     </p>
                 </li>

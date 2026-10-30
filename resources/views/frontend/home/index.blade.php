@@ -41,7 +41,7 @@
                     <details class="group relative">
                         <summary class="flex cursor-pointer list-none items-center gap-1 text-[13px] font-medium text-[#333] transition-colors hover:text-[#4FC3F7]">
                             Game
-                            <span class="text-[10px] transition-transform group-open:rotate-180">â–¾</span>
+                            <span class="text-[10px] transition-transform group-open:rotate-180">&#9662;</span>
                         </summary>
                         <div class="absolute left-0 top-full z-20 mt-2 max-h-80 w-56 overflow-y-auto rounded-lg border border-[#EAEAEA] bg-white py-2 shadow-sm">
                             @forelse ($games as $g)
@@ -55,7 +55,7 @@
                     <details class="group relative">
                         <summary class="flex cursor-pointer list-none items-center gap-1 text-[13px] font-medium text-[#333] transition-colors hover:text-[#4FC3F7]">
                             Developer
-                            <span class="text-[10px] transition-transform group-open:rotate-180">â–¾</span>
+                            <span class="text-[10px] transition-transform group-open:rotate-180">&#9662;</span>
                         </summary>
                         <div class="absolute left-0 top-full z-20 mt-2 max-h-80 w-56 overflow-y-auto rounded-lg border border-[#EAEAEA] bg-white py-2 shadow-sm">
                             @isset($footerDevelopers)

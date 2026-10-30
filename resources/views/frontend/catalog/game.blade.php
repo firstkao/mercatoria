@@ -76,7 +76,7 @@
             <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
                 <p class="font-mono text-[10px] uppercase tracking-[0.14em] text-ink/55">
                     Menampilkan
-                    {{ $products->total() > 0 ? ($products->firstItem()).'–'.($products->lastItem()) : 0 }}
+                    {{ $products->total() > 0 ? ($products->firstItem()).'&ndash;'.($products->lastItem()) : 0 }}
                     dari {{ $products->total() }} hasil
                 </p>
 
