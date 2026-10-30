@@ -3,6 +3,8 @@
 namespace App\Services\Order;
 
 use App\Models\CoinTransaction;
+use App\Models\Crush;
+use App\Models\Customer;
 use App\Models\Order;
 use App\Models\OrderStatus;
 use App\Models\OrderStatusLog;
@@ -122,12 +124,42 @@ class OrderStatusService
 
         if ($toValue === OrderStatus::PembayaranDiterima->value) {
             $this->creditRefereeFirstPayment($order);
+            $this->promoteCrushToCustomer($order);
         }
 
         if ($toValue === OrderStatus::Selesai->value) {
             $this->creditReferrerFirstOrder($order);
             $this->creditOrderCompletion($order);
         }
+    }
+
+    /**
+     * PRD 7.8: "Crush —[order pertama verified]—> Customer (MVP)".
+     * Trigger = pembayaran pertama terverifikasi (Pembayaran Diterima).
+     */
+    private function promoteCrushToCustomer(Order $order): void
+    {
+        $user = $order->user;
+
+        if (! $user || $user->role !== User::ROLE_CRUSH) {
+            return;
+        }
+
+        $user->update(['role' => User::ROLE_CUSTOMER]);
+
+        Customer::firstOrCreate(
+            ['user_id' => $user->id],
+            [
+                'email' => $user->email,
+                'no_hp' => $user->no_hp,
+                'current_state' => 'MVP',
+                'tier' => 'silver',
+                'total_belanja' => 0,
+                'state_updated_at' => now(),
+            ]
+        );
+
+        Crush::query()->where('user_id', $user->id)->delete();
     }
 
     /**
