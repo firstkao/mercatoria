@@ -51,6 +51,11 @@ class UserTierService
 
         if ($amount === null) {
             $order->update(['tier_counted_at' => null, 'tier_counted_amount' => null]);
+        } else {
+            // PRD 50 (Partial Refund): nilai terhitung ikut berkurang sesuai nominal refund (konsisten untuk audit).
+            $order->update([
+                'tier_counted_amount' => max(0, (float) ($order->tier_counted_amount ?? 0) - $deduction),
+            ]);
         }
     }
 

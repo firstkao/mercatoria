@@ -2,6 +2,7 @@
 
 use App\Models\Cart;
 use App\Models\Customer;
+use App\Models\Refund;
 use App\Models\User;
 use App\Services\Cart\CheckoutService;
 use App\Services\Order\LatePenaltyService;
@@ -72,6 +73,33 @@ test('refund full dan hangus mengurangi total belanja', function () {
     $statuses->changeStatus($order2, 'hangus', 'system');
 
     expect((float) Customer::where('user_id', $user->id)->value('total_belanja'))->toEqual(0.0);
+});
+
+test('partial refund mengurangi tier_counted_amount sesuai nominal refund', function () {
+    $user = User::factory()->create();
+    [$user, $order] = placeTestOrder($user);
+
+    $statuses = app(OrderStatusService::class);
+    foreach (['ditahan', 'pembayaran_diterima', 'sedang_diproses'] as $s) {
+        $statuses->changeStatus($order, $s, 'admin');
+    }
+
+    expect((float) $order->fresh()->tier_counted_amount)->toEqual(255000.0);
+
+    Refund::create([
+        'order_id' => $order->id,
+        'type' => Refund::TYPE_PARTIAL,
+        'amount' => 50000,
+        'reason' => 'kualitas barang',
+        'status' => Refund::STATUS_COMPLETED,
+        'requested_by' => User::factory()->admin()->create()->id,
+        'completed_at' => now(),
+    ]);
+
+    $statuses->changeStatus($order, 'dana_dikembalikan', 'admin');
+
+    expect((float) $order->fresh()->tier_counted_amount)->toEqual(205000.0)
+        ->and((float) Customer::where('user_id', $user->id)->value('total_belanja'))->toEqual(205000.0);
 });
 
 test('denda lunas mengembalikan nilai order tetapi denda tidak dihitung tier', function () {
