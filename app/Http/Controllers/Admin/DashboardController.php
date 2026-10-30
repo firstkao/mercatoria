@@ -24,7 +24,9 @@ class DashboardController extends Controller
             'monthRevenue' => Payment::where('status', Payment::STATUS_VERIFIED)
                 ->where('created_at', '>=', $month)
                 ->sum('amount'),
-            'newUsers' => User::where('created_at', '>=', $week)->count(),
+            'newUsers' => User::where('role', '!=', User::ROLE_ADMIN)
+                ->where('created_at', '>=', $week)
+                ->count(),
             'pendingVerifications' => Payment::where('status', Payment::STATUS_PENDING)->count(),
             'newOrders' => Order::where('status', 'menunggu_pembayaran')->count(),
             'topProducts' => Product::orderByDesc('sold_count')->limit(5)->get(['id', 'name', 'sold_count']),
