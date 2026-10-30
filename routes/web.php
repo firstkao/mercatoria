@@ -223,7 +223,9 @@ Route::middleware(['auth', 'admin'])->prefix('office')->name('office.')->group(f
     Route::get('/settings', [AdminSettingsController::class, 'index'])->name('settings.index');
     Route::post('/settings', [AdminSettingsController::class, 'update'])->name('settings.update');
     Route::get('/pages', [AdminPageController::class, 'index'])->name('pages.index');
+    Route::get('/pages/create', [AdminPageController::class, 'create'])->name('pages.create');
     Route::post('/pages', [AdminPageController::class, 'store'])->name('pages.store');
+    Route::get('/pages/{page}/edit', [AdminPageController::class, 'edit'])->name('pages.edit');
     Route::put('/pages/{page}', [AdminPageController::class, 'update'])->name('pages.update');
     Route::delete('/pages/{page}', [AdminPageController::class, 'destroy'])->name('pages.destroy');
 
@@ -245,6 +247,7 @@ Route::middleware(['auth', 'admin'])->prefix('office')->name('office.')->group(f
     Route::get('/admin-logs', [AdminLogController::class, 'admin'])->name('admin-logs');
     Route::get('/auth-logs', [AdminLogController::class, 'auth'])->name('auth-logs');
     Route::get('/activity-logs', [AdminLogController::class, 'activity'])->name('activity-logs');
+    Route::get('/logs/export', [AdminLogController::class, 'export'])->name('logs.export');
 });
 
 /*

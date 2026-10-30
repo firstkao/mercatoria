@@ -18,6 +18,16 @@ class PageController extends Controller
         ]);
     }
 
+    public function create(): View
+    {
+        return view('admin.pages.create');
+    }
+
+    public function edit(Page $page): View
+    {
+        return view('admin.pages.edit', ['page' => $page]);
+    }
+
     public function store(Request $request): RedirectResponse
     {
         $data = $request->validate([
