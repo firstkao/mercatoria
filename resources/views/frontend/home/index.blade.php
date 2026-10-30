@@ -158,14 +158,14 @@
                     <div class="rounded-lg border border-rule bg-[#F5F7FA] px-8 py-16 text-center">
                         <p class="font-mono text-[10px] uppercase tracking-[0.22em] text-ink/45">Mercatoria</p>
                         <h1 class="mt-2 font-display text-3xl font-semibold text-ink">Merch &amp; Collectibles untuk IP Favoritmu</h1>
-                        <p class="mt-2 text-sm text-ink/65">Harga bersih &mdash; sudah termasuk ongkir CN-ID &amp; bea.</p>
+                        <p class="mt-2 text-sm text-ink/65">Harga bersih — sudah termasuk ongkir CN-ID &amp; bea.</p>
                     </div>
                 @endif
             @else
                 <div class="rounded-lg border border-rule bg-[#F5F7FA] px-8 py-16 text-center">
                     <p class="font-mono text-[10px] uppercase tracking-[0.22em] text-ink/45">Mercatoria</p>
                     <h1 class="mt-2 font-display text-3xl font-semibold text-ink">Merch &amp; Collectibles untuk IP Favoritmu</h1>
-                    <p class="mt-2 text-sm text-ink/65">Harga bersih &mdash; sudah termasuk ongkir CN-ID &amp; bea.</p>
+                    <p class="mt-2 text-sm text-ink/65">Harga bersih — sudah termasuk ongkir CN-ID &amp; bea.</p>
                 </div>
             @endisset
             <div class="mt-3 h-px bg-rule"></div>

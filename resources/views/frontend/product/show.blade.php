@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', $product->name.' &mdash; Mercatoria')
+@section('title', $product->name.' — Mercatoria')
 
 @section('content')
     <div class="grid grid-cols-1 gap-8 lg:grid-cols-[48%_52%]">
@@ -62,7 +62,7 @@
                     <p class="text-sm text-ink/45 line-through">{{ format_rp($pricing['base_price_bersih']) }}</p>
                 @endif
                 <p class="text-3xl font-semibold text-[#29B6F6]">{{ format_rp($pricing['final_price_bersih']) }}</p>
-                <p class="mt-1 font-mono text-[10px] uppercase tracking-[0.12em] text-ink/50">Harga bersih &mdash; sudah termasuk ongkir CN-ID &amp; bea.</p>
+                <p class="mt-1 font-mono text-[10px] uppercase tracking-[0.12em] text-ink/50">Harga bersih — sudah termasuk ongkir CN-ID &amp; bea.</p>
             </div>
 
             @if ($product->is_split_box && $product->splitBox)

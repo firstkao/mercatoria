@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Dashboard Pelanggan &mdash; Mercatoria')
+@section('title', 'Dashboard Pelanggan — Mercatoria')
 
 @section('content')
     {{-- Header Dashboard (PRD 7.16 / Design Spec 10.1) --}}
@@ -158,7 +158,7 @@
         </div>
     </section>
 
-    {{-- Modal Edukasi Cara Belanja (PRD 7.21 / 15) &mdash; 1x seumur hidup --}}
+    {{-- Modal Edukasi Cara Belanja (PRD 7.21 / 15) — 1x seumur hidup --}}
     @if (method_exists($user, 'shouldSeeTour') && $user->shouldSeeTour())
         <dialog id="tour-modal" class="rounded-xl border border-rule bg-white p-0" style="margin:auto;max-width:560px;width:calc(100% - 2rem);">
             <div class="p-6 sm:p-8">
@@ -170,23 +170,23 @@
                 <ol class="mt-5 space-y-3 text-sm leading-relaxed text-ink/85">
                     <li class="flex gap-2.5">
                         <span class="font-mono text-[11px] text-ink/45">1.</span>
-                        <span><strong class="text-ink">Pilih Merch IP Favoritmu</strong> &mdash; Semua harga yang tertera adalah HARGA BERSIH (sudah termasuk ongkir CN-ID &amp; bea).</span>
+                        <span><strong class="text-ink">Pilih Merch IP Favoritmu</strong> — Semua harga yang tertera adalah HARGA BERSIH (sudah termasuk ongkir CN-ID &amp; bea).</span>
                     </li>
                     <li class="flex gap-2.5">
                         <span class="font-mono text-[11px] text-ink/45">2.</span>
-                        <span><strong class="text-ink">Pilih Skema Pembayaran</strong> &mdash; Bisa Full Payment (100%) atau Down Payment (DP 50%) via BCA, QRIS, atau ShopeePay.</span>
+                        <span><strong class="text-ink">Pilih Skema Pembayaran</strong> — Bisa Full Payment (100%) atau Down Payment (DP 50%) via BCA, QRIS, atau ShopeePay.</span>
                     </li>
                     <li class="flex gap-2.5">
                         <span class="font-mono text-[11px] text-ink/45">3.</span>
-                        <span><strong class="text-ink">Pilih Platform Pengiriman Lokal</strong> &mdash; Toco atau Shopee.</span>
+                        <span><strong class="text-ink">Pilih Platform Pengiriman Lokal</strong> — Toco atau Shopee.</span>
                     </li>
                     <li class="flex gap-2.5">
                         <span class="font-mono text-[11px] text-ink/45">4.</span>
-                        <span><strong class="text-ink">Pantau Status Real-time</strong> &mdash; Barang diproses dari WH China hingga sampai WH Indonesia (pelunasan &amp; ambil ≤ 7 hari).</span>
+                        <span><strong class="text-ink">Pantau Status Real-time</strong> — Barang diproses dari WH China hingga sampai WH Indonesia (pelunasan &amp; ambil ≤ 7 hari).</span>
                     </li>
                     <li class="flex gap-2.5">
                         <span class="font-mono text-[11px] text-ink/45">5.</span>
-                        <span><strong class="text-ink">Kuota Akun Baru (Crush)</strong> &mdash; Kamu punya kuota melihat 10 detail produk. Order pertamamu langsung upgrade ke MVP!</span>
+                        <span><strong class="text-ink">Kuota Akun Baru (Crush)</strong> — Kamu punya kuota melihat 10 detail produk. Order pertamamu langsung upgrade ke MVP!</span>
                     </li>
                 </ol>
                 <div class="mt-7 flex flex-wrap items-center justify-end gap-3">

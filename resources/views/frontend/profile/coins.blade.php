@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Koin Saya &mdash; Mercatoria')
+@section('title', 'Koin Saya — Mercatoria')
 
 @section('content')
     <p class="font-mono text-[10px] uppercase tracking-[0.22em] text-ink/45">Akun</p>
@@ -71,7 +71,7 @@
         </div>
     </div>
 
-    {{-- Voucher Saya (Design Spec 10.2) &mdash; data $vouchers dari controller --}}
+    {{-- Voucher Saya (Design Spec 10.2) — data $vouchers dari controller --}}
     <section class="mt-8">
         <h2 class="font-mono text-[11px] font-medium uppercase tracking-[0.16em] text-ink">Voucher Saya</h2>
         <div class="mt-3 space-y-3">

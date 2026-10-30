@@ -71,13 +71,13 @@
                                             <div class="border-t border-rule/60 bg-[#F5F7FA] px-3 py-2">
                                                 <dl class="space-y-0.5 font-mono text-[11px]">
                                                     <div class="flex justify-between"><dt class="text-ink/55">Berat</dt><dd class="text-ink">{{ number_format($item->snapshot->weight_gram ?? 0) }} gram</dd></div>
-                                                    <div class="flex justify-between"><dt class="text-ink/55">Store</dt><dd class="text-ink">{{ $item->snapshot->store_name ?? '&mdash;' }}</dd></div>
-                                                    <div class="flex justify-between"><dt class="text-ink/55">Ongkir Lokal CN</dt><dd class="text-ink">{{ $item->snapshot->ongkir_lokal_cn_idr ? format_rp($item->snapshot->ongkir_lokal_cn_idr) : '&mdash;' }}</dd></div>
-                                                    <div class="flex justify-between"><dt class="text-ink/55">Ongkir CN-BTM</dt><dd class="text-ink">{{ $item->snapshot->ongkir_cn_btm_idr ? format_rp($item->snapshot->ongkir_cn_btm_idr) : '&mdash;' }}</dd></div>
-                                                    <div class="flex justify-between"><dt class="text-ink/55">Ongkir BTM-JKT</dt><dd class="text-ink">{{ $item->snapshot->ongkir_btm_jkt_idr ? format_rp($item->snapshot->ongkir_btm_jkt_idr) : '&mdash;' }}</dd></div>
-                                                    <div class="flex justify-between border-t border-rule/60 pt-1 font-semibold"><dt class="text-ink">Total Ongkir</dt><dd class="text-ink">{{ $item->snapshot->ongkir_total_idr ? format_rp($item->snapshot->ongkir_total_idr) : '&mdash;' }}</dd></div>
-                                                    <div class="flex justify-between"><dt class="text-ink/55">Harga Produk</dt><dd class="text-ink">{{ $item->snapshot->base_price ? format_rp($item->snapshot->base_price) : '&mdash;' }}</dd></div>
-                                                    <div class="flex justify-between"><dt class="text-ink/55">Profit 11%</dt><dd class="text-ink/40">&mdash;</dd></div>
+                                                    <div class="flex justify-between"><dt class="text-ink/55">Store</dt><dd class="text-ink">{{ $item->snapshot->store_name ?? '—' }}</dd></div>
+                                                    <div class="flex justify-between"><dt class="text-ink/55">Ongkir Lokal CN</dt><dd class="text-ink">{{ $item->snapshot->ongkir_lokal_cn_idr ? format_rp($item->snapshot->ongkir_lokal_cn_idr) : '—' }}</dd></div>
+                                                    <div class="flex justify-between"><dt class="text-ink/55">Ongkir CN-BTM</dt><dd class="text-ink">{{ $item->snapshot->ongkir_cn_btm_idr ? format_rp($item->snapshot->ongkir_cn_btm_idr) : '—' }}</dd></div>
+                                                    <div class="flex justify-between"><dt class="text-ink/55">Ongkir BTM-JKT</dt><dd class="text-ink">{{ $item->snapshot->ongkir_btm_jkt_idr ? format_rp($item->snapshot->ongkir_btm_jkt_idr) : '—' }}</dd></div>
+                                                    <div class="flex justify-between border-t border-rule/60 pt-1 font-semibold"><dt class="text-ink">Total Ongkir</dt><dd class="text-ink">{{ $item->snapshot->ongkir_total_idr ? format_rp($item->snapshot->ongkir_total_idr) : '—' }}</dd></div>
+                                                    <div class="flex justify-between"><dt class="text-ink/55">Harga Produk</dt><dd class="text-ink">{{ $item->snapshot->base_price ? format_rp($item->snapshot->base_price) : '—' }}</dd></div>
+                                                    <div class="flex justify-between"><dt class="text-ink/55">Profit 11%</dt><dd class="text-ink/40">—</dd></div>
                                                     <div class="flex justify-between border-t border-rule/60 pt-1 font-semibold"><dt class="text-ink">Harga Tayang</dt><dd class="text-ink">{{ format_rp($item->snapshot->final_price) }}</dd></div>
                                                 </dl>
                                             </div>
@@ -222,7 +222,7 @@
                                         @if ($payment->proof_path ?? $payment->file_path ?? null)
                                             <a href="{{ \Illuminate\Support\Facades\Storage::url($payment->proof_path ?? $payment->file_path) }}" target="_blank" class="text-link underline decoration-link/35 underline-offset-4">Lihat</a>
                                         @else
-                                            <span class="text-ink/40">&mdash;</span>
+                                            <span class="text-ink/40">—</span>
                                         @endif
                                     </td>
                                     <td class="py-1.5"><x-order-status-badge :status="$payment->status === 'verified' ? 'selesai' : ($payment->status === 'rejected' ? 'pembayaran_gagal' : 'menunggu_pembayaran')" /></td>
@@ -257,7 +257,7 @@
                             <p class="text-sm {{ $loop->last ? 'font-semibold text-ink' : 'text-ink/75' }}">{{ order_status_label($log->status) }}</p>
                             <p class="font-mono text-[10px] uppercase tracking-[0.1em] text-ink/45">
                                 {{ $log->created_at->format('d/m/Y H:i') }} · oleh {{ $log->changed_by }}
-                                @if ($log->note) &mdash; {{ $log->note }} @endif
+                                @if ($log->note) — {{ $log->note }} @endif
                             </p>
                         </li>
                     @endforeach

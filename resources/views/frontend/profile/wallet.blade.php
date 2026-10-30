@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Wallet Voucher &mdash; Mercatoria')
+@section('title', 'Wallet Voucher — Mercatoria')
 
 @section('content')
     <p class="font-mono text-[10px] uppercase tracking-[0.22em] text-ink/45">Akun</p>

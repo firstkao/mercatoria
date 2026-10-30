@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Checkout &mdash; Mercatoria')
+@section('title', 'Checkout — Mercatoria')
 
 @section('content')
     @php
@@ -44,8 +44,8 @@
             <h2 class="font-mono text-[11px] font-medium uppercase tracking-[0.16em] text-ink">Alamat Pengiriman</h2>
             <div class="mt-2 text-sm text-ink/80">
                 <p class="font-medium text-ink">{{ auth()->user()->name }}</p>
-                <p class="text-ink/70">{{ auth()->user()->alamat ?? '&mdash;' }}</p>
-                <p class="text-ink/60">{{ auth()->user()->no_hp ?? '&mdash;' }}</p>
+                <p class="text-ink/70">{{ auth()->user()->alamat ?? '—' }}</p>
+                <p class="text-ink/60">{{ auth()->user()->no_hp ?? '—' }}</p>
             </div>
             <a href="{{ route('profile.edit') }}" class="mt-2 inline-block text-xs font-medium text-link underline decoration-link/35 underline-offset-4">Ubah di Edit Profil</a>
         </div>
@@ -121,10 +121,10 @@
                        class="summary-trigger mt-2 w-full rounded-lg border border-rule bg-white px-3.5 py-2.5 text-sm text-ink placeholder:text-ink/35 focus:border-ink focus:outline-none focus:ring-2 focus:ring-accent/45">
 
                 <select name="user_voucher_id" id="user_voucher_id" class="summary-trigger mt-2 w-full rounded-lg border border-rule bg-white px-3.5 py-2.5 text-sm text-ink focus:border-ink focus:outline-none focus:ring-2 focus:ring-accent/45">
-                    <option value="">&mdash; Pilih voucher &mdash;</option>
+                    <option value="">— Pilih voucher —</option>
                     @foreach ($userVouchers as $userVoucher)
                         <option value="{{ $userVoucher->id }}">
-                            {{ $userVoucher->voucher->code }} &mdash; potong {{ format_rp($userVoucher->voucher->nominal) }}
+                            {{ $userVoucher->voucher->code }} — potong {{ format_rp($userVoucher->voucher->nominal) }}
                         </option>
                     @endforeach
                 </select>

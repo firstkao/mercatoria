@@ -29,15 +29,15 @@
             <tbody>
                 @forelse ($spammers as $spammer)
                     <tr class="border-b border-rule/50">
-                        <td class="px-3 py-2 text-ink">{{ $spammer->email ?? '&mdash;' }}</td>
-                        <td class="px-3 py-2 text-ink/80">{{ $spammer->no_hp ?? '&mdash;' }}</td>
-                        <td class="px-3 py-2 text-ink/70">{{ $spammer->reason ?? '&mdash;' }}</td>
+                        <td class="px-3 py-2 text-ink">{{ $spammer->email ?? '—' }}</td>
+                        <td class="px-3 py-2 text-ink/80">{{ $spammer->no_hp ?? '—' }}</td>
+                        <td class="px-3 py-2 text-ink/70">{{ $spammer->reason ?? '—' }}</td>
                         <td class="px-3 py-2">
                             <span class="rounded px-2 py-0.5 text-[10px] font-semibold {{ $spammer->status === 'blocked' ? 'bg-[#E53935] text-white' : 'bg-paper text-ink/60' }}">
                                 {{ strtoupper($spammer->status ?? '-') }}
                             </span>
                         </td>
-                        <td class="px-3 py-2 font-mono text-xs text-ink/55">{{ $spammer->banned_at?->format('d/m/Y') ?? '&mdash;' }}</td>
+                        <td class="px-3 py-2 font-mono text-xs text-ink/55">{{ $spammer->banned_at?->format('d/m/Y') ?? '—' }}</td>
                         <td class="px-3 py-2 text-right">
                             @if ($spammer->status === 'blocked')
                                 <form method="POST" action="{{ route('office.spammers.unblock', $spammer) }}" class="inline">

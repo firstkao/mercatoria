@@ -33,14 +33,14 @@
             <tbody>
                 @forelse ($refunds as $refund)
                     <tr class="border-b border-rule/50">
-                        <td class="px-3 py-2 font-medium text-ink">{{ $refund->order->no_order ?? '&mdash;' }}</td>
+                        <td class="px-3 py-2 font-medium text-ink">{{ $refund->order->no_order ?? '—' }}</td>
                         <td class="px-3 py-2 text-ink/80">{{ format_rp($refund->amount) }}</td>
                         <td class="px-3 py-2">
                             <span class="rounded px-2 py-0.5 text-[10px] font-semibold {{ $refund->status === 'completed' ? 'bg-[#43A047] text-white' : ($refund->status === 'rejected' ? 'bg-[#E53935] text-white' : 'bg-amber-100 text-amber-800') }}">
                                 {{ strtoupper($refund->status) }}
                             </span>
                         </td>
-                        <td class="px-3 py-2 text-ink/60">{{ \Illuminate\Support\Str::limit($refund->reason ?? '&mdash;', 50) }}</td>
+                        <td class="px-3 py-2 text-ink/60">{{ \Illuminate\Support\Str::limit($refund->reason ?? '—', 50) }}</td>
                         <td class="px-3 py-2 text-right">
                             @if ($refund->status === 'requested')
                                 <form method="POST" action="{{ route('office.refunds.complete', $refund) }}" class="inline">

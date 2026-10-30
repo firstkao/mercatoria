@@ -177,7 +177,7 @@
                         <img src="{{ asset('logo.png') }}" alt="Mercatoria" class="h-10 w-auto" width="1608" height="494">
                     </a>
 
-                    {{-- Sosmed &mdash; urutan IG, FB, X, Threads, WA (spec 4.6) --}}
+                    {{-- Sosmed — urutan IG, FB, X, Threads, WA (spec 4.6) --}}
                     <div class="mt-6 flex items-center justify-center gap-4">
                         <a href="{{ setting('url_instagram', '#') }}" class="text-[#B0B3C5] transition-colors hover:text-[#4FC3F7]" aria-label="Instagram">
                             <x-icons.instagram width="18" height="18" />
