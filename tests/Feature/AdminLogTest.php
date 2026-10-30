@@ -77,5 +77,5 @@ test('halaman admin logs dapat dibuka admin', function () {
 
     $this->actingAs($admin)->get('/office/admin-logs')
         ->assertOk()
-        ->assertSee('update');
+        ->assertSee('Ubah');
 });
