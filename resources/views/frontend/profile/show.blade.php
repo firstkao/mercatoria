@@ -19,6 +19,7 @@
 
             {{-- Kuota View + Countdown + WA (DS 10.1: Crush/Ex/ONS) --}}
             @if (in_array($userState ?? '', ['crush', 'ex', 'ons']))
+                @php $kuotaHabis = ($kuotaViewUsed ?? 0) >= ($kuotaViewTotal ?? 10) @endphp
                 <div class="mt-3 flex flex-wrap items-center gap-3 rounded-lg border border-rule bg-white px-3 py-2">
                     <span class="font-mono text-[11px] uppercase tracking-[0.12em] text-ink/70">
                         Kuota View: <strong class="text-ink">{{ $kuotaViewUsed ?? 0 }}/{{ $kuotaViewTotal ?? 10 }}</strong>
@@ -26,43 +27,35 @@
                     @if (!empty($countdownState))
                         <span class="text-xs text-ink/60">{{ $countdownState }}</span>
                     @endif
-                    @if (!empty($waUrl))
+                    @if ($kuotaHabis && !empty($waUrl))
                         <a href="{{ $waUrl }}" target="_blank" rel="noopener"
-                           class="inline-flex items-center gap-1.5 rounded-lg border border-rule px-3 py-1.5 text-xs font-semibold text-ink transition-colors hover:border-ink">
+                           class="inline-flex items-center gap-1.5 rounded-lg bg-[#43A047] px-3.5 py-1.5 text-xs font-semibold text-white transition-colors hover:opacity-90">
                             <x-icons.chat-bubble width="14" height="14" />
                             WA
                         </a>
                     @endif
                 </div>
             @endif
-            @if ($tierBadge)
-                @php
-                    $pct = $tierProgress['progress_pct'] ?? ($tierProgress['platinum'] > 0
-                        ? min(100, round($tierProgress['belanja'] / $tierProgress['platinum'] * 100))
-                        : 0);
-                    $belanjaSisa = $tierProgress['belanja_sisa'] ?? null;
-                    $currentTier = $tierProgress['current_tier'] ?? null;
-                    $nextTier = $tierProgress['next_tier'] ?? null;
-                @endphp
+            @isset($tierProgress)
                 <div class="mt-3 w-full max-w-md">
                     <div class="flex items-center justify-between font-mono text-[10px] uppercase tracking-[0.12em] text-ink/50">
                         <span>Progress Tier</span>
                         <span>
-                            @if ($currentTier && $nextTier)
-                                {{ $currentTier }} → {{ $nextTier }}
+                            @if (!empty($tierProgress['current_tier']) && !empty($tierProgress['next_tier']))
+                                {{ $tierProgress['current_tier'] }} → {{ $tierProgress['next_tier'] }}
                             @else
-                                {{ format_rp($tierProgress['belanja']) }} / {{ format_rp($tierProgress['platinum']) }}
+                                {{ format_rp($tierProgress['belanja'] ?? 0) }} / {{ format_rp($tierProgress['platinum'] ?? 0) }}
                             @endif
                         </span>
                     </div>
                     <div class="mt-1 h-2 w-full overflow-hidden rounded-full bg-rule/60">
-                        <div class="h-full rounded-full bg-amber-400" style="width: {{ $pct }}%"></div>
+                        <div class="h-full rounded-full bg-amber-400" style="width: {{ $tierProgress['progress_pct'] ?? 0 }}%"></div>
                     </div>
-                    @if ($belanjaSisa !== null)
-                        <p class="mt-1 font-mono text-[10px] text-ink/45">Sisa {{ format_rp($belanjaSisa) }} ke tier berikutnya</p>
+                    @if (($tierProgress['belanja_sisa'] ?? null) !== null)
+                        <p class="mt-1 font-mono text-[10px] text-ink/45">Sisa {{ format_rp($tierProgress['belanja_sisa']) }} ke tier berikutnya</p>
                     @endif
                 </div>
-            @endif
+            @endisset
         </div>
 
         <div class="flex items-center gap-2">
