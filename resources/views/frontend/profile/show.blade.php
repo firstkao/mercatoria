@@ -16,6 +16,25 @@
                 @endif
                 <span class="font-mono text-[10px] uppercase tracking-[0.12em] text-ink/50">Terdaftar sejak: {{ $user->created_at->format('d F Y') }}</span>
             </div>
+
+            {{-- Kuota View + Countdown + WA (DS 10.1: Crush/Ex/ONS) --}}
+            @if (in_array($userState ?? '', ['crush', 'ex', 'ons']))
+                <div class="mt-3 flex flex-wrap items-center gap-3 rounded-lg border border-rule bg-white px-3 py-2">
+                    <span class="font-mono text-[11px] uppercase tracking-[0.12em] text-ink/70">
+                        Kuota View: <strong class="text-ink">{{ $kuotaViewUsed ?? 0 }}/{{ $kuotaViewTotal ?? 10 }}</strong>
+                    </span>
+                    @if (!empty($countdownState))
+                        <span class="text-xs text-ink/60">{{ $countdownState }}</span>
+                    @endif
+                    @if (!empty($waUrl))
+                        <a href="{{ $waUrl }}" target="_blank" rel="noopener"
+                           class="inline-flex items-center gap-1.5 rounded-lg border border-rule px-3 py-1.5 text-xs font-semibold text-ink transition-colors hover:border-ink">
+                            <x-icons.chat-bubble width="14" height="14" />
+                            WA
+                        </a>
+                    @endif
+                </div>
+            @endif
             @if ($tierBadge)
                 @php
                     $pct = $tierProgress['progress_pct'] ?? ($tierProgress['platinum'] > 0
