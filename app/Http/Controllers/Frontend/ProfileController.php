@@ -188,7 +188,7 @@ class ProfileController extends Controller
     public function wallet(Request $request): View
     {
         return view('frontend.profile.wallet', [
-            'userVouchers' => UserVoucher::with('voucher')
+            'vouchers' => UserVoucher::with('voucher')
                 ->where('user_id', $request->user()->id)
                 ->orderByDesc('id')
                 ->get(),
@@ -197,12 +197,28 @@ class ProfileController extends Controller
 
     public function referral(Request $request): View
     {
+        $user = $request->user();
+        $referrals = $user->referrals()->orderByDesc('id')->get();
+
+        // DS 10.3: "Berhasil" = referee yang sudah menyelesaikan order pertama (PRD 9.10).
+        $berhasil = $user->referrals()
+            ->whereHas('orders', fn ($q) => $q->where('status', 'selesai'))
+            ->count();
+
         return view('frontend.profile.referral', [
-            'user' => $request->user(),
-            'referrals' => $request->user()->referrals()->orderByDesc('id')->get(),
+            'user' => $user,
+            'referrals' => $referrals,
+            'referralStats' => [
+                'total_diundang' => $referrals->count(),
+                'berhasil' => $berhasil,
+                'menunggu_order' => $referrals->count() - $berhasil,
+                'koin_didapat' => (int) CoinTransaction::where('user_id', $user->id)
+                    ->where('type', CoinTransaction::TYPE_EARNED_REFERRAL_REFERRER)
+                    ->sum('amount'),
+            ],
             'shareStats' => [
-                'opens' => ShareClick::where('user_id', $request->user()->id)->count(),
-                'coins' => (int) CoinTransaction::where('user_id', $request->user()->id)
+                'opens' => ShareClick::where('user_id', $user->id)->count(),
+                'coins' => (int) CoinTransaction::where('user_id', $user->id)
                     ->where('type', CoinTransaction::TYPE_EARNED_SHARE)
                     ->sum('amount'),
             ],
