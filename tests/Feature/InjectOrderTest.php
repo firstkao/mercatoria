@@ -205,3 +205,19 @@ test('tanggal order tidak boleh masa depan', function () {
 
     expect(Order::count())->toBe(0);
 });
+
+test('form inject membawa image_path produk dan varian', function () {
+    $admin = User::factory()->admin()->create();
+    $product = productFinal255();
+    $product->update(['image_path' => 'products/img-produk.jpg']);
+    ProductVariant::factory()->create([
+        'product_id' => $product->id,
+        'name' => 'Varian Ukuran L',
+        'image_path' => 'products/img-varian.jpg',
+    ]);
+
+    $this->actingAs($admin)->get('/office/orders/inject')
+        ->assertOk()
+        ->assertSee('products/img-produk.jpg')
+        ->assertSee('products/img-varian.jpg');
+});

@@ -64,7 +64,7 @@
                                 <select name="items[{{ $i }}][product_id]" class="w-full rounded border border-gray-200 px-2 py-1.5 text-sm">
                                     <option value="">—</option>
                                     @foreach ($products as $product)
-                                        <option value="{{ $product->id }}">{{ $product->name }}</option>
+                                        <option value="{{ $product->id }}" data-image="{{ $product->image_path }}">{{ $product->name }}</option>
                                     @endforeach
                                 </select>
                             </td>
@@ -73,7 +73,7 @@
                                     <option value="">— tanpa varian —</option>
                                     @foreach ($products as $product)
                                         @foreach ($product->variants as $variant)
-                                            <option value="{{ $variant->id }}">{{ $product->name }} — {{ $variant->name }}</option>
+                                            <option value="{{ $variant->id }}" data-image="{{ $variant->image_path ?? $product->image_path }}">{{ $product->name }} — {{ $variant->name }}</option>
                                         @endforeach
                                     @endforeach
                                 </select>
