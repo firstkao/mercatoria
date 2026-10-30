@@ -17,9 +17,8 @@
                 <p class="mt-1 font-display text-lg font-semibold tracking-wide text-white">MERCATORIA</p>
             </div>
             <nav class="space-y-0.5 px-3 py-3 text-[13px]">
+                <p class="px-3 pt-2 font-mono text-[9px] uppercase tracking-[0.18em] text-white/40">Dashboard</p>
                 <a href="{{ route('office.dashboard') }}" class="block rounded px-3 py-2 text-white transition-colors hover:bg-white/10">Dashboard</a>
-
-                <p class="px-3 pt-4 font-mono text-[9px] uppercase tracking-[0.18em] text-white/40">Log</p>
                 <a href="{{ route('office.activity-logs') }}" class="block rounded px-3 py-2 text-white/80 transition-colors hover:bg-white/10 hover:text-white">Activity Log</a>
                 <a href="{{ route('office.auth-logs') }}" class="block rounded px-3 py-2 text-white/80 transition-colors hover:bg-white/10 hover:text-white">Auth Log</a>
                 <a href="{{ route('office.admin-logs') }}" class="block rounded px-3 py-2 text-white/80 transition-colors hover:bg-white/10 hover:text-white">Admin Log</a>
@@ -28,31 +27,31 @@
                 <a href="{{ route('office.products.index') }}" class="block rounded px-3 py-2 text-white/80 transition-colors hover:bg-white/10 hover:text-white">Semua Produk</a>
                 <a href="{{ route('office.merch-categories.index') }}" class="block rounded px-3 py-2 text-white/80 transition-colors hover:bg-white/10 hover:text-white">Kategori Merch</a>
                 <a href="{{ route('office.tags.index') }}" class="block rounded px-3 py-2 text-white/80 transition-colors hover:bg-white/10 hover:text-white">Tag</a>
-                <a href="{{ route('office.stores.index') }}" class="block rounded px-3 py-2 text-white/80 transition-colors hover:bg-white/10 hover:text-white">Stores</a>
+                <a href="{{ route('office.stores.index') }}" class="block rounded px-3 py-2 text-white/80 transition-colors hover:bg-white/10 hover:text-white">Stores (Tier Ongkir)</a>
 
                 <p class="px-3 pt-4 font-mono text-[9px] uppercase tracking-[0.18em] text-white/40">Katalog</p>
                 <a href="{{ route('office.games.index') }}" class="block rounded px-3 py-2 text-white/80 transition-colors hover:bg-white/10 hover:text-white">Game</a>
                 <a href="{{ route('office.developers.index') }}" class="block rounded px-3 py-2 text-white/80 transition-colors hover:bg-white/10 hover:text-white">Developer</a>
 
-                <p class="px-3 pt-4 font-mono text-[9px] uppercase tracking-[0.18em] text-white/40">Konten</p>
-                <a href="{{ route('office.hero-slides.index') }}" class="block rounded px-3 py-2 text-white/80 transition-colors hover:bg-white/10 hover:text-white">Hero Slides</a>
-                <a href="{{ route('office.pages.index') }}" class="block rounded px-3 py-2 text-white/80 transition-colors hover:bg-white/10 hover:text-white">Halaman CMS</a>
-                <a href="{{ route('office.vouchers.index') }}" class="block rounded px-3 py-2 text-white/80 transition-colors hover:bg-white/10 hover:text-white">Vouchers</a>
-
                 <p class="px-3 pt-4 font-mono text-[9px] uppercase tracking-[0.18em] text-white/40">Transaksi</p>
                 <a href="{{ route('office.orders.index') }}" class="block rounded px-3 py-2 text-white/80 transition-colors hover:bg-white/10 hover:text-white">Orders</a>
                 <a href="{{ route('office.payments.index') }}" class="block rounded px-3 py-2 text-white/80 transition-colors hover:bg-white/10 hover:text-white">Verifikasi Pembayaran</a>
                 <a href="{{ route('office.refunds.index') }}" class="block rounded px-3 py-2 text-white/80 transition-colors hover:bg-white/10 hover:text-white">Refund</a>
-                <a href="{{ route('office.reports.index') }}" class="block rounded px-3 py-2 text-white/80 transition-colors hover:bg-white/10 hover:text-white">Laporan</a>
+                <a href="{{ route('office.vouchers.index') }}" class="block rounded px-3 py-2 text-white/80 transition-colors hover:bg-white/10 hover:text-white">Vouchers</a>
 
                 <p class="px-3 pt-4 font-mono text-[9px] uppercase tracking-[0.18em] text-white/40">Pengguna</p>
                 <a href="{{ route('office.users.index') }}" class="block rounded px-3 py-2 text-white/80 transition-colors hover:bg-white/10 hover:text-white">Users</a>
                 <a href="{{ route('office.spammers.index') }}" class="block rounded px-3 py-2 text-white/80 transition-colors hover:bg-white/10 hover:text-white">Spammers</a>
 
+                <p class="px-3 pt-4 font-mono text-[9px] uppercase tracking-[0.18em] text-white/40">Konten</p>
+                <a href="{{ route('office.pages.index') }}" class="block rounded px-3 py-2 text-white/80 transition-colors hover:bg-white/10 hover:text-white">Pages CMS</a>
+                <a href="{{ route('office.email-templates.index') }}" class="block rounded px-3 py-2 text-white/80 transition-colors hover:bg-white/10 hover:text-white">Email Templates</a>
+                <a href="{{ route('office.hero-slides.index') }}" class="block rounded px-3 py-2 text-white/80 transition-colors hover:bg-white/10 hover:text-white">Hero Slides</a>
+
                 <p class="px-3 pt-4 font-mono text-[9px] uppercase tracking-[0.18em] text-white/40">Lainnya</p>
-                <a href="{{ route('office.payment-methods.index') }}" class="block rounded px-3 py-2 text-white/80 transition-colors hover:bg-white/10 hover:text-white">Metode Bayar</a>
-                <a href="{{ route('office.email-templates.index') }}" class="block rounded px-3 py-2 text-white/80 transition-colors hover:bg-white/10 hover:text-white">Template Email</a>
                 <a href="{{ route('office.seo.index') }}" class="block rounded px-3 py-2 text-white/80 transition-colors hover:bg-white/10 hover:text-white">SEO</a>
+                <a href="{{ route('office.reports.index') }}" class="block rounded px-3 py-2 text-white/80 transition-colors hover:bg-white/10 hover:text-white">Laporan</a>
+                <a href="{{ route('office.payment-methods.index') }}" class="block rounded px-3 py-2 text-white/80 transition-colors hover:bg-white/10 hover:text-white">Metode Bayar</a>
                 <a href="{{ route('office.settings.index') }}" class="block rounded px-3 py-2 text-white/80 transition-colors hover:bg-white/10 hover:text-white">Settings</a>
             </nav>
         </aside>
