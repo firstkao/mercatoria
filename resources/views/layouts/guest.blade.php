@@ -316,19 +316,5 @@
             </div>
         </div>
     </footer>
-    <script>
-        (function () {
-            var bar = document.getElementById('promo-bar');
-            var closeBtn = document.getElementById('promo-bar-close');
-            if (bar && localStorage.getItem('promo-bar-dismissed') === '1') {
-                bar.style.display = 'none';
-            }
-            if (closeBtn) {
-                closeBtn.addEventListener('click', function () {
-                    if (bar) bar.style.display = 'none';
-                    localStorage.setItem('promo-bar-dismissed', '1');
-                });
-            }
-        })();</script>
-</body>
+    </body>
 </html>
