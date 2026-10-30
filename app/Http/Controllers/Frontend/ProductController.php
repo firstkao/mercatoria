@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Game;
 use App\Models\Product;
 use App\Services\Order\ShippingCalculatorService;
+use App\Services\User\UserStateService;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
@@ -16,6 +17,11 @@ class ProductController extends Controller
     public function show(Request $request, Game $game, Product $product): View
     {
         abort_unless($product->game_id === $game->id && $product->is_active, 404);
+
+        // PRD 7.19: hitung kuota view katalog untuk user Crush/Ex/ONS.
+        if ($request->user()) {
+            app(UserStateService::class)->recordView($request->user(), $product);
+        }
 
         $product->load(['variants', 'tags', 'merchCategory', 'game']);
 

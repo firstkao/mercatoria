@@ -11,6 +11,7 @@ use App\Models\ShareClick;
 use App\Models\User;
 use App\Models\UserNotification;
 use App\Models\UserVoucher;
+use App\Services\User\UserStateService;
 use App\Services\User\UserTierService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -30,9 +31,20 @@ class ProfileController extends Controller
         $user = $request->user();
         $customer = $user->customer;
 
+        // DS 10.1: blok Crush/Ex/ONS — Kuota View · Countdown State · WA (tidak tampil untuk MVP).
+        $state = app(UserStateService::class);
+        $userState = $state->stateName($user);
+        $viewLimited = $state->isViewLimited($user);
+        $viewUsage = $viewLimited ? $state->viewUsage($user) : null;
+
         return view('frontend.profile.show', [
             'user' => $user,
             'stateBadge' => $customer?->current_state ?? ucfirst($user->role),
+            'userState' => $userState,
+            'kuotaViewUsed' => $viewUsage['used'] ?? null,
+            'kuotaViewTotal' => $viewUsage['total'] ?? null,
+            'countdownState' => $viewLimited ? $state->countdownLabel($user) : null,
+            'waUrl' => $viewLimited ? setting('url_whatsapp') : null,
             'tierBadge' => $customer ? 'MVP '.ucfirst($customer->tier) : null,
             // PRD 50: progress bar antara batas tier saat ini dan berikutnya.
             'tierProgress' => array_merge([
