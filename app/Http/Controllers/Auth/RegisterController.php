@@ -45,8 +45,9 @@ class RegisterController extends Controller
             $referrer = null;
         }
 
+        // PRD 7.1/7.8: user baru = Crush; naik ke Customer (MVP) setelah order pertama terverifikasi.
         $user = User::create($data + [
-            'role' => User::ROLE_CUSTOMER,
+            'role' => User::ROLE_CRUSH,
             'referred_by' => $referrer?->id,
         ]);
 

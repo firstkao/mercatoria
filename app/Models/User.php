@@ -15,6 +15,8 @@ class User extends Authenticatable implements MustVerifyEmail
 {
     use HasFactory, Notifiable;
 
+    public const ROLE_CRUSH = 'crush';
+
     public const ROLE_CUSTOMER = 'customer';
 
     public const ROLE_ADMIN = 'admin';
