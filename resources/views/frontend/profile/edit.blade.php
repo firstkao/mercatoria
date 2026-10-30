@@ -182,7 +182,7 @@
                     }
                     fetchJson('{{ route("api.regions.postalCodes", ["district" => "__ID__"]) }}'.replace('__ID__', kecId.value))
                         .then(function (data) {
-                            fillSelect(posSel, data, 'Pilih Kode Pos', 'kode_pos', 'kode_pos');
+                            fillSelect(posSel, data, 'Pilih Kode Pos', 'kode', 'kode');
                             posSel.disabled = false; posSel.classList.remove('opacity-50');
                         })
                         .catch(function () {
