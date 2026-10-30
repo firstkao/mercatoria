@@ -3,6 +3,8 @@
 use App\Models\User;
 
 test('endpoint grafik penjualan mengembalikan array 30 elemen', function () {
+    $this->travelTo(now()); // kunci waktu: bucket "hari ini" tidak boleh lintas tengah malam
+
     $admin = User::factory()->admin()->create();
     [, $order] = placeTestOrder(); // hari ini
 

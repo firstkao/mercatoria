@@ -174,6 +174,8 @@ test('inject order mengisi tanggal order dari input (PRD 48.2)', function () {
 });
 
 test('inject order tanpa tanggal order memakai waktu sekarang', function () {
+    $this->travelTo(now()); // kunci waktu: asersi isToday() tidak boleh lintas tengah malam
+
     $admin = User::factory()->admin()->create();
     $customer = User::factory()->create();
     [$product] = injectFixture();

@@ -6,6 +6,8 @@ use App\Models\User;
 use App\Models\UserVoucher;
 
 test('bonus ulang tahun memberi 5000 koin dan voucher', function () {
+    $this->travelTo(now()); // kunci waktu: tanggal lahir "hari ini" tidak boleh lintas tengah malam
+
     $user = User::factory()->create(['tgl_lahir' => now()->subYears(25)->toDateString()]);
 
     $this->artisan('user:birthday-bonus')->assertSuccessful();
@@ -16,6 +18,8 @@ test('bonus ulang tahun memberi 5000 koin dan voucher', function () {
 });
 
 test('hanya user berulang tahun hari ini yang dapat', function () {
+    $this->travelTo(now()); // kunci waktu: tanggal lahir "hari ini" tidak boleh lintas tengah malam
+
     $birthdayToday = User::factory()->create(['tgl_lahir' => now()->subYears(20)->toDateString()]);
     $other = User::factory()->create(['tgl_lahir' => now()->subYears(20)->addMonth()->toDateString()]);
 
@@ -26,6 +30,8 @@ test('hanya user berulang tahun hari ini yang dapat', function () {
 });
 
 test('bonus ulang tahun tidak dobel di hari yang sama', function () {
+    $this->travelTo(now()); // kunci waktu: tanggal lahir "hari ini" tidak boleh lintas tengah malam
+
     $user = User::factory()->create(['tgl_lahir' => now()->subYears(22)->toDateString()]);
 
     $this->artisan('user:birthday-bonus');
