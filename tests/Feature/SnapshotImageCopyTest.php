@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\Cart;
+use App\Models\Order;
 use App\Models\Product;
 use App\Models\User;
 use App\Services\Cart\CheckoutService;
@@ -21,7 +22,7 @@ function snapImageFixture(Product $product, string $basename = 'img-snap-test.jp
     return $path;
 }
 
-function snapPlaceOrder(User $user, Product $product): \App\Models\Order
+function snapPlaceOrder(User $user, Product $product): Order
 {
     $cart = Cart::factory()->create(['user_id' => $user->id, 'product_id' => $product->id, 'qty' => 1]);
 
@@ -61,4 +62,32 @@ test('hard delete produk tidak menghapus gambar snapshot copy', function () {
 
     expect(file_exists(storage_path('app/private/products/img-snap-keep.jpg')))->toBeFalse()
         ->and(file_exists(storage_path('app/public/'.$copyPath)))->toBeTrue();
+});
+
+test('inject order menyalin gambar snapshot dan tahan hard delete produk', function () {
+    $admin = User::factory()->admin()->create();
+    $customer = User::factory()->create();
+    $product = productFinal255();
+    snapImageFixture($product, 'img-snap-inject.jpg');
+
+    $this->actingAs($admin)->post('/office/orders/inject', [
+        'user_id' => $customer->id,
+        'status' => 'selesai',
+        'items' => [['product_id' => $product->id, 'variant_id' => null, 'qty' => 1, 'price' => 10000]],
+    ])->assertRedirect();
+
+    $order = Order::where('user_id', $customer->id)->firstOrFail();
+    $snapshot = $order->items()->first()->snapshot;
+    $copyPath = (string) $snapshot->product_image_path;
+    $namaProduk = $snapshot->product_name;
+
+    expect($copyPath)->toStartWith('order-snapshots/')
+        ->and($copyPath)->not->toBe('products/img-snap-inject.jpg')
+        ->and(file_exists(storage_path('app/public/'.$copyPath)))->toBeTrue();
+
+    $this->actingAs($admin)->delete('/office/products/'.$product->id)->assertRedirect();
+
+    expect(file_exists(storage_path('app/private/products/img-snap-inject.jpg')))->toBeFalse()
+        ->and(file_exists(storage_path('app/public/'.$copyPath)))->toBeTrue()
+        ->and($order->items()->first()->snapshot->product_name)->toBe($namaProduk);
 });

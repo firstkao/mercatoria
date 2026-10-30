@@ -10,6 +10,7 @@ use App\Models\OrderItemSnapshot;
 use App\Models\OrderStatus;
 use App\Models\Product;
 use App\Models\User;
+use App\Services\Order\SnapshotImageService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -92,12 +93,13 @@ class InjectOrderController extends Controller
                 ])->save(['timestamps' => false]);
             }
 
+            $snapshotImages = app(SnapshotImageService::class);
+
             foreach ($data['items'] as $item) {
                 $product = Product::with('variants')->findOrFail($item['product_id']);
                 $variant = $item['variant_id']
                     ? $product->variants->firstWhere('id', $item['variant_id'])
                     : null;
-
                 $orderItem = OrderItem::create([
                     'order_id' => $order->id,
                     'product_id' => $product->id,
@@ -120,8 +122,8 @@ class InjectOrderController extends Controller
                     'final_price' => $item['price'],
                     'qty' => $item['qty'],
                     'subtotal' => (float) $item['price'] * (int) $item['qty'],
-                    'product_image_path' => $product->image_path,
-                    'variant_image_path' => $variant?->image_path,
+                    'product_image_path' => $snapshotImages->copy($product->image_path, $order->no_order),
+                    'variant_image_path' => $snapshotImages->copy($variant?->image_path, $order->no_order),
                     'weight_gram' => $variant?->weight_gram ?? $product->weight_gram,
                     'store_name' => $product->effectiveStore()?->name,
                     'ongkir_lokal_cn_idr' => 0,
