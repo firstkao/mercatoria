@@ -19,8 +19,9 @@ class ProductController extends Controller
         abort_unless($product->game_id === $game->id && $product->is_active, 404);
 
         // PRD 7.19: hitung kuota view katalog untuk user Crush/Ex/ONS.
-        if ($request->user()) {
-            app(UserStateService::class)->recordView($request->user(), $product);
+        $user = $request->user();
+        if ($user) {
+            app(UserStateService::class)->recordView($user, $product);
         }
 
         $product->load(['variants', 'tags', 'merchCategory', 'game']);
@@ -33,11 +34,19 @@ class ProductController extends Controller
 
         $pricing = $this->shipping->calculateItemShipping($product, $variant);
 
+        // PRD 7.19: data badge sisa kuota view (PR UI) untuk state Crush/Ex/ONS.
+        $state = app(UserStateService::class);
+        $userState = $user ? $state->stateName($user) : null;
+        $viewUsage = $user && $state->isViewLimited($user) ? $state->viewUsage($user) : null;
+
         return view('frontend.product.show', [
             'game' => $game,
             'product' => $product,
             'variant' => $variant,
             'pricing' => $pricing,
+            'userState' => $userState,
+            'kuotaViewUsed' => $viewUsage['used'] ?? null,
+            'kuotaViewTotal' => $viewUsage['total'] ?? null,
             'related' => Product::where('is_active', true)
                 ->where('game_id', $game->id)
                 ->where('id', '!=', $product->id)
