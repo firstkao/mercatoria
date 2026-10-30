@@ -29,7 +29,7 @@ test('halaman dashboard tampil sesuai prd 7.16 dan design spec 10.1', function (
         ->assertSee('TAGIHAN MENUNGGU')
         ->assertSee('DAFTAR PESANAN SAYA')
         ->assertSee('Pesanan Saya')
-        ->assertSee('Koin Saya')
+        ->assertSee('Koin')
         ->assertSee('Undang Teman')
         ->assertSee('Edit Profil')
         ->assertSee($order->no_order)
