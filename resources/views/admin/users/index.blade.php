@@ -34,6 +34,10 @@
                         <td class="px-3 py-2">{{ $user->role }}</td>
                         <td class="px-3 py-2 text-right">
                             <a href="{{ route('office.users.edit', $user) }}" class="text-sky-600 hover:underline">Edit</a>
+                            @if (\Illuminate\Support\Facades\Route::has('office.users.notify'))
+                                <button type="button" class="ml-2 text-link underline decoration-link/35 underline-offset-4"
+                                        onclick="document.getElementById('notify-{{ $user->id }}').showModal()">Notif</button>
+                            @endif
                             @if (\App\Models\Spammer::blocksIdentity($user->email, $user->no_hp))
                                 <button type="button" class="ml-2 text-red-600 hover:underline"
                                         onclick="document.getElementById('del-{{ $user->id }}').showModal()">Hard Delete</button>
@@ -66,6 +70,25 @@
                                         <div class="mt-3 flex justify-end gap-2">
                                             <button type="button" class="rounded-lg border border-gray-300 px-3 py-1.5 text-xs" onclick="document.getElementById('fdel-{{ $user->id }}').close()">Batal</button>
                                             <button type="submit" disabled class="rounded-lg bg-red-700 px-3 py-1.5 text-xs text-white">Hapus Permanen</button>
+                                        </div>
+                                    </form>
+                                </dialog>
+                            @endif
+
+                            @if (\Illuminate\Support\Facades\Route::has('office.users.notify'))
+                                <dialog id="notify-{{ $user->id }}" class="rounded-xl border border-rule p-0">
+                                    <form method="POST" action="{{ route('office.users.notify', $user) }}" class="p-5">
+                                        @csrf
+                                        <p class="font-mono text-[10px] uppercase tracking-[0.14em] text-ink/70">Kirim Notifikasi</p>
+                                        <input type="text" name="title" placeholder="Judul notifikasi" required maxlength="255"
+                                               class="mt-2 w-full rounded-lg border border-rule px-3 py-2 text-sm text-ink">
+                                        <textarea name="message" rows="3" required maxlength="1000" placeholder="Pesan..."
+                                                  class="mt-2 w-full rounded-lg border border-rule px-3 py-2 text-sm text-ink"></textarea>
+                                        <input type="text" name="link" placeholder="Link (opsional)" maxlength="255"
+                                               class="mt-2 w-full rounded-lg border border-rule px-3 py-2 text-sm text-ink">
+                                        <div class="mt-3 flex justify-end gap-2">
+                                            <button type="button" class="rounded-lg border border-rule px-3 py-1.5 text-xs font-semibold text-ink" onclick="document.getElementById('notify-{{ $user->id }}').close()">Batal</button>
+                                            <button type="submit" class="rounded-lg bg-black px-3 py-1.5 text-xs font-semibold tracking-[0.12em] text-white">Kirim</button>
                                         </div>
                                     </form>
                                 </dialog>
