@@ -18,18 +18,30 @@
             </div>
             @if ($tierBadge)
                 @php
-                    $pct = $tierProgress['platinum'] > 0
+                    $pct = $tierProgress['progress_pct'] ?? ($tierProgress['platinum'] > 0
                         ? min(100, round($tierProgress['belanja'] / $tierProgress['platinum'] * 100))
-                        : 0;
+                        : 0);
+                    $belanjaSisa = $tierProgress['belanja_sisa'] ?? null;
+                    $currentTier = $tierProgress['current_tier'] ?? null;
+                    $nextTier = $tierProgress['next_tier'] ?? null;
                 @endphp
                 <div class="mt-3 w-full max-w-md">
                     <div class="flex items-center justify-between font-mono text-[10px] uppercase tracking-[0.12em] text-ink/50">
                         <span>Progress Tier</span>
-                        <span>{{ format_rp($tierProgress['belanja']) }} / {{ format_rp($tierProgress['platinum']) }}</span>
+                        <span>
+                            @if ($currentTier && $nextTier)
+                                {{ $currentTier }} → {{ $nextTier }}
+                            @else
+                                {{ format_rp($tierProgress['belanja']) }} / {{ format_rp($tierProgress['platinum']) }}
+                            @endif
+                        </span>
                     </div>
                     <div class="mt-1 h-2 w-full overflow-hidden rounded-full bg-rule/60">
                         <div class="h-full rounded-full bg-amber-400" style="width: {{ $pct }}%"></div>
                     </div>
+                    @if ($belanjaSisa !== null)
+                        <p class="mt-1 font-mono text-[10px] text-ink/45">Sisa {{ format_rp($belanjaSisa) }} ke tier berikutnya</p>
+                    @endif
                 </div>
             @endif
         </div>
