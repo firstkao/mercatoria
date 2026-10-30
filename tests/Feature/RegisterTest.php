@@ -20,7 +20,7 @@ test('user dapat mendaftar dengan data valid', function () {
 
     $user = User::where('email', 'baru@example.com')->firstOrFail();
     expect($user->name)->toBe('Budi Santoso')
-        ->and($user->role)->toBe('customer')
+        ->and($user->role)->toBe('crush')
         ->and($user->email_verified_at)->toBeNull()
         ->and($user->is_migrated)->toBeFalse()
         ->and($user->has_seen_tour)->toBeFalse()
