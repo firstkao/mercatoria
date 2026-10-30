@@ -6,43 +6,43 @@
     <p class="font-mono text-[10px] uppercase tracking-[0.22em] text-ink/45">Konten</p>
     <h1 class="mt-2 font-display text-[1.5rem] font-semibold text-ink">Hero Slides</h1>
 
-    <form method="POST" action="{{ route('office.hero-slides.store') }}" class="mt-4 flex flex-wrap items-end gap-2 rounded-xl border border-rule bg-white p-4">
+    <form method="POST" action="{{ route('office.hero-slides.store') }}" enctype="multipart/form-data" class="mt-4 rounded-xl border border-rule bg-white p-4">
         @csrf
-        <div>
-            <label class="block font-mono text-[10px] font-medium uppercase tracking-[0.14em] text-ink/70">Image (path)</label>
-            <input type="text" name="image" required maxlength="255" placeholder="/images/hero.jpg"
-                   class="mt-1 w-56 rounded-lg border border-rule px-3 py-2 text-sm text-ink">
+        <div class="flex flex-wrap items-end gap-3">
+            <div>
+                <label class="block font-mono text-[10px] font-medium uppercase tracking-[0.14em] text-ink/70">Upload Gambar</label>
+                <input type="file" name="image" accept=".jpg,.jpeg,.png,.webp" required
+                       class="mt-1 block w-56 rounded-lg border border-rule px-3 py-2 text-sm text-ink">
+                <img src="" alt="" id="create-preview" class="mt-2 h-20 rounded border border-rule object-cover" style="display:none">
+            </div>
+            <div>
+                <label class="block font-mono text-[10px] font-medium uppercase tracking-[0.14em] text-ink/70">Urutan</label>
+                <input type="number" name="sort_order" min="0" value="0"
+                       class="mt-1 w-24 rounded-lg border border-rule px-3 py-2 text-sm text-ink">
+            </div>
+            <label class="flex items-center gap-1 py-2 text-sm text-ink/80">
+                <input type="checkbox" name="is_active" value="1" checked class="rounded border-rule"> Aktif
+            </label>
+            <button class="rounded-lg bg-black px-4 py-2 text-sm font-semibold tracking-[0.12em] text-white transition-colors hover:bg-ink">+ Tambah</button>
         </div>
-        <div>
-            <label class="block font-mono text-[10px] font-medium uppercase tracking-[0.14em] text-ink/70">URL Tujuan</label>
-            <input type="text" name="url" maxlength="255" placeholder="/genshin-impact"
-                   class="mt-1 w-48 rounded-lg border border-rule px-3 py-2 text-sm text-ink">
-        </div>
-        <div>
-            <label class="block font-mono text-[10px] font-medium uppercase tracking-[0.14em] text-ink/70">Urutan</label>
-            <input type="number" name="sort_order" min="0" value="0"
-                   class="mt-1 w-24 rounded-lg border border-rule px-3 py-2 text-sm text-ink">
-        </div>
-        <label class="flex items-center gap-1 py-2 text-sm text-ink/80">
-            <input type="checkbox" name="is_active" value="1" checked class="rounded border-rule"> Aktif
-        </label>
-        <button class="rounded-lg bg-black px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-ink">+ Tambah</button>
     </form>
 
     <div class="mt-4 space-y-3">
         @forelse ($slides as $slide)
             <div class="rounded-xl border border-rule bg-white p-4">
-                <form method="POST" action="{{ route('office.hero-slides.update', $slide) }}" class="flex flex-wrap items-end gap-2">
+                <form method="POST" action="{{ route('office.hero-slides.update', $slide) }}" enctype="multipart/form-data" class="flex flex-wrap items-end gap-3">
                     @csrf @method('PUT')
                     <div>
-                        <label class="block font-mono text-[10px] font-medium uppercase tracking-[0.14em] text-ink/70">Image</label>
-                        <input type="text" name="image" value="{{ $slide->image }}" required maxlength="255"
-                               class="mt-1 w-56 rounded-lg border border-rule px-3 py-2 text-sm text-ink">
+                        <label class="block font-mono text-[10px] font-medium uppercase tracking-[0.14em] text-ink/70">Gambar Saat Ini</label>
+                        @if ($slide->image)
+                            <img src="{{ \Illuminate\Support\Facades\Storage::url($slide->image) }}" alt="Slide {{ $slide->id }}"
+                                 class="mt-1 h-20 rounded border border-rule object-cover">
+                        @endif
                     </div>
                     <div>
-                        <label class="block font-mono text-[10px] font-medium uppercase tracking-[0.14em] text-ink/70">URL</label>
-                        <input type="text" name="url" value="{{ $slide->url }}" maxlength="255"
-                               class="mt-1 w-48 rounded-lg border border-rule px-3 py-2 text-sm text-ink">
+                        <label class="block font-mono text-[10px] font-medium uppercase tracking-[0.14em] text-ink/70">Ganti Gambar</label>
+                        <input type="file" name="image" accept=".jpg,.jpeg,.png,.webp"
+                               class="mt-1 block w-48 rounded-lg border border-rule px-2 py-1.5 text-xs text-ink">
                     </div>
                     <div>
                         <label class="block font-mono text-[10px] font-medium uppercase tracking-[0.14em] text-ink/70">Urutan</label>
@@ -71,4 +71,21 @@
             </div>
         @endforelse
     </div>
+
+    <script>
+        (function () {
+            var input = document.querySelector('form input[name="image"]');
+            var preview = document.getElementById('create-preview');
+            if (!input || !preview) return;
+            input.addEventListener('change', function () {
+                if (this.files && this.files.length) {
+                    preview.src = URL.createObjectURL(this.files[0]);
+                    preview.style.display = '';
+                } else {
+                    preview.removeAttribute('src');
+                    preview.style.display = 'none';
+                }
+            });
+        })();
+    </script>
 @endsection

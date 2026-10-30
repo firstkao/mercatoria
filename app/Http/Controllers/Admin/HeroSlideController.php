@@ -58,7 +58,7 @@ class HeroSlideController extends Controller
     private function validateSlide(Request $request, ?HeroSlide $slide = null): array
     {
         $data = $request->validate([
-            'image' => [$slide ? 'nullable' : 'required', 'file', 'mimes:jpg,jpeg,png,webp', 'max:1024'],
+            'image' => [$slide ? 'nullable' : 'required', 'file', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
             'sort_order' => ['nullable', 'integer', 'min:0'],
         ]);
 
