@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', $title.' — Mercatoria')
+@section('title', $title.' &mdash; Mercatoria')
 
 @section('content')
     <nav class="mb-2 flex items-center justify-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.14em] text-ink/50">

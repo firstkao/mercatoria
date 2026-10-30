@@ -4,7 +4,7 @@
 
 @section('content')
     <h1 class="text-xl font-semibold">Activity Log</h1>
-    <p class="mt-1 text-sm text-gray-500">Instrumentasi aksi user menyusul (PRD 39.5) — tabel & halaman sudah siap.</p>
+    <p class="mt-1 text-sm text-gray-500">Instrumentasi aksi user menyusul (PRD 39.5) &mdash; tabel & halaman sudah siap.</p>
 
     <div class="mt-4 overflow-hidden rounded-xl bg-white shadow-sm ring-1 ring-gray-100">
         <table class="w-full text-sm">

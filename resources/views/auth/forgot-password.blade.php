@@ -1,6 +1,6 @@
-﻿@extends('layouts.guest')
+@extends('layouts.guest')
 
-@section('title', 'Lupa Password â€” Mercatoria')
+@section('title', 'Lupa Password &mdash; Mercatoria')
 
 @section('content')
     <div class="rounded-xl border border-rule bg-white px-6 py-8 shadow-[0_1px_0_rgba(20,27,34,0.04)] sm:px-8">

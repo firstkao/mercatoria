@@ -1,5 +1,5 @@
 <div class="mt-6 rounded-xl bg-white p-4 shadow-sm ring-1 ring-gray-100">
-    <h2 class="text-sm font-semibold">Split Box — Slot &amp; Kloter</h2>
+    <h2 class="text-sm font-semibold">Split Box &mdash; Slot &amp; Kloter</h2>
 
     @if ($statusMessage)
         <p class="mt-2 rounded bg-green-50 px-3 py-2 text-sm text-green-800">{{ $statusMessage }}</p>
@@ -48,7 +48,7 @@
             @foreach ($product->splitBox->batches as $batch)
                 <li class="flex items-center justify-between rounded border border-gray-100 px-3 py-2">
                     <span>
-                        Kloter #{{ $batch->batch_no }} — {{ $batch->status }}
+                        Kloter #{{ $batch->batch_no }} &mdash; {{ $batch->status }}
                         @if ($batch->is_auto_opened) (auto) @endif
                         @if ($batch->closes_at) · closes {{ $batch->closes_at->format('d/m/Y H:i') }} @endif
                     </span>

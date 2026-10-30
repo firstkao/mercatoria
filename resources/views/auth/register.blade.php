@@ -1,6 +1,6 @@
-﻿@extends('layouts.guest')
+@extends('layouts.guest')
 
-@section('title', 'Daftar â€” Mercatoria')
+@section('title', 'Daftar &mdash; Mercatoria')
 
 @section('width', 'w-full max-w-2xl')
 

@@ -57,8 +57,8 @@
                             <td class="px-3 py-2 font-medium text-ink">{{ $product->name }}</td>
                             <td class="px-3 py-2 font-mono text-xs text-ink/60">{{ $product->sku }}</td>
                             <td class="px-3 py-2 text-ink/80">{{ $product->game->name ?? '-' }}</td>
-                            <td class="px-3 py-2 text-ink/80">{{ $product->price_rmb !== null ? '¥'.number_format((float) $product->price_rmb, 2) : '—' }}</td>
-                            <td class="px-3 py-2 text-ink/80">{{ $product->weight_gram !== null ? number_format($product->weight_gram).' g' : '—' }}</td>
+                            <td class="px-3 py-2 text-ink/80">{{ $product->price_rmb !== null ? '¥'.number_format((float) $product->price_rmb, 2) : '&mdash;' }}</td>
+                            <td class="px-3 py-2 text-ink/80">{{ $product->weight_gram !== null ? number_format($product->weight_gram).' g' : '&mdash;' }}</td>
                             <td class="px-3 py-2">
                                 <span class="rounded px-2 py-0.5 text-[10px] font-semibold {{ $product->is_active ? 'bg-[#43A047] text-white' : 'bg-[#9E9E9E] text-white' }}">
                                     {{ $product->is_active ? 'Aktif' : 'Nonaktif' }}

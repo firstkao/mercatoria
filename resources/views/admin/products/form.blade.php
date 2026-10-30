@@ -41,7 +41,7 @@
             <div>
                 <label class="block font-mono text-[10px] font-medium uppercase tracking-[0.14em] text-ink/70">Store (override)</label>
                 <select name="store_id" class="mt-1 w-full rounded-lg border border-rule px-3 py-2 text-sm">
-                    <option value="">â€” ikut game â€”</option>
+                    <option value="">&mdash; ikut game &mdash;</option>
                     @foreach ($stores as $store)
                         <option value="{{ $store->id }}" @selected(old('store_id', $product->store_id) == $store->id)>{{ $store->name }}</option>
                     @endforeach
@@ -50,7 +50,7 @@
             <div>
                 <label class="block font-mono text-[10px] font-medium uppercase tracking-[0.14em] text-ink/70">Kategori Merch</label>
                 <select name="merch_category_id" class="mt-1 w-full rounded-lg border border-rule px-3 py-2 text-sm">
-                    <option value="">â€” auto â€”</option>
+                    <option value="">&mdash; auto &mdash;</option>
                     @foreach ($categories as $category)
                         <option value="{{ $category->id }}" @selected(old('merch_category_id', $product->merch_category_id) == $category->id)>{{ $category->name }}</option>
                     @endforeach

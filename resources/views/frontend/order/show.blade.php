@@ -1,6 +1,6 @@
-﻿@extends('layouts.app')
+@extends('layouts.app')
 
-@section('title', 'Pesanan '.$order->no_order.' â€” Mercatoria')
+@section('title', 'Pesanan '.$order->no_order.' &mdash; Mercatoria')
 
 @section('content')
     <p class="font-mono text-[10px] uppercase tracking-[0.22em] text-ink/45">Pesanan</p>
@@ -150,7 +150,7 @@
                     </p>
                     <p class="font-mono text-[10px] uppercase tracking-[0.12em] text-ink/45">
                         {{ $log->created_at->format('d/m/Y H:i') }} Â· oleh {{ $log->changed_by }}
-                        @if ($log->note) â€” {{ $log->note }} @endif
+                        @if ($log->note) &mdash; {{ $log->note }} @endif
                     </p>
                 </li>
             @endforeach

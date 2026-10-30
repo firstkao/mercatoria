@@ -186,7 +186,7 @@
         @yield('content')
     </main>
 
-    {{-- Footer (sama dengan guest â€” Design Spec 4.4.5) --}}
+    {{-- Footer (sama dengan guest &mdash; Design Spec 4.4.5) --}}
     <footer class="bg-[#1E1E2D] text-white">
         <div class="mx-auto max-w-[1200px] px-4 py-14">
             <div class="grid gap-10 md:grid-cols-2 lg:grid-cols-4">

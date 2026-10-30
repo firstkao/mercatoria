@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Keranjang â€” Mercatoria')
+@section('title', 'Keranjang &mdash; Mercatoria')
 
 @section('content')
     <p class="font-mono text-[10px] uppercase tracking-[0.22em] text-ink/45">Belanja</p>

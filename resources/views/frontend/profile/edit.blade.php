@@ -1,6 +1,6 @@
-﻿@extends('layouts.app')
+@extends('layouts.app')
 
-@section('title', 'Edit Profil â€” Mercatoria')
+@section('title', 'Edit Profil &mdash; Mercatoria')
 
 @section('content')
     <p class="font-mono text-[10px] uppercase tracking-[0.22em] text-ink/45">Akun</p>

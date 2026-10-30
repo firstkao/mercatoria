@@ -117,7 +117,7 @@
         </div>
     </div>
 
-    {{-- Notifikasi terbaru — slot kosong, data BE menyusul --}}
+    {{-- Notifikasi terbaru &mdash; slot kosong, data BE menyusul --}}
     <div class="mt-6 rounded-xl border border-rule bg-white p-6">
         <h2 class="font-mono text-[11px] font-medium uppercase tracking-[0.16em] text-ink">Notifikasi Admin Terbaru</h2>
         <div class="mt-4 flex h-24 items-center justify-center rounded-lg border border-dashed border-rule bg-paper/40">

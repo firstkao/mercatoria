@@ -1,6 +1,6 @@
 <div class="mt-6 rounded-xl bg-white p-4 shadow-sm ring-1 ring-gray-100">
     <h2 class="text-sm font-semibold">Pilih Karakter (Split Box)</h2>
-    <p class="mt-1 text-xs text-gray-500">Slot terkunci setelah bukti bayar diunggah — bisa diambil orang lain sebelum itu.</p>
+    <p class="mt-1 text-xs text-gray-500">Slot terkunci setelah bukti bayar diunggah &mdash; bisa diambil orang lain sebelum itu.</p>
 
     <div class="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3">
         @foreach ($slots as $slot)
