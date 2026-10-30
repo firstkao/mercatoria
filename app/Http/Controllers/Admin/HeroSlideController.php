@@ -31,10 +31,10 @@ class HeroSlideController extends Controller
 
     public function update(Request $request, HeroSlide $heroSlide): RedirectResponse
     {
-        $data = $this->validateSlide($request);
+        $data = $this->validateSlide($request, $heroSlide);
         $data['is_active'] = $request->boolean('is_active');
 
-        [$old, $new] = AdminLog::diff($heroSlide, ['image', 'url', 'sort_order', 'is_active'], $data);
+        [$old, $new] = AdminLog::diff($heroSlide, ['image', 'sort_order', 'is_active'], $data);
         $heroSlide->update($data);
         AdminLog::record($request->user(), 'update', 'HeroSlide', $heroSlide->id, $old, $new, 'Ubah hero slide');
 
@@ -43,7 +43,10 @@ class HeroSlideController extends Controller
 
     public function destroy(Request $request, HeroSlide $heroSlide): RedirectResponse
     {
-        AdminLog::record($request->user(), 'delete', 'HeroSlide', $heroSlide->id, $heroSlide->only(['image', 'url', 'sort_order', 'is_active']), null, 'Hapus hero slide');
+        AdminLog::record($request->user(), 'delete', 'HeroSlide', $heroSlide->id, $heroSlide->only(['image', 'sort_order', 'is_active']), null, 'Hapus hero slide');
+        if (str_starts_with((string) $heroSlide->image, 'hero-slides/')) {
+            @unlink(storage_path('app/private/'.$heroSlide->image));
+        }
         $heroSlide->delete();
 
         return redirect()->route('office.hero-slides.index')->with('status', 'Hero slide dihapus.');
@@ -52,12 +55,20 @@ class HeroSlideController extends Controller
     /**
      * @return array<string, mixed>
      */
-    private function validateSlide(Request $request): array
+    private function validateSlide(Request $request, ?HeroSlide $slide = null): array
     {
-        return $request->validate([
-            'image' => ['required', 'string', 'max:255'],
-            'url' => ['nullable', 'string', 'max:255'],
+        $data = $request->validate([
+            'image' => [$slide ? 'nullable' : 'required', 'file', 'mimes:jpg,jpeg,png,webp', 'max:1024'],
             'sort_order' => ['nullable', 'integer', 'min:0'],
         ]);
+
+        if ($request->hasFile('image')) {
+            if ($slide?->image && str_starts_with((string) $slide->image, 'hero-slides/')) {
+                @unlink(storage_path('app/private/'.$slide->image));
+            }
+            $data['image'] = $request->file('image')->store('hero-slides');
+        }
+
+        return $data;
     }
 }

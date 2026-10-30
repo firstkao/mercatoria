@@ -3,6 +3,7 @@
 use App\Models\AdminLog;
 use App\Models\HeroSlide;
 use App\Models\User;
+use Illuminate\Http\UploadedFile;
 
 test('hero slide aktif tampil di landing dengan struktur image url', function () {
     HeroSlide::factory()->create([
@@ -46,22 +47,22 @@ test('admin dapat membuat mengubah dan menghapus hero slide', function () {
     $admin = User::factory()->admin()->create();
 
     $this->actingAs($admin)->post('/office/hero-slides', [
-        'image' => '/images/hero-1.jpg',
-        'url' => '/promo-1',
+        'image' => UploadedFile::fake()->image('hero-1.jpg'),
         'sort_order' => 1,
         'is_active' => 1,
     ])->assertRedirect();
 
-    $slide = HeroSlide::where('image', '/images/hero-1.jpg')->firstOrFail();
+    $slide = HeroSlide::firstOrFail();
+    $pathAwal = (string) $slide->image;
 
     $this->actingAs($admin)->put("/office/hero-slides/{$slide->id}", [
-        'image' => '/images/hero-1-baru.jpg',
-        'url' => '/promo-1-baru',
+        'image' => UploadedFile::fake()->image('hero-1-baru.jpg'),
         'sort_order' => 2,
         'is_active' => 1,
     ])->assertRedirect();
 
-    expect($slide->fresh()->image)->toBe('/images/hero-1-baru.jpg');
+    expect($slide->fresh()->image)->toStartWith('hero-slides/')
+        ->and($slide->fresh()->image)->not->toBe($pathAwal);
 
     $this->actingAs($admin)->delete("/office/hero-slides/{$slide->id}")->assertRedirect();
 
@@ -72,12 +73,11 @@ test('kelola hero slide tercatat di admin logs', function () {
     $admin = User::factory()->admin()->create();
 
     $this->actingAs($admin)->post('/office/hero-slides', [
-        'image' => '/images/hero-log.jpg',
-        'url' => '/',
+        'image' => UploadedFile::fake()->image('hero-log.jpg'),
         'is_active' => 1,
     ]);
 
-    $slide = HeroSlide::where('image', '/images/hero-log.jpg')->firstOrFail();
+    $slide = HeroSlide::firstOrFail();
 
     $this->actingAs($admin)->delete("/office/hero-slides/{$slide->id}");
 
