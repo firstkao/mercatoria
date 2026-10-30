@@ -25,6 +25,12 @@ test('api regions memberi data berantai sesuai parent', function () {
     $menteng = collect($districts)->firstWhere('nama', 'Menteng');
     $codes = $this->getJson('/api/regions/postal-codes/'.$menteng['id'])->assertOk()->json();
     expect(collect($codes)->pluck('kode'))->toContain('10310');
+
+    // Banyak desa dalam satu kecamatan berbagi zip yang sama: API cukup mengembalikannya sekali.
+    $bakongan = IndonesiaRegion::type('kecamatan')->where('code', '110101')->firstOrFail();
+    $kodesBakongan = collect($this->getJson('/api/regions/postal-codes/'.$bakongan->id)->assertOk()->json())->pluck('kode');
+    expect($kodesBakongan->unique()->count())->toBe($kodesBakongan->count())
+        ->and($kodesBakongan)->toContain('23773');
 });
 
 test('register dengan data dropdown menyimpan id dan nama alamat', function () {

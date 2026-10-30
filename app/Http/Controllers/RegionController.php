@@ -48,11 +48,13 @@ class RegionController extends Controller
 
     public function postalCodes(int $district): JsonResponse
     {
+        // Satu kecamatan bisa punya banyak desa dengan zip yang sama — tampilkan kode sekali.
         return response()->json(
             IndonesiaRegion::type(IndonesiaRegion::TYPE_KODE_POS)
                 ->where('parent_id', $district)
                 ->orderBy('name')
                 ->get(['id', 'name'])
+                ->unique('name')
                 ->map(fn ($r) => ['id' => $r->id, 'kode' => $r->name])
                 ->values()
         );
