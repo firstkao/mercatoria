@@ -8,7 +8,7 @@
 
     <div class="mt-4 rounded-lg border border-rule bg-paper px-4 py-3">
         <p class="font-mono text-[10px] uppercase tracking-[0.14em] text-ink/55">Placeholder tersedia</p>
-        <p class="mt-1 text-xs text-ink/65">{{nama_user}} · {{email_user}} · {{no_order}} · {{kode_otp}} · {{link_verifikasi}} · {{judul}}</p>
+        <p class="mt-1 text-xs text-ink/65">@{{nama_user}} · @{{email_user}} · @{{no_order}} · @{{kode_otp}} · @{{link_verifikasi}} · @{{judul}}</p>
     </div>
 
     <form method="POST" action="{{ route('office.email-templates.store') }}" class="mt-4 space-y-2 rounded-xl border border-rule bg-white p-4">
