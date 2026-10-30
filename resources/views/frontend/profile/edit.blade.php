@@ -59,25 +59,25 @@
             </div>
             <div>
                 <label class="block font-mono text-[10px] font-medium uppercase tracking-[0.16em] text-ink/70">Kota / Kabupaten <span class="text-danger">*</span></label>
-                <select name="kota" id="kota" required data-region="regency" disabled
+                <select name="kota" id="kota" required
                         class="mt-2 w-full rounded-lg border border-rule bg-white px-3.5 py-2.5 text-sm text-ink opacity-50 focus:border-ink focus:outline-none focus:ring-2 focus:ring-accent/45 disabled:cursor-not-allowed">
-                    <option value="{{ old('kota', $user->kota) }}" selected>{{ old('kota', $user->kota) ?: 'Pilih Provinsi dulu' }}</option>
+                    <option value="">{{ old('kota', $user->kota) ?: 'Memuat...' }}</option>
                 </select>
                 <input type="hidden" name="kota_id" id="kota_id" value="{{ old('kota_id') }}">
             </div>
             <div>
                 <label class="block font-mono text-[10px] font-medium uppercase tracking-[0.16em] text-ink/70">Kecamatan <span class="text-danger">*</span></label>
-                <select name="kecamatan" id="kecamatan" required disabled
+                <select name="kecamatan" id="kecamatan" required
                         class="mt-2 w-full rounded-lg border border-rule bg-white px-3.5 py-2.5 text-sm text-ink opacity-50 focus:border-ink focus:outline-none focus:ring-2 focus:ring-accent/45 disabled:cursor-not-allowed">
-                    <option value="{{ old('kecamatan', $user->kecamatan) }}" selected>{{ old('kecamatan', $user->kecamatan) ?: 'Pilih Kota dulu' }}</option>
+                    <option value="">{{ old('kecamatan', $user->kecamatan) ?: 'Memuat...' }}</option>
                 </select>
                 <input type="hidden" name="kecamatan_id" id="kecamatan_id" value="{{ old('kecamatan_id') }}">
             </div>
             <div>
                 <label class="block font-mono text-[10px] font-medium uppercase tracking-[0.16em] text-ink/70">Kode Pos <span class="text-danger">*</span></label>
-                <select name="kode_pos" id="kode_pos" required disabled
+                <select name="kode_pos" id="kode_pos" required
                         class="mt-2 w-full rounded-lg border border-rule bg-white px-3.5 py-2.5 text-sm text-ink opacity-50 focus:border-ink focus:outline-none focus:ring-2 focus:ring-accent/45 disabled:cursor-not-allowed">
-                    <option value="{{ old('kode_pos', $user->kode_pos) }}" selected>{{ old('kode_pos', $user->kode_pos) ?: 'Pilih Kecamatan dulu' }}</option>
+                    <option value="">{{ old('kode_pos', $user->kode_pos) ?: 'Memuat...' }}</option>
                 </select>
             </div>
         </div>
@@ -93,6 +93,11 @@
                 var kecId = document.getElementById('kecamatan_id');
                 if (!provSel) return;
 
+                var userProv = @json(old('provinsi', $user->provinsi));
+                var userKota = @json(old('kota', $user->kota));
+                var userKec = @json(old('kecamatan', $user->kecamatan));
+                var userPos = @json(old('kode_pos', $user->kode_pos));
+
                 function fetchJson(url) {
                     return fetch(url, { headers: { 'Accept': 'application/json' } }).then(function (r) {
                         if (!r.ok) throw new Error('fetch');
@@ -100,8 +105,7 @@
                     });
                 }
 
-                function fillSelect(sel, items, placeholder, valueKey, labelKey) {
-                    var prev = sel.value;
+                function fillSelect(sel, items, placeholder, valueKey, labelKey, selectVal) {
                     sel.innerHTML = '<option value="">' + placeholder + '</option>';
                     (items || []).forEach(function (item) {
                         var opt = document.createElement('option');
@@ -110,21 +114,75 @@
                         opt.dataset.id = item.id || '';
                         sel.appendChild(opt);
                     });
-                    if (prev) sel.value = prev;
+                    if (selectVal) {
+                        sel.value = selectVal;
+                        // Set hidden id from selected option
+                        var found = sel.options[sel.selectedIndex];
+                        if (found && found.dataset.id) {
+                            if (sel === provSel) provId.value = found.dataset.id;
+                            if (sel === kotaSel) kotaId.value = found.dataset.id;
+                            if (sel === kecSel) kecId.value = found.dataset.id;
+                        }
+                    }
+                }
+
+                function enable(sel) {
+                    sel.disabled = false;
+                    sel.classList.remove('opacity-50');
                 }
 
                 function fallbackInput(sel, name, val) {
                     sel.outerHTML = '<input type="text" name="' + name + '" id="' + name + '" value="' + (val || '') + '" required maxlength="100" class="mt-2 w-full rounded-lg border border-rule bg-white px-3.5 py-2.5 text-sm text-ink focus:border-ink focus:outline-none focus:ring-2 focus:ring-accent/45">';
                 }
 
-                fetchJson('{{ route("api.regions.provinces") }}')
-                    .then(function (data) {
-                        fillSelect(provSel, data, 'Pilih Provinsi', 'nama', 'nama');
-                    })
-                    .catch(function () {
-                        fallbackInput(provSel, 'provinsi', '{{ old("provinsi", $user->provinsi) }}');
-                    });
+                // INIT: load all levels based on existing user data
+                function initCascade() {
+                    fetchJson('{{ route("api.regions.provinces") }}')
+                        .then(function (provinces) {
+                            fillSelect(provSel, provinces, 'Pilih Provinsi', 'nama', 'nama', userProv);
+                            if (!userProv) { enable(kotaSel); enable(kecSel); enable(posSel); return; }
+                            // Load regencies for user's province
+                            return fetchJson('{{ route("api.regions.regencies", ["province" => "__ID__"]) }}'.replace('__ID__', provId.value))
+                                .then(function (regencies) {
+                                    fillSelect(kotaSel, regencies, 'Pilih Kota/Kabupaten', 'nama', 'nama', userKota);
+                                    enable(kotaSel);
+                                    if (!userKota) { enable(kecSel); enable(posSel); return; }
+                                    // Load districts for user's kota
+                                    return fetchJson('{{ route("api.regions.districts", ["regency" => "__ID__"]) }}'.replace('__ID__', kotaId.value))
+                                        .then(function (districts) {
+                                            fillSelect(kecSel, districts, 'Pilih Kecamatan', 'nama', 'nama', userKec);
+                                            enable(kecSel);
+                                            if (!userKec) { enable(posSel); return; }
+                                            // Load postal codes for user's kecamatan
+                                            return fetchJson('{{ route("api.regions.postalCodes", ["district" => "__ID__"]) }}'.replace('__ID__', kecId.value))
+                                                .then(function (codes) {
+                                                    fillSelect(posSel, codes, 'Pilih Kode Pos', 'kode', 'kode', userPos);
+                                                    enable(posSel);
+                                                })
+                                                .catch(function () {
+                                                    enable(posSel);
+                                                    fallbackInput(posSel, 'kode_pos', userPos);
+                                                });
+                                        })
+                                        .catch(function () {
+                                            enable(kecSel); enable(posSel);
+                                            fallbackInput(kecSel, 'kecamatan', userKec);
+                                        });
+                                })
+                                .catch(function () {
+                                    enable(kotaSel); enable(kecSel); enable(posSel);
+                                    fallbackInput(kotaSel, 'kota', userKota);
+                                });
+                        })
+                        .catch(function () {
+                            fallbackInput(provSel, 'provinsi', userProv);
+                            fallbackInput(kotaSel, 'kota', userKota);
+                            fallbackInput(kecSel, 'kecamatan', userKec);
+                            fallbackInput(posSel, 'kode_pos', userPos);
+                        });
+                }
 
+                // CASCADE: on change, reset children and load
                 provSel.addEventListener('change', function () {
                     var opt = provSel.options[provSel.selectedIndex];
                     provId.value = opt ? (opt.dataset.id || '') : '';
@@ -141,11 +199,11 @@
                     fetchJson('{{ route("api.regions.regencies", ["province" => "__ID__"]) }}'.replace('__ID__', provId.value))
                         .then(function (data) {
                             fillSelect(kotaSel, data, 'Pilih Kota/Kabupaten', 'nama', 'nama');
-                            kotaSel.disabled = false; kotaSel.classList.remove('opacity-50');
+                            enable(kotaSel);
                         })
                         .catch(function () {
-                            kotaSel.disabled = false; kotaSel.classList.remove('opacity-50');
-                            fallbackInput(kotaSel, 'kota', '{{ old("kota", $user->kota) }}');
+                            enable(kotaSel);
+                            fallbackInput(kotaSel, 'kota', '');
                         });
                 });
 
@@ -163,11 +221,11 @@
                     fetchJson('{{ route("api.regions.districts", ["regency" => "__ID__"]) }}'.replace('__ID__', kotaId.value))
                         .then(function (data) {
                             fillSelect(kecSel, data, 'Pilih Kecamatan', 'nama', 'nama');
-                            kecSel.disabled = false; kecSel.classList.remove('opacity-50');
+                            enable(kecSel);
                         })
                         .catch(function () {
-                            kecSel.disabled = false; kecSel.classList.remove('opacity-50');
-                            fallbackInput(kecSel, 'kecamatan', '{{ old("kecamatan", $user->kecamatan) }}');
+                            enable(kecSel);
+                            fallbackInput(kecSel, 'kecamatan', '');
                         });
                 });
 
@@ -183,13 +241,15 @@
                     fetchJson('{{ route("api.regions.postalCodes", ["district" => "__ID__"]) }}'.replace('__ID__', kecId.value))
                         .then(function (data) {
                             fillSelect(posSel, data, 'Pilih Kode Pos', 'kode', 'kode');
-                            posSel.disabled = false; posSel.classList.remove('opacity-50');
+                            enable(posSel);
                         })
                         .catch(function () {
-                            posSel.disabled = false; posSel.classList.remove('opacity-50');
-                            fallbackInput(posSel, 'kode_pos', '{{ old("kode_pos", $user->kode_pos) }}');
+                            enable(posSel);
+                            fallbackInput(posSel, 'kode_pos', '');
                         });
                 });
+
+                initCascade();
             })();
         </script>
 
