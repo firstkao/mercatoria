@@ -21,8 +21,8 @@
                     <tr class="border-b border-gray-50 {{ $log->action === 'login_failed' ? 'bg-red-50' : '' }}">
                         <td class="px-3 py-2">{{ $log->created_at->format('d/m/Y H:i') }}</td>
                         <td class="px-3 py-2">{{ $log->email_attempt }}</td>
-                        <td class="px-3 py-2">{{ $log->action }}</td>
-                        <td class="px-3 py-2">{{ $log->reason }}</td>
+                        <td class="px-3 py-2"><x-log-label :action="$log->action" /></td>
+                        <td class="px-3 py-2"><x-log-label :reason="$log->reason" /></td>
                         <td class="px-3 py-2">{{ $log->ip_address }}</td>
                     </tr>
                 @endforeach
