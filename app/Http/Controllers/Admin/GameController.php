@@ -25,11 +25,11 @@ class GameController extends Controller
     {
         $data = $request->validate([
             'name' => ['required', 'string', 'max:100'],
-            'slug' => ['nullable', 'string', 'max:120', 'unique:games,slug'],
             'default_store_id' => ['nullable', 'exists:stores,id'],
             'is_active' => ['nullable', 'boolean'],
         ]);
-        $data['slug'] = $data['slug'] ?: Str::slug($data['name']).'-'.Str::random(4);
+        // Slug selalu auto-generate dari nama (form tidak mengirim field slug).
+        $data['slug'] = Str::slug($data['name']).'-'.Str::random(4);
         $data['is_active'] = $request->boolean('is_active', true);
 
         $game = Game::create($data);
