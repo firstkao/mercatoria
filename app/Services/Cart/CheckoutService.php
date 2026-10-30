@@ -127,8 +127,8 @@ class CheckoutService
                     'final_price' => $line['pricing']['final_price_bersih'],
                     'qty' => $cart->qty,
                     'subtotal' => $line['pricing']['final_price_bersih'] * $cart->qty,
-                    'product_image_path' => $cart->product->image_path,
-                    'variant_image_path' => $cart->variant?->image_path,
+                    'product_image_path' => $this->copySnapshotImage($cart->product->image_path, $order->no_order),
+                    'variant_image_path' => $this->copySnapshotImage($cart->variant?->image_path, $order->no_order),
                     'weight_gram' => $line['pricing']['weight_gram'],
                     'store_name' => $line['pricing']['store_name'],
                     'ongkir_lokal_cn_idr' => $line['pricing']['ongkir_lokal_cn_idr'],
@@ -259,5 +259,33 @@ class CheckoutService
                 'user_voucher_id' => 'Voucher sudah dipakai.',
             ]);
         }
+    }
+
+    /**
+     * PRD 46/13.6: snapshot gambar = COPY fisik ke order-snapshots/ (bukan path reference),
+     * agar tetap utuh saat hard delete produk. Gagal copy = order dibatalkan (PRD 32).
+     */
+    private function copySnapshotImage(?string $imagePath, string $noOrder): ?string
+    {
+        if ($imagePath === null || $imagePath === '') {
+            return null;
+        }
+
+        $source = storage_path('app/private/'.$imagePath);
+        if (! is_file($source)) {
+            throw new \RuntimeException('File gambar snapshot tidak ditemukan: '.$imagePath);
+        }
+
+        $target = 'order-snapshots/'.$noOrder.'-'.basename($imagePath);
+        $targetDir = storage_path('app/public/order-snapshots');
+        if (! is_dir($targetDir)) {
+            mkdir($targetDir, 0755, true);
+        }
+
+        if (! copy($source, storage_path('app/public/'.$target))) {
+            throw new \RuntimeException('Gagal menyalin gambar snapshot: '.$imagePath);
+        }
+
+        return $target;
     }
 }
