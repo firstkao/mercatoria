@@ -25,6 +25,24 @@ test('admin dapat membuat dan mengubah halaman cms', function () {
     expect($page->fresh()->content)->toBe('Teks baru.');
 });
 
+test('konten cms panjang berformat html tersimpan utuh tanpa strip tags', function () {
+    $admin = User::factory()->admin()->create();
+    $content = '<h2>Judul Panduan</h2>'.str_repeat(
+        '<p>Paragraf dengan <strong>tebal</strong>, <em>miring</em>, dan <a href="/tnc">tautan</a>.</p>',
+        200
+    );
+
+    $this->actingAs($admin)->post('/office/pages', [
+        'title' => 'Panduan Panjang',
+        'slug' => 'panduan-panjang',
+        'content' => $content,
+        'is_active' => 1,
+    ])->assertRedirect();
+
+    expect(strlen($content))->toBeGreaterThan(10000)
+        ->and(Page::where('slug', 'panduan-panjang')->firstOrFail()->content)->toBe($content);
+});
+
 test('halaman cms aktif tampil di halaman publik', function () {
     Page::factory()->create([
         'slug' => 'tentang-kami',
