@@ -137,23 +137,29 @@ Route::middleware(['auth', 'admin'])->prefix('office')->name('office.')->group(f
     // Katalog pendukung
     Route::get('/games', [AdminGameController::class, 'index'])->name('games.index');
     Route::post('/games', [AdminGameController::class, 'store'])->name('games.store');
+    Route::post('/games/bulk', [AdminGameController::class, 'bulk'])->name('games.bulk');
+    Route::post('/games/bulk-delete', [AdminGameController::class, 'bulkDelete'])->name('games.bulk-delete');
     Route::put('/games/{game}', [AdminGameController::class, 'update'])->name('games.update');
     Route::delete('/games/{game}', [AdminGameController::class, 'destroy'])->name('games.destroy');
 
     Route::get('/developers', [AdminDeveloperController::class, 'index'])->name('developers.index');
     Route::post('/developers', [AdminDeveloperController::class, 'store'])->name('developers.store');
+    Route::post('/developers/bulk', [AdminDeveloperController::class, 'bulk'])->name('developers.bulk');
+    Route::post('/developers/bulk-delete', [AdminDeveloperController::class, 'bulkDelete'])->name('developers.bulk-delete');
     Route::put('/developers/{developer}', [AdminDeveloperController::class, 'update'])->name('developers.update');
     Route::delete('/developers/{developer}', [AdminDeveloperController::class, 'destroy'])->name('developers.destroy');
 
     Route::get('/stores', [AdminStoreController::class, 'index'])->name('stores.index');
     Route::post('/stores', [AdminStoreController::class, 'store'])->name('stores.store');
-Route::post('/stores/bulk', [AdminStoreController::class, 'bulk'])->name('stores.bulk');
-Route::post('/stores/bulk-delete', [AdminStoreController::class, 'bulkDelete'])->name('stores.bulk-delete');
+    Route::post('/stores/bulk', [AdminStoreController::class, 'bulk'])->name('stores.bulk');
+    Route::post('/stores/bulk-delete', [AdminStoreController::class, 'bulkDelete'])->name('stores.bulk-delete');
     Route::put('/stores/{store}', [AdminStoreController::class, 'update'])->name('stores.update');
     Route::delete('/stores/{store}', [AdminStoreController::class, 'destroy'])->name('stores.destroy');
 
     Route::get('/merch-categories', [AdminMerchCategoryController::class, 'index'])->name('merch-categories.index');
     Route::post('/merch-categories', [AdminMerchCategoryController::class, 'store'])->name('merch-categories.store');
+    Route::post('/merch-categories/bulk', [AdminMerchCategoryController::class, 'bulk'])->name('merch-categories.bulk');
+    Route::post('/merch-categories/bulk-delete', [AdminMerchCategoryController::class, 'bulkDelete'])->name('merch-categories.bulk-delete');
     Route::put('/merch-categories/{merch_category}', [AdminMerchCategoryController::class, 'update'])->name('merch-categories.update');
 
     Route::get('/tags', [AdminTagController::class, 'index'])->name('tags.index');
