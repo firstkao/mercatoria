@@ -57,7 +57,7 @@ class TrackVisitor
 
         if ($request->is(
             'login*', 'register*', 'cart*', 'checkout*',
-            'dashboard', 'profile*', 'orders*', 'office/*', '2fa/*', 'email/*', 'password*'
+            'dashboard', 'profile*', 'orders*', 'office/*', '2fa/*', 'email/*', 'password*', 'api/*'
         )) {
             return false;
         }

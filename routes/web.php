@@ -43,6 +43,7 @@ use App\Http\Controllers\Frontend\ProfileController;
 use App\Http\Controllers\Frontend\SearchController;
 use App\Http\Controllers\Frontend\ShareController;
 use App\Http\Controllers\ProtectedImageController;
+use App\Http\Controllers\RegionController;
 use App\Http\Controllers\TwoFactorController;
 use Illuminate\Support\Facades\Route;
 
@@ -94,6 +95,14 @@ Route::middleware('guest')->group(function () {
 
 // PRD 8.10 layer 4: anti-hotlink — gambar dilindungi, hotlinker menerima decoy.
 Route::get('/protected-images/{filename}', [ProtectedImageController::class, 'show'])->name('protected-images.show');
+
+// Dropdown berantai alamat (PRD 7.3) — data wilayah publik untuk form register/profil.
+Route::prefix('api/regions')->group(function () {
+    Route::get('/provinces', [RegionController::class, 'provinces'])->name('api.regions.provinces');
+    Route::get('/regencies/{province}', [RegionController::class, 'regencies'])->name('api.regions.regencies');
+    Route::get('/districts/{regency}', [RegionController::class, 'districts'])->name('api.regions.districts');
+    Route::get('/postal-codes/{district}', [RegionController::class, 'postalCodes'])->name('api.regions.postalCodes');
+});
 
 Route::post('/logout', [LoginController::class, 'destroy'])
     ->middleware('auth')

@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Auth;
 
 use App\Models\Customer;
+use App\Models\IndonesiaRegion;
 use App\Models\Spammer;
 use App\Models\SpammerIp;
 use App\Models\User;
@@ -30,10 +31,13 @@ class RegisterRequest extends FormRequest
             'no_hp' => ['required', 'string', 'regex:/^(?:\+?62|0)8[1-9][0-9]{6,11}$/'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
             'provinsi' => ['required', 'string', 'max:100'],
+            'provinsi_id' => ['nullable', 'integer'],
             'kota' => ['required', 'string', 'max:100'],
+            'kota_id' => ['nullable', 'integer'],
             'kecamatan' => ['required', 'string', 'max:100'],
+            'kecamatan_id' => ['nullable', 'integer'],
             'alamat' => ['required', 'string', 'max:500'],
-            'kode_pos' => ['required', 'string', 'max:10'],
+            'kode_pos' => ['required', 'string', 'regex:/^[0-9]{5}$/'],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
             'agree_tnc' => ['accepted'],
             'agree_privacy' => ['accepted'],
@@ -113,6 +117,17 @@ class RegisterRequest extends FormRequest
                 }
             }
 
+            // Dropdown berantai alamat: rantai provinsi -> kota -> kecamatan harus valid.
+            foreach (IndonesiaRegion::chainErrors(
+                $this->input('provinsi_id'),
+                $this->input('kota_id'),
+                $this->input('kecamatan_id')
+            ) as $field => $messages) {
+                foreach ($messages as $message) {
+                    $validator->errors()->add($field, $message);
+                }
+            }
+
             // PRD 7.3 + 10.8: gagal daftar berulang dengan identitas sama -> auto-ban.
             $this->recordRegistrationFailure($email, $noHp);
         });
@@ -168,14 +183,24 @@ class RegisterRequest extends FormRequest
      */
     public function userData(): array
     {
+        // Id wilayah (dropdown berantai) melengkapi kolom string; nama diisi dari tabel bila id dikirim.
+        $regionNames = IndonesiaRegion::namesFor(
+            $this->input('provinsi_id'),
+            $this->input('kota_id'),
+            $this->input('kecamatan_id')
+        );
+
         return [
             'name' => $this->input('name'),
             'tgl_lahir' => $this->input('tgl_lahir'),
             'no_hp' => normalize_phone((string) $this->input('no_hp')),
             'email' => $this->input('email'),
-            'provinsi' => $this->input('provinsi'),
-            'kota' => $this->input('kota'),
-            'kecamatan' => $this->input('kecamatan'),
+            'provinsi' => $regionNames['provinsi'] ?? $this->input('provinsi'),
+            'provinsi_id' => $this->input('provinsi_id') ?: null,
+            'kota' => $regionNames['kota'] ?? $this->input('kota'),
+            'kota_id' => $this->input('kota_id') ?: null,
+            'kecamatan' => $regionNames['kecamatan'] ?? $this->input('kecamatan'),
+            'kecamatan_id' => $this->input('kecamatan_id') ?: null,
             'alamat' => $this->input('alamat'),
             'kode_pos' => $this->input('kode_pos'),
             'password' => $this->input('password'),

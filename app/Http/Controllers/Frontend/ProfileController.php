@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\ActivityLog;
 use App\Models\Coin;
 use App\Models\CoinTransaction;
+use App\Models\IndonesiaRegion;
 use App\Models\ShareClick;
 use App\Models\User;
 use App\Models\UserNotification;
@@ -16,6 +17,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules\Password;
+use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
 class ProfileController extends Controller
@@ -70,20 +72,43 @@ class ProfileController extends Controller
             'email' => ['required', 'email', 'unique:users,email,'.$user->id],
             'no_hp' => ['required', 'regex:/^(?:\+?62|0)8[1-9][0-9]{6,11}$/'],
             'provinsi' => ['required', 'string', 'max:100'],
+            'provinsi_id' => ['nullable', 'integer'],
             'kota' => ['required', 'string', 'max:100'],
+            'kota_id' => ['nullable', 'integer'],
             'kecamatan' => ['required', 'string', 'max:100'],
+            'kecamatan_id' => ['nullable', 'integer'],
             'alamat' => ['required', 'string', 'max:500'],
-            'kode_pos' => ['required', 'string', 'max:10'],
+            'kode_pos' => ['required', 'string', 'regex:/^[0-9]{5}$/'],
         ]);
+
+        // Dropdown berantai alamat: rantai provinsi -> kota -> kecamatan harus valid.
+        $chainErrors = IndonesiaRegion::chainErrors(
+            $data['provinsi_id'] ?? null,
+            $data['kota_id'] ?? null,
+            $data['kecamatan_id'] ?? null
+        );
+        if ($chainErrors !== []) {
+            throw ValidationException::withMessages($chainErrors);
+        }
+
+        // Nama wilayah diisi dari tabel bila id dikirim (dropdown berantai).
+        $regionNames = IndonesiaRegion::namesFor(
+            $data['provinsi_id'] ?? null,
+            $data['kota_id'] ?? null,
+            $data['kecamatan_id'] ?? null
+        );
 
         // tgl_lahir & kode undangan terkunci permanen (PRD 7.6).
         $user->update([
             'name' => $data['name'],
             'email' => $data['email'],
             'no_hp' => normalize_phone($data['no_hp']),
-            'provinsi' => $data['provinsi'],
-            'kota' => $data['kota'],
-            'kecamatan' => $data['kecamatan'],
+            'provinsi' => $regionNames['provinsi'] ?? $data['provinsi'],
+            'provinsi_id' => $data['provinsi_id'] ?? null,
+            'kota' => $regionNames['kota'] ?? $data['kota'],
+            'kota_id' => $data['kota_id'] ?? null,
+            'kecamatan' => $regionNames['kecamatan'] ?? $data['kecamatan'],
+            'kecamatan_id' => $data['kecamatan_id'] ?? null,
             'alamat' => $data['alamat'],
             'kode_pos' => $data['kode_pos'],
         ]);
