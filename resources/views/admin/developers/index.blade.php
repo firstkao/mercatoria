@@ -6,11 +6,18 @@
     <p class="font-mono text-[10px] uppercase tracking-[0.22em] text-ink/45">Katalog</p>
     <h1 class="mt-2 font-display text-[1.5rem] font-semibold text-ink">Developer</h1>
 
-    <form method="POST" action="{{ route('office.developers.store') }}" class="mt-4 flex flex-wrap items-end gap-2 rounded-xl border border-rule bg-white p-4">
+    <form method="POST" action="{{ route('office.developers.store') }}" enctype="multipart/form-data" class="mt-4 rounded-xl border border-rule bg-white p-4">
         @csrf
-        <input type="text" name="name" placeholder="Nama developer" required class="rounded-lg border border-rule px-3 py-2 text-sm text-ink">
-        <label class="flex items-center gap-1 text-sm text-ink/80"><input type="checkbox" name="is_active" value="1" checked class="rounded border-rule"> Aktif</label>
-        <button class="rounded-lg bg-black px-4 py-2 text-sm font-semibold tracking-[0.12em] text-white transition-colors hover:bg-ink">+ Tambah</button>
+        <div class="flex flex-wrap items-end gap-2">
+            <input type="text" name="name" placeholder="Nama developer" required class="rounded-lg border border-rule px-3 py-2 text-sm text-ink">
+            <input type="text" name="slug" placeholder="slug (opsional)" class="w-40 rounded-lg border border-rule px-3 py-2 text-sm text-ink">
+            <div>
+                <label class="block text-xs text-ink/55">Logo</label>
+                <input type="file" name="logo" accept=".jpg,.jpeg,.png,.webp" class="block rounded-lg border border-rule px-2 py-1 text-xs text-ink">
+            </div>
+            <label class="flex items-center gap-1 text-sm text-ink/80"><input type="checkbox" name="is_active" value="1" checked class="rounded border-rule"> Aktif</label>
+            <button class="rounded-lg bg-black px-4 py-2 text-sm font-semibold tracking-[0.12em] text-white transition-colors hover:bg-ink">+ Tambah</button>
+        </div>
     </form>
 
     <div class="mt-4 flex flex-wrap items-center gap-2">
@@ -27,9 +34,20 @@
             <div class="rounded-xl border border-rule bg-white p-4" data-dev-row>
                 <div class="flex flex-wrap items-center gap-2">
                     <input type="checkbox" class="dev-checkbox rounded border-rule" data-id="{{ $developer->id }}">
+                    @if ($developer->logo_path)
+                        <img src="{{ \Illuminate\Support\Facades\Storage::url($developer->logo_path) }}" alt="{{ $developer->name }}"
+                             class="h-10 w-10 rounded border border-rule object-cover">
+                    @else
+                        <div class="flex h-10 w-10 items-center justify-center rounded border border-rule bg-paper text-[10px] text-ink/30">N/A</div>
+                    @endif
                     <input type="text" value="{{ $developer->name }}" data-field="name" data-orig="{{ $developer->name }}"
                            class="w-48 rounded-lg border border-rule px-2 py-1.5 text-sm text-ink">
-                    <span class="py-2 text-xs text-ink/45">{{ $developer->slug }}</span>
+                    <input type="text" value="{{ $developer->slug }}" data-field="slug" data-orig="{{ $developer->slug }}" placeholder="slug"
+                           class="w-36 rounded-lg border border-rule px-2 py-1.5 text-sm text-ink">
+                    <div>
+                        <label class="block text-[9px] text-ink/40">Logo baru</label>
+                        <input type="file" data-field="logo" accept=".jpg,.jpeg,.png,.webp" class="block w-32 rounded border border-rule px-1 py-0.5 text-[10px] text-ink">
+                    </div>
                     <label class="flex items-center gap-1 py-2 text-sm text-ink/80">
                         <input type="checkbox" data-field="is_active" data-orig="{{ $developer->is_active ? '1' : '0' }}" @checked($developer->is_active) class="rounded border-rule"> Aktif
                     </label>
@@ -45,7 +63,7 @@
             if (!list) return;
             var selectAll = document.getElementById('dev-select-all');
             selectAll.addEventListener('change', function () {
-                list.querySelectorAll('.dev-checkbox').forEach(function (cb) { cb.checked = selectAll.checked; });
+                list.querySelectorAll('.dev-checkbox').forEach(function (cb) { cb.checked = this.checked; }.bind(this));
             });
 
             document.getElementById('dev-bulk-save').addEventListener('click', function () {
@@ -54,6 +72,10 @@
                 rows.forEach(function (row) {
                     var fields = {}; var changed = false;
                     row.querySelectorAll('[data-field]').forEach(function (el) {
+                        if (el.type === 'file') {
+                            if (el.files && el.files.length) changed = true;
+                            return;
+                        }
                         var val = el.type === 'checkbox' ? (el.checked ? '1' : '0') : el.value;
                         if (val !== el.getAttribute('data-orig')) changed = true;
                         fields[el.getAttribute('data-field')] = val;
@@ -68,10 +90,16 @@
                     form.append('_token', '{{ csrf_token() }}');
                     form.append('_method', 'PUT');
                     form.append('name', item.fields.name);
+                    form.append('slug', item.fields.slug || '');
                     form.append('is_active', item.fields.is_active);
+                    var logoInput = item.row.querySelector('input[data-field="logo"]');
+                    if (logoInput && logoInput.files && logoInput.files.length) {
+                        form.append('logo', logoInput.files[0]);
+                    }
                     fetch('{{ route("office.developers.index") }}/' + item.id, { method: 'POST', body: form })
                         .then(function () {
                             item.row.querySelectorAll('[data-field]').forEach(function (el) {
+                                if (el.type === 'file') { el.value = ''; return; }
                                 el.setAttribute('data-orig', el.type === 'checkbox' ? (el.checked ? '1' : '0') : el.value);
                             });
                             item.row.querySelector('.dev-status').textContent = '\u2713';
