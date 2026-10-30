@@ -15,7 +15,7 @@ class PaymentMethodFactory extends Factory
         return [
             'code' => fake()->unique()->lexify('pay???'),
             'name' => fake()->words(2, true),
-            'type' => fake()->randomElement(['transfer', 'ewallet', 'qris']),
+            'type' => fake()->randomElement(['bank_transfer', 'qr_code']),
             'fee' => fake()->numberBetween(0, 5000),
             'instructions' => fake()->sentence(),
             'is_active' => true,

@@ -57,7 +57,7 @@ class PaymentMethodController extends Controller
         return $request->validate([
             'code' => ['required', 'string', 'max:20', $method ? 'unique:payment_methods,code,'.$method->id : 'unique:payment_methods,code'],
             'name' => ['required', 'string', 'max:50'],
-            'type' => ['nullable', 'string', 'max:30'],
+            'type' => ['nullable', 'string', 'in:bank_transfer,qr_code'],
             'fee' => ['nullable', 'numeric', 'min:0'],
             'instructions' => ['nullable', 'string'],
         ]);
