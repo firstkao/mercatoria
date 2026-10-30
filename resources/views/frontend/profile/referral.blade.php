@@ -89,18 +89,42 @@
     @endisset
 
     <div class="mt-5 rounded-xl border border-rule bg-white p-4">
-        <h2 class="font-mono text-[11px] font-medium uppercase tracking-[0.16em] text-ink">Teman yang Diundang</h2>
+        <h2 class="font-mono text-[11px] font-medium uppercase tracking-[0.16em] text-ink">Riwayat Undangan</h2>
         @if ($referrals->isEmpty())
             <p class="mt-2 text-sm text-ink/45">Belum ada yang bergabung lewat kode kamu.</p>
         @else
-            <ul class="mt-2 space-y-1 text-sm">
-                @foreach ($referrals as $referral)
-                    <li class="flex justify-between border-b border-rule/50 py-1">
-                        <span class="text-ink/80">{{ $referral->name }}</span>
-                        <span class="text-ink/50">{{ $referral->created_at->format('d/m/Y') }}</span>
-                    </li>
-                @endforeach
-            </ul>
+            <div class="mt-3 overflow-x-auto">
+                <table class="w-full text-sm">
+                    <thead class="border-b border-rule text-left">
+                        <tr>
+                            <th class="py-2 font-mono text-[10px] uppercase tracking-[0.14em] text-ink/55">Nama / Email</th>
+                            <th class="py-2 font-mono text-[10px] uppercase tracking-[0.14em] text-ink/55">Tgl Daftar</th>
+                            <th class="py-2 font-mono text-[10px] uppercase tracking-[0.14em] text-ink/55">Status</th>
+                            <th class="py-2 font-mono text-[10px] uppercase tracking-[0.14em] text-ink/55">Koin</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach ($referrals as $referral)
+                            @php
+                                $hasOrder = $referral->orders()->exists();
+                                $koin = $hasOrder ? 3000 : 0;
+                            @endphp
+                            <tr class="border-b border-rule/50">
+                                <td class="py-2 text-ink/80">{{ $referral->name }}</td>
+                                <td class="py-2 font-mono text-xs text-ink/55">{{ $referral->created_at->format('d/m/Y') }}</td>
+                                <td class="py-2">
+                                    @if ($hasOrder)
+                                        <span class="rounded px-2 py-0.5 text-[10px] font-semibold bg-[#43A047] text-white">Order Pertama Lunas</span>
+                                    @else
+                                        <span class="rounded px-2 py-0.5 text-[10px] font-semibold bg-amber-100 text-amber-800">Menunggu Order</span>
+                                    @endif
+                                </td>
+                                <td class="py-2 text-ink/80">+{{ number_format($koin) }}</td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
         @endif
     </div>
 
