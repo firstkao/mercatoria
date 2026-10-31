@@ -27,7 +27,8 @@ class StoreController extends Controller
         $data = $request->validate([
             'name' => ['required', 'string', 'max:100'],
             'min_belanja_rmb' => ['required', 'numeric', 'min:0'],
-            'ongkir_rmb' => ['required', 'numeric', 'min:0'],
+            // [FIX #1] Rename — sesuai migration & StoreService.
+            'ongkir_lokal_cn_percent' => ['required', 'numeric', 'min:0', 'max:100'],
         ]);
 
         $store = $this->stores->create($data);
@@ -41,10 +42,11 @@ class StoreController extends Controller
         $data = $request->validate([
             'name' => ['required', 'string', 'max:100'],
             'min_belanja_rmb' => ['required', 'numeric', 'min:0'],
-            'ongkir_rmb' => ['required', 'numeric', 'min:0'],
+            // [FIX #1] Rename.
+            'ongkir_lokal_cn_percent' => ['required', 'numeric', 'min:0', 'max:100'],
         ]);
 
-        [$old, $new] = AdminLog::diff($store, ['name', 'min_belanja_rmb', 'ongkir_rmb'], $data);
+        [$old, $new] = AdminLog::diff($store, ['name', 'min_belanja_rmb', 'ongkir_lokal_cn_percent'], $data);
         $this->stores->update($store, $data);
         AdminLog::record($request->user(), 'update', 'Store', $store->id, $old, $new, 'Ubah store');
 
@@ -70,7 +72,8 @@ class StoreController extends Controller
             'stores.*.id' => ['nullable', 'integer', 'exists:stores,id'],
             'stores.*.name' => ['required', 'string', 'max:100'],
             'stores.*.min_belanja_rmb' => ['required', 'numeric', 'min:0'],
-            'stores.*.ongkir_rmb' => ['required', 'numeric', 'min:0'],
+            // [FIX #1] Rename.
+            'stores.*.ongkir_lokal_cn_percent' => ['required', 'numeric', 'min:0', 'max:100'],
         ]);
 
         $diperbarui = 0;
@@ -79,7 +82,7 @@ class StoreController extends Controller
         foreach ($data['stores'] as $item) {
             if (! empty($item['id'])) {
                 $store = Store::findOrFail($item['id']);
-                [$old, $new] = AdminLog::diff($store, ['name', 'min_belanja_rmb', 'ongkir_rmb'], $item);
+                [$old, $new] = AdminLog::diff($store, ['name', 'min_belanja_rmb', 'ongkir_lokal_cn_percent'], $item);
                 $this->stores->update($store, $item);
                 AdminLog::record($request->user(), 'update', 'Store', $store->id, $old, $new, 'Bulk ubah store');
                 $diperbarui++;

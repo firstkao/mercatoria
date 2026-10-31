@@ -11,7 +11,8 @@
         @csrf
         <input type="text" name="name" placeholder="Nama store" required class="rounded-lg border border-rule px-3 py-2 text-sm text-ink">
         <input type="text" name="min_belanja_rmb" placeholder="Min belanja (RMB)" required inputmode="numeric" pattern="[0-9]*" class="w-40 rounded-lg border border-rule px-3 py-2 text-sm text-ink">
-        <input type="text" name="ongkir_rmb" placeholder="Ongkir (RMB)" required inputmode="numeric" pattern="[0-9]*" class="w-36 rounded-lg border border-rule px-3 py-2 text-sm text-ink">
+        {{-- [FIX #1] Rename field — sesuai migration & controller --}}
+        <input type="text" name="ongkir_lokal_cn_percent" placeholder="Ongkir lokal (%)" required inputmode="numeric" pattern="[0-9]*" class="w-36 rounded-lg border border-rule px-3 py-2 text-sm text-ink">
         <button class="rounded-lg bg-black px-4 py-2 text-sm font-semibold tracking-[0.12em] text-white transition-colors hover:bg-ink">+ Tambah</button>
     </form>
 
@@ -33,9 +34,10 @@
                     <label class="flex items-center pb-2">
                         <input type="checkbox" class="store-checkbox rounded border-rule" data-id="{{ $store->id }}">
                     </label>
-                    <input type="text" name="name" value="{{ $store->name }}" class="rounded-lg border border-rule px-3 py-2 text-sm text-ink" data-field="name">
-                    <input type="text" name="min_belanja_rmb" value="{{ $store->min_belanja_rmb }}" inputmode="numeric" pattern="[0-9]*" class="w-40 rounded-lg border border-rule px-3 py-2 text-sm text-ink" data-field="min_belanja_rmb">
-                    <input type="text" name="ongkir_rmb" value="{{ $store->ongkir_rmb }}" inputmode="numeric" pattern="[0-9]*" class="w-36 rounded-lg border border-rule px-3 py-2 text-sm text-ink" data-field="ongkir_rmb">
+                    <input type="text" value="{{ $store->name }}" class="rounded-lg border border-rule px-3 py-2 text-sm text-ink" data-field="name">
+                    <input type="text" value="{{ $store->min_belanja_rmb }}" inputmode="numeric" pattern="[0-9]*" class="w-40 rounded-lg border border-rule px-3 py-2 text-sm text-ink" data-field="min_belanja_rmb">
+                    {{-- [FIX #1] Rename field --}}
+                    <input type="text" value="{{ $store->ongkir_lokal_cn_percent }}" inputmode="numeric" pattern="[0-9]*" class="w-36 rounded-lg border border-rule px-3 py-2 text-sm text-ink" data-field="ongkir_lokal_cn_percent">
                     <span class="pb-2 font-mono text-[10px] uppercase tracking-[0.12em] text-ink/45">{{ $store->products_count }} produk · {{ $store->games_count }} game</span>
                     <span class="pb-2 text-xs text-ink/45 store-status" data-id="{{ $store->id }}"></span>
                 </div>
@@ -48,77 +50,109 @@
             var list = document.getElementById('stores-list');
             if (!list) return;
 
+            // ── Select All ──
             document.getElementById('store-select-all').addEventListener('change', function () {
                 list.querySelectorAll('.store-checkbox').forEach(function (cb) { cb.checked = this.checked; }.bind(this));
             });
-            if (!list) return;
 
+            // ── [FIX #2] Bulk Save — pakai endpoint bulk() dari controller ──
             document.getElementById('bulk-save').addEventListener('click', function () {
                 var rows = list.querySelectorAll('[data-store-row]');
                 var saveBtn = this;
                 saveBtn.disabled = true;
                 saveBtn.textContent = 'Menyimpan...';
-                var done = 0;
-                var total = rows.length;
 
+                var stores = [];
                 rows.forEach(function (row) {
                     var id = row.querySelector('[data-id]').getAttribute('data-id');
-                    var name = row.querySelector('[data-field="name"]').value;
-                    var min = row.querySelector('[data-field="min_belanja_rmb"]').value;
-                    var ongkir = row.querySelector('[data-field="ongkir_rmb"]').value;
-                    var status = row.querySelector('.store-status');
+                    stores.push({
+                        id: id,
+                        name: row.querySelector('[data-field="name"]').value,
+                        min_belanja_rmb: row.querySelector('[data-field="min_belanja_rmb"]').value,
+                        ongkir_lokal_cn_percent: row.querySelector('[data-field="ongkir_lokal_cn_percent"]').value,
+                    });
+                });
 
-                    var form = new FormData();
-                    form.append('_token', '{{ csrf_token() }}');
-                    form.append('_method', 'PUT');
-                    form.append('name', name);
-                    form.append('min_belanja_rmb', min);
-                    form.append('ongkir_rmb', ongkir);
+                var form = new FormData();
+                form.append('_token', '{{ csrf_token() }}');
+                stores.forEach(function (s, i) {
+                    form.append('stores[' + i + '][id]', s.id);
+                    form.append('stores[' + i + '][name]', s.name);
+                    form.append('stores[' + i + '][min_belanja_rmb]', s.min_belanja_rmb);
+                    form.append('stores[' + i + '][ongkir_lokal_cn_percent]', s.ongkir_lokal_cn_percent);
+                });
 
-                    fetch('{{ route("office.stores.index") }}/' + id, { method: 'POST', body: form })
-                        .then(function () {
-                            status.textContent = '✓';
-                            status.className = 'pb-2 text-xs text-[#43A047] store-status';
-                        })
-                        .catch(function () {
-                            status.textContent = '✗';
-                            status.className = 'pb-2 text-xs text-danger store-status';
-                        })
-                        .finally(function () {
-                            done++;
-                            if (done === total) {
-                                saveBtn.disabled = false;
-                                saveBtn.textContent = 'Simpan Semua';
-                            }
+                fetch('{{ route("office.stores.bulk") }}', {
+                    method: 'POST',
+                    body: form,
+                    headers: { 'Accept': 'application/json' },
+                })
+                .then(function (r) {
+                    if (r.ok) {
+                        list.querySelectorAll('.store-status').forEach(function (s) {
+                            s.textContent = '✓';
+                            s.className = 'pb-2 text-xs text-[#43A047] store-status';
                         });
+                    } else {
+                        return r.json().then(function (d) {
+                            var msg = d.message || 'Validasi gagal.';
+                            if (d.errors) {
+                                msg = Object.values(d.errors).flat().join(' ');
+                            }
+                            alert('Gagal: ' + msg);
+                        });
+                    }
+                })
+                .catch(function () {
+                    alert('Terjadi kesalahan jaringan.');
+                })
+                .finally(function () {
+                    saveBtn.disabled = false;
+                    saveBtn.textContent = 'Simpan Semua';
                 });
             });
 
+            // ── [FIX #2] Bulk Delete — pakai bulkDelete() yang punya safety check ──
             document.getElementById('bulk-delete').addEventListener('click', function () {
                 var checked = list.querySelectorAll('.store-checkbox:checked');
                 if (!checked.length) { alert('Pilih store yang mau dihapus.'); return; }
-                if (!confirm('Hapus ' + checked.length + ' store terpilih? Referensi produk/game jadi NULL.')) return;
+                if (!confirm('Hapus ' + checked.length + ' store terpilih? Store yang masih punya produk/game akan ditolak.')) return;
 
-                var done = 0;
-                var total = checked.length;
-                checked.forEach(function (cb) {
-                    var id = cb.getAttribute('data-id');
-                    var form = new FormData();
-                    form.append('_token', '{{ csrf_token() }}');
-                    form.append('_method', 'DELETE');
+                var form = new FormData();
+                form.append('_token', '{{ csrf_token() }}');
+                checked.forEach(function (cb, i) {
+                    form.append('ids[]', cb.getAttribute('data-id'));
+                });
 
-                    fetch('{{ route("office.stores.index") }}/' + id, { method: 'POST', body: form })
-                        .then(function () {
-                            cb.closest('[data-store-row]').remove();
-                        })
-                        .finally(function () {
-                            done++;
-                            if (done === total) {
-                                alert('Selesai menghapus ' + total + ' store.');
-                            }
+                fetch('{{ route("office.stores.bulk-delete") }}', {
+                    method: 'POST',
+                    body: form,
+                    headers: { 'Accept': 'application/json' },
+                })
+                .then(function (r) {
+                    return r.json().then(function (d) { return { ok: r.ok, data: d }; });
+                })
+                .then(function (res) {
+                    if (res.ok) {
+                        checked.forEach(function (cb) {
+                            var row = cb.closest('[data-store-row]');
+                            if (row) row.remove();
                         });
+                        alert(res.data.message || checked.length + ' store dihapus.');
+                    } else {
+                        // Safety check menolak — store masih punya produk/game
+                        var msg = res.data.message || 'Gagal menghapus.';
+                        if (res.data.errors) {
+                            msg = Object.values(res.data.errors).flat().join(' ');
+                        }
+                        alert('Ditolak: ' + msg);
+                    }
+                })
+                .catch(function () {
+                    alert('Terjadi kesalahan jaringan.');
                 });
             });
+
         })();
     </script>
 @endsection
