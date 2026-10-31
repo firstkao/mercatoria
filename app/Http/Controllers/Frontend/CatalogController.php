@@ -28,10 +28,11 @@ class CatalogController extends Controller
 
     public function developer(Request $request, Developer $developer): View
     {
+        // [FIX #2] Filter langsung via developer_id di produk, bukan lewat pivot game↔developer.
         $products = Product::query()
             ->where('is_active', true)
-            ->whereHas('game.developers', fn ($q) => $q->where('developers.id', $developer->id))
-            ->with(['game', 'tags', 'variants'])
+            ->where('developer_id', $developer->id)
+            ->with(['game', 'developer', 'tags', 'variants'])
             ->when($request->sort === 'termurah', fn ($q) => $q->orderBy('price_rmb'))
             ->when($request->sort === 'termahal', fn ($q) => $q->orderByDesc('price_rmb'))
             ->when($request->sort !== 'termurah' && $request->sort !== 'termahal', fn ($q) => $q->orderByDesc('id'))
@@ -51,7 +52,7 @@ class CatalogController extends Controller
             ->where('is_active', true)
             ->where('game_id', $game->id)
             ->when($category, fn ($q) => $q->where('merch_category_id', $category->id))
-            ->with(['game', 'tags', 'variants'])
+            ->with(['game', 'developer', 'tags', 'variants'])
             ->when($request->sort === 'termurah', fn ($q) => $q->orderBy('price_rmb'))
             ->when($request->sort === 'termahal', fn ($q) => $q->orderByDesc('price_rmb'))
             ->when($request->sort !== 'termurah' && $request->sort !== 'termahal', fn ($q) => $q->orderByDesc('id'))
@@ -88,8 +89,8 @@ class CatalogController extends Controller
             'games' => Game::where('is_active', true)->orderBy('name')->get(['id', 'name', 'slug']),
             'categories' => MerchCategory::orderBy('priority')->get(),
             'bestOffers' => Product::where('is_active', true)
-                ->whereNotNull('discount_amount')
-                ->orderByDesc('discount_amount')
+                ->whereNotNull('discount_amount_rmb') // [FIX #1] rename dari discount_amount
+                ->orderByDesc('discount_amount_rmb')   // [FIX #1] rename dari discount_amount
                 ->limit((int) setting('best_offers_count', 5))
                 ->with(['game', 'tags'])
                 ->get(),

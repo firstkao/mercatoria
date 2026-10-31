@@ -17,17 +17,34 @@
             <div class="flex h-full w-full items-center justify-center font-mono text-[10px] uppercase tracking-[0.18em] text-ink/35">Tanpa Foto</div>
         @endif
 
-        @foreach ($tags as $tag)
-            <span class="absolute left-0 top-2 -rotate-45 px-3 py-0.5 text-[9.5px] font-bold uppercase text-white {{ $tag->slug === 'presale' ? 'bg-[#29B6F6]' : ($tag->slug === 'limited' ? 'bg-[#E53935]' : 'bg-[#4FC3F7]') }}">
-                {{ $tag->name }}
-            </span>
-        @endforeach
+        {{-- [FIX #1] Tags stack vertikal, bukan saling tumpuk --}}
+        @if ($tags->isNotEmpty())
+            <div class="absolute left-0 top-2 flex flex-col items-start gap-1">
+                @foreach ($tags->take(2) as $tag)
+                    <span class="px-2 py-0.5 text-[9.5px] font-bold uppercase text-white {{ $tag->slug === 'presale' ? 'bg-[#FFC107] text-[#000000]' : ($tag->slug === 'limited' ? 'bg-[#E53935]' : ($tag->slug === 'new' ? 'bg-[#4FC3F7]' : 'bg-[#E53935]')) }}">
+                        {{ $tag->name }}
+                    </span>
+                @endforeach
+                @if ($tags->count() > 2)
+                    <span class="px-2 py-0.5 text-[9px] font-bold uppercase bg-ink/60 text-white">+{{ $tags->count() - 2 }}</span>
+                @endif
+            </div>
+        @endif
     </div>
 
     <div class="flex flex-1 flex-col gap-1 p-3">
-        <p class="font-mono text-[10px] uppercase tracking-[0.12em] text-ink/50">
-            [{{ $product->game->name }}]
-        </p>
+        <div class="flex items-center gap-1.5">
+            <p class="font-mono text-[10px] uppercase tracking-[0.12em] text-ink/50">
+                [{{ $product->game->name }}]
+            </p>
+            {{-- [NEW] Developer badge --}}
+            @if ($product->developer)
+                <span class="rounded bg-paper px-1.5 py-0.5 text-[9px] font-semibold uppercase text-ink/55">
+                    {{ $product->developer->name }}
+                </span>
+            @endif
+        </div>
+
         <p class="line-clamp-2 text-[11.5px] font-bold leading-[1.35] text-ink">{{ $product->name }}</p>
 
         @if ($matchedVariant)

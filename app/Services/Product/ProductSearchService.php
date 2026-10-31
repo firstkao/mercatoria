@@ -44,6 +44,12 @@ class ProductSearchService
                 'CASE WHEN products.name LIKE ? THEN 0 ELSE 1 END ASC',
                 [$like]
             );
+
+            // [FIX #1] Tambahan secondary sort — hasil yang sama-sama match diurutkan stabil.
+            $query->orderByDesc('products.id');
+        } else {
+            // [FIX #1] Default sort saat tanpa keyword.
+            $query->orderByDesc('products.id');
         }
 
         if (! empty($filters['game_id'])) {

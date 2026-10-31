@@ -21,22 +21,28 @@
             <tbody>
                 @foreach ($product->splitBox->slots as $slot)
                     <tr class="border-b border-gray-50" wire:key="slot-{{ $slot->id }}">
-                        <td class="py-2">{{ $slot->variant?->name }}</td>
+                        <td class="py-2">{{ $slot->variant?->name ?? '—' }}</td>
                         <td class="py-2">
-                            <select wire:model.defer="slotRoles.{{ $slot->id }}" class="rounded border border-gray-200 px-2 py-1 text-xs">
+                            {{-- [FIX] wire:model tanpa .defer (Livewire 3) --}}
+                            <select wire:model="slotRoles.{{ $slot->id }}" class="rounded border border-gray-200 px-2 py-1 text-xs">
                                 @foreach (['normal', 'hot_1', 'hot_2'] as $role)
-                                    <option value="{{ $role }}" @selected($slot->split_role === $role)>{{ $role }}</option>
+                                    <option value="{{ $role }}">{{ \Illuminate\Support\Str::headline($role) }}</option>
                                 @endforeach
                             </select>
                         </td>
                         <td class="py-2">
-                            <input type="number" wire:model.defer="slotQtys.{{ $slot->id }}" min="1"
-                                   value="{{ $slot->qty_per_box }}" class="w-16 rounded border border-gray-200 px-2 py-1 text-xs">
+                            <input type="number" wire:model="slotQtys.{{ $slot->id }}" min="1"
+                                   class="w-16 rounded border border-gray-200 px-2 py-1 text-xs">
                         </td>
                         <td class="py-2">{{ $slot->batchSlots->sum(fn ($bs) => max(0, $bs->qty_total - $bs->qty_taken)) }}</td>
                         <td class="py-2 text-right">
-                            <button wire:click="saveSlot({{ $slot->id }}, '{{ $slot->split_role }}', {{ $slot->qty_per_box }})"
-                                    class="text-xs text-sky-600 hover:underline">Simpan</button>
+                            {{-- [FIX] Hanya kirim slot ID — method baca dari $this->slotRoles / $this->slotQtys --}}
+                            <button wire:click="saveSlot({{ $slot->id }})"
+                                    wire:loading.attr="disabled"
+                                    class="text-xs text-sky-600 hover:underline disabled:opacity-50">
+                                <span wire:loading.remove wire:target="saveSlot({{ $slot->id }})">Simpan</span>
+                                <span wire:loading wire:target="saveSlot({{ $slot->id }})">...</span>
+                            </button>
                         </td>
                     </tr>
                 @endforeach
@@ -53,9 +59,11 @@
                         @if ($batch->closes_at) · closes {{ $batch->closes_at->format('d/m/Y H:i') }} @endif
                     </span>
                     @if ($batch->status === 'open')
+                        {{-- [FIX] wire:confirm menggantikan onclick confirm --}}
                         <button wire:click="closeRefund({{ $batch->id }})"
-                                class="text-xs text-red-600 hover:underline"
-                                onclick="return confirm('Tutup kloter & refund semua order terkunci?')">
+                                wire:confirm="Tutup kloter & refund semua order terkunci?"
+                                wire:loading.attr="disabled"
+                                class="text-xs text-red-600 hover:underline disabled:opacity-50">
                             Tutup Kloter &amp; Refund Semua
                         </button>
                     @endif
@@ -63,7 +71,9 @@
             @endforeach
         </ul>
 
-        <button wire:click="openBatch" class="mt-3 rounded-lg border border-gray-300 px-4 py-2 text-sm hover:border-black">
+        <button wire:click="openBatch"
+                wire:loading.attr="disabled"
+                class="mt-3 rounded-lg border border-gray-300 px-4 py-2 text-sm hover:border-black disabled:opacity-50">
             + Buka Kloter Baru
         </button>
     @endif

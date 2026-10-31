@@ -13,10 +13,15 @@ return new class extends Migration
             $table->id();
             $table->foreignId('user_id')->constrained()->cascadeOnDelete();
             $table->foreignId('product_id')->constrained()->cascadeOnDelete();
-            $table->timestamp('viewed_at');
+            // [FIX #1] Default ke now() — aman kalau recordView() lupa pass.
+            $table->timestamp('viewed_at')->useCurrent();
             $table->timestamps();
 
+            // 1 produk = 1 hitungan per user.
             $table->unique(['user_id', 'product_id']);
+
+            // [FIX #3] Index untuk query kuota: WHERE user_id = ? AND viewed_at >= ?
+            $table->index(['user_id', 'viewed_at'], 'product_views_user_viewed_idx');
         });
     }
 

@@ -1,5 +1,4 @@
 (function () {
-    // ── Baca config dari JSON block di Blade ──
     var configEl = document.getElementById('product-form-config');
     if (!configEl) return;
     var CONFIG = JSON.parse(configEl.textContent);
@@ -10,6 +9,26 @@
     var CSRF_TOKEN = CONFIG.csrfToken;
 
     function rp(n) { return 'Rp ' + Math.round(n).toLocaleString('id-ID'); }
+
+    // ═══ [2] AUTO-SLUG dari Nama Produk ═══
+    var slugManual = false;
+    var nameInput = document.getElementById('input-name');
+    var slugInput = document.getElementById('input-slug');
+
+    if (slugInput) {
+        slugInput.addEventListener('input', function () { slugManual = true; });
+    }
+    if (nameInput) {
+        nameInput.addEventListener('input', function () {
+            if (slugManual || !slugInput) return;
+            slugInput.value = this.value
+                .toLowerCase()
+                .replace(/[^a-z0-9\s-]/g, '')
+                .replace(/\s+/g, '-')
+                .replace(/-+/g, '-')
+                .replace(/^-|-$/g, '');
+        });
+    }
 
     // ── Tabs ──
     var tabs = document.querySelectorAll('.prod-tab');
@@ -83,7 +102,6 @@
         set('calc-btmjkt-formula', weightKg.toFixed(1) + ' kg \u00d7 ' + CFG.ongkir_btm_jkt.toLocaleString('id-ID'));
         set('calc-btmjkt', rp(ongkirBtmJkt));
 
-        // Diskon row
         var diskonRow = document.getElementById('calc-diskon-row');
         if (diskonRow) {
             if (diskonRmb > 0) {
@@ -148,10 +166,8 @@
     window.previewDescImage = function (input) {
         if (!validateFileSize(input, 6)) return;
         if (!input.files || !input.files[0]) return;
-
         var flag = document.getElementById('remove-desc-flag');
         if (flag) flag.value = '0';
-
         var file = input.files[0];
         var reader = new FileReader();
         reader.onload = function (e) {
@@ -159,13 +175,10 @@
             var previewArea = document.getElementById('desc-preview-area');
             if (uploadArea) uploadArea.classList.add('hidden');
             if (previewArea) previewArea.classList.remove('hidden');
-
             var img = document.getElementById('desc-preview-img');
             if (img) img.src = e.target.result;
-
             var nameEl = document.getElementById('desc-preview-name');
             if (nameEl) nameEl.textContent = file.name;
-
             var sizeEl = document.getElementById('desc-preview-size');
             if (sizeEl) sizeEl.textContent = (file.size / 1024 / 1024).toFixed(2) + ' MB \u2014 baru dipilih';
         };
@@ -175,15 +188,12 @@
     window.removeDescImage = function () {
         var input = document.getElementById('desc-image-input');
         if (input) input.value = '';
-
         var flag = document.getElementById('remove-desc-flag');
         if (flag) flag.value = '1';
-
         var uploadArea = document.getElementById('desc-upload-area');
         var previewArea = document.getElementById('desc-preview-area');
         if (uploadArea) uploadArea.classList.remove('hidden');
         if (previewArea) previewArea.classList.add('hidden');
-
         var img = document.getElementById('desc-preview-img');
         if (img) img.src = '';
         var nameEl = document.getElementById('desc-preview-name');
@@ -222,6 +232,10 @@
 
     window.openDeleteModal = function () { openModal('modal-delete'); };
     window.closeDeleteModal = function () { closeModal('modal-delete'); };
+
+    // ═══ [3] ADD VARIANT MODAL ═══
+    window.openAddVariantModal = function () { openModal('modal-add-variant'); };
+    window.closeAddVariantModal = function () { closeModal('modal-add-variant'); };
 
     // ═══ EDIT VARIANT ═══
     var currentVariantId = null;
@@ -353,9 +367,10 @@
             closeModal('modal-bulk-weight');
             closeModal('modal-bulk-success');
             closeModal('modal-edit-variant');
+            closeModal('modal-add-variant');
         }
     });
-    ['modal-delete','modal-bulk-weight','modal-bulk-success','modal-edit-variant'].forEach(function (id) {
+    ['modal-delete','modal-bulk-weight','modal-bulk-success','modal-edit-variant','modal-add-variant'].forEach(function (id) {
         var el = document.getElementById(id);
         if (el) el.addEventListener('click', function (e) { if (e.target === el) closeModal(id); });
     });

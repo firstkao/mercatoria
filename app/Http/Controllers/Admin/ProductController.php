@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\AdminLog;
+use App\Models\Developer;
 use App\Models\Game;
 use App\Models\MerchCategory;
 use App\Models\OrderItem;
@@ -13,6 +14,7 @@ use App\Models\Store;
 use App\Models\Tag;
 use App\Services\Image\ImageWatermarkService;
 use App\Services\Order\ShippingCalculatorService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
@@ -26,23 +28,59 @@ class ProductController extends Controller
         private ShippingCalculatorService $shipping,
     ) {}
 
+    // ──────────────────────────────────────
+    // INDEX / CREATE / EDIT
+    // ──────────────────────────────────────
+
     public function index(): View
-    {
-        return view('admin.products.index', [
-            'products' => Product::with(['game', 'store', 'merchCategory'])->orderByDesc('id')->paginate(30),
-        ]);
+{
+    $query = Product::with(['game', 'developer', 'store', 'merchCategory']);
+
+    if (request()->filled('game_id')) {
+        $query->where('game_id', request('game_id'));
     }
+    if (request()->filled('developer_id')) {
+        $query->where('developer_id', request('developer_id'));
+    }
+    if (request()->filled('q')) {
+        $q = request('q');
+        $query->where(fn ($s) => $s->where('name', 'like', "%{$q}%")->orWhere('sku', 'like', "%{$q}%"));
+    }
+
+    return view('admin.products.index', [
+        'products' => $query->orderByDesc('id')->paginate(30),
+        'games' => Game::orderBy('name')->get(),
+        'developers' => Developer::orderBy('name')->get(),
+    ]);
+}
 
     public function create(): View
     {
         return view('admin.products.form', [
-            'product' => new Product,
-            'games' => Game::orderBy('name')->get(),
-            'stores' => Store::orderBy('name')->get(),
-            'categories' => MerchCategory::orderBy('priority')->get(),
-            'tags' => Tag::orderBy('name')->get(),
+            'product'     => new Product,
+            'games'       => Game::orderBy('name')->get(),
+            'stores'      => Store::orderBy('name')->get(),
+            'categories'  => MerchCategory::orderBy('priority')->get(),
+            'tags'        => Tag::orderBy('name')->get(),
+            'developers'  => Developer::orderBy('name')->get(),
         ]);
     }
+
+    public function edit(Product $product): View
+    {
+        return view('admin.products.form', [
+            'product'     => $product->load('variants', 'tags', 'developer'),
+            'games'       => Game::orderBy('name')->get(),
+            'stores'      => Store::orderBy('name')->get(),
+            'categories'  => MerchCategory::orderBy('priority')->get(),
+            'tags'        => Tag::orderBy('name')->get(),
+            'developers'  => Developer::orderBy('name')->get(),
+        ]);
+    }
+
+    // ──────────────────────────────────────
+    // STORE / UPDATE / DESTROY
+    // ──────────────────────────────────────
 
     public function store(Request $request): RedirectResponse
     {
@@ -64,17 +102,6 @@ class ProductController extends Controller
         AdminLog::record($request->user(), 'create', 'Product', $product->id, null, $product->only(array_keys($data)), 'Tambah produk');
 
         return redirect()->route('office.products.edit', $product)->with('status', 'Produk dibuat.');
-    }
-
-    public function edit(Product $product): View
-    {
-        return view('admin.products.form', [
-            'product' => $product->load('variants', 'tags'),
-            'games' => Game::orderBy('name')->get(),
-            'stores' => Store::orderBy('name')->get(),
-            'categories' => MerchCategory::orderBy('priority')->get(),
-            'tags' => Tag::orderBy('name')->get(),
-        ]);
     }
 
     public function update(Request $request, Product $product): RedirectResponse
@@ -121,6 +148,10 @@ class ProductController extends Controller
         return redirect()->route('office.products.index')->with('status', 'Produk dihapus permanen.');
     }
 
+    // ──────────────────────────────────────
+    // DUPLICATE / PREVIEW
+    // ──────────────────────────────────────
+
     /**
      * PRD 13.5/22.6: duplikat produk (field + varian) sebagai draft.
      */
@@ -152,13 +183,16 @@ class ProductController extends Controller
      */
     public function preview(Product $product): View
     {
-        $product->load(['variants', 'tags', 'merchCategory', 'game']);
+        $product->load(['variants', 'tags', 'merchCategory', 'game', 'developer']);
 
         return view('frontend.product.show', [
             'game' => $product->game,
             'product' => $product,
             'variant' => null,
             'pricing' => $this->shipping->calculateItemShipping($product),
+            'userState' => null,
+            'kuotaViewUsed' => null,
+            'kuotaViewTotal' => null,
             'related' => Product::where('is_active', true)
                 ->where('game_id', $product->game_id)
                 ->where('id', '!=', $product->id)
@@ -169,6 +203,10 @@ class ProductController extends Controller
             'shipping' => $this->shipping,
         ]);
     }
+
+    // ──────────────────────────────────────
+    // BULK OPERATIONS
+    // ──────────────────────────────────────
 
     public function bulk(Request $request): RedirectResponse
     {
@@ -194,6 +232,40 @@ class ProductController extends Controller
         return redirect()->route('office.products.index')->with('status', count($data['ids']).' produk diproses.');
     }
 
+    /**
+     * Bulk edit berat varian — support AJAX (fetch) & form POST.
+     *
+     * @return JsonResponse|RedirectResponse
+     */
+    public function bulkWeight(Request $request, Product $product)
+    {
+        $data = $request->validate([
+            'weight_gram' => ['required', 'integer', 'min:0'],
+            'ids' => ['required', 'array', 'min:1'],
+            'ids.*' => ['integer', 'exists:product_variants,id'],
+        ]);
+
+        $updated = ProductVariant::whereIn('id', $data['ids'])
+            ->where('product_id', $product->id)
+            ->update(['weight_gram' => $data['weight_gram']]);
+
+        AdminLog::record($request->user(), 'update', 'Product', $product->id, null, ['weight_gram' => $data['weight_gram'], 'varian' => $data['ids']], "Bulk edit berat {$updated} varian");
+
+        if ($request->expectsJson() || $request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'updated' => $updated,
+                'message' => "{$updated} varian diperbarui.",
+            ]);
+        }
+
+        return redirect()->route('office.products.edit', $product)->with('status', "{$updated} varian diperbarui.");
+    }
+
+    // ──────────────────────────────────────
+    // VARIANT CRUD
+    // ──────────────────────────────────────
+
     public function storeVariant(Request $request, Product $product): RedirectResponse
     {
         $data = $request->validate([
@@ -202,9 +274,8 @@ class ProductController extends Controller
             'price_rmb' => ['nullable', 'numeric', 'min:0'],
             'weight_gram' => ['nullable', 'integer', 'min:0'],
             'availability' => ['required', 'in:tersedia,kosong'],
-            // PRD 13.6: foto varian 1 per varian, max 1MB.
-            'image' => ['nullable', 'file', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
-            'image_path' => ['nullable', 'string', 'max:255'],
+            // PRD 13.6: foto varian 1 per varian, max 6 MB.
+            'image' => ['nullable', 'file', 'mimes:jpg,jpeg,png,webp', 'max:6144'],
         ]);
 
         if ($request->hasFile('image')) {
@@ -219,25 +290,53 @@ class ProductController extends Controller
         return redirect()->route('office.products.edit', $product)->with('status', 'Varian dibuat.');
     }
 
-    /**
-     * @param  array<int, int>  $ids
-     */
-    public function bulkWeight(Request $request, Product $product): RedirectResponse
+    public function updateVariant(Request $request, Product $product, ProductVariant $variant): RedirectResponse
     {
+        abort_unless($variant->product_id === $product->id, 404);
+
         $data = $request->validate([
-            'weight_gram' => ['required', 'integer', 'min:0'],
-            'ids' => ['required', 'array', 'min:1'],
-            'ids.*' => ['integer', 'exists:product_variants,id'],
+            'name' => ['required', 'string', 'max:150'],
+            'sku' => ['required', 'string', 'max:64', 'unique:product_variants,sku,'.$variant->id],
+            'price_rmb' => ['nullable', 'numeric', 'min:0'],
+            'weight_gram' => ['nullable', 'integer', 'min:0'],
+            'availability' => ['required', 'in:tersedia,kosong'],
+            'image' => ['nullable', 'file', 'mimes:jpg,jpeg,png,webp', 'max:6144'],
         ]);
 
-        $updated = ProductVariant::whereIn('id', $data['ids'])
-            ->where('product_id', $product->id)
-            ->update(['weight_gram' => $data['weight_gram']]);
+        $old = $variant->only(['name', 'sku', 'price_rmb', 'weight_gram', 'availability']);
 
-        AdminLog::record($request->user(), 'update', 'Product', $product->id, null, ['weight_gram' => $data['weight_gram'], 'varian' => $data['ids']], "Bulk edit berat {$updated} varian");
+        if ($request->hasFile('image')) {
+            $data['image_path'] = $this->storeImage($request->file('image'), 'var', $variant->image_path);
+        }
+        unset($data['image']);
 
-        return redirect()->route('office.products.edit', $product)->with('status', "{$updated} varian diperbarui.");
+        $variant->update($data);
+
+        AdminLog::record($request->user(), 'update', 'ProductVariant', $variant->id, $old, $data, 'Edit varian');
+
+        return redirect()->route('office.products.edit', $product)->with('status', 'Varian diperbarui.');
     }
+
+    public function destroyVariant(Request $request, Product $product, ProductVariant $variant): RedirectResponse
+    {
+        abort_unless($variant->product_id === $product->id, 404);
+
+        AdminLog::record($request->user(), 'delete', 'ProductVariant', $variant->id, $variant->only(['name', 'sku']), null, 'Hapus varian');
+
+        // Auto-delete foto varian (PRD 13.6).
+        if ($variant->image_path && str_starts_with($variant->image_path, 'products/')) {
+            @unlink(storage_path('app/private/'.$variant->image_path));
+            @unlink(storage_path('app/private/originals/'.$variant->image_path));
+        }
+
+        $variant->delete();
+
+        return redirect()->route('office.products.edit', $product)->with('status', 'Varian dihapus.');
+    }
+
+    // ──────────────────────────────────────
+    // PRIVATE HELPERS
+    // ──────────────────────────────────────
 
     /**
      * @return array<string, mixed>
@@ -246,6 +345,7 @@ class ProductController extends Controller
     {
         $data = $request->validate([
             'game_id' => ['required', 'exists:games,id'],
+            'developer_id' => ['nullable', 'exists:developers,id'],
             'store_id' => ['nullable', 'exists:stores,id'],
             'merch_category_id' => ['nullable', 'exists:merch_categories,id'],
             'name' => ['required', 'string', 'max:150'],
@@ -254,17 +354,14 @@ class ProductController extends Controller
             'price_rmb' => ['required', 'numeric', 'min:0'],
             'weight_gram' => ['nullable', 'integer', 'min:0'],
             'type' => ['required', 'in:single,variant'],
-            'description' => ['nullable', 'string'],
-            'discount_amount' => ['nullable', 'numeric', 'min:0'],
+            'discount_amount_rmb' => ['nullable', 'numeric', 'min:0'],
             'discount_start' => ['nullable', 'date'],
             'discount_end' => ['nullable', 'date'],
             'availability' => ['required', 'in:tersedia,kosong'],
             'is_active' => ['nullable', 'boolean'],
-            // PRD 13.6: 1 file, max 1MB, jpg/jpeg/png. Field path manual tetap kompatibel.
-            'image' => ['nullable', 'file', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
-            'description_image' => ['nullable', 'file', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
-            'image_path' => ['nullable', 'string', 'max:255'],
-            'description_image_path' => ['nullable', 'string', 'max:255'],
+            // PRD 13.6: 1 file, max 6 MB, jpg/jpeg/png/webp.
+            'image' => ['nullable', 'file', 'mimes:jpg,jpeg,png,webp', 'max:6144'],
+            'description_image' => ['nullable', 'file', 'mimes:jpg,jpeg,png,webp', 'max:6144'],
         ]);
 
         $data['is_active'] = $request->boolean('is_active');
@@ -274,23 +371,33 @@ class ProductController extends Controller
     }
 
     /**
-     * PRD 13.6: upload gambar → watermark + master asli; path manual lama tetap berlaku.
+     * PRD 13.6: upload gambar → watermark + master asli; handle remove flag.
      *
      * @param  array<string, mixed>  $data
      * @return array<string, mixed>
      */
     private function processUploads(Request $request, array $data, ?Product $product): array
     {
+        // ── Foto utama ──
         if ($request->hasFile('image')) {
             $data['image_path'] = $this->storeImage($request->file('image'), 'img', $product?->image_path);
         }
 
+        // ── Gambar deskripsi ──
         if ($request->hasFile('description_image')) {
+            // Upload baru → replace yang lama.
             $data['description_image_path'] = $this->storeImage($request->file('description_image'), 'desc', $product?->description_image_path);
+        } elseif ($request->boolean('remove_description_image') && $product?->description_image_path) {
+            // User klik "Hapus" tanpa upload baru → hapus file existing.
+            if (str_starts_with($product->description_image_path, 'products/')) {
+                @unlink(storage_path('app/private/'.$product->description_image_path));
+                @unlink(storage_path('app/private/originals/'.$product->description_image_path));
+            }
+            $data['description_image_path'] = null;
         }
 
-        // Jangan bawa objek file ke create/diff/admin_logs.
-        unset($data['image'], $data['description_image']);
+        // Jangan bawa objek file / flag ke create/diff/admin_logs.
+        unset($data['image'], $data['description_image'], $data['remove_description_image']);
 
         return $data;
     }

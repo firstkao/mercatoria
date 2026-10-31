@@ -17,9 +17,11 @@ return new class extends Migration
             $table->integer('weight_gram')->nullable();
             $table->string('availability', 16)->default('tersedia');
             $table->string('image_path')->nullable();
+            $table->unsignedInteger('sort_order')->default(0); // ← opsional
             $table->timestamps();
 
             $table->index(['name'], 'product_variants_name_search_idx');
+            $table->index(['product_id', 'availability']); // ← performa
         });
     }
 

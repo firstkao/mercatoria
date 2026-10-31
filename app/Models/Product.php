@@ -23,6 +23,7 @@ class Product extends Model
 
     protected $fillable = [
         'game_id',
+        'developer_id',
         'store_id',
         'merch_category_id',
         'name',
@@ -33,8 +34,7 @@ class Product extends Model
         'type',
         'image_path',
         'description_image_path',
-        'description',
-        'discount_amount',
+        'discount_amount_rmb',
         'discount_start',
         'discount_end',
         'availability',
@@ -48,7 +48,7 @@ class Product extends Model
         return [
             'price_rmb' => 'decimal:2',
             'weight_gram' => 'integer',
-            'discount_amount' => 'decimal:2',
+            'discount_amount_rmb' => 'decimal:2',
             'discount_start' => 'date',
             'discount_end' => 'date',
             'is_active' => 'boolean',
@@ -57,9 +57,18 @@ class Product extends Model
         ];
     }
 
+    // ──────────────────────────────────────
+    // RELATIONS
+    // ──────────────────────────────────────
+
     public function game(): BelongsTo
     {
         return $this->belongsTo(Game::class);
+    }
+
+    public function developer(): BelongsTo
+    {
+        return $this->belongsTo(Developer::class);
     }
 
     public function store(): BelongsTo
@@ -87,6 +96,33 @@ class Product extends Model
         return $this->hasOne(SplitBox::class);
     }
 
+    public function orderItems(): HasMany
+    {
+        return $this->hasMany(OrderItem::class);
+    }
+
+    /**
+     * Relasi order yang menyertakan produk ini — via pivot order_items.
+     */
+    public function orders(): BelongsToMany
+    {
+        return $this->belongsToMany(Order::class, 'order_items');
+    }
+
+    /**
+     * Jumlah order unik yang menyertakan produk ini.
+     */
+    public function ordersCount(): int
+    {
+        return OrderItem::where('product_id', $this->id)
+            ->distinct()
+            ->count('order_id');
+    }
+
+    // ──────────────────────────────────────
+    // HELPERS
+    // ──────────────────────────────────────
+
     /**
      * Store efektif: override produk, fallback default store game.
      */
@@ -104,9 +140,12 @@ class Product extends Model
         return $this->weight_gram ?? 0;
     }
 
+    /**
+     * Apakah ada diskon yang sedang aktif.
+     */
     public function hasActiveDiscount(): bool
     {
-        if ($this->discount_amount === null) {
+        if ($this->discount_amount_rmb === null) {
             return false;
         }
 
@@ -121,5 +160,13 @@ class Product extends Model
         }
 
         return true;
+    }
+
+    /**
+     * Diskon aktif dalam RMB (0 kalau tidak ada diskon aktif).
+     */
+    public function activeDiscountRmb(): float
+    {
+        return $this->hasActiveDiscount() ? (float) $this->discount_amount_rmb : 0.0;
     }
 }

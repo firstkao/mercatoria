@@ -11,27 +11,32 @@ return new class extends Migration
         Schema::create('products', function (Blueprint $table) {
             $table->id();
             $table->foreignId('game_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('developer_id')->nullable()->constrained('developers')->nullOnDelete();
             $table->foreignId('store_id')->nullable()->constrained('stores')->nullOnDelete();
             $table->foreignId('merch_category_id')->nullable()->constrained('merch_categories')->nullOnDelete();
             $table->string('name', 150);
             $table->string('sku', 64)->unique();
-            $table->string('slug', 170)->unique();
+            $table->string('slug', 170)->nullable()->unique();
             $table->decimal('price_rmb', 10, 2);
             $table->integer('weight_gram')->nullable();
             $table->string('type', 16)->default('single');
             $table->string('image_path')->nullable();
             $table->string('description_image_path')->nullable();
             $table->text('description')->nullable();
-            $table->decimal('discount_amount', 12, 2)->nullable();
+            $table->decimal('discount_amount_rmb', 12, 2)->nullable();
             $table->date('discount_start')->nullable();
             $table->date('discount_end')->nullable();
             $table->string('availability', 16)->default('tersedia');
             $table->boolean('is_active')->default(true);
             $table->unsignedInteger('sold_count')->default(0);
+            $table->boolean('is_split_box')->default(false);
             $table->timestamps();
 
             $table->index(['store_id']);
             $table->index(['game_id']);
+            $table->index(['developer_id']);
+            $table->index(['is_active', 'game_id']);
+            $table->index(['slug']);
         });
     }
 

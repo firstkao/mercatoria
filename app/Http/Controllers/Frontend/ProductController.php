@@ -12,7 +12,10 @@ use Illuminate\View\View;
 
 class ProductController extends Controller
 {
-    public function __construct(private ShippingCalculatorService $shipping) {}
+    public function __construct(
+        private ShippingCalculatorService $shipping,
+        private UserStateService $userState,
+    ) {}
 
     public function show(Request $request, Game $game, Product $product): View
     {
@@ -21,23 +24,38 @@ class ProductController extends Controller
         // PRD 7.19: hitung kuota view katalog untuk user Crush/Ex/ONS.
         $user = $request->user();
         if ($user) {
-            app(UserStateService::class)->recordView($user, $product);
+            $this->userState->recordView($user, $product);
         }
 
-        $product->load(['variants', 'tags', 'merchCategory', 'game']);
+        // [FIX] Tambah 'developer' ke eager load — biar bisa ditampilkan di halaman produk.
+        $product->load(['variants', 'tags', 'merchCategory', 'game', 'developer']);
 
+        // Variasi dipilih via ?variant=ID — hanya cari di varian milik produk ini.
         $variant = null;
-
         if ($request->filled('variant')) {
             $variant = $product->variants->firstWhere('id', (int) $request->query('variant'));
+            // ID tidak valid / bukan varian produk ini → tetap tampilkan produk tanpa varian.
         }
 
         $pricing = $this->shipping->calculateItemShipping($product, $variant);
 
         // PRD 7.19: data badge sisa kuota view (PR UI) untuk state Crush/Ex/ONS.
-        $state = app(UserStateService::class);
-        $userState = $user ? $state->stateName($user) : null;
-        $viewUsage = $user && $state->isViewLimited($user) ? $state->viewUsage($user) : null;
+        $userState = $user ? $this->userState->stateName($user) : null;
+        $viewUsage = $user && $this->userState->isViewLimited($user)
+            ? $this->userState->viewUsage($user)
+            : null;
+
+        // Related products — skip query kalau setting = 0.
+        $relatedLimit = (int) setting('related_products_count', 6);
+        $related = $relatedLimit > 0
+            ? Product::where('is_active', true)
+                ->where('game_id', $game->id)
+                ->where('id', '!=', $product->id)
+                ->inRandomOrder()
+                ->limit($relatedLimit)
+                ->with(['game', 'tags'])
+                ->get()
+            : collect();
 
         return view('frontend.product.show', [
             'game' => $game,
@@ -47,13 +65,7 @@ class ProductController extends Controller
             'userState' => $userState,
             'kuotaViewUsed' => $viewUsage['used'] ?? null,
             'kuotaViewTotal' => $viewUsage['total'] ?? null,
-            'related' => Product::where('is_active', true)
-                ->where('game_id', $game->id)
-                ->where('id', '!=', $product->id)
-                ->inRandomOrder()
-                ->limit((int) setting('related_products_count', 6))
-                ->with(['game', 'tags'])
-                ->get(),
+            'related' => $related,
             'shipping' => $this->shipping,
         ]);
     }

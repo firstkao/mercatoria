@@ -12,7 +12,8 @@ return new class extends Migration
             $table->id();
             $table->string('name', 100);
             $table->decimal('min_belanja_rmb', 10, 2)->default(0);
-            $table->decimal('ongkir_rmb', 10, 2)->default(0);
+            // [FIX #1] Persentase ongkir lokal China — dipakai product form & kalkulasi harga.
+            $table->decimal('ongkir_lokal_cn_percent', 5, 2)->default(7);
             $table->timestamps();
 
             $table->index(['name']);

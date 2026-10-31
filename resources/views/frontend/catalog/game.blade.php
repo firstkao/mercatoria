@@ -6,28 +6,66 @@
     <nav class="mb-2 flex items-center justify-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.14em] text-ink/50">
         <a href="/" class="transition-colors hover:text-ink">Beranda</a>
         <span class="text-ink/35">/</span>
-        <a href="/" class="transition-colors hover:text-ink">Produk</a>
+        @if ($developer)
+            <a href="/" class="transition-colors hover:text-ink">Developer</a>
+        @else
+            <a href="/" class="transition-colors hover:text-ink">Produk</a>
+        @endif
         <span class="text-ink/35">/</span>
         <span class="text-ink">{{ $title }}</span>
     </nav>
 
-    <h1 class="text-center font-display text-[1.75rem] leading-tight font-semibold text-ink sm:text-3xl">{{ $title }}</h1>
+    {{-- [NEW] Header developer --}}
+    @if ($developer)
+        <div class="mx-auto max-w-xl text-center">
+            @if ($developer->logo_path)
+                <img src="{{ Storage::url($developer->logo_path) }}" alt="{{ $developer->name }}"
+                     class="mx-auto h-16 w-16 rounded-xl border border-rule object-cover">
+            @endif
+            <h1 class="mt-3 font-display text-[1.75rem] leading-tight font-semibold text-ink sm:text-3xl">{{ $developer->name }}</h1>
+            <p class="mt-1 font-mono text-[10px] uppercase tracking-[0.16em] text-ink/50">Developer</p>
+        </div>
+    @else
+        <h1 class="text-center font-display text-[1.75rem] leading-tight font-semibold text-ink sm:text-3xl">{{ $title }}</h1>
+    @endif
 
     <div class="mt-6 flex flex-col gap-6 lg:flex-row">
         <aside class="w-full shrink-0 space-y-4 lg:w-1/4">
-            <div class="rounded-xl border border-rule bg-white p-4">
-                <h2 class="font-mono text-[11px] font-medium uppercase tracking-[0.16em] text-ink">Kategori Game</h2>
-                <ul class="mt-2 space-y-1 text-sm">
-                    @foreach ($games as $g)
-                        <li>
-                            <a href="/{{ $g->slug }}"
-                               class="block rounded px-2 py-1 transition-colors hover:bg-paper {{ ($game?->id ?? null) === $g->id ? 'font-semibold text-ink' : 'text-ink/65 hover:text-ink' }}">
-                                {{ $g->name }}
-                            </a>
-                        </li>
-                    @endforeach
-                </ul>
-            </div>
+            {{-- Kategori Game — sembunyikan di halaman developer --}}
+            @unless ($developer)
+                <div class="rounded-xl border border-rule bg-white p-4">
+                    <h2 class="font-mono text-[11px] font-medium uppercase tracking-[0.16em] text-ink">Kategori Game</h2>
+                    <ul class="mt-2 space-y-1 text-sm">
+                        @foreach ($games as $g)
+                            <li>
+                                <a href="/{{ $g->slug }}"
+                                   class="block rounded px-2 py-1 transition-colors hover:bg-paper {{ ($game?->id ?? null) === $g->id ? 'font-semibold text-ink' : 'text-ink/65 hover:text-ink' }}">
+                                    {{ $g->name }}
+                                </a>
+                            </li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endunless
+
+            {{-- [NEW] Developer lain --}}
+            @if ($developer)
+                <div class="rounded-xl border border-rule bg-white p-4">
+                    <h2 class="font-mono text-[11px] font-medium uppercase tracking-[0.16em] text-ink">Developer Lain</h2>
+                    <ul class="mt-2 space-y-1 text-sm">
+                        @foreach (($footerDevelopers ?? collect()) as $dev)
+                            @if ($dev->id !== $developer->id)
+                                <li>
+                                    <a href="{{ route('catalog.developer', $dev) }}"
+                                       class="block rounded px-2 py-1 text-ink/65 transition-colors hover:bg-paper hover:text-ink">
+                                        {{ $dev->name }}
+                                    </a>
+                                </li>
+                            @endif
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
 
             @if ($game)
                 <div class="rounded-xl border border-rule bg-white p-4">

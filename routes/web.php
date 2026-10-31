@@ -47,26 +47,51 @@ use App\Http\Controllers\RegionController;
 use App\Http\Controllers\TwoFactorController;
 use Illuminate\Support\Facades\Route;
 
+/*
+|--------------------------------------------------------------------------
+| Public
+|--------------------------------------------------------------------------
+*/
 Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('/sitemap.xml', [HomeController::class, 'sitemap'])->name('sitemap');
 Route::get('/robots.txt', [HomeController::class, 'robots'])->name('robots');
 
-// Placeholder jujur untuk fitur/halaman yang belum dibangun (antrean).
 Route::get('/menyusul', ComingSoonController::class)->name('coming-soon');
 
-// Halaman CMS publik (PRD 25/36) — fallback placeholder bila belum ada isinya.
+// Halaman CMS publik (PRD 25/36)
 foreach (['tentang-kami', 'faq', 'cara-belanja', 'tnc', 'kebijakan-privasi'] as $staticPage) {
     Route::get('/'.$staticPage, [PageController::class, 'show'])
         ->defaults('slug', $staticPage)
         ->name('page.'.$staticPage);
 }
 
-// 2FA Admin (PRD 8.3)
+// Anti-hotlink (PRD 8.10)
+Route::get('/protected-images/{filename}', [ProtectedImageController::class, 'show'])
+    ->name('protected-images.show');
+
+// Dropdown berantai alamat (PRD 7.3)
+Route::prefix('api/regions')->group(function () {
+    Route::get('/provinces', [RegionController::class, 'provinces'])->name('api.regions.provinces');
+    Route::get('/regencies/{province}', [RegionController::class, 'regencies'])->name('api.regions.regencies');
+    Route::get('/districts/{regency}', [RegionController::class, 'districts'])->name('api.regions.districts');
+    Route::get('/postal-codes/{district}', [RegionController::class, 'postalCodes'])->name('api.regions.postalCodes');
+});
+
+/*
+|--------------------------------------------------------------------------
+| 2FA (PRD 8.3) — guest only
+|--------------------------------------------------------------------------
+*/
 Route::middleware('guest')->group(function () {
     Route::get('/2fa/verify', [TwoFactorController::class, 'show'])->name('2fa.verify');
     Route::post('/2fa/verify', [TwoFactorController::class, 'verify'])->name('2fa.verify.store');
 });
 
+/*
+|--------------------------------------------------------------------------
+| Auth — guest only
+|--------------------------------------------------------------------------
+*/
 Route::middleware('guest')->group(function () {
     Route::get('/login', [LoginController::class, 'create'])->name('login');
 
@@ -83,58 +108,63 @@ Route::middleware('guest')->group(function () {
     Route::get('/forgot-password', [ForgotPasswordController::class, 'create'])->name('password.request');
 
     Route::post('/forgot-password', [ForgotPasswordController::class, 'store'])
-        ->middleware(['honeypot', 'turnstile'])
+        ->middleware(['honeypot', 'turnstile', 'throttle:5,1'])
         ->name('password.email');
 
     Route::get('/reset-password/{token}', [ResetPasswordController::class, 'create'])->name('password.reset');
 
     Route::post('/reset-password', [ResetPasswordController::class, 'store'])
-        ->middleware('turnstile')
+        ->middleware(['turnstile', 'throttle:5,1'])
         ->name('password.update');
 });
 
-// PRD 8.10 layer 4: anti-hotlink — gambar dilindungi, hotlinker menerima decoy.
-Route::get('/protected-images/{filename}', [ProtectedImageController::class, 'show'])->name('protected-images.show');
-
-// Dropdown berantai alamat (PRD 7.3) — data wilayah publik untuk form register/profil.
-Route::prefix('api/regions')->group(function () {
-    Route::get('/provinces', [RegionController::class, 'provinces'])->name('api.regions.provinces');
-    Route::get('/regencies/{province}', [RegionController::class, 'regencies'])->name('api.regions.regencies');
-    Route::get('/districts/{regency}', [RegionController::class, 'districts'])->name('api.regions.districts');
-    Route::get('/postal-codes/{district}', [RegionController::class, 'postalCodes'])->name('api.regions.postalCodes');
-});
-
-Route::post('/logout', [LoginController::class, 'destroy'])
-    ->middleware('auth')
-    ->name('logout');
-
+/*
+|--------------------------------------------------------------------------
+| Email verification
+|--------------------------------------------------------------------------
+*/
 Route::middleware('auth')->group(function () {
     Route::get('/email/verify', [VerifyEmailController::class, 'notice'])->name('verification.notice');
 
-    Route::post('/email/resend', [VerifyEmailController::class, 'resend'])->name('verification.resend');
+    Route::post('/email/resend', [VerifyEmailController::class, 'resend'])
+        ->middleware('throttle:5,1')
+        ->name('verification.resend');
 });
 
 Route::get('/email/verify/{id}/{hash}', [VerifyEmailController::class, 'verify'])
     ->middleware('signed')
     ->name('verification.verify');
 
+Route::post('/logout', [LoginController::class, 'destroy'])
+    ->middleware('auth')
+    ->name('logout');
+
+/*
+|--------------------------------------------------------------------------
+| Admin Panel (PRD 8/13/22) — auth + admin
+|--------------------------------------------------------------------------
+*/
 Route::middleware(['auth', 'admin'])->prefix('office')->name('office.')->group(function () {
     Route::get('/', [AdminDashboardController::class, 'index'])->name('dashboard');
 
-    // Produk (PRD 22.6)
+    // ── Produk (PRD 22.6) ──
     Route::get('/products', [AdminProductController::class, 'index'])->name('products.index');
     Route::get('/products/create', [AdminProductController::class, 'create'])->name('products.create');
-    Route::post('/products/{product}/duplicate', [AdminProductController::class, 'duplicate'])->name('products.duplicate');
-    Route::get('/products/{product}/preview', [AdminProductController::class, 'preview'])->name('products.preview');
     Route::post('/products', [AdminProductController::class, 'store'])->name('products.store');
     Route::post('/products/bulk', [AdminProductController::class, 'bulk'])->name('products.bulk');
     Route::get('/products/{product}/edit', [AdminProductController::class, 'edit'])->name('products.edit');
     Route::put('/products/{product}', [AdminProductController::class, 'update'])->name('products.update');
     Route::delete('/products/{product}', [AdminProductController::class, 'destroy'])->name('products.destroy');
+    Route::post('/products/{product}/duplicate', [AdminProductController::class, 'duplicate'])->name('products.duplicate');
+    Route::get('/products/{product}/preview', [AdminProductController::class, 'preview'])->name('products.preview');
+
+    // Varian
     Route::post('/products/{product}/variants', [AdminProductController::class, 'storeVariant'])->name('products.variants.store');
+    Route::put('/products/{product}/variants/{variant}', [AdminProductController::class, 'updateVariant'])->name('products.variants.update');
+    Route::delete('/products/{product}/variants/{variant}', [AdminProductController::class, 'destroyVariant'])->name('products.variants.destroy');
     Route::post('/products/{product}/variants/bulk-weight', [AdminProductController::class, 'bulkWeight'])->name('products.variants.bulk-weight');
 
-    // Katalog pendukung
+    // ── Katalog pendukung ──
     Route::get('/games', [AdminGameController::class, 'index'])->name('games.index');
     Route::post('/games', [AdminGameController::class, 'store'])->name('games.store');
     Route::post('/games/bulk', [AdminGameController::class, 'bulk'])->name('games.bulk');
@@ -161,53 +191,60 @@ Route::middleware(['auth', 'admin'])->prefix('office')->name('office.')->group(f
     Route::post('/merch-categories/bulk', [AdminMerchCategoryController::class, 'bulk'])->name('merch-categories.bulk');
     Route::post('/merch-categories/bulk-delete', [AdminMerchCategoryController::class, 'bulkDelete'])->name('merch-categories.bulk-delete');
     Route::put('/merch-categories/{merch_category}', [AdminMerchCategoryController::class, 'update'])->name('merch-categories.update');
+    Route::delete('/merch-categories/{merch_category}', [AdminMerchCategoryController::class, 'destroy'])->name('merch-categories.destroy');
 
     Route::get('/tags', [AdminTagController::class, 'index'])->name('tags.index');
     Route::post('/tags', [AdminTagController::class, 'store'])->name('tags.store');
+    Route::put('/tags/{tag}', [AdminTagController::class, 'update'])->name('tags.update');
     Route::delete('/tags/{tag}', [AdminTagController::class, 'destroy'])->name('tags.destroy');
 
-    // Transaksi
+    // ── Transaksi ──
     Route::get('/orders', [AdminOrderController::class, 'index'])->name('orders.index');
+    Route::get('/orders/inject', [AdminInjectOrderController::class, 'index'])->name('orders.inject');
+    Route::post('/orders/inject', [AdminInjectOrderController::class, 'store'])->name('orders.inject.store');
+    Route::post('/orders/bulk-status', [AdminOrderController::class, 'bulkStatus'])->name('orders.bulk-status');
+    Route::get('/orders/{order:no_order}', [AdminOrderController::class, 'show'])->name('orders.show');
     Route::get('/orders/{order:no_order}/invoice', [AdminOrderController::class, 'invoice'])->name('orders.invoice');
-    Route::get('/search', [AdminSearchController::class, '__invoke'])->name('search');
-    Route::post('/notifications/read-all', [AdminNotificationController::class, 'readAll'])->name('notifications.read-all');
+    Route::patch('/orders/{order:no_order}/status', [OrderStatusController::class, 'update'])->name('orders.status');
+    Route::post('/orders/{order:no_order}/note-to-customer', [AdminOrderController::class, 'noteToCustomer'])->name('orders.note-to-customer');
+    Route::post('/orders/{order:no_order}/settlements', [AdminOrderController::class, 'storeSettlement'])->name('orders.settlements');
+    Route::post('/orders/{order:no_order}/unlock-penalty', [AdminOrderController::class, 'unlockPenalty'])->name('orders.unlock-penalty');
+    Route::post('/orders/{order:no_order}/hangus-permanent', [AdminOrderController::class, 'hangusPermanent'])->name('orders.hangus-permanent');
+
+    // Pembayaran
+    Route::post('/orders/{order:no_order}/payments/{payment}/verify', [OrderPaymentController::class, 'verify'])->name('payments.verify');
+    Route::post('/orders/{order:no_order}/payments/{payment}/reject', [OrderPaymentController::class, 'reject'])->name('payments.reject');
+    Route::get('/payments', [AdminPaymentController::class, 'index'])->name('payments.index');
 
     Route::get('/payment-methods', [AdminPaymentMethodController::class, 'index'])->name('payment-methods.index');
     Route::post('/payment-methods', [AdminPaymentMethodController::class, 'store'])->name('payment-methods.store');
     Route::put('/payment-methods/{paymentMethod}', [AdminPaymentMethodController::class, 'update'])->name('payment-methods.update');
     Route::delete('/payment-methods/{paymentMethod}', [AdminPaymentMethodController::class, 'destroy'])->name('payment-methods.destroy');
 
+    // Refund
+    Route::post('/orders/{order:no_order}/refund', [AdminRefundController::class, 'requestFull'])->name('orders.refund.full');
+    Route::post('/orders/{order:no_order}/refund/partial', [AdminRefundController::class, 'requestPartial'])->name('orders.refund.partial');
+    Route::get('/refunds', [AdminRefundController::class, 'index'])->name('refunds.index');
+    Route::post('/refunds/{refund}/complete', [AdminRefundController::class, 'complete'])->name('refunds.complete');
+    Route::post('/refunds/{refund}/reject', [AdminRefundController::class, 'reject'])->name('refunds.reject');
+
+    // Search & Notifications (admin)
+    Route::get('/search', [AdminSearchController::class, '__invoke'])->name('search');
+    Route::post('/notifications/{notification}/read', [AdminNotificationController::class, 'read'])->name('notifications.read');
+    Route::post('/notifications/read-all', [AdminNotificationController::class, 'readAll'])->name('notifications.read-all');
+
+    // ── Email Templates ──
     Route::get('/email-templates', [AdminEmailTemplateController::class, 'index'])->name('email-templates.index');
     Route::post('/email-templates', [AdminEmailTemplateController::class, 'store'])->name('email-templates.store');
     Route::put('/email-templates/{emailTemplate}', [AdminEmailTemplateController::class, 'update'])->name('email-templates.update');
     Route::delete('/email-templates/{emailTemplate}', [AdminEmailTemplateController::class, 'destroy'])->name('email-templates.destroy');
 
+    // ── Spammers ──
     Route::get('/spammers', [AdminSpammerController::class, 'index'])->name('spammers.index');
     Route::post('/spammers', [AdminSpammerController::class, 'store'])->name('spammers.store');
     Route::post('/spammers/{spammer}/unblock', [AdminSpammerController::class, 'unblock'])->name('spammers.unblock');
-    Route::post('/orders/{order:no_order}/note-to-customer', [AdminOrderController::class, 'noteToCustomer'])->name('orders.note-to-customer');
-    Route::get('/orders/inject', [AdminInjectOrderController::class, 'index'])->name('orders.inject');
-    Route::post('/orders/inject', [AdminInjectOrderController::class, 'store'])->name('orders.inject.store');
-    Route::post('/orders/bulk-status', [AdminOrderController::class, 'bulkStatus'])->name('orders.bulk-status');
-    Route::get('/orders/{order:no_order}', [AdminOrderController::class, 'show'])->name('orders.show');
-    Route::patch('/orders/{order:no_order}/status', [OrderStatusController::class, 'update'])->name('orders.status');
-    Route::post('/orders/{order:no_order}/settlements', [AdminOrderController::class, 'storeSettlement'])->name('orders.settlements');
-    Route::post('/orders/{order:no_order}/unlock-penalty', [AdminOrderController::class, 'unlockPenalty'])->name('orders.unlock-penalty');
-    Route::post('/orders/{order:no_order}/hangus-permanent', [AdminOrderController::class, 'hangusPermanent'])->name('orders.hangus-permanent');
-    Route::post('/orders/{order:no_order}/refund', [AdminRefundController::class, 'requestFull'])->name('orders.refund.full');
-    Route::get('/refunds', [AdminRefundController::class, 'index'])->name('refunds.index');
-    Route::get('/seo', [AdminSettingsController::class, 'seo'])->name('seo.index');
-    Route::post('/seo', [AdminSettingsController::class, 'updateSeo'])->name('seo.update');
-    Route::post('/orders/{order:no_order}/refund/partial', [AdminRefundController::class, 'requestPartial'])->name('orders.refund.partial');
-    Route::post('/refunds/{refund}/complete', [AdminRefundController::class, 'complete'])->name('refunds.complete');
-    Route::post('/refunds/{refund}/reject', [AdminRefundController::class, 'reject'])->name('refunds.reject');
-    Route::post('/orders/{order:no_order}/payments/{payment}/verify', [OrderPaymentController::class, 'verify'])
-        ->name('payments.verify');
-    Route::post('/orders/{order:no_order}/payments/{payment}/reject', [OrderPaymentController::class, 'reject'])
-        ->name('payments.reject');
-    Route::get('/payments', [AdminPaymentController::class, 'index'])->name('payments.index');
 
-    // Pengguna
+    // ── Pengguna ──
     Route::get('/users', [AdminUserController::class, 'index'])->name('users.index');
     Route::get('/users/create', [AdminUserController::class, 'create'])->name('users.create');
     Route::post('/users', [AdminUserController::class, 'store'])->name('users.store');
@@ -219,9 +256,15 @@ Route::middleware(['auth', 'admin'])->prefix('office')->name('office.')->group(f
     Route::delete('/users/{user}', [AdminUserController::class, 'destroy'])->name('users.destroy');
     Route::post('/users/{user}/forever-delete', [AdminUserController::class, 'foreverDelete'])->name('users.forever-delete');
 
-    // Settings, laporan, log
+    // ── Settings & SEO ──
     Route::get('/settings', [AdminSettingsController::class, 'index'])->name('settings.index');
     Route::post('/settings', [AdminSettingsController::class, 'update'])->name('settings.update');
+    Route::post('/settings/test-email', [AdminSettingsController::class, 'testEmail'])
+    	->name('settings.test-email');
+    Route::get('/seo', [AdminSettingsController::class, 'seo'])->name('seo.index');
+    Route::post('/seo', [AdminSettingsController::class, 'updateSeo'])->name('seo.update');
+
+    // ── CMS Pages ──
     Route::get('/pages', [AdminPageController::class, 'index'])->name('pages.index');
     Route::get('/pages/create', [AdminPageController::class, 'create'])->name('pages.create');
     Route::post('/pages', [AdminPageController::class, 'store'])->name('pages.store');
@@ -229,21 +272,34 @@ Route::middleware(['auth', 'admin'])->prefix('office')->name('office.')->group(f
     Route::put('/pages/{page}', [AdminPageController::class, 'update'])->name('pages.update');
     Route::delete('/pages/{page}', [AdminPageController::class, 'destroy'])->name('pages.destroy');
 
+    // ── Hero Slides ──
     Route::get('/hero-slides', [AdminHeroSlideController::class, 'index'])->name('hero-slides.index');
     Route::post('/hero-slides', [AdminHeroSlideController::class, 'store'])->name('hero-slides.store');
+    Route::post('/hero-slides/bulk', [AdminHeroSlideController::class, 'bulk'])->name('hero-slides.bulk');
+    Route::post('/hero-slides/bulk-delete', [AdminHeroSlideController::class, 'bulkDelete'])->name('hero-slides.bulk-delete');
     Route::put('/hero-slides/{heroSlide}', [AdminHeroSlideController::class, 'update'])->name('hero-slides.update');
     Route::delete('/hero-slides/{heroSlide}', [AdminHeroSlideController::class, 'destroy'])->name('hero-slides.destroy');
 
+    // ── Vouchers ──
     Route::get('/vouchers', [AdminVoucherController::class, 'index'])->name('vouchers.index');
     Route::post('/vouchers', [AdminVoucherController::class, 'store'])->name('vouchers.store');
+    Route::post('/vouchers/bulk', [AdminVoucherController::class, 'bulk'])->name('vouchers.bulk');
+    Route::post('/vouchers/bulk-delete', [AdminVoucherController::class, 'bulkDelete'])->name('vouchers.bulk-delete');
     Route::put('/vouchers/{voucher}', [AdminVoucherController::class, 'update'])->name('vouchers.update');
     Route::delete('/vouchers/{voucher}', [AdminVoucherController::class, 'destroy'])->name('vouchers.destroy');
     Route::post('/vouchers/{voucher}/issue', [AdminVoucherController::class, 'issue'])->name('vouchers.issue');
     Route::delete('/user-vouchers/{userVoucher}', [AdminVoucherController::class, 'revoke'])->name('user-vouchers.revoke');
+
+    // ── Laporan ──
     Route::get('/reports', [AdminReportController::class, 'index'])->name('reports.index');
     Route::get('/reports/sales-chart', [AdminReportController::class, 'salesChart'])->name('reports.sales-chart');
+    Route::get('/reports/export', [AdminReportController::class, 'export'])->name('reports.export');
+
+    // ── Split Box ──
     Route::post('/split-box-batches/{split_box_batch}/close-refund', [AdminSplitBoxBatchController::class, 'closeRefund'])
         ->name('split-box-batches.close-refund');
+
+    // ── Logs ──
     Route::get('/admin-logs', [AdminLogController::class, 'admin'])->name('admin-logs');
     Route::get('/auth-logs', [AdminLogController::class, 'auth'])->name('auth-logs');
     Route::get('/activity-logs', [AdminLogController::class, 'activity'])->name('activity-logs');
@@ -272,8 +328,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/orders/{order:no_order}/payments', [OrderController::class, 'storePayment'])
         ->middleware('checkout.ready')
         ->name('orders.payments.store');
-    Route::get('/orders/{order:no_order}/invoice', [OrderController::class, 'invoice'])
-        ->name('orders.invoice');
+    Route::get('/orders/{order:no_order}/invoice', [OrderController::class, 'invoice'])->name('orders.invoice');
 
     Route::get('/dashboard', [ProfileController::class, 'show'])->name('dashboard');
     Route::get('/profile', fn () => redirect()->route('dashboard'));
@@ -285,9 +340,13 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile/koin', [ProfileController::class, 'coins'])->name('profile.coins');
     Route::get('/profile/wallet', [ProfileController::class, 'wallet'])->name('profile.wallet');
     Route::get('/profile/undang', [ProfileController::class, 'referral'])->name('profile.referral');
+
+    // Notifikasi user
     Route::get('/profile/notifications', [ProfileController::class, 'notifications'])->name('profile.notifications');
     Route::get('/profile/notifications/unread-count', [ProfileController::class, 'unreadCount'])->name('profile.notifications.unread-count');
+    Route::post('/profile/notifications/{notification}/read', [ProfileController::class, 'readNotification'])->name('profile.notifications.read');
     Route::post('/profile/notifications/read-all', [ProfileController::class, 'readAllNotifications'])->name('profile.notifications.read-all');
+
     Route::post('/profile/tour-seen', [ProfileController::class, 'markTourSeen'])->name('profile.tour-seen');
 
     Route::post('/share/{product:slug}', [ShareController::class, 'store'])->name('share.store');

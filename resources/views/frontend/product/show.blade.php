@@ -58,9 +58,19 @@
             <p class="mt-3 font-mono text-[10px] uppercase tracking-[0.16em] text-ink/50">[{{ $game->name }}]</p>
             <h1 class="mt-2 font-display text-[1.75rem] leading-tight font-semibold text-ink sm:text-3xl">{{ $product->name }}</h1>
 
-            <div class="mt-2 flex flex-wrap gap-2">
+            {{-- [NEW] Developer + tags --}}
+            <div class="mt-2 flex flex-wrap items-center gap-2">
+                @if ($product->developer)
+                    <a href="{{ route('catalog.developer', $product->developer) }}"
+                       class="inline-flex items-center gap-1 rounded border border-rule px-2 py-0.5 text-[10px] font-semibold uppercase text-ink/70 transition-colors hover:border-ink hover:text-ink">
+                        @if ($product->developer->logo_path)
+                            <img src="{{ Storage::url($product->developer->logo_path) }}" alt="" class="h-3.5 w-3.5 rounded-sm object-cover">
+                        @endif
+                        {{ $product->developer->name }}
+                    </a>
+                @endif
                 @foreach ($product->tags as $tag)
-                    <span class="rounded px-2 py-0.5 text-[10px] font-bold uppercase text-white {{ $tag->slug === 'presale' ? 'bg-[#FFC107] text-[#000000]' : ($tag->slug === 'limited' ? 'bg-[#E53935]' : ($tag->slug === 'new' ? 'bg-[#4FC3F7]' : 'bg-[#E53935]')) }}">{{ $tag->name }}</span>
+                    <span class="rounded px-2 py-0.5 text-[10px] font-bold uppercase {{ $tag->slug === 'presale' ? 'bg-[#FFC107] text-[#000000]' : ($tag->slug === 'limited' ? 'bg-[#E53935] text-white' : ($tag->slug === 'new' ? 'bg-[#4FC3F7] text-white' : 'bg-[#E53935] text-white')) }}">{{ $tag->name }}</span>
                 @endforeach
                 <span class="rounded px-2 py-0.5 text-[10px] font-bold uppercase {{ $product->availability === 'tersedia' ? 'bg-[#43A047] text-white' : 'bg-[#9E9E9E] text-white' }}">
                     {{ $product->availability === 'tersedia' ? 'Tersedia' : 'Kosong' }}
@@ -104,7 +114,7 @@
             <dl class="mt-6 space-y-1 text-sm text-ink/70">
                 <div class="flex justify-between border-b border-rule/50 py-1">
                     <dt class="font-mono text-[10px] uppercase tracking-[0.14em] text-ink/55">SKU</dt>
-                    <dd class="text-ink">{{ $variant->sku ?? $product->sku }}</dd>
+                    <dd class="text-ink">{{ $variant?->sku ?? $product->sku }}</dd>
                 </div>
                 @if ($pricing['store_name'])
                     <div class="flex justify-between border-b border-rule/50 py-1">
@@ -190,6 +200,10 @@
                     var value = btn.getAttribute('data-copy');
                     if (navigator.clipboard && navigator.clipboard.writeText) {
                         navigator.clipboard.writeText(value);
+                        btn.textContent = 'Tersalin!';
+                        setTimeout(function () {
+                            btn.innerHTML = '<x-icons.clipboard width="14" height="14" /> Copy Link';
+                        }, 2000);
                     }
                 });
             });
