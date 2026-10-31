@@ -4,13 +4,13 @@
 
 @section('content')
 @php
-   $cfg = [
-    'rate_rmb'       => (float) setting('rate_rmb', 3000),
-    'ongkir_cn_btm'  => (float) setting('ongkir_cn_batam_per_kg', 25000),
-    'ongkir_btm_jkt' => (float) setting('ongkir_batam_jakarta_per_kg', 60000),
-    'profit_percent' => (float) setting('profit_percent', 11),
-    'default_weight' => (float) setting('default_weight_gram', 500),
-];
+    $cfg = [
+        'rate_rmb'       => (float) setting('rate_rmb', 3000),
+        'ongkir_cn_btm'  => (float) setting('ongkir_cn_batam_per_kg', 25000),
+        'ongkir_btm_jkt' => (float) setting('ongkir_batam_jakarta_per_kg', 60000),
+        'profit_percent' => (float) setting('profit_percent', 11),
+        'default_weight' => (float) setting('default_weight_gram', 500),
+    ];
     $productTags = old('tags', $product->exists ? $product->tags->pluck('id')->all() : []);
     $orderCount = $product->exists ? $product->ordersCount() : 0;
     $developerList = $developers ?? [];
@@ -77,6 +77,13 @@
     .sidebar-photo-zone:hover { border-color: rgba(0,0,0,0.25); }
     .sidebar-photo-zone.drag-over { border-color: rgba(0,0,0,0.4); }
     .sidebar-photo-zone img { width: 100%; height: 8rem; object-fit: cover; }
+
+    /* Variant builder rows */
+    .variant-row { border: 1px solid #e5e7eb; border-radius: 0.75rem; padding: 1rem; background: rgba(248,249,250,0.25); }
+    .variant-row .row-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.75rem; }
+    .variant-row .row-head .idx { font-family: monospace; font-size: 10px; text-transform: uppercase; letter-spacing: 0.14em; color: rgba(0,0,0,0.45); }
+    .variant-row .remove-btn { color: #E53935; cursor: pointer; background: none; border: none; font-size: 1.1rem; line-height: 1; padding: 0.25rem; }
+    .variant-row .remove-btn:hover { color: #C62828; }
 </style>
 
 {{-- ═══ FORM UTAMA ═══ --}}
@@ -116,10 +123,10 @@
         {{-- 2 KOLOM --}}
         <div id="pform-layout">
 
-            {{-- KONTEN UTAMA (kiri) --}}
+            {{-- ═══════════ KONTEN UTAMA (kiri) ═══════════ --}}
             <div class="pform-main">
 
-                {{-- [2] Nama + Slug (auto) --}}
+                {{-- Nama + Slug --}}
                 <div class="space-y-4 p-6">
                     <div>
                         <label class="block text-sm font-medium text-ink">Nama Produk: <span class="text-danger">*</span></label>
@@ -138,23 +145,22 @@
                                placeholder="millennium-tshirt-vol-2">
                         @error('slug')<p class="mt-1 text-xs text-danger">{{ $message }}</p>@enderror
                     </div>
-                    {{-- [1] Deskripsi Produk DIHAPUS — sudah ada gambar panjang --}}
                 </div>
 
-                {{-- TABS — [5] Produk Terkait dihapus --}}
+                {{-- TABS --}}
                 <div class="border-t border-rule">
                     <div class="flex border-b border-rule px-6" role="tablist">
-                        <button type="button" data-prod-tab="inventory"
-                                class="prod-tab border-b-2 px-4 py-3 text-sm border-ink font-semibold text-ink">Inventory</button>
-                        <button type="button" data-prod-tab="pengiriman"
-                                class="prod-tab border-b-2 px-4 py-3 text-sm border-transparent text-ink/55 hover:text-ink">Pengiriman</button>
+                        <button type="button" data-prod-tab="kalkulasi"
+                                class="prod-tab border-b-2 px-4 py-3 text-sm border-ink font-semibold text-ink">Kalkulasi Harga</button>
+                        <button type="button" data-prod-tab="atribut"
+                                class="prod-tab border-b-2 px-4 py-3 text-sm border-transparent text-ink/55 hover:text-ink">Atribut</button>
                         <button type="button" data-prod-tab="varian"
                                 class="prod-tab border-b-2 px-4 py-3 text-sm border-transparent text-ink/55 hover:text-ink">Varian</button>
                     </div>
 
-                    {{-- PANEL: Inventory --}}
-                    <div class="prod-panel p-6" data-prod-panel="inventory">
-                        <p class="font-mono text-[11px] font-medium uppercase tracking-[0.16em] text-ink">Inventory</p>
+                    {{-- ──── PANEL: Kalkulasi Harga ──── --}}
+                    <div class="prod-panel p-6" data-prod-panel="kalkulasi">
+                        <p class="font-mono text-[11px] font-medium uppercase tracking-[0.16em] text-ink">Kalkulasi Harga</p>
                         <div class="mt-4 h-px bg-rule"></div>
 
                         <div class="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2">
@@ -225,16 +231,6 @@
                             </div>
                         </div>
 
-                        <div class="mt-5 h-px bg-rule"></div>
-
-                        <div class="mt-4">
-                            <label class="block text-sm font-medium text-ink">Ketersediaan</label>
-                            <select name="availability" class="mt-1.5 w-full rounded-lg border border-rule px-3 py-2.5 text-sm text-ink">
-                                <option value="tersedia" @selected(old('availability', $product->availability ?: 'tersedia') === 'tersedia')>Tersedia</option>
-                                <option value="kosong" @selected(old('availability') === 'kosong' || $product->availability === 'kosong')>Kosong</option>
-                            </select>
-                        </div>
-
                         {{-- PREVIEW PERHITUNGAN --}}
                         <div class="mt-6 rounded-lg border-l-4 border-l-[#1A4D8F] bg-[#F8F9FA] p-5">
                             <h3 class="font-mono text-[11px] font-medium uppercase tracking-[0.16em] text-ink">Preview Perhitungan Harga</h3>
@@ -301,15 +297,15 @@
                         </div>
                     </div>
 
-                    {{-- PANEL: Pengiriman — [6] Developer ditambahkan --}}
-                    <div class="prod-panel hidden p-6" data-prod-panel="pengiriman">
-                        <p class="font-mono text-[11px] font-medium uppercase tracking-[0.16em] text-ink">Pengiriman</p>
+                    {{-- ──── PANEL: Atribut ──── --}}
+                    <div class="prod-panel hidden p-6" data-prod-panel="atribut">
+                        <p class="font-mono text-[11px] font-medium uppercase tracking-[0.16em] text-ink">Atribut Produk</p>
                         <div class="mt-4 h-px bg-rule"></div>
 
                         <div class="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2">
                             <div>
-                                <label class="block text-sm font-medium text-ink">Tipe</label>
-                                <select name="type" class="mt-1.5 w-full rounded-lg border border-rule px-3 py-2.5 text-sm text-ink">
+                                <label class="block text-sm font-medium text-ink">Tipe <span class="text-danger">*</span></label>
+                                <select name="type" required class="mt-1.5 w-full rounded-lg border border-rule px-3 py-2.5 text-sm text-ink">
                                     <option value="single" @selected(old('type', $product->type ?: 'single') === 'single')>Single</option>
                                     <option value="variant" @selected(old('type') === 'variant' || $product->type === 'variant')>Varian</option>
                                 </select>
@@ -322,27 +318,15 @@
                                     @endforeach
                                 </select>
                             </div>
-                            {{-- [6] KOLOM DEVELOPER --}}
                             <div>
-                                <label class="block text-sm font-medium text-ink">Developer</label>
-                                <select name="developer_id" id="input-developer-id" class="mt-1.5 w-full rounded-lg border border-rule px-3 py-2.5 text-sm text-ink">
+                                <label class="block text-sm font-medium text-ink">Developer <span class="text-danger">*</span></label>
+                                <select name="developer_id" id="input-developer-id" required class="mt-1.5 w-full rounded-lg border border-rule px-3 py-2.5 text-sm text-ink">
                                     <option value="">— pilih developer —</option>
                                     @foreach ($developerList as $dev)
                                         <option value="{{ $dev->id }}" @selected(old('developer_id', $product->developer_id) == $dev->id)>{{ $dev->name }}</option>
                                     @endforeach
                                 </select>
                                 @error('developer_id')<p class="mt-1 text-xs text-danger">{{ $message }}</p>@enderror
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-ink">Store (Override)</label>
-                                <select id="input-store-id" class="mt-1.5 w-full rounded-lg border border-rule px-3 py-2.5 text-sm text-ink">
-                                    <option value="">— ikut game —</option>
-                                    @foreach ($stores as $store)
-                                        <option value="{{ $store->id }}" @selected(old('store_id', $product->store_id) == $store->id)
-                                                data-min="{{ $store->min_belanja_rmb ?? 0 }}"
-                                                data-ongkir="{{ $store->ongkir_lokal_cn_percent ?? 7 }}">{{ $store->name }}</option>
-                                    @endforeach
-                                </select>
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-ink">Kategori Merch</label>
@@ -363,7 +347,7 @@
                         </div>
                     </div>
 
-                    {{-- [3][4] PANEL: Varian — tombol jelas, aksi khusus varian --}}
+                    {{-- ──── PANEL: Varian ──── --}}
                     <div class="prod-panel hidden p-6" data-prod-panel="varian">
                         <div class="flex items-center justify-between">
                             <p class="font-mono text-[11px] font-medium uppercase tracking-[0.16em] text-ink">Varian Produk</p>
@@ -378,6 +362,7 @@
                         <div class="mt-4 h-px bg-rule"></div>
 
                         @if ($product->exists)
+                            {{-- PRODUK SUDAH ADA: table + modal --}}
                             @if ($product->variants->count())
                                 <div class="mt-4 flex items-center gap-3">
                                     <label class="flex items-center gap-2 text-sm text-ink/70">
@@ -449,12 +434,62 @@
                                     </button>
                                 </div>
                             @endif
+
                         @else
-                            <div class="mt-6 flex flex-col items-center gap-3 py-8">
-                                <i class="bi bi-save text-ink/20" style="font-size:2.5rem;"></i>
-                                <p class="text-sm text-ink/50">Simpan produk terlebih dahulu untuk menambahkan varian.</p>
-                                <p class="text-xs text-ink/40">Setelah produk tersimpan, tombol "Tambah Varian" akan muncul di sini.</p>
+                            {{-- PRODUK BARU: inline variant builder --}}
+                            <p class="mt-4 text-xs text-ink/55">
+                                Tambahkan varian sekarang — produk + varian langsung tersimpan bersamaan.
+                            </p>
+
+                            <div id="variant-builder" class="mt-4 space-y-3">
+                                {{-- Row 0 (default kosong) --}}
+                                <div class="variant-row" data-vindex="0">
+                                    <div class="row-head">
+                                        <span class="idx">Varian #1</span>
+                                        <button type="button" class="remove-btn" onclick="removeVariantRow(this)" title="Hapus baris">&times;</button>
+                                    </div>
+                                    <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                                        <div>
+                                            <label class="block text-xs font-medium text-ink/70">Nama Varian</label>
+                                            <input type="text" name="variants[0][name]" placeholder="cth: Size L"
+                                                   class="mt-1 w-full rounded-lg border border-rule px-3 py-2 text-sm text-ink">
+                                        </div>
+                                        <div>
+                                            <label class="block text-xs font-medium text-ink/70">SKU</label>
+                                            <input type="text" name="variants[0][sku]" placeholder="SKU-001"
+                                                   class="mt-1 w-full rounded-lg border border-rule px-3 py-2 text-sm text-ink">
+                                        </div>
+                                        <div>
+                                            <label class="block text-xs font-medium text-ink/70">Harga RMB <span class="text-ink/40">(opsional)</span></label>
+                                            <input type="number" step="0.01" name="variants[0][price_rmb]" placeholder="ikut produk"
+                                                   class="mt-1 w-full rounded-lg border border-rule px-3 py-2 text-sm text-ink">
+                                        </div>
+                                        <div>
+                                            <label class="block text-xs font-medium text-ink/70">Berat (gram) <span class="text-ink/40">(opsional)</span></label>
+                                            <input type="number" name="variants[0][weight_gram]" placeholder="ikut produk"
+                                                   class="mt-1 w-full rounded-lg border border-rule px-3 py-2 text-sm text-ink">
+                                        </div>
+                                        <div>
+                                            <label class="block text-xs font-medium text-ink/70">Ketersediaan</label>
+                                            <select name="variants[0][availability]" class="mt-1 w-full rounded-lg border border-rule px-3 py-2 text-sm text-ink">
+                                                <option value="tersedia">Tersedia</option>
+                                                <option value="kosong">Kosong</option>
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <label class="block text-xs font-medium text-ink/70">Foto <span class="text-ink/40">(opsional)</span></label>
+                                            <input type="file" name="variants[0][image]" accept=".jpg,.jpeg,.png,.webp"
+                                                   class="mt-1 w-full rounded-lg border border-rule px-3 py-1.5 text-xs">
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
+
+                            <button type="button" onclick="addVariantRow()"
+                                    class="mt-3 flex items-center gap-1.5 rounded-lg border border-ink px-4 py-2 text-xs font-semibold text-ink transition-colors hover:bg-ink hover:text-white">
+                                <i class="bi bi-plus-lg" style="font-size:0.75rem;"></i>
+                                Tambah Varian Lagi
+                            </button>
                         @endif
                     </div>
                     {{-- AKHIR PANEL VARIAN --}}
@@ -527,36 +562,10 @@
                     @error('description_image')<p class="mt-1 text-xs text-danger">{{ $message }}</p>@enderror
                 </div>
 
-                {{-- Diskon --}}
-                <div class="border-t border-rule p-6">
-                    <p class="font-mono text-[11px] font-medium uppercase tracking-[0.16em] text-ink">Diskon Produk Nominal</p>
-                    <div class="mt-3 grid grid-cols-1 gap-4 md:grid-cols-3">
-                        <div>
-                            <label class="block text-sm font-medium text-ink">Nominal Diskon (RMB)</label>
-                            <input type="number" step="0.01" name="discount_amount_rmb"
-                                   value="{{ old('discount_amount_rmb', $product->discount_amount_rmb) }}"
-                                   class="mt-1.5 w-full rounded-lg border border-rule px-3 py-2.5 text-sm text-ink">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-ink">Tanggal Mulai</label>
-                            <input type="date" name="discount_start" value="{{ old('discount_start', $product->discount_start?->toDateString()) }}"
-                                   class="mt-1.5 w-full rounded-lg border border-rule px-3 py-2.5 text-sm text-ink">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-ink">Tanggal Berakhir</label>
-                            <input type="date" name="discount_end" value="{{ old('discount_end', $product->discount_end?->toDateString()) }}"
-                                   class="mt-1.5 w-full rounded-lg border border-rule px-3 py-2.5 text-sm text-ink">
-                        </div>
-                    </div>
-                    <p class="mt-2 flex items-start gap-1.5 text-xs text-ink/55">
-                        <i class="bi bi-info-circle mt-0.5" style="font-size:0.75rem;"></i>
-                        Validasi: Diskon wajib &le; Harga RMB. Semua perhitungan dalam RMB — konversi ke IDR otomatis.
-                    </p>
-                </div>
-
             </div>
+            {{-- AKHIR KONTEN UTAMA --}}
 
-            {{-- SIDEBAR (kanan) --}}
+            {{-- ═══════════ SIDEBAR (kanan) ═══════════ --}}
             <div class="pform-sidebar">
 
                 {{-- TERBITKAN --}}
@@ -582,13 +591,21 @@
                     @endif
                 </div>
 
-                {{-- STORE --}}
+                {{-- KETERSEDIAAN [2] — di atas Store --}}
                 <div class="border-b border-rule p-5">
-                    <p class="font-mono text-[11px] font-medium uppercase tracking-[0.16em] text-ink">Store</p>
+                    <p class="font-mono text-[11px] font-medium uppercase tracking-[0.16em] text-ink">Ketersediaan</p>
+                    <select name="availability" class="mt-2 w-full rounded-lg border border-rule px-3 py-2 text-sm text-ink">
+                        <option value="tersedia" @selected(old('availability', $product->availability ?: 'tersedia') === 'tersedia')>Tersedia</option>
+                        <option value="kosong" @selected(old('availability') === 'kosong' || $product->availability === 'kosong')>Kosong</option>
+                    </select>
+                </div>
+
+                {{-- STORE [5] — required --}}
+                <div class="border-b border-rule p-5">
+                    <p class="font-mono text-[11px] font-medium uppercase tracking-[0.16em] text-ink">Store <span class="text-danger">*</span></p>
                     <div class="mt-2">
-                        <label class="block text-xs text-ink/70">Store:</label>
-                        <select name="store_id" id="sidebar-store-id" class="mt-1 w-full rounded-lg border border-rule px-3 py-2 text-sm text-ink">
-                            <option value="">— ikut game —</option>
+                        <select name="store_id" id="sidebar-store-id" required class="w-full rounded-lg border border-rule px-3 py-2 text-sm text-ink">
+                            <option value="">— pilih store —</option>
                             @foreach ($stores as $store)
                                 <option value="{{ $store->id }}" @selected(old('store_id', $product->store_id) == $store->id)
                                         data-min="{{ $store->min_belanja_rmb ?? 0 }}"
@@ -598,7 +615,7 @@
                     </div>
                     <p class="mt-2 flex items-start gap-1.5 text-xs text-ink/55">
                         <i class="bi bi-info-circle mt-0.5" style="font-size:0.75rem;"></i>
-                        <span id="store-info">Default dari game. (Kosongkan untuk pakai game default)</span>
+                        <span id="store-info">Store digunakan untuk hitung ongkir lokal CN.</span>
                     </p>
                 </div>
 
@@ -672,6 +689,35 @@
                     @error('image')<p class="mt-1 text-xs text-danger">{{ $message }}</p>@enderror
                 </div>
 
+                {{-- DISKON [1] — di atas Hapus Produk --}}
+                <div class="border-b border-rule p-5">
+                    <p class="font-mono text-[11px] font-medium uppercase tracking-[0.16em] text-ink">Diskon Produk</p>
+                    <div class="mt-2 space-y-3">
+                        <div>
+                            <label class="block text-xs text-ink/70">Nominal Diskon (RMB)</label>
+                            <input type="number" step="0.01" name="discount_amount_rmb"
+                                   value="{{ old('discount_amount_rmb', $product->discount_amount_rmb) }}"
+                                   class="mt-1 w-full rounded-lg border border-rule px-3 py-2 text-sm text-ink">
+                        </div>
+                        <div>
+                            <label class="block text-xs text-ink/70">Mulai</label>
+                            <input type="date" name="discount_start"
+                                   value="{{ old('discount_start', $product->discount_start?->toDateString()) }}"
+                                   class="mt-1 w-full rounded-lg border border-rule px-3 py-2 text-sm text-ink">
+                        </div>
+                        <div>
+                            <label class="block text-xs text-ink/70">Berakhir</label>
+                            <input type="date" name="discount_end"
+                                   value="{{ old('discount_end', $product->discount_end?->toDateString()) }}"
+                                   class="mt-1 w-full rounded-lg border border-rule px-3 py-2 text-sm text-ink">
+                        </div>
+                    </div>
+                    <p class="mt-2 flex items-start gap-1.5 text-xs text-ink/55">
+                        <i class="bi bi-info-circle mt-0.5" style="font-size:0.75rem;"></i>
+                        Diskon wajib &le; Harga RMB.
+                    </p>
+                </div>
+
                 {{-- HAPUS PRODUK --}}
                 @if ($product->exists)
                 <div class="p-5">
@@ -697,7 +743,7 @@
 @endif
 
 
-{{-- ═══ MODAL: Tambah Varian [3][4] ═══ --}}
+{{-- ═══ MODAL: Tambah Varian ═══ --}}
 @if ($product->exists)
 <div id="modal-add-variant" class="fixed inset-0 z-[100] hidden items-center justify-center bg-black/50 p-6">
     <div class="w-full max-w-lg rounded-2xl border border-rule bg-white shadow-2xl">
@@ -939,6 +985,61 @@
         </div>
     </div>
 </div>
+
+{{-- ═══ VARIANT BUILDER JS (inline — tanpa Blade directive) ═══ --}}
+<script>
+(function () {
+    var vIndex = 0;
+
+    window.addVariantRow = function () {
+        vIndex++;
+        var builder = document.getElementById('variant-builder');
+        if (!builder) return;
+
+        var html = ''
+            + '<div class="variant-row" data-vindex="' + vIndex + '">'
+            +   '<div class="row-head">'
+            +     '<span class="idx">Varian #' + (vIndex + 1) + '</span>'
+            +     '<button type="button" class="remove-btn" onclick="removeVariantRow(this)" title="Hapus baris">&times;</button>'
+            +   '</div>'
+            +   '<div class="grid grid-cols-1 gap-3 sm:grid-cols-2">'
+            +     '<div><label class="block text-xs font-medium text-ink/70">Nama Varian</label>'
+            +       '<input type="text" name="variants[' + vIndex + '][name]" placeholder="cth: Size L" class="mt-1 w-full rounded-lg border border-rule px-3 py-2 text-sm text-ink"></div>'
+            +     '<div><label class="block text-xs font-medium text-ink/70">SKU</label>'
+            +       '<input type="text" name="variants[' + vIndex + '][sku]" placeholder="SKU-001" class="mt-1 w-full rounded-lg border border-rule px-3 py-2 text-sm text-ink"></div>'
+            +     '<div><label class="block text-xs font-medium text-ink/70">Harga RMB <span class="text-ink/40">(opsional)</span></label>'
+            +       '<input type="number" step="0.01" name="variants[' + vIndex + '][price_rmb]" placeholder="ikut produk" class="mt-1 w-full rounded-lg border border-rule px-3 py-2 text-sm text-ink"></div>'
+            +     '<div><label class="block text-xs font-medium text-ink/70">Berat (gram) <span class="text-ink/40">(opsional)</span></label>'
+            +       '<input type="number" name="variants[' + vIndex + '][weight_gram]" placeholder="ikut produk" class="mt-1 w-full rounded-lg border border-rule px-3 py-2 text-sm text-ink"></div>'
+            +     '<div><label class="block text-xs font-medium text-ink/70">Ketersediaan</label>'
+            +       '<select name="variants[' + vIndex + '][availability]" class="mt-1 w-full rounded-lg border border-rule px-3 py-2 text-sm text-ink">'
+            +         '<option value="tersedia">Tersedia</option><option value="kosong">Kosong</option></select></div>'
+            +     '<div><label class="block text-xs font-medium text-ink/70">Foto <span class="text-ink/40">(opsional)</span></label>'
+            +       '<input type="file" name="variants[' + vIndex + '][image]" accept=".jpg,.jpeg,.png,.webp" class="mt-1 w-full rounded-lg border border-rule px-3 py-1.5 text-xs"></div>'
+            +   '</div>'
+            + '</div>';
+
+        builder.insertAdjacentHTML('beforeend', html);
+    };
+
+    window.removeVariantRow = function (btn) {
+        var row = btn.closest('.variant-row');
+        var builder = document.getElementById('variant-builder');
+        if (!row || !builder) return;
+
+        if (builder.querySelectorAll('.variant-row').length <= 1) {
+            // Minimal 1 row — reset fields instead of remove
+            row.querySelectorAll('input, select').forEach(function (el) {
+                if (el.type === 'file') { el.value = ''; }
+                else if (el.tagName === 'SELECT') { el.selectedIndex = 0; }
+                else { el.value = ''; }
+            });
+            return;
+        }
+        row.remove();
+    };
+})();
+</script>
 
 {{-- ═══ CONFIG UNTUK JS EKSTERNAL ═══ --}}
 @php
