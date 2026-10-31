@@ -119,19 +119,16 @@
         @endif
     </div>
 
-    {{-- ─── Pesanan Menunggu Aksi + Top 5 Produk (DS 14.2) ─── --}}
+    {{-- ─── Menunggu Aksi + Top 5 Produk (DS 14.2) ─── --}}
     <div class="mt-5 grid grid-cols-1 gap-5 lg:grid-cols-2">
 
-        {{-- Pesanan Menunggu Aksi --}}
+        {{-- Menunggu Aksi --}}
         <div class="rounded-xl border border-rule bg-white p-6">
             <div class="flex items-center justify-between">
                 <div class="flex items-center gap-2">
                     <i class="bi bi-exclamation-circle text-amber-600" style="font-size:1.1rem;"></i>
                     <h2 class="font-mono text-[11px] font-medium uppercase tracking-[0.16em] text-ink">Pesanan Menunggu Aksi</h2>
                 </div>
-                <a href="{{ route('office.orders.index') }}" class="text-xs text-accent hover:underline">
-                    Lihat Semua &rarr;
-                </a>
             </div>
 
             <div class="mt-5 space-y-3">
