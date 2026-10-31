@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\AdminLog;
+use App\Models\Developer;
 use App\Models\Game;
 use App\Models\Store;
 use Illuminate\Http\RedirectResponse;
@@ -17,8 +18,9 @@ class GameController extends Controller
     public function index(): View
     {
         return view('admin.games.index', [
-            'games' => Game::with('defaultStore')->orderBy('name')->get(),
+            'games' => Game::with('defaultStore', 'developers')->orderBy('name')->get(),
             'stores' => Store::orderBy('name')->get(),
+            'developers' => Developer::orderBy('name')->get(),
         ]);
     }
 
@@ -29,14 +31,32 @@ class GameController extends Controller
             'default_store_id' => ['nullable', 'exists:stores,id'],
             'is_active' => ['nullable', 'boolean'],
             'logo' => ['nullable', 'file', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
+            'developers' => ['nullable', 'array'],
+            'developers.*' => ['integer', 'exists:developers,id'],
         ]);
+
         $data['slug'] = $this->uniqueSlug($data['name']);
-        $data['logo_path'] = $request->hasFile('logo') ? $request->file('logo')->store('games') : null;
-        $data['is_active'] = $request->boolean('is_active', true);
-        unset($data['logo']);
+        $data['logo_path'] = null;
+
+        // Handle logo terpisah — kalau gagal, data tetap tersimpan
+        $logo = $request->file('logo');
+        if ($logo && $logo->isValid()) {
+            $data['logo_path'] = $logo->store('games');
+        }
+
+        // [FIX] boolean tanpa default
+        $data['is_active'] = $request->boolean('is_active');
+
+        // [NEW] Developer assignment
+        $developerIds = $request->input('developers', []);
+        unset($data['developers'], $data['logo']);
 
         $game = Game::create($data);
-        AdminLog::record($request->user(), 'create', 'Game', $game->id, null, $data, 'Tambah game');
+
+        // Sync developer_game pivot
+        $game->developers()->sync($developerIds);
+
+        AdminLog::record($request->user(), 'create', 'Game', $game->id, null, $data + ['developers' => $developerIds], 'Tambah game');
 
         return redirect()->route('office.games.index')->with('status', 'Game dibuat.');
     }
@@ -49,6 +69,8 @@ class GameController extends Controller
             'default_store_id' => ['nullable', 'exists:stores,id'],
             'is_active' => ['nullable', 'boolean'],
             'logo' => ['nullable', 'file', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
+            'developers' => ['nullable', 'array'],
+            'developers.*' => ['integer', 'exists:developers,id'],
         ]);
 
         // Slug manual bila diisi; dikosongkan -> auto-generate dari nama; tidak dikirim -> tetap.
@@ -58,25 +80,48 @@ class GameController extends Controller
                 : $this->uniqueSlug($data['name'], $game->id);
         }
 
-        if ($request->hasFile('logo')) {
+        if ($request->hasFile('logo') && $request->file('logo')->isValid()) {
             if ($game->logo_path) {
                 @unlink(storage_path('app/private/'.$game->logo_path));
             }
             $data['logo_path'] = $request->file('logo')->store('games');
         }
         unset($data['logo']);
+
+        // [FIX] boolean tanpa default
         $data['is_active'] = $request->boolean('is_active');
+
+        // [NEW] Developer assignment
+        $developerIds = $request->input('developers', []);
+        unset($data['developers']);
 
         [$old, $new] = AdminLog::diff($game, ['name', 'default_store_id', 'is_active'], $data);
         $game->update($data);
-        AdminLog::record($request->user(), 'update', 'Game', $game->id, $old, $new, 'Ubah game');
+
+        // Sync developer_game pivot
+        $game->developers()->sync($developerIds);
+
+        AdminLog::record($request->user(), 'update', 'Game', $game->id, $old, $new + ['developers' => $developerIds], 'Ubah game');
 
         return redirect()->route('office.games.index')->with('status', 'Game diperbarui.');
     }
 
+    // [FIX] Cek produk sebelum hapus — konsisten dengan bulkDelete()
     public function destroy(Request $request, Game $game): RedirectResponse
     {
+        $game->loadCount('products');
+
+        if ($game->products_count > 0) {
+            throw ValidationException::withMessages([
+                'game' => "Game \"{$game->name}\" masih punya {$game->products_count} produk. Hapus produknya dulu.",
+            ]);
+        }
+
         AdminLog::record($request->user(), 'delete', 'Game', $game->id, $game->only(['name', 'slug']), null, 'Hapus game');
+
+        // Hapus pivot developer_game
+        $game->developers()->detach();
+
         if ($game->logo_path) {
             @unlink(storage_path('app/private/'.$game->logo_path));
         }
@@ -85,9 +130,6 @@ class GameController extends Controller
         return redirect()->route('office.games.index')->with('status', 'Game dihapus.');
     }
 
-    /**
-     * Bulk game: item dengan id = update, tanpa id = create (slug auto-generate).
-     */
     public function bulk(Request $request): RedirectResponse
     {
         $data = $request->validate([
@@ -128,9 +170,6 @@ class GameController extends Controller
             ->with('status', "{$diperbarui} game diperbarui, {$dibuat} game dibuat.");
     }
 
-    /**
-     * Bulk hapus game — ditolak bila ada game yang masih punya produk.
-     */
     public function bulkDelete(Request $request): RedirectResponse
     {
         $data = $request->validate([
@@ -149,6 +188,7 @@ class GameController extends Controller
 
         foreach ($games as $game) {
             AdminLog::record($request->user(), 'delete', 'Game', $game->id, $game->only(['name', 'slug']), null, 'Bulk hapus game');
+            $game->developers()->detach();
             if ($game->logo_path) {
                 @unlink(storage_path('app/private/'.$game->logo_path));
             }
@@ -158,11 +198,6 @@ class GameController extends Controller
         return redirect()->route('office.games.index')->with('status', $games->count().' game dihapus.');
     }
 
-    /**
-     * Generate slug bersih dari nama — ala WordPress.
-     * Contoh: "Honkai: Star Rail" → "honkai-star-rail"
-     * Duplikat: "honkai-star-rail" sudah ada → "honkai-star-rail-2"
-     */
     private function uniqueSlug(string $name, ?int $ignoreId = null): string
     {
         $slug = Str::slug($name);

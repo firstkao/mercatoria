@@ -47,11 +47,11 @@
                             <span class="text-[10px] transition-transform group-open:rotate-180">&#9662;</span>
                         </summary>
                         <div class="absolute left-0 top-full z-20 mt-2 max-h-80 w-56 overflow-y-auto rounded-lg border border-[#EAEAEA] bg-white py-2 shadow-sm">
-                            @forelse ($navDevelopers as $navDeveloper)
-                                <a href="{{ route('catalog.developer', $navDeveloper->slug) }}" class="block px-3.5 py-1.5 text-[12px] text-[#333] transition-colors hover:bg-[#F5F7FA] hover:text-[#4FC3F7]">{{ $navDeveloper->name }}</a>
-                            @empty
-                                <a href="{{ route('coming-soon') }}" class="block px-3.5 py-1.5 text-[12px] text-[#999]">Menyusul</a>
-                            @endforelse
+                           @forelse ($navDevelopers as $navDeveloper)
+    <a href="{{ route('catalog.developer', $navDeveloper->slug) }}" class="block px-3.5 py-1.5 text-[12px] text-[#333] transition-colors hover:bg-[#F5F7FA] hover:text-[#4FC3F7]">{{ $navDeveloper->name }}</a>
+@empty
+    <a href="{{ route('coming-soon') }}" class="block px-3.5 py-1.5 text-[12px] text-[#999]">Menyusul ({{ $navDevelopers->count() }} items debug)</a>
+@endforelse
                         </div>
                     </details>
 

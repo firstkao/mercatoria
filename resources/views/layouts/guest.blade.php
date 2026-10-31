@@ -54,13 +54,11 @@
                         </summary>
                         <div class="absolute left-0 top-full z-20 mt-2 max-h-80 w-56 overflow-y-auto rounded-lg border border-[#EAEAEA] bg-white py-2 shadow-sm">
                             @isset($footerDevelopers)
-                                @forelse ($footerDevelopers as $developer)
-                                    <a href="{{ data_get($developer, 'url') ?? (data_get($developer, 'slug') ? route('catalog.developer', data_get($developer, 'slug')) : '#') }}" class="block px-3.5 py-1.5 text-[12px] text-[#333] transition-colors hover:bg-[#F5F7FA] hover:text-[#4FC3F7]">
-                                        {{ data_get($developer, 'name') }}
-                                    </a>
-                                @empty
-                                    <span class="block px-3.5 py-1.5 text-[12px] text-[#999]">Belum ada developer</span>
-                                @endforelse
+                                @forelse ($navDevelopers as $navDeveloper)
+    <a href="{{ route('catalog.developer', $navDeveloper->slug) }}" class="block px-3.5 py-1.5 text-[12px] text-[#333] transition-colors hover:bg-[#F5F7FA] hover:text-[#4FC3F7]">{{ $navDeveloper->name }}</a>
+@empty
+    <a href="{{ route('coming-soon') }}" class="block px-3.5 py-1.5 text-[12px] text-[#999]">Menyusul ({{ $navDevelopers->count() }} items debug)</a>
+@endforelse
                             @else
                                 <span class="block px-3.5 py-1.5 text-[12px] text-[#999]">Belum ada developer</span>
                             @endisset

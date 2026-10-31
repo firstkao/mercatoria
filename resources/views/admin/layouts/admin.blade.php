@@ -150,7 +150,7 @@
                     ['office.developers.index','bi-building','Developer','office.developers'],
 
                     ['__SECTION__','','Stores'],
-                    ['office.stores.index','bi-shop','Stores (Tier Ongkir)','office.stores'],
+                    ['office.stores.index','bi-shop','Stores','office.stores'],
 
                     ['__SECTION__','','Transaksi'],
                     ['office.orders.index','bi-receipt','Orders','office.orders'],

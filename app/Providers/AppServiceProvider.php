@@ -40,7 +40,7 @@ class AppServiceProvider extends ServiceProvider
         });
 
         // Navbar dropdown Game / Developer → route katalog (PRD 7.2) + bell (PRD 43.2) + keranjang.
-        View::composer(['layouts.app', 'frontend.profile.show'], function ($view): void {
+        View::composer(['layouts.app', 'layouts.guest', 'frontend.home.index', 'frontend.profile.show'], function ($view): void {
             $user = auth()->user();
 
             $cartTotal = 0;
@@ -82,7 +82,7 @@ class AppServiceProvider extends ServiceProvider
         });
 
         // Footer "Produk Terpopuler" (Design Spec 4.4.5) — {image, url, name, price}.
-        View::composer(['layouts.app', 'frontend.home.index'], function ($view): void {
+        View::composer(['layouts.app', 'layouts.guest', 'frontend.home.index'], function ($view): void {
             $shipping = app(ShippingCalculatorService::class);
 
             $view->with('footerTopProducts', Product::where('is_active', true)
@@ -102,7 +102,7 @@ class AppServiceProvider extends ServiceProvider
         });
 
         // Footer "Game" & "Developer" (pola $navGames) untuk layout yang memakai footer.
-        View::composer(['layouts.app', 'layouts.guest'], function ($view): void {
+        View::composer(['layouts.app', 'layouts.guest', 'frontend.home.index'], function ($view): void {
             $view->with(
                 'footerGames',
                 Game::where('is_active', true)->orderBy('name')->get(['id', 'name', 'slug'])

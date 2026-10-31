@@ -27,9 +27,19 @@ class DeveloperController extends Controller
             'is_active' => ['nullable', 'boolean'],
             'logo' => ['nullable', 'file', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
         ]);
-        $data['slug'] = $this->uniqueSlug($data['name']);
-        $data['logo_path'] = $request->hasFile('logo') ? $request->file('logo')->store('developers') : null;
-        $data['is_active'] = $request->boolean('is_active', true);
+
+        $data['slug'] = filled($data['slug'] ?? null)
+    		? Str::slug($data['slug'])
+    		: $this->uniqueSlug($data['name']);
+        $data['logo_path'] = null;
+
+        // Simpan logo kalau ada
+        if ($request->hasFile('logo') && $request->file('logo')->isValid()) {
+            $data['logo_path'] = $request->file('logo')->store('developers');
+        }
+
+        // [FIX] boolean tanpa default — checkbox unchecked = false
+        $data['is_active'] = $request->boolean('is_active');
         unset($data['logo']);
 
         $developer = Developer::create($data);
@@ -54,13 +64,15 @@ class DeveloperController extends Controller
                 : $this->uniqueSlug($data['name'], $developer->id);
         }
 
-        if ($request->hasFile('logo')) {
+        if ($request->hasFile('logo') && $request->file('logo')->isValid()) {
             if ($developer->logo_path) {
                 @unlink(storage_path('app/private/'.$developer->logo_path));
             }
             $data['logo_path'] = $request->file('logo')->store('developers');
         }
         unset($data['logo']);
+
+        // [FIX] boolean tanpa default
         $data['is_active'] = $request->boolean('is_active');
 
         [$old, $new] = AdminLog::diff($developer, ['name', 'is_active'], $data);
@@ -70,7 +82,6 @@ class DeveloperController extends Controller
         return redirect()->route('office.developers.index')->with('status', 'Developer diperbarui.');
     }
 
-    // [FIX] Single delete juga cek relasi sebelum hapus — konsisten dengan bulkDelete.
     public function destroy(Request $request, Developer $developer): RedirectResponse
     {
         $developer->loadCount(['games', 'products']);
@@ -94,9 +105,6 @@ class DeveloperController extends Controller
         return redirect()->route('office.developers.index')->with('status', 'Developer dihapus.');
     }
 
-    /**
-     * Bulk developer: item dengan id = update, tanpa id = create (slug auto-generate).
-     */
     public function bulk(Request $request): RedirectResponse
     {
         $data = $request->validate([
@@ -134,7 +142,6 @@ class DeveloperController extends Controller
             ->with('status', "{$diperbarui} developer diperbarui, {$dibuat} developer dibuat.");
     }
 
-    // [FIX] Cek games_count + products_count — developer terpakai tidak bisa dihapus.
     public function bulkDelete(Request $request): RedirectResponse
     {
         $data = $request->validate([
@@ -172,11 +179,6 @@ class DeveloperController extends Controller
         return redirect()->route('office.developers.index')->with('status', $developers->count().' developer dihapus.');
     }
 
-    /**
-     * Generate slug bersih dari nama — ala WordPress.
-     * Contoh: "MiHoYo" → "mihoyo"
-     * Duplikat: "mihoyo" sudah ada → "mihoyo-2"
-     */
     private function uniqueSlug(string $name, ?int $ignoreId = null): string
     {
         $slug = Str::slug($name);

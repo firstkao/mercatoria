@@ -2,6 +2,10 @@
 <html lang="id">
 <head>
     <meta charset="utf-8">
+    <!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <x-seo-head :seo="$seo" :json-ld="$jsonLd" />
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -11,7 +15,7 @@
 </head>
 <body id="top" class="flex min-h-screen flex-col bg-white font-sans text-ink antialiased">
     {{-- Top Promo Bar (DS 4.4.1 / PRD 40.1) --}}
-       @if (setting('promo_bar_active', '1') !== '0')
+    @if (setting('promo_bar_active', '1') !== '0')
         <div id="promo-bar" class="relative bg-[#F2EFE8] px-10 py-2 text-center border-b border-[#D8D2C4]">
             <p class="text-[13px] text-ink">
                 Gunakan kode promo <strong class="font-semibold text-danger">NEWWEB</strong> dan nikmati potongan harga sebesar <strong class="font-semibold italic">Rp 25.000</strong> dengan minimal pembelanjaan <strong class="font-semibold italic">Rp 150.000</strong>.
@@ -26,13 +30,14 @@
                 <nav class="flex items-center gap-5" aria-label="Menu utama">
                     <a href="{{ route('home') }}" class="text-[13px] font-medium text-[#4FC3F7]">Beranda</a>
 
+                    {{-- Dropdown Game --}}
                     <details class="group relative">
                         <summary class="flex cursor-pointer list-none items-center gap-1 text-[13px] font-medium text-[#333] transition-colors hover:text-[#4FC3F7]">
                             Game
                             <span class="text-[10px] transition-transform group-open:rotate-180">&#9662;</span>
                         </summary>
                         <div class="absolute left-0 top-full z-20 mt-2 max-h-80 w-56 overflow-y-auto rounded-lg border border-[#EAEAEA] bg-white py-2 shadow-sm">
-                            @forelse ($games as $g)
+                            @forelse ($footerGames as $g)
                                 <a href="{{ route('catalog.game', $g->slug) }}" class="block px-3.5 py-1.5 text-[12px] text-[#333] transition-colors hover:bg-[#F5F7FA] hover:text-[#4FC3F7]">{{ $g->name }}</a>
                             @empty
                                 <span class="block px-3.5 py-1.5 text-[12px] text-[#999]">Belum ada game</span>
@@ -40,21 +45,18 @@
                         </div>
                     </details>
 
+                    {{-- Dropdown Developer --}}
                     <details class="group relative">
                         <summary class="flex cursor-pointer list-none items-center gap-1 text-[13px] font-medium text-[#333] transition-colors hover:text-[#4FC3F7]">
                             Developer
                             <span class="text-[10px] transition-transform group-open:rotate-180">&#9662;</span>
                         </summary>
                         <div class="absolute left-0 top-full z-20 mt-2 max-h-80 w-56 overflow-y-auto rounded-lg border border-[#EAEAEA] bg-white py-2 shadow-sm">
-                            @isset($footerDevelopers)
-                                @forelse ($footerDevelopers as $dev)
-                                    <a href="{{ data_get($dev, 'url') ?? (data_get($dev, 'slug') ? route('catalog.developer', data_get($dev, 'slug')) : '#') }}" class="block px-3.5 py-1.5 text-[12px] text-[#333] transition-colors hover:bg-[#F5F7FA] hover:text-[#4FC3F7]">{{ data_get($dev, 'name') }}</a>
-                                @empty
-                                    <span class="block px-3.5 py-1.5 text-[12px] text-[#999]">Belum ada developer</span>
-                                @endforelse
-                            @else
+                            @forelse ($footerDevelopers as $dev)
+                                <a href="{{ route('catalog.developer', $dev->slug) }}" class="block px-3.5 py-1.5 text-[12px] text-[#333] transition-colors hover:bg-[#F5F7FA] hover:text-[#4FC3F7]">{{ $dev->name }}</a>
+                            @empty
                                 <span class="block px-3.5 py-1.5 text-[12px] text-[#999]">Belum ada developer</span>
-                            @endisset
+                            @endforelse
                         </div>
                     </details>
 
@@ -85,6 +87,7 @@
                 </div>
             </div>
 
+            {{-- Mobile --}}
             <div class="flex min-h-[64px] items-center justify-between gap-3 lg:hidden">
                 <details class="relative">
                     <summary class="flex h-10 w-10 cursor-pointer list-none items-center justify-center text-[#333]" aria-label="Menu">
@@ -94,20 +97,21 @@
                         <a href="{{ route('home') }}" class="block px-4 py-2.5 text-[13px] font-medium text-[#4FC3F7]">Beranda</a>
                         <a href="#game-grid" class="block px-4 py-2.5 text-[13px] text-[#333]">Game</a>
                         <a href="#merch-baru" class="block px-4 py-2.5 text-[13px] text-[#333]">Pre-order Baru</a>
+
                         <div class="mt-1 border-t border-[#EAEAEA] pt-1">
                             <p class="px-4 py-1.5 font-mono text-[10px] uppercase tracking-wider text-ink/45">Game</p>
-                            @foreach ($games as $g)
+                            @foreach ($footerGames as $g)
                                 <a href="{{ route('catalog.game', $g->slug) }}" class="block px-4 py-2 text-[12px] text-[#333]">{{ $g->name }}</a>
                             @endforeach
                         </div>
+
                         <div class="mt-1 border-t border-[#EAEAEA] pt-1">
                             <p class="px-4 py-1.5 font-mono text-[10px] uppercase tracking-wider text-ink/45">Developer</p>
-                            @isset($footerDevelopers)
-                                @foreach ($footerDevelopers as $dev)
-                                    <a href="{{ data_get($dev, 'url') ?? (data_get($dev, 'slug') ? route('catalog.developer', data_get($dev, 'slug')) : '#') }}" class="block px-4 py-2 text-[12px] text-[#333]">{{ data_get($dev, 'name') }}</a>
-                                @endforeach
-                            @endisset
+                            @foreach ($footerDevelopers as $dev)
+                                <a href="{{ route('catalog.developer', $dev->slug) }}" class="block px-4 py-2 text-[12px] text-[#333]">{{ $dev->name }}</a>
+                            @endforeach
                         </div>
+
                         <div class="mt-1 border-t border-[#EAEAEA] pt-1">
                             <a href="{{ route('login') }}" class="block px-4 py-2.5 text-[13px] font-medium text-[#333]">Masuk</a>
                         </div>
@@ -276,42 +280,54 @@
                     </div>
                 </div>
 
+                {{-- Footer Game --}}
                 <details class="group" open>
                     <summary class="flex cursor-pointer list-none items-center justify-between text-[14px] font-bold text-white marker:hidden lg:pointer-events-none lg:cursor-default">
                         Game
                         <span class="text-[#B0B3C5] transition-transform group-open:rotate-180 lg:hidden"><x-icons.chevron-up width="14" height="14" /></span>
                     </summary>
                     <ul class="mt-3.5 text-[12px] leading-[1.8]">
-                        @foreach ($games as $game)
+                        @forelse ($footerGames as $game)
                             <li><a href="{{ route('catalog.game', $game->slug) }}" class="text-[#B0B3C5] transition-colors hover:text-[#4FC3F7]">{{ $game->name }}</a></li>
-                        @endforeach
+                        @empty
+                            <li class="text-[#888]">Belum ada game</li>
+                        @endforelse
                     </ul>
                 </details>
 
                 <div class="space-y-8">
+                    {{-- Footer Developer --}}
                     <details class="group" open>
                         <summary class="flex cursor-pointer list-none items-center justify-between text-[14px] font-bold text-white marker:hidden lg:pointer-events-none lg:cursor-default">
-                            Jelajahi
+                            Developer
                             <span class="text-[#B0B3C5] transition-transform group-open:rotate-180 lg:hidden"><x-icons.chevron-up width="14" height="14" /></span>
                         </summary>
                         <ul class="mt-3.5 text-[12px] leading-[1.8]">
-                            <li><a href="{{ route('page.tentang-kami') }}" class="text-[#B0B3C5] transition-colors hover:text-[#4FC3F7]">Tentang Kami</a></li>
-                            <li><a href="{{ route('page.faq') }}" class="text-[#B0B3C5] transition-colors hover:text-[#4FC3F7]">Tanya Jawab Umum</a></li>
-                            <li><a href="{{ route('page.cara-belanja') }}" class="text-[#B0B3C5] transition-colors hover:text-[#4FC3F7]">Cara Belanja</a></li>
+                            @forelse ($footerDevelopers as $dev)
+                                <li><a href="{{ route('catalog.developer', $dev->slug) }}" class="text-[#B0B3C5] transition-colors hover:text-[#4FC3F7]">{{ $dev->name }}</a></li>
+                            @empty
+                                <li class="text-[#888]">Belum ada developer</li>
+                            @endforelse
                         </ul>
                     </details>
-                    <details class="group" open>
-                        <summary class="flex cursor-pointer list-none items-center justify-between text-[14px] font-bold text-white marker:hidden lg:pointer-events-none lg:cursor-default">
-                            Legal
-                            <span class="text-[#B0B3C5] transition-transform group-open:rotate-180 lg:hidden"><x-icons.chevron-up width="14" height="14" /></span>
-                        </summary>
-                        <ul class="mt-3.5 text-[12px] leading-[1.8]">
-                            <li><a href="{{ route('page.tnc') }}" class="text-[#B0B3C5] transition-colors hover:text-[#4FC3F7]">Syarat &amp; Ketentuan</a></li>
-                            <li><a href="{{ route('page.kebijakan-privasi') }}" class="text-[#B0B3C5] transition-colors hover:text-[#4FC3F7]">Kebijakan Privasi</a></li>
-                        </ul>
-                    </details>
-                </div>
 
+                    {{-- Footer Jelajahi --}}
+    <details class="group" open>
+        <summary class="flex cursor-pointer list-none items-center justify-between text-[14px] font-bold text-white marker:hidden lg:pointer-events-none lg:cursor-default">
+            Jelajahi
+            <span class="text-[#B0B3C5] transition-transform group-open:rotate-180 lg:hidden"><x-icons.chevron-up width="14" height="14" /></span>
+        </summary>
+        <ul class="mt-3.5 text-[12px] leading-[1.8]">
+            <li><a href="{{ route('page.tentang-kami') }}" class="text-[#B0B3C5] transition-colors hover:text-[#4FC3F7]">Tentang Kami</a></li>
+            <li><a href="{{ route('page.faq') }}" class="text-[#B0B3C5] transition-colors hover:text-[#4FC3F7]">Tanya Jawab Umum</a></li>
+            <li><a href="{{ route('page.cara-belanja') }}" class="text-[#B0B3C5] transition-colors hover:text-[#4FC3F7]">Cara Belanja</a></li>
+            <li><a href="{{ route('page.tnc') }}" class="text-[#B0B3C5] transition-colors hover:text-[#4FC3F7]">Syarat &amp; Ketentuan</a></li>
+            <li><a href="{{ route('page.kebijakan-privasi') }}" class="text-[#B0B3C5] transition-colors hover:text-[#4FC3F7]">Kebijakan Privasi</a></li>
+        </ul>
+    </details>
+</div>
+
+                {{-- Footer Produk Terpopuler --}}
                 <details class="group" open>
                     <summary class="flex cursor-pointer list-none items-center justify-between text-[14px] font-bold text-white marker:hidden lg:pointer-events-none lg:cursor-default">
                         Produk Terpopuler
@@ -400,7 +416,7 @@
 
             show(0);
             start();
-        })();       
+        })();
     </script>
 </body>
 </html>
