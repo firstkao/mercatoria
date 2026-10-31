@@ -5,6 +5,7 @@ namespace App\Services\User;
 use App\Models\Product;
 use App\Models\ProductView;
 use App\Models\User;
+use Illuminate\Database\QueryException;
 
 /**
  * State user (PRD 7.1/7.9) + kuota view (PRD 7.19) + countdown (PRD 7.10)
@@ -17,6 +18,9 @@ class UserStateService
     /** State dengan kuota view terbatas (PRD 7.9: Crush/Ex/ONS = 10x view produk). */
     private const VIEW_LIMITED = ['crush', 'ex', 'ons'];
 
+    /**
+     * Nama state user (lowercase, untuk logic).
+     */
     public function stateName(User $user): string
     {
         if ($user->isAdmin()) {
@@ -27,7 +31,15 @@ class UserStateService
             return 'crush';
         }
 
-        return strtolower((string) ($user->customer?->current_state ?? 'MVP'));
+        return strtolower((string) ($user->customer?->current_state ?? 'mvp'));
+    }
+
+    /**
+     * [FIX #1] Label untuk tampilan di blade — proper casing.
+     */
+    public function stateLabel(User $user): string
+    {
+        return strtoupper($this->stateName($user));
     }
 
     public function isViewLimited(User $user): bool
@@ -35,17 +47,25 @@ class UserStateService
         return in_array($this->stateName($user), self::VIEW_LIMITED, true);
     }
 
+    /**
+     * Record 1 view = 1 hitungan (PRD 7.19).
+     * firstOrCreate: produk yang sama dibuka berulang TIDAK nambah hitungan.
+     */
     public function recordView(User $user, Product $product): void
     {
         if (! $this->isViewLimited($user)) {
             return;
         }
 
-        // 1 produk = 1 hitungan walau dibuka berulang (PRD 7.19).
-        ProductView::firstOrCreate(
-            ['user_id' => $user->id, 'product_id' => $product->id],
-            ['viewed_at' => now()]
-        );
+        try {
+            ProductView::firstOrCreate(
+                ['user_id' => $user->id, 'product_id' => $product->id],
+                ['viewed_at' => now()]
+            );
+        } catch (QueryException) {
+            // [FIX #2] Race condition: 2 request barengan — unique constraint.
+            // Sudah tercatat, abaikan.
+        }
     }
 
     /**
@@ -57,6 +77,14 @@ class UserStateService
             'used' => ProductView::where('user_id', $user->id)->count(),
             'total' => self::VIEW_QUOTA,
         ];
+    }
+
+    /**
+     * Sisa view tersisa.
+     */
+    public function remainingViews(User $user): int
+    {
+        return max(0, self::VIEW_QUOTA - $this->viewUsage($user)['used']);
     }
 
     /**
