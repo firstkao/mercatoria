@@ -70,8 +70,21 @@ class DeveloperController extends Controller
         return redirect()->route('office.developers.index')->with('status', 'Developer diperbarui.');
     }
 
+    // [FIX] Single delete juga cek relasi sebelum hapus — konsisten dengan bulkDelete.
     public function destroy(Request $request, Developer $developer): RedirectResponse
     {
+        $developer->loadCount(['games', 'products']);
+
+        if ($developer->games_count > 0 || $developer->products_count > 0) {
+            throw ValidationException::withMessages([
+                'developer' => "Developer \"{$developer->name}\" masih terhubung ke "
+                    .implode(' & ', array_filter([
+                        $developer->games_count > 0 ? "{$developer->games_count} game" : null,
+                        $developer->products_count > 0 ? "{$developer->products_count} produk" : null,
+                    ])).'. Hapus relasinya dulu.',
+            ]);
+        }
+
         AdminLog::record($request->user(), 'delete', 'Developer', $developer->id, $developer->only(['name', 'slug']), null, 'Hapus developer');
         if ($developer->logo_path) {
             @unlink(storage_path('app/private/'.$developer->logo_path));
@@ -121,9 +134,7 @@ class DeveloperController extends Controller
             ->with('status', "{$diperbarui} developer diperbarui, {$dibuat} developer dibuat.");
     }
 
-    /**
-     * Bulk hapus developer — ditolak bila masih terhubung ke game.
-     */
+    // [FIX] Cek games_count + products_count — developer terpakai tidak bisa dihapus.
     public function bulkDelete(Request $request): RedirectResponse
     {
         $data = $request->validate([
@@ -131,12 +142,22 @@ class DeveloperController extends Controller
             'ids.*' => ['integer', 'exists:developers,id'],
         ]);
 
-        $developers = Developer::withCount('games')->whereIn('id', $data['ids'])->get();
-        $terpakai = $developers->filter(fn (Developer $developer) => $developer->games_count > 0);
+        $developers = Developer::withCount(['games', 'products'])->whereIn('id', $data['ids'])->get();
+        $terpakai = $developers->filter(
+            fn (Developer $d) => $d->games_count > 0 || $d->products_count > 0
+        );
 
         if ($terpakai->isNotEmpty()) {
+            $details = $terpakai->map(function (Developer $d) {
+                $parts = array_filter([
+                    $d->games_count > 0 ? "{$d->games_count} game" : null,
+                    $d->products_count > 0 ? "{$d->products_count} produk" : null,
+                ]);
+                return "{$d->name} (".implode(' & ', $parts).')';
+            })->implode(', ');
+
             throw ValidationException::withMessages([
-                'ids' => 'Developer '.implode(', ', $terpakai->pluck('name')->all()).' masih terhubung ke game.',
+                'ids' => "Developer masih terpakai: {$details}. Hapus relasinya dulu.",
             ]);
         }
 
