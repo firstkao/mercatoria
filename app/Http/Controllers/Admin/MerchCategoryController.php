@@ -28,7 +28,16 @@ class MerchCategoryController extends Controller
             'priority' => ['required', 'integer', 'min:1', 'max:255'],
             'keywords' => ['nullable', 'string'],
         ]);
-        $data['slug'] = Str::slug($data['name']);
+
+        // [FIX #1] Handle slug collision — kalau nama duplikat, tambah suffix.
+        $baseSlug = Str::slug($data['name']);
+        $slug = $baseSlug;
+        $i = 2;
+        while (MerchCategory::where('slug', $slug)->exists()) {
+            $slug = $baseSlug.'-'.$i++;
+        }
+        $data['slug'] = $slug;
+
         $data['keywords'] = array_values(array_filter(array_map('trim', explode(',', (string) $request->input('keywords')))));
 
         $category = MerchCategory::create($data);
@@ -83,13 +92,22 @@ class MerchCategoryController extends Controller
                 AdminLog::record($request->user(), 'update', 'MerchCategory', $category->id, $old, $new, 'Bulk ubah kategori merch');
                 $diperbarui++;
             } else {
+                // [FIX #1] Slug collision handle di bulk juga.
+                $baseSlug = Str::slug($item['name']);
+                $slug = $baseSlug;
+                $i = 2;
+                while (MerchCategory::where('slug', $slug)->exists()) {
+                    $slug = $baseSlug.'-'.$i++;
+                }
+
                 $category = MerchCategory::create([
                     'name' => $item['name'],
-                    'slug' => Str::slug($item['name']),
+                    'slug' => $slug,
                     'priority' => $item['priority'],
                     'keywords' => $item['keywords'],
                 ]);
-                AdminLog::record($request->user(), 'create', 'MerchCategory', $category->id, null, $category->only(['name', 'slug', 'priority']), 'Bulk tambah kategori merch');
+                // [FIX #2] Include keywords di log — konsisten dengan update.
+                AdminLog::record($request->user(), 'create', 'MerchCategory', $category->id, null, $category->only(['name', 'slug', 'priority', 'keywords']), 'Bulk tambah kategori merch');
                 $dibuat++;
             }
         }
@@ -120,7 +138,8 @@ class MerchCategoryController extends Controller
         $categories = MerchCategory::whereIn('id', $data['ids'])->get();
 
         foreach ($categories as $category) {
-            AdminLog::record($request->user(), 'delete', 'MerchCategory', $category->id, $category->only(['name', 'slug', 'priority']), null, 'Bulk hapus kategori merch');
+            // [FIX #2] Include keywords di log — konsisten dengan update.
+            AdminLog::record($request->user(), 'delete', 'MerchCategory', $category->id, $category->only(['name', 'slug', 'priority', 'keywords']), null, 'Bulk hapus kategori merch');
             $category->delete();
         }
 

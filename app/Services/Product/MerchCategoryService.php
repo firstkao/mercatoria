@@ -1,40 +1,41 @@
 <?php
 
-namespace App\Services\Product;
+namespace App\Models;
 
-use App\Models\MerchCategory;
+use Illuminate\Database\Eloquent\Model;
 
-class MerchCategoryService
+class MerchCategory extends Model
 {
-    /**
-     * Cari kategori merch dari nama/slug produk (PRD 14 — scan keyword
-     * berdasarkan prioritas dari atas; tidak match = other).
-     */
-    public function resolveSlug(string $name): string
-    {
-        $haystack = mb_strtolower($name);
+    protected $fillable = ['name', 'slug', 'priority', 'keywords'];
 
-        $categories = MerchCategory::orderBy('priority')->get();
+    protected function casts(): array
+    {
+        return [
+            // [FIX #2] WAJIB — kalau kolom JSON, tanpa ini foreach iterates per karakter.
+            'keywords' => 'array',
+            'priority' => 'integer',
+        ];
+    }
+
+    /**
+     * [Dipindah dari MerchCategoryService] Cari kategori dari nama/slug produk (PRD 14).
+     * Scan keyword berdasarkan prioritas; tidak match = fallback "Other".
+     */
+    public static function matchFor(string $name, ?string $slug = null): ?self
+    {
+        $haystack = mb_strtolower($name.' '.($slug ?? ''));
+
+        $categories = static::orderBy('priority')->get();
 
         foreach ($categories as $category) {
             foreach ($category->keywords ?? [] as $keyword) {
                 if (str_contains($haystack, mb_strtolower($keyword))) {
-                    return $category->slug;
+                    return $category;
                 }
             }
         }
 
-        // Fallback: kategori berprioritas terakhir ("Other" — PRD 14 prioritas 8).
-        return MerchCategory::orderByDesc('priority')->value('slug') ?? 'other';
-    }
-
-    /**
-     * Set merch_category_id produk dari nama produk, kecuali sudah di-override admin.
-     */
-    public function applyToProductName(string $productName): ?int
-    {
-        $slug = $this->resolveSlug($productName);
-
-        return MerchCategory::where('slug', $slug)->value('id');
+        // Fallback: kategori prioritas terakhir ("Other").
+        return static::orderByDesc('priority')->first();
     }
 }
