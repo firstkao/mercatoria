@@ -4,10 +4,8 @@
 
 @section('content')
 @php
-    // Flatten semua settings ke key=>value map
     $allSettings = collect($groups)->flatten(1)->keyBy('key');
 
-    // Remap group DB → tab DS 15.1
     $tabMap = [
         'Umum'       => ['display', 'order', 'product', 'social', 'snapshot'],
         'Harga'      => ['pricing'],
@@ -19,7 +17,6 @@
         'Lainnya'    => ['user', 'splitbox'],
     ];
 
-    // Bangun sections per tab
     $sections = [];
     foreach ($tabMap as $tabName => $groupNames) {
         foreach ($groupNames as $gn) {
@@ -56,9 +53,6 @@
 
     $sv = function (string $key) use ($allSettings) {
         return $allSettings[$key]->value ?? '';
-    };
-    $sExists = function (string $key) use ($allSettings) {
-        return $allSettings->has($key);
     };
 @endphp
 
@@ -118,6 +112,13 @@
                             </div>
                         </div>
                     @endforeach
+                </div>
+
+                {{-- [FIX #2] Tombol Simpan untuk tab generic --}}
+                <div class="mt-6">
+                    <button type="submit" class="rounded-lg bg-black px-6 py-2.5 text-sm font-semibold tracking-[0.12em] text-white transition-colors hover:bg-ink">
+                        <i class="bi bi-check-lg me-1.5" style="font-size:0.85rem;"></i> Simpan Pengaturan
+                    </button>
                 </div>
             </div>
         @endif
@@ -296,19 +297,18 @@
                                value="1" id="kill-switch"
                                {{ $emailPaused ? 'checked' : '' }}
                                class="peer sr-only">
-                        <span class="block h-8 w-[56px] rounded-full transition-colors
-                              {{ $emailPaused ? 'bg-[#E53935]' : 'bg-[#43A047]' }}
-                              after:absolute after:left-1 after:top-1 after:h-6 after:w-6 after:rounded-full after:bg-white after:shadow-sm after:transition-transform after:content-['']
-                              {{ $emailPaused ? 'after:translate-x-[28px]' : 'after:translate-x-0' }}">
+                        {{-- [FIX #3] Pakai peer-checked: supaya toggle visual update otomatis --}}
+                        <span id="kill-toggle-visual"
+                              class="block h-8 w-[56px] rounded-full transition-colors peer-checked:bg-[#E53935] peer-checked:after:translate-x-[28px] bg-[#43A047] after:absolute after:left-1 after:top-1 after:h-6 after:w-6 after:rounded-full after:bg-white after:shadow-sm after:transition-transform after:content-['']">
                         </span>
                     </span>
-                    <span class="whitespace-nowrap text-sm font-medium {{ $emailPaused ? 'text-[#E53935]' : 'text-[#43A047]' }}">
+                    <span id="kill-label-text" class="whitespace-nowrap text-sm font-medium {{ $emailPaused ? 'text-[#E53935]' : 'text-[#43A047]' }}">
                         {{ $emailPaused ? 'AKTIF — Email Dihentikan' : 'NONAKTIF — Normal' }}
                     </span>
                 </label>
             </div>
 
-            @if($emailPaused)
+            <div id="kill-warning" class="{{ $emailPaused ? '' : 'hidden' }}">
                 <div class="mt-4 rounded-lg border border-red-200 bg-red-50/50 p-4">
                     <div class="flex items-center gap-2">
                         <i class="bi bi-exclamation-triangle text-[#E53935]" style="font-size:1rem;"></i>
@@ -331,7 +331,7 @@
                               class="mt-1.5 w-full rounded-lg border border-rule px-3 py-2.5 text-sm text-ink"
                               placeholder="Sedang tes alur checkout & inject order migrasi">{{ $sv('email_stop_reason') }}</textarea>
                 </div>
-            @endif
+            </div>
         </div>
 
         {{-- SMTP Pengirim --}}
@@ -537,9 +537,7 @@
 
 </form>
 
-{{-- ═══════════════════════════════════════════════════ --}}
-{{-- MODAL: Konfirmasi Kill Switch — DS 15.2            --}}
-{{-- ═══════════════════════════════════════════════════ --}}
+{{-- ═══ MODAL: Kill Switch ═══ --}}
 <div id="modal-kill-switch" class="fixed inset-0 z-[100] hidden items-center justify-center bg-black/50 p-6">
     <div class="w-full max-w-lg rounded-2xl border border-rule bg-white shadow-2xl">
         <div class="flex items-center gap-4 border-b border-rule px-8 py-6">
@@ -576,9 +574,7 @@
     </div>
 </div>
 
-{{-- ═══════════════════════════════════════════════════ --}}
-{{-- MODAL: Kirim Email Test                          --}}
-{{-- ═══════════════════════════════════════════════════ --}}
+{{-- ═══ MODAL: Kirim Email Test ═══ --}}
 <div id="modal-test-email" class="fixed inset-0 z-[100] hidden items-center justify-center bg-black/50 p-6">
     <div class="w-full max-w-lg rounded-2xl border border-rule bg-white shadow-2xl">
         <div class="flex items-center gap-4 border-b border-rule px-8 py-6">
@@ -615,9 +611,7 @@
     </div>
 </div>
 
-{{-- ═══════════════════════════════════════════════════ --}}
-{{-- MODAL: Info / Alert (ganti alert() generic)       --}}
-{{-- ═══════════════════════════════════════════════════ --}}
+{{-- ═══ MODAL: Info / Alert ═══ --}}
 <div id="modal-info" class="fixed inset-0 z-[100] hidden items-center justify-center bg-black/50 p-6">
     <div class="w-full max-w-md rounded-2xl border border-rule bg-white shadow-2xl">
         <div class="flex items-center gap-4 border-b border-rule px-8 py-6">
@@ -638,7 +632,6 @@
     </div>
 </div>
 
-{{-- Tab Switcher + Modal JS --}}
 <script>
 (function () {
     // ── Tab Switcher ──
@@ -675,7 +668,6 @@
         document.body.style.overflow = '';
     }
 
-    // Close on backdrop click
     ['modal-kill-switch', 'modal-test-email', 'modal-info'].forEach(function (id) {
         var el = document.getElementById(id);
         if (el) {
@@ -685,7 +677,6 @@
         }
     });
 
-    // Close on Escape
     document.addEventListener('keydown', function (e) {
         if (e.key === 'Escape') {
             closeModal('modal-kill-switch');
@@ -694,41 +685,54 @@
         }
     });
 
-    // ── Kill Switch Modal ──
+    // ── [FIX #3] Kill Switch — toggle visual + warning update ──
     var killSwitch = document.getElementById('kill-switch');
-    var killModal = document.getElementById('modal-kill-switch');
-    var killConfirm = document.getElementById('modal-kill-confirm');
-    var killCancel = document.getElementById('modal-kill-cancel');
+    var killLabel = document.getElementById('kill-label-text');
+    var killWarning = document.getElementById('kill-warning');
 
-    if (killSwitch && killModal) {
+    function updateKillVisual() {
+        if (!killSwitch) return;
+        var checked = killSwitch.checked;
+        if (killLabel) {
+            killLabel.textContent = checked ? 'AKTIF — Email Dihentikan' : 'NONAKTIF — Normal';
+            killLabel.className = 'whitespace-nowrap text-sm font-medium ' + (checked ? 'text-[#E53935]' : 'text-[#43A047]');
+        }
+        if (killWarning) {
+            killWarning.classList.toggle('hidden', !checked);
+        }
+    }
+
+    if (killSwitch) {
         killSwitch.addEventListener('change', function (e) {
             if (e.target.checked) {
-                // Reset checkbox, show modal instead
-                e.target.checked = false;
+                e.target.checked = false; // Reset dulu
                 openModal('modal-kill-switch');
+            } else {
+                updateKillVisual(); // Uncheck = matikan kill switch
             }
         });
     }
 
+    var killConfirm = document.getElementById('modal-kill-confirm');
+    if (killConfirm) {
+        killConfirm.addEventListener('click', function () {
+            if (killSwitch) {
+                killSwitch.checked = true;
+                updateKillVisual();
+            }
+            closeModal('modal-kill-switch');
+        });
+    }
+
+    var killCancel = document.getElementById('modal-kill-cancel');
     if (killCancel) {
         killCancel.addEventListener('click', function () {
             closeModal('modal-kill-switch');
         });
     }
 
-    if (killConfirm) {
-        killConfirm.addEventListener('click', function () {
-            // Check the checkbox and close modal
-            if (killSwitch) {
-                killSwitch.checked = true;
-            }
-            closeModal('modal-kill-switch');
-        });
-    }
-
-    // ── Test Email Modal ──
+    // ── [FIX #1] Test Email — actual fetch ke endpoint ──
     var btnTestEmail = document.getElementById('btn-test-email');
-    var testModal = document.getElementById('modal-test-email');
     var testConfirm = document.getElementById('modal-test-confirm');
     var testCancel = document.getElementById('modal-test-cancel');
 
@@ -746,9 +750,35 @@
 
     if (testConfirm) {
         testConfirm.addEventListener('click', function () {
-            closeModal('modal-test-email');
-            // Show info modal instead of alert()
-            showInfo('Email Test Terkirim', 'Email test telah dikirim ke alamat admin. Silakan cek inbox / folder spam.', 'success');
+            var btn = this;
+            btn.disabled = true;
+            btn.textContent = 'Mengirim...';
+
+            fetch('{{ route('office.settings.test-email') }}', {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json',
+                },
+            })
+            .then(function (r) { return r.json().then(function (d) { return { ok: r.ok, data: d }; }); })
+            .then(function (res) {
+                closeModal('modal-test-email');
+                if (res.ok) {
+                    showInfo('Email Test Terkirim', res.data.message || 'Email test telah dikirim ke alamat admin. Silakan cek inbox / folder spam.', 'success');
+                } else {
+                    showInfo('Gagal', res.data.message || 'Gagal mengirim email test. Periksa konfigurasi SMTP.', 'error');
+                }
+            })
+            .catch(function () {
+                closeModal('modal-test-email');
+                showInfo('Error', 'Terjadi kesalahan jaringan. Coba lagi.', 'error');
+            })
+            .finally(function () {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="bi bi-send me-1.5" style="font-size:0.85rem;"></i> Kirim Sekarang';
+            });
         });
     }
 
@@ -765,7 +795,6 @@
         infoTitle.textContent = title;
         infoMessage.textContent = message;
 
-        // Reset icon colors
         infoIconWrap.className = 'flex h-10 w-10 shrink-0 items-center justify-center rounded-full';
         infoIcon.className = '';
 

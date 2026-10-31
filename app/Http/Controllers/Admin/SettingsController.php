@@ -5,10 +5,12 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\AdminLog;
 use App\Models\Setting;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
@@ -16,7 +18,6 @@ class SettingsController extends Controller
 {
     public function index(): View
     {
-        // Pastikan semua settings default ada di DB
         $this->ensureDefaultSettings();
 
         return view('admin.settings.index', [
@@ -30,18 +31,16 @@ class SettingsController extends Controller
 
         $input = (array) $request->input('settings', []);
 
-        // Hapus key yang tidak dikirim (checkbox unchecked = 0)
+        // [FIX] Checkbox HTML: unchecked = tidak terkirim = harus diset '0'.
         $checkboxKeys = [
             'customer_emails_paused', 'notif_admin_bukti_bayar',
             'anti_download_enabled', 'auto_watermark_enabled', 'heavy_watermark',
         ];
         foreach ($checkboxKeys as $ck) {
-            if (array_key_exists($ck, $input) && $input[$ck] !== '1') {
+            if (! array_key_exists($ck, $input)) {
                 $input[$ck] = '0';
-            }
-            // Checkbox yang tidak dikirim sama sekali = unchecked = 0
-            if (!array_key_exists($ck, $input) && $request->has('settings')) {
-                // Hanya set 0 jika form ini yang submit (bukan partial form)
+            } elseif ($input[$ck] !== '1') {
+                $input[$ck] = '0';
             }
         }
 
@@ -61,7 +60,7 @@ class SettingsController extends Controller
 
         // Simpan semua settings (auto-create jika belum ada)
         foreach ($input as $key => $value) {
-            if (!is_scalar($value)) continue;
+            if (! is_scalar($value)) continue;
 
             $setting = Setting::firstOrCreate(
                 ['key' => $key],
@@ -112,7 +111,7 @@ class SettingsController extends Controller
             'ga4_measurement_id' => ['nullable', 'string', 'max:40'],
         ]);
 
-        $this->saveSetting($request, 'ga4_measurement_id', (string) ($data['ga4_measurement_id'] ?? ''));
+        $this->saveSetting($request, 'ga4_measurement_id', (string) ($data['ga4_measurement_id'] ?? ''), 'seo');
 
         return redirect()->route('office.seo.index')->with('status', 'Pengaturan SEO disimpan.');
     }
@@ -137,11 +136,52 @@ class SettingsController extends Controller
             'promo_bar_active' => ['nullable', 'boolean'],
         ]);
 
-        $this->saveSetting($request, 'promo_bar_text', (string) ($data['promo_bar_text'] ?? ''));
-        $this->saveSetting($request, 'promo_bar_link', (string) ($data['promo_bar_link'] ?? ''));
-        $this->saveSetting($request, 'promo_bar_active', $request->boolean('promo_bar_active') ? '1' : '0');
+        $this->saveSetting($request, 'promo_bar_text', (string) ($data['promo_bar_text'] ?? ''), 'marketing');
+        $this->saveSetting($request, 'promo_bar_link', (string) ($data['promo_bar_link'] ?? ''), 'marketing');
+        $this->saveSetting($request, 'promo_bar_active', $request->boolean('promo_bar_active') ? '1' : '0', 'marketing');
 
         return redirect()->route('office.marketing.index')->with('status', 'Pengaturan marketing disimpan.');
+    }
+
+    /**
+     * [FIX] PRD 15.2: kirim email test ke admin — bypass kill-switch.
+     * Dipanggil via fetch() dari blade settings (modal Kirim Email Test).
+     */
+    public function testEmail(Request $request): JsonResponse
+    {
+        $adminEmail = $request->user()->email;
+
+        try {
+            Mail::raw(
+                "Ini adalah email test dari Mercatoria Admin Panel.\n\n".
+                "Waktu: ".now()->format('Y-m-d H:i:s')."\n\n".
+                "Jika Anda menerima email ini, konfigurasi SMTP sudah benar.",
+                function ($message) use ($adminEmail) {
+                    $message->to($adminEmail)
+                        ->subject('[Test] Mercatoria — Email Test');
+                }
+            );
+
+            AdminLog::record(
+                $request->user(),
+                'create',
+                'Setting',
+                null,
+                null,
+                ['email' => $adminEmail],
+                'Kirim email test'
+            );
+
+            return response()->json([
+                'success' => true,
+                'message' => "Email test terkirim ke {$adminEmail}. Silakan cek inbox / folder spam.",
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal mengirim email test: '.$e->getMessage(),
+            ], 500);
+        }
     }
 
     // ═══════════════════════════════════════════════
@@ -183,6 +223,14 @@ class SettingsController extends Controller
             ['key' => 'watermark_pattern',           'group' => 'security', 'type' => 'string', 'value' => 'diagonal_tiled',             'description' => 'Pola watermark'],
             ['key' => 'watermark_opacity',           'group' => 'security', 'type' => 'string', 'value' => '25',        'description' => 'Opacity watermark persen'],
             ['key' => 'heavy_watermark',             'group' => 'security', 'type' => 'bool',   'value' => '0',         'description' => 'Heavy watermark jika URL dibuka langsung'],
+
+            // ── SEO ──
+            ['key' => 'ga4_measurement_id',          'group' => 'seo',      'type' => 'string', 'value' => '',          'description' => 'Google Analytics 4 Measurement ID'],
+
+            // ── Marketing ──
+            ['key' => 'promo_bar_text',              'group' => 'marketing','type' => 'string', 'value' => '',          'description' => 'Teks promo bar'],
+            ['key' => 'promo_bar_link',              'group' => 'marketing','type' => 'string', 'value' => '',          'description' => 'Link promo bar'],
+            ['key' => 'promo_bar_active',            'group' => 'marketing','type' => 'bool',   'value' => '1',         'description' => 'Status promo bar'],
         ];
 
         foreach ($defaults as $d) {
@@ -199,35 +247,53 @@ class SettingsController extends Controller
     }
 
     /**
-     * Validasi per key — lebih spesifik untuk field penting.
+     * Validasi per key.
+     *
+     * [FIX] match(true) evaluasi berurutan.
+     * Field persentase dicek SEBELUM field numeric umum.
      */
     private function rules(array $input): array
     {
         $rules = [];
 
+        // [FIX] fee_shopee_dp dipindah ke sini — blade tampil '%', harus max:100.
+        $percentKeys = [
+            'profit_percent', 'fee_qris_percent', 'dp_minimum_percent',
+            'watermark_opacity', 'fee_shopee_dp',
+        ];
+
+        // Numeric umum (tanpa overlap dengan percentKeys).
+        $numericKeys = [
+            'rate_rmb',
+            'ongkir_cn_batam_per_kg', 'ongkir_batam_jakarta_per_kg',
+            'default_weight_gram', 'fee_toco_fp', 'fee_toco_dp',
+            'fee_shopee_fp',
+            'qris_threshold',
+        ];
+
+        $boolKeys = [
+            'customer_emails_paused', 'notif_admin_bukti_bayar',
+            'anti_download_enabled', 'auto_watermark_enabled', 'heavy_watermark',
+        ];
+
+        $emailKeys = ['email_security', 'email_notification', 'email_cs'];
+
         foreach ($input as $key => $value) {
             $rules[$key] = match (true) {
                 // Bool fields
-                in_array($key, [
-                    'customer_emails_paused', 'notif_admin_bukti_bayar',
-                    'anti_download_enabled', 'auto_watermark_enabled', 'heavy_watermark',
-                ]) => ['required', 'in:0,1'],
+                in_array($key, $boolKeys)
+                    => ['required', 'in:0,1'],
 
-                // Numeric / price fields
-                in_array($key, [
-                    'rate_rmb', 'profit_percent',
-                    'ongkir_cn_batam_per_kg', 'ongkir_batam_jakarta_per_kg',
-                    'default_weight_gram', 'fee_toco_fp', 'fee_toco_dp',
-                    'fee_shopee_fp', 'fee_shopee_dp', 'fee_qris_percent',
-                    'qris_threshold', 'dp_minimum_percent', 'watermark_opacity',
-                ]) => ['required', 'numeric', 'min:0'],
-
-                // Percentage fields (0-100)
-                in_array($key, ['profit_percent', 'fee_qris_percent', 'dp_minimum_percent', 'watermark_opacity'])
+                // Percentage fields (0-100) — dicek SEBELUM numeric umum
+                in_array($key, $percentKeys)
                     => ['required', 'numeric', 'min:0', 'max:100'],
 
+                // Numeric / price fields (tanpa overlap)
+                in_array($key, $numericKeys)
+                    => ['required', 'numeric', 'min:0'],
+
                 // Email fields
-                in_array($key, ['email_security', 'email_notification', 'email_cs'])
+                in_array($key, $emailKeys)
                     => ['nullable', 'email', 'max:255'],
 
                 // Watermark pattern
@@ -258,6 +324,7 @@ class SettingsController extends Controller
         if (in_array($key, [
             'customer_emails_paused', 'notif_admin_bukti_bayar',
             'anti_download_enabled', 'auto_watermark_enabled', 'heavy_watermark',
+            'promo_bar_active',
         ])) return 'bool';
 
         return 'string';
@@ -281,6 +348,10 @@ class SettingsController extends Controller
             str_starts_with($key, 'auto_watermark'), $key === 'heavy_watermark'
                 => 'security',
 
+            str_starts_with($key, 'ga4_') => 'seo',
+
+            str_starts_with($key, 'promo_') => 'marketing',
+
             default => 'display',
         };
     }
@@ -293,13 +364,16 @@ class SettingsController extends Controller
         return ucwords(str_replace('_', ' ', $key));
     }
 
-    private function saveSetting(Request $request, string $key, string $value): void
+    /**
+     * Simpan single setting — dengan parameter group.
+     */
+    private function saveSetting(Request $request, string $key, string $value, string $group = 'marketing'): void
     {
         $setting = Setting::firstOrCreate(['key' => $key], [
             'value'       => $value,
             'type'        => 'string',
-            'group'       => 'marketing',
-            'description' => 'Pengaturan admin',
+            'group'       => $group,
+            'description' => $this->guessDescription($key),
         ]);
 
         $old = $setting->value;
