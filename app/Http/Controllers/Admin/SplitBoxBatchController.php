@@ -11,13 +11,22 @@ use Illuminate\Http\Request;
 
 class SplitBoxBatchController extends Controller
 {
-    public function __construct(private SplitBoxService $splitBox) {}
+    public function __construct(private SplitBoxService $splitBox)
+    {
+        $this->middleware('auth');
+        $this->middleware('can:manage-split-box');
+    }
 
     /**
      * PRD 49.11: Tutup Kloter & Refund Semua.
      */
     public function closeRefund(Request $request, SplitBoxBatch $split_box_batch): RedirectResponse
     {
+        // Guard: jangan double-close
+        if ($split_box_batch->status !== SplitBoxBatch::STATUS_OPEN) {
+            return redirect()->back()->with('error', 'Kloter ini sudah ditutup.');
+        }
+
         $before = $split_box_batch->only(['status']);
         $count = $this->splitBox->closeBatchAndRefund($split_box_batch, $request->user());
 
