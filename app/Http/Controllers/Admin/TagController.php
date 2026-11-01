@@ -23,8 +23,14 @@ class TagController extends Controller
     {
         $data = $request->validate([
             'name' => ['required', 'string', 'max:50', 'unique:tags,name'],
+            'slug' => ['nullable', 'string', 'max:60', 'unique:tags,slug'],
         ]);
-        $data['slug'] = Str::slug($data['name']);
+
+        if (empty($data['slug'])) {
+            $data['slug'] = Str::slug($data['name']);
+        } else {
+            $data['slug'] = Str::slug($data['slug']);
+        }
 
         $tag = Tag::create($data);
         AdminLog::record($request->user(), 'create', 'Tag', $tag->id, null, $data, 'Tambah tag');
@@ -32,8 +38,33 @@ class TagController extends Controller
         return redirect()->route('office.tags.index')->with('status', 'Tag dibuat.');
     }
 
+    public function update(Request $request, Tag $tag): RedirectResponse
+    {
+        $data = $request->validate([
+            'name' => ['required', 'string', 'max:50', 'unique:tags,name,' . $tag->id],
+            'slug' => ['nullable', 'string', 'max:60', 'unique:tags,slug,' . $tag->id],
+        ]);
+
+        if (empty($data['slug'])) {
+            $data['slug'] = Str::slug($data['name']);
+        } else {
+            $data['slug'] = Str::slug($data['slug']);
+        }
+
+        $old = $tag->only(['name', 'slug']);
+        $tag->update($data);
+        AdminLog::record($request->user(), 'update', 'Tag', $tag->id, $old, $data, 'Update tag');
+
+        return redirect()->route('office.tags.index')->with('status', 'Tag diperbarui.');
+    }
+
     public function destroy(Request $request, Tag $tag): RedirectResponse
     {
+        // Cek masih dipake di product_tag
+        if ($tag->products()->exists()) {
+            return redirect()->route('office.tags.index')->with('error', 'Tag "' . $tag->name . '" masih terpakai di produk.');
+        }
+
         AdminLog::record($request->user(), 'delete', 'Tag', $tag->id, $tag->only(['name', 'slug']), null, 'Hapus tag');
         $tag->delete();
 

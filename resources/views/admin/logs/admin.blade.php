@@ -85,10 +85,11 @@
         'gray'  => 'bg-[#F5F2EC] text-[#57534E] border-[#D8D2C4]',
     ];
 
-    // ── Format value → teks manusia ──
+        // ── Format value → teks manusia ──
     $fmtVal = function ($v) {
         if (is_bool($v)) return $v ? 'Aktif' : 'Nonaktif';
         if (is_null($v)) return '—';
+        if (is_array($v)) return implode(', ', array_map(fn($x) => is_scalar($x) ? (string) $x : json_encode($x), $v));
         return (string) $v;
     };
 
