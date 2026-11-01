@@ -8,6 +8,7 @@ use App\Models\Payment;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Carbon;
 use Illuminate\View\View;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class ReportController extends Controller
 {
@@ -38,6 +39,28 @@ class ReportController extends Controller
             'hangus' => $hangus,
             'dendaDiterima' => $dendaDiterima,
         ]);
+    }
+
+    /**
+     * AMANDEMEN-v1: export laporan inline via stream CSV (tanpa maatwebsite/excel).
+     */
+    public function export(): StreamedResponse
+    {
+        return response()->streamDownload(function (): void {
+            $out = fopen('php://output', 'w');
+            fputcsv($out, ['no_order', 'status', 'scheme', 'total', 'tagihan_web', 'created_at']);
+
+            Order::query()->orderBy('id')->chunk(500, function ($orders) use ($out): void {
+                foreach ($orders as $order) {
+                    fputcsv($out, [
+                        $order->no_order, $order->status, $order->scheme,
+                        $order->total, $order->tagihan_web, $order->created_at,
+                    ]);
+                }
+            });
+
+            fclose($out);
+        }, 'laporan-penjualan-'.now()->format('Ymd').'.csv', ['Content-Type' => 'text/csv']);
     }
 
     /**
