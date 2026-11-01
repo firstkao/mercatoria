@@ -83,6 +83,19 @@
     .variant-row .row-head .idx { font-family: monospace; font-size: 10px; text-transform: uppercase; letter-spacing: 0.14em; color: rgba(0,0,0,0.45); }
     .variant-row .remove-btn { color: #E53935; cursor: pointer; background: none; border: none; font-size: 1.1rem; line-height: 1; padding: 0.25rem; }
     .variant-row .remove-btn:hover { color: #C62828; }
+
+    .splitbox-toggle { position: relative; display: inline-block; width: 42px; height: 22px; }
+    .splitbox-toggle input { opacity: 0; width: 0; height: 0; }
+    .splitbox-toggle .slider {
+        position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
+        background-color: #d1d5db; transition: .2s; border-radius: 22px;
+    }
+    .splitbox-toggle .slider:before {
+        content: ""; position: absolute; height: 16px; width: 16px; left: 3px; bottom: 3px;
+        background-color: white; transition: .2s; border-radius: 50%;
+    }
+    .splitbox-toggle input:checked + .slider { background-color: #43A047; }
+    .splitbox-toggle input:checked + .slider:before { transform: translateX(20px); }
 </style>
 
 {{-- ═══ FORM UTAMA ═══ --}}
@@ -96,6 +109,8 @@
     <input type="hidden" name="is_active" id="input-is-active"
            value="{{ old('is_active', $product->exists ? ($product->is_active ? 1 : 0) : 1) }}">
     <input type="hidden" name="remove_description_image" id="remove-desc-flag" value="0">
+    <input type="hidden" name="is_split_box" id="input-is-split-box"
+           value="{{ old('is_split_box', $product->exists ? ($product->is_split_box ? 1 : 0) : 0) }}">
 
     <div class="overflow-hidden rounded-xl border border-rule bg-white">
 
@@ -125,7 +140,7 @@
             {{-- ═══════════ KONTEN UTAMA (kiri) ═══════════ --}}
             <div class="pform-main">
 
-                {{-- Nama + Slug — side-by-side --}}
+                {{-- Nama + Slug --}}
                 <div class="p-6">
                     <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
                         <div>
@@ -163,7 +178,6 @@
                         <p class="font-mono text-[11px] font-medium uppercase tracking-[0.16em] text-ink">Kalkulasi Harga</p>
                         <div class="mt-4 h-px bg-rule"></div>
 
-                        {{-- Row 1: SKU + Harga RMB + Berat — 3 kolom --}}
                         <div class="mt-4 grid grid-cols-1 gap-4 md:grid-cols-3">
                             <div>
                                 <label class="block text-sm font-medium text-ink">SKU <span class="text-danger">*</span></label>
@@ -193,28 +207,21 @@
 
                         <div class="mt-5 h-px bg-rule"></div>
 
-                        {{-- Row 2: 3 Ongkir — 3 kolom --}}
                         <div class="mt-4 grid grid-cols-1 gap-4 md:grid-cols-3">
                             <div>
                                 <label class="block text-sm font-medium text-ink">Ongkir Lokal CN (RMB)</label>
                                 <div class="mt-1.5 rounded-lg border border-rule bg-paper/40 px-3 py-2.5 text-sm text-ink/60" id="disp-ongkir-lokal">Otomatis dari store</div>
-                                <p class="mt-1 text-[10px] text-ink/45">
-                                    <span id="info-ongkir-lokal">Store: —</span>
-                                </p>
+                                <p class="mt-1 text-[10px] text-ink/45"><span id="info-ongkir-lokal">Store: —</span></p>
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-ink">Ongkir CN-BTM (IDR)</label>
                                 <div class="mt-1.5 rounded-lg border border-rule bg-paper/40 px-3 py-2.5 text-sm text-ink/60" id="disp-ongkir-cnbtm">Otomatis dari berat</div>
-                                <p class="mt-1 text-[10px] text-ink/45">
-                                    <span id="info-ongkir-cnbtm">—</span>
-                                </p>
+                                <p class="mt-1 text-[10px] text-ink/45"><span id="info-ongkir-cnbtm">—</span></p>
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-ink">Ongkir BTM-JKT (IDR)</label>
                                 <div class="mt-1.5 rounded-lg border border-rule bg-paper/40 px-3 py-2.5 text-sm text-ink/60" id="disp-ongkir-btmjkt">Otomatis dari berat</div>
-                                <p class="mt-1 text-[10px] text-ink/45">
-                                    <span id="info-ongkir-btmjkt">—</span>
-                                </p>
+                                <p class="mt-1 text-[10px] text-ink/45"><span id="info-ongkir-btmjkt">—</span></p>
                             </div>
                         </div>
                         <p class="mt-2 flex items-start gap-1.5 text-xs text-ink/55">
@@ -677,7 +684,7 @@
                     @error('image')<p class="mt-1 text-xs text-danger">{{ $message }}</p>@enderror
                 </div>
 
-                {{-- DISKON — compact --}}
+                {{-- DISKON --}}
                 <div class="border-b border-rule p-5">
                     <p class="font-mono text-[11px] font-medium uppercase tracking-[0.16em] text-ink">Diskon Produk</p>
                     <div class="mt-2">
@@ -703,6 +710,22 @@
                     <p class="mt-2 text-[10px] text-ink/45">Diskon wajib &le; harga jual dalam Rupiah.</p>
                 </div>
 
+                {{-- SPLIT BOX — muncul di CREATE & EDIT --}}
+                <div class="border-b border-rule p-5">
+                    <div class="flex items-center justify-between">
+                        <p class="font-mono text-[11px] font-medium uppercase tracking-[0.16em] text-ink">Split Box</p>
+                        <label class="splitbox-toggle">
+                            <input type="checkbox" id="toggle-split-box"
+                                   {{ ($product->exists && $product->is_split_box) ? 'checked' : '' }}
+                                   onchange="document.getElementById('input-is-split-box').value = this.checked ? 1 : 0; document.getElementById('splitbox-hint').classList.toggle('hidden', !this.checked);">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    <p class="mt-1.5 text-xs text-ink/55" id="splitbox-hint" style="{{ ($product->exists && $product->is_split_box) ? '' : 'display:none;' }}">
+                        Aktifkan lalu simpan produk untuk mengelola slot &amp; kloter.
+                    </p>
+                </div>
+
                 {{-- HAPUS PRODUK --}}
                 @if ($product->exists)
                 <div class="p-5">
@@ -720,12 +743,30 @@
 </form>
 {{-- AKHIR FORM UTAMA --}}
 
-{{-- Split Box --}}
-@if ($product->exists)
-    <div class="mt-5">
+{{-- ═══ SPLIT BOX MANAGER — muncul di bawah form ═══ --}}
+<div class="mt-5">
+    @if ($product->exists)
         <livewire:split-box-manager :product="$product" />
-    </div>
-@endif
+    @else
+        <div class="rounded-xl border border-rule bg-white p-6">
+            <div class="flex items-center gap-3">
+                <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#F8F9FA]">
+                    <i class="bi bi-grid-3x3-gap text-ink/40" style="font-size:1.2rem;"></i>
+                </div>
+                <div>
+                    <p class="text-sm font-semibold text-ink">Split Box — Slot &amp; Kloter</p>
+                    <p class="mt-0.5 text-xs text-ink/55">Aktifkan toggle Split Box di sidebar, lalu simpan produk untuk mengelola slot.</p>
+                </div>
+            </div>
+            <div class="mt-4 rounded-lg border-l-4 border-l-[#1A4D8F] bg-[#F8F9FA] p-3.5">
+                <p class="flex items-start gap-2 text-xs text-ink/65">
+                    <i class="bi bi-info-circle mt-0.5 text-blue-500" style="font-size:0.85rem;"></i>
+                    Setelah produk tersimpan, halaman akan berubah ke mode Edit dan kamu bisa langsung kelola slot &amp; kloter di sini.
+                </p>
+            </div>
+        </div>
+    @endif
+</div>
 
 
 {{-- ═══ MODAL: Tambah Varian ═══ --}}
@@ -971,7 +1012,7 @@
     </div>
 </div>
 
-{{-- ═══ VARIANT BUILDER JS (inline — tanpa Blade directive) ═══ --}}
+{{-- ═══ VARIANT BUILDER JS ═══ --}}
 <script>
 (function () {
     var vIndex = 0;
@@ -1025,7 +1066,7 @@
 })();
 </script>
 
-{{-- ═══ CONFIG UNTUK JS EKSTERNAL ═══ --}}
+{{-- ═══ CONFIG ═══ --}}
 @php
     $jsConfig = [
         'cfg'            => $cfg,
