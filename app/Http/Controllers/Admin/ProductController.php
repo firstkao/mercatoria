@@ -3,7 +3,10 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\BulkProductRequest;
+use App\Http\Requests\Admin\BulkWeightRequest;
 use App\Http\Requests\Admin\ProductFormRequest;
+use App\Http\Requests\Admin\VariantFormRequest;
 use App\Models\AdminLog;
 use App\Models\Developer;
 use App\Models\Game;
@@ -20,6 +23,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
 class ProductController extends Controller
@@ -49,7 +53,7 @@ class ProductController extends Controller
         }
 
         return view('admin.products.index', [
-            'products' => $query->orderByDesc('id')->paginate(30),
+            'products' => $query->orderByDesc('id')->paginate(30)->withQueryString(),
             'games' => Game::orderBy('name')->get(),
             'developers' => Developer::orderBy('name')->get(),
         ]);
@@ -104,14 +108,16 @@ class ProductController extends Controller
         $product = Product::create($data + ['sold_count' => 0]);
 
         if (! $product->merch_category_id) {
-            $product->update(['merch_category_id' => MerchCategory::matchFor($product->name, $product->slug)?->id]);
+            $product->update([
+                'merch_category_id' => MerchCategory::matchFor($product->name, $product->slug)?->id,
+            ]);
         }
 
         if ($request->filled('tags')) {
             $product->tags()->sync($request->input('tags'));
         }
 
-        // [FIX #6] Create inline variants
+        // [FIX] Create inline variants with validation
         $this->processInlineVariants($request, $product);
 
         AdminLog::record($request->user(), 'create', 'Product', $product->id, null, $product->only(array_keys($data)), 'Tambah produk');
@@ -120,7 +126,7 @@ class ProductController extends Controller
     }
 
     /**
-     * [FIX #6] Simpan inline variants setelah product dibuat.
+     * [FIX] Simpan inline variants setelah product dibuat — dengan validasi per-row.
      */
     private function processInlineVariants(Request $request, Product $product): void
     {
@@ -131,14 +137,24 @@ class ProductController extends Controller
                 continue;
             }
 
-            $v['availability'] = $v['availability'] ?? 'tersedia';
+            // [FIX #5] Validasi per-row sebelum insert
+            $validated = validator($v, [
+                'name'         => 'required|string|max:255',
+                'sku'          => 'required|string|max:100|unique:product_variants,sku',
+                'price_rmb'    => 'nullable|numeric|min:0',
+                'weight_gram'  => 'nullable|integer|min:0',
+                'availability' => 'nullable|in:tersedia,kosong',
+            ])->validate();
+
+            $validated['availability'] = $validated['availability'] ?? 'tersedia';
 
             if ($request->hasFile("variants.{$i}.image")) {
-                $v['image_path'] = $this->storeImage($request->file("variants.{$i}.image"), 'var', null);
+                $validated['image_path'] = $this->storeImage(
+                    $request->file("variants.{$i}.image"), 'var', null
+                );
             }
-            unset($v['image']);
 
-            $product->variants()->create($v);
+            $product->variants()->create($validated);
         }
     }
 
@@ -155,7 +171,9 @@ class ProductController extends Controller
 
         // PRD 14: auto-group kategori merch by keyword (override manual menang).
         if (! $product->merch_category_id) {
-            $product->update(['merch_category_id' => MerchCategory::matchFor($product->name, $product->slug)?->id]);
+            $product->update([
+                'merch_category_id' => MerchCategory::matchFor($product->name, $product->slug)?->id,
+            ]);
         }
 
         AdminLog::record($request->user(), 'update', 'Product', $product->id, $old, $new, 'Ubah produk');
@@ -165,25 +183,8 @@ class ProductController extends Controller
 
     public function destroy(Request $request, Product $product): RedirectResponse
     {
-        // Hard delete (PRD 13.5): snapshot order tetap utuh, order_items.product_id → NULL.
-        $snapshotCount = OrderItem::where('product_id', $product->id)->count();
-
-        AdminLog::record($request->user(), 'delete', 'Product', $product->id, $product->only(['name', 'sku']), null, "Hapus permanen ({$snapshotCount} order_item terdampak)");
-
-        $imagePaths = array_filter([$product->image_path, $product->description_image_path]);
-        foreach ($product->variants as $variant) {
-            $imagePaths[] = $variant->image_path;
-        }
-
-        $product->delete();
-
-        // PRD 13.5: file gambar produk asli ikut dihapus; snapshot order TIDAK.
-        foreach (array_filter($imagePaths) as $path) {
-            if (str_starts_with($path, 'products/')) {
-                @unlink(storage_path('app/private/'.$path));
-                @unlink(storage_path('app/private/originals/'.$path));
-            }
-        }
+        // [FIX #3] Shared delete logic
+        $this->deleteProductWithFiles($product, $request->user(), 'Hapus permanen');
 
         return redirect()->route('office.products.index')->with('status', 'Produk dihapus permanen.');
     }
@@ -193,29 +194,61 @@ class ProductController extends Controller
     // ──────────────────────────────────────
 
     /**
-     * PRD 13.5/22.6: duplikat produk (field + varian) sebagai draft.
+     * PRD 13.5/22.6: duplikat produk (field + varian + file + tags) sebagai draft.
      */
     public function duplicate(Request $request, Product $product): RedirectResponse
     {
+        $copy = $this->duplicateProduct($product, $request->user());
+
+        return redirect()->route('office.products.edit', $copy)
+            ->with('status', 'Produk diduplikat sebagai draft.');
+    }
+
+    /**
+     * [FIX #2] Shared duplicate logic — copy file gambar + tags.
+     */
+    private function duplicateProduct(Product $product, $user): Product
+    {
         $copy = $product->replicate(['sold_count']);
+        $copy->name = $product->name.' (Salinan)';
         $copy->sku = $product->sku.'-COPY-'.Str::random(4);
         $copy->slug = $product->slug.'-copy-'.Str::random(4);
         $copy->is_active = false;
+
+        // [FIX #2] Copy file foto utama
+        if ($product->image_path) {
+            $copy->image_path = $this->copyImageFile($product->image_path);
+        }
+
+        // [FIX #2] Copy file deskripsi
+        if ($product->description_image_path) {
+            $copy->description_image_path = $this->copyImageFile($product->description_image_path);
+        }
+
         $copy->save();
 
+        // [FIX #2] Copy varian + foto varian
         foreach ($product->variants as $variant) {
             $variantCopy = $variant->replicate();
             $variantCopy->sku = $variant->sku.'-COPY-'.Str::random(4);
             $variantCopy->product_id = $copy->id;
+
+            if ($variant->image_path) {
+                $variantCopy->image_path = $this->copyImageFile($variant->image_path);
+            }
+
             $variantCopy->save();
         }
 
-        AdminLog::record($request->user(), 'create', 'Product', $copy->id, null, [
+        // [FIX #2] Copy tags
+        $copy->tags()->sync($product->tags->pluck('id')->all());
+
+        AdminLog::record($user, 'create', 'Product', $copy->id, null, [
             'duplicate_of' => $product->id,
             'sku' => $copy->sku,
         ], 'Duplikat produk (draft)');
 
-        return redirect()->route('office.products.edit', $copy)->with('status', 'Produk diduplikat sebagai draft.');
+        return $copy;
     }
 
     /**
@@ -248,32 +281,55 @@ class ProductController extends Controller
     // BULK OPERATIONS
     // ──────────────────────────────────────
 
-    public function bulk(ProductFormRequest $request): RedirectResponse
+    /**
+     * [FIX #1] Bulk action: aktifkan / nonaktifkan / hapus / salin.
+     */
+    public function bulk(BulkProductRequest $request): RedirectResponse
     {
         $data = $request->validated();
-
         $products = Product::whereIn('id', $data['ids'])->get();
 
         foreach ($products as $product) {
-            if ($data['action'] === 'hapus') {
-                AdminLog::record($request->user(), 'delete', 'Product', $product->id, $product->only(['name', 'sku']), null, 'Bulk hapus permanen');
-                $product->delete();
-            } else {
-                $active = $data['action'] === 'aktifkan';
-                $product->update(['is_active' => $active]);
-                AdminLog::record($request->user(), 'update', 'Product', $product->id, ['is_active' => ! $active], ['is_active' => $active], 'Bulk '.($active ? 'aktifkan' : 'nonaktifkan'));
+            switch ($data['action']) {
+                case 'hapus':
+                    // [FIX #3] Shared delete with file cleanup
+                    $this->deleteProductWithFiles($product, $request->user(), 'Bulk hapus permanen');
+                    break;
+
+                case 'salin':
+                    // [FIX #2] Shared duplicate with file copy
+                    $this->duplicateProduct($product, $request->user());
+                    break;
+
+                case 'aktifkan':
+                    $product->update(['is_active' => true]);
+                    AdminLog::record($request->user(), 'update', 'Product', $product->id,
+                        ['is_active' => false], ['is_active' => true], 'Bulk aktifkan');
+                    break;
+
+                case 'nonaktifkan':
+                    $product->update(['is_active' => false]);
+                    AdminLog::record($request->user(), 'update', 'Product', $product->id,
+                        ['is_active' => true], ['is_active' => false], 'Bulk nonaktifkan');
+                    break;
             }
         }
 
-        return redirect()->route('office.products.index')->with('status', count($data['ids']).' produk diproses.');
+        $verb = match ($data['action']) {
+            'hapus'       => 'dihapus permanen',
+            'salin'       => 'disalin',
+            'aktifkan'    => 'diaktifkan',
+            'nonaktifkan' => 'dinonaktifkan',
+        };
+
+        return redirect()->route('office.products.index')
+            ->with('status', count($data['ids'])." produk {$verb}.");
     }
 
     /**
-     * Bulk edit berat varian — support AJAX (fetch) & form POST.
-     *
-     * @return JsonResponse|RedirectResponse
+     * [FIX #1] Bulk edit berat varian — support AJAX (fetch) & form POST.
      */
-    public function bulkWeight(ProductFormRequest $request, Product $product)
+    public function bulkWeight(BulkWeightRequest $request, Product $product): JsonResponse|RedirectResponse
     {
         $data = $request->validated();
 
@@ -281,7 +337,10 @@ class ProductController extends Controller
             ->where('product_id', $product->id)
             ->update(['weight_gram' => $data['weight_gram']]);
 
-        AdminLog::record($request->user(), 'update', 'Product', $product->id, null, ['weight_gram' => $data['weight_gram'], 'varian' => $data['ids']], "Bulk edit berat {$updated} varian");
+        AdminLog::record($request->user(), 'update', 'Product', $product->id, null, [
+            'weight_gram' => $data['weight_gram'],
+            'varian' => $data['ids'],
+        ], "Bulk edit berat {$updated} varian");
 
         if ($request->expectsJson() || $request->ajax()) {
             return response()->json([
@@ -298,7 +357,10 @@ class ProductController extends Controller
     // VARIANT CRUD
     // ──────────────────────────────────────
 
-    public function storeVariant(ProductFormRequest $request, Product $product): RedirectResponse
+    /**
+     * [FIX #1] Dedicated VariantFormRequest — bukan ProductFormRequest.
+     */
+    public function storeVariant(VariantFormRequest $request, Product $product): RedirectResponse
     {
         $data = $request->validated();
 
@@ -314,7 +376,10 @@ class ProductController extends Controller
         return redirect()->route('office.products.edit', $product)->with('status', 'Varian dibuat.');
     }
 
-    public function updateVariant(ProductFormRequest $request, Product $product, ProductVariant $variant): RedirectResponse
+    /**
+     * [FIX #1] Dedicated VariantFormRequest — bukan ProductFormRequest.
+     */
+    public function updateVariant(VariantFormRequest $request, Product $product, ProductVariant $variant): RedirectResponse
     {
         abort_unless($variant->product_id === $product->id, 404);
 
@@ -356,10 +421,61 @@ class ProductController extends Controller
     // ──────────────────────────────────────
 
     /**
+     * [FIX #3] Shared: hapus produk + semua file terkait.
+     */
+    private function deleteProductWithFiles(Product $product, $user, string $logMessage): void
+    {
+        $snapshotCount = OrderItem::where('product_id', $product->id)->count();
+
+        AdminLog::record($user, 'delete', 'Product', $product->id,
+            $product->only(['name', 'sku']), null,
+            "{$logMessage} ({$snapshotCount} order_item terdampak)");
+
+        // Kumpulkan semua path file sebelum delete
+        $imagePaths = array_filter([$product->image_path, $product->description_image_path]);
+        foreach ($product->variants as $variant) {
+            if ($variant->image_path) {
+                $imagePaths[] = $variant->image_path;
+            }
+        }
+
+        $product->delete();
+
+        // PRD 13.5: file gambar produk asli ikut dihapus; snapshot order TIDAK.
+        foreach (array_filter($imagePaths) as $path) {
+            if (str_starts_with($path, 'products/')) {
+                @unlink(storage_path('app/private/'.$path));
+                @unlink(storage_path('app/private/originals/'.$path));
+            }
+        }
+    }
+
+    /**
+     * [FIX #2] Copy file gambar ke path baru (master + originals).
+     */
+    private function copyImageFile(string $path): string
+    {
+        $ext = pathinfo($path, PATHINFO_EXTENSION);
+        $dir = pathinfo($path, PATHINFO_DIRNAME);
+        $newPath = $dir.'/'.Str::random(20).'.'.$ext;
+
+        // Copy versi ter-watermark (app/private/)
+        $srcMain = storage_path('app/private/'.$path);
+        if (file_exists($srcMain)) {
+            @copy($srcMain, storage_path('app/private/'.$newPath));
+        }
+
+        // Copy master asli (app/private/originals/)
+        $srcOrig = storage_path('app/private/originals/'.$path);
+        if (file_exists($srcOrig)) {
+            @copy($srcOrig, storage_path('app/private/originals/'.$newPath));
+        }
+
+        return $newPath;
+    }
+
+    /**
      * PRD 13.6: upload gambar → watermark + master asli; handle remove flag.
-     *
-     * @param  array<string, mixed>  $data
-     * @return array<string, mixed>
      */
     private function processUploads(Request $request, array $data, ?Product $product): array
     {
@@ -370,8 +486,9 @@ class ProductController extends Controller
 
         // ── Gambar deskripsi ──
         if ($request->hasFile('description_image')) {
-            // Upload baru → replace yang lama.
-            $data['description_image_path'] = $this->storeImage($request->file('description_image'), 'desc', $product?->description_image_path);
+            $data['description_image_path'] = $this->storeImage(
+                $request->file('description_image'), 'desc', $product?->description_image_path
+            );
         } elseif ($request->boolean('remove_description_image') && $product?->description_image_path) {
             // User klik "Hapus" tanpa upload baru → hapus file existing.
             if (str_starts_with($product->description_image_path, 'products/')) {
