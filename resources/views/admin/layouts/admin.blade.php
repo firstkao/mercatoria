@@ -187,6 +187,34 @@
                     @endif
                 @endforeach
             </nav>
+            <script>
+                // Navigasi = full page load: simpan & pulihkan scrollTop sidebar sebelum paint.
+                (function () {
+                    var nav = document.getElementById('sidebar-nav');
+                    if (!nav) return;
+                    var key = 'admin-sidebar-scroll';
+                    try {
+                        var saved = parseInt(sessionStorage.getItem(key), 10);
+                        if (!isNaN(saved)) nav.scrollTop = saved;
+                    } catch (e) {}
+
+                    var active = nav.querySelector('.nav-link-active');
+                    if (active) {
+                        var top = active.offsetTop - nav.offsetTop;
+                        var visible = top >= nav.scrollTop && (top + active.offsetHeight) <= (nav.scrollTop + nav.clientHeight);
+                        if (!visible) {
+                            nav.scrollTop = Math.max(0, top - (nav.clientHeight - active.offsetHeight) / 2);
+                        }
+                    }
+
+                    function save() {
+                        try { sessionStorage.setItem(key, String(nav.scrollTop)); } catch (e) {}
+                    }
+                    save();
+                    nav.addEventListener('scroll', save, { passive: true });
+                    window.addEventListener('pagehide', save);
+                })();
+            </script>
         </aside>
 
         {{-- ═══════════════════════════════════════ --}}
