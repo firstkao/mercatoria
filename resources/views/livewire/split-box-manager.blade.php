@@ -2,12 +2,17 @@
     <h2 class="text-sm font-semibold">Split Box — Slot &amp; Kloter</h2>
 
     @if ($statusMessage)
-        <p class="mt-2 rounded bg-green-50 px-3 py-2 text-sm text-green-800">{{ $statusMessage }}</p>
+        <p class="mt-2 rounded px-3 py-2 text-sm
+            {{ $statusIsError ? 'bg-red-50 text-red-800' : 'bg-green-50 text-green-800' }}">
+            {{ $statusMessage }}
+        </p>
     @endif
 
     @if (! $product->splitBox)
         <p class="mt-2 text-sm text-gray-500">Aktifkan <strong>is_split_box</strong> lalu simpan produk untuk mengelola slot.</p>
     @else
+
+        {{-- ═══ SLOT TABLE ═══ --}}
         <table class="mt-3 w-full text-sm">
             <thead class="border-b border-gray-100 text-left text-gray-500">
                 <tr>
@@ -23,8 +28,8 @@
                     <tr class="border-b border-gray-50" wire:key="slot-{{ $slot->id }}">
                         <td class="py-2">{{ $slot->variant?->name ?? '—' }}</td>
                         <td class="py-2">
-                            {{-- [FIX] wire:model tanpa .defer (Livewire 3) --}}
-                            <select wire:model="slotRoles.{{ $slot->id }}" class="rounded border border-gray-200 px-2 py-1 text-xs">
+                            <select wire:model="slotRoles.{{ $slot->id }}"
+                                    class="rounded border border-gray-200 px-2 py-1 text-xs">
                                 @foreach (['normal', 'hot_1', 'hot_2'] as $role)
                                     <option value="{{ $role }}">{{ \Illuminate\Support\Str::headline($role) }}</option>
                                 @endforeach
@@ -34,9 +39,10 @@
                             <input type="number" wire:model="slotQtys.{{ $slot->id }}" min="1"
                                    class="w-16 rounded border border-gray-200 px-2 py-1 text-xs">
                         </td>
-                        <td class="py-2">{{ $slot->batchSlots->sum(fn ($bs) => max(0, $bs->qty_total - $bs->qty_taken)) }}</td>
+                        <td class="py-2">
+                            {{ $slot->batchSlots->filter(fn ($bs) => $bs->batch?->status === 'open')->sum(fn ($bs) => max(0, $bs->qty_total - $bs->qty_taken)) }}
+                        </td>
                         <td class="py-2 text-right">
-                            {{-- [FIX] Hanya kirim slot ID — method baca dari $this->slotRoles / $this->slotQtys --}}
                             <button wire:click="saveSlot({{ $slot->id }})"
                                     wire:loading.attr="disabled"
                                     class="text-xs text-sky-600 hover:underline disabled:opacity-50">
@@ -49,32 +55,55 @@
             </tbody>
         </table>
 
-        <h3 class="mt-4 text-sm font-semibold">Kloter</h3>
-        <ul class="mt-2 space-y-1 text-sm">
-            @foreach ($product->splitBox->batches as $batch)
-                <li class="flex items-center justify-between rounded border border-gray-100 px-3 py-2">
-                    <span>
-                        Kloter #{{ $batch->batch_no }} — {{ $batch->status }}
-                        @if ($batch->is_auto_opened) (auto) @endif
-                        @if ($batch->closes_at) · closes {{ $batch->closes_at->format('d/m/Y H:i') }} @endif
-                    </span>
-                    @if ($batch->status === 'open')
-                        {{-- [FIX] wire:confirm menggantikan onclick confirm --}}
-                        <button wire:click="closeRefund({{ $batch->id }})"
-                                wire:confirm="Tutup kloter & refund semua order terkunci?"
-                                wire:loading.attr="disabled"
-                                class="text-xs text-red-600 hover:underline disabled:opacity-50">
-                            Tutup Kloter &amp; Refund Semua
-                        </button>
-                    @endif
-                </li>
-            @endforeach
-        </ul>
+        @if ($product->splitBox->slots->isEmpty())
+            <p class="mt-2 text-sm text-gray-400">Belum ada slot. Tambahkan varian produk terlebih dahulu.</p>
+        @endif
 
+        {{-- ═══ KLOTER LIST ═══ --}}
+        <h3 class="mt-4 text-sm font-semibold">Kloter</h3>
+
+        @if ($product->splitBox->batches->isEmpty())
+            <p class="mt-2 text-sm text-gray-400">Belum ada kloter.</p>
+        @else
+            <ul class="mt-2 space-y-1 text-sm">
+                @foreach ($product->splitBox->batches as $batch)
+                    <li class="flex items-center justify-between rounded border border-gray-100 px-3 py-2"
+                        wire:key="batch-{{ $batch->id }}">
+                        <span>
+                            Kloter #{{ $batch->batch_no }} —
+                            <span class="
+                                @if ($batch->status === 'open') text-emerald-600
+                                @elseif ($batch->status === 'closed') text-gray-500
+                                @else text-red-500 @endif
+                            ">{{ $batch->status }}</span>
+                            @if ($batch->is_auto_opened)
+                                <span class="ml-1 rounded bg-gray-100 px-1.5 py-0.5 text-[10px] text-gray-500">auto</span>
+                            @endif
+                            @if ($batch->closes_at)
+                                <span class="ml-1 text-xs text-gray-400">· closes {{ $batch->closes_at->format('d/m/Y H:i') }}</span>
+                            @endif
+                        </span>
+                        @if ($batch->status === 'open')
+                            <button wire:click="closeRefund({{ $batch->id }})"
+                                    wire:confirm="Tutup kloter & refund semua order terkunci?"
+                                    wire:loading.attr="disabled"
+                                    class="text-xs text-red-600 hover:underline disabled:opacity-50">
+                                <span wire:loading.remove wire:target="closeRefund({{ $batch->id }})">Tutup &amp; Refund</span>
+                                <span wire:loading wire:target="closeRefund({{ $batch->id }})">...</span>
+                            </button>
+                        @endif
+                    </li>
+                @endforeach
+            </ul>
+        @endif
+
+        {{-- ═══ OPEN BATCH BUTTON ═══ --}}
         <button wire:click="openBatch"
                 wire:loading.attr="disabled"
                 class="mt-3 rounded-lg border border-gray-300 px-4 py-2 text-sm hover:border-black disabled:opacity-50">
-            + Buka Kloter Baru
+            <span wire:loading.remove wire:target="openBatch">+ Buka Kloter Baru</span>
+            <span wire:loading wire:target="openBatch">Membuka...</span>
         </button>
+
     @endif
 </div>
