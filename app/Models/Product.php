@@ -26,6 +26,7 @@ class Product extends Model
         'developer_id',
         'store_id',
         'merch_category_id',
+        'parent_id',                // [FIX #2]
         'name',
         'sku',
         'slug',
@@ -33,7 +34,7 @@ class Product extends Model
         'weight_gram',
         'type',
         'image_path',
-        'description_image_path',
+        'description_image_path',   // [FIX #1]
         'discount_amount',
         'discount_start',
         'discount_end',
@@ -43,17 +44,24 @@ class Product extends Model
         'is_split_box',
     ];
 
+    // [FIX #3] Default values untuk kolom yang sering null
+    protected $attributes = [
+        'sold_count' => 0,
+    ];
+
     protected function casts(): array
     {
         return [
-            'price_rmb' => 'decimal:2',
-            'weight_gram' => 'integer',
-            'discount_amount' => 'decimal:2',
-            'discount_start' => 'date',
-            'discount_end' => 'date',
-            'is_active' => 'boolean',
-            'sold_count' => 'integer',
-            'is_split_box' => 'boolean',
+            'price_rmb'             => 'decimal:2',
+            'weight_gram'           => 'integer',
+            'discount_amount'       => 'decimal:2',
+            'discount_start'        => 'date',
+            'discount_end'          => 'date',
+            'availability'          => 'string',
+            'is_active'             => 'boolean',
+            'sold_count'            => 'integer',
+            'is_split_box'          => 'boolean',
+            'parent_id'             => 'integer',       // [FIX #2]
         ];
     }
 
@@ -109,6 +117,28 @@ class Product extends Model
         return $this->belongsToMany(Order::class, 'order_items');
     }
 
+    // ── [FIX #2] Split Box / Duplicate relations ──
+
+    /**
+     * Produk asli (untuk split box / salinan).
+     */
+    public function parent(): BelongsTo
+    {
+        return $this->belongsTo(Product::class, 'parent_id');
+    }
+
+    /**
+     * Semua salinan / split box dari produk ini.
+     */
+    public function children(): HasMany
+    {
+        return $this->hasMany(Product::class, 'parent_id');
+    }
+
+    // ──────────────────────────────────────
+    // HELPERS
+    // ──────────────────────────────────────
+
     /**
      * Jumlah order unik yang menyertakan produk ini.
      */
@@ -118,10 +148,6 @@ class Product extends Model
             ->distinct()
             ->count('order_id');
     }
-
-    // ──────────────────────────────────────
-    // HELPERS
-    // ──────────────────────────────────────
 
     /**
      * Store efektif: override produk, fallback default store game.
@@ -135,9 +161,13 @@ class Product extends Model
         return $this->game?->defaultStore;
     }
 
-    public function effectiveWeight(): int
+    /**
+     * Berat efektif (gram) — fallback ke default setting.
+     */
+    public function effectiveWeight(): int       // [FIX #4]
     {
-        return $this->weight_gram ?? 0;
+        return $this->weight_gram
+            ?? (int) setting('default_weight_gram', 500);
     }
 
     /**
@@ -145,7 +175,8 @@ class Product extends Model
      */
     public function hasActiveDiscount(): bool
     {
-        if ($this->discount_amount === null) {
+        // [FIX #5] Treat 0 / negative sebagai "tidak ada diskon"
+        if (! $this->discount_amount || (float) $this->discount_amount <= 0) {
             return false;
         }
 
@@ -168,5 +199,33 @@ class Product extends Model
     public function activeDiscountAmount(): float
     {
         return $this->hasActiveDiscount() ? (float) $this->discount_amount : 0.0;
+    }
+
+    // ──────────────────────────────────────
+    // SCOPES (bonus — berguna untuk query)
+    // ──────────────────────────────────────
+
+    /**
+     * Produk aktif (published).
+     */
+    public function scopeActive($query)
+    {
+        return $query->where('is_active', true);
+    }
+
+    /**
+     * Produk berdasarkan game.
+     */
+    public function scopeForGame($query, int $gameId)
+    {
+        return $query->where('game_id', $gameId);
+    }
+
+    /**
+     * Exclude produk split box (tampilkan produk utuh saja).
+     */
+    public function scopeExcludeSplitBox($query)
+    {
+        return $query->where('is_split_box', false);
     }
 }
