@@ -10,18 +10,18 @@ return new class extends Migration
     {
         Schema::create('product_variants', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('product_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('product_id')->constrained('products')->cascadeOnDelete();
             $table->string('name', 150);
             $table->string('sku', 64)->unique();
             $table->decimal('price_rmb', 10, 2)->nullable();
             $table->integer('weight_gram')->nullable();
             $table->string('availability', 16)->default('tersedia');
             $table->string('image_path')->nullable();
-            $table->unsignedInteger('sort_order')->default(0); // ← opsional
+            $table->unsignedInteger('sort_order')->default(0);
             $table->timestamps();
 
-            $table->index(['name'], 'product_variants_name_search_idx');
-            $table->index(['product_id', 'availability']); // ← performa
+            $table->index('name', 'pv_name_idx');
+            $table->index(['product_id', 'availability'], 'pv_product_avail_idx');
         });
     }
 
