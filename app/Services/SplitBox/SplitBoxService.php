@@ -69,29 +69,32 @@ class SplitBoxService
      */
     public function lockSlotsForOrder(Order $order): bool
     {
-        $items = $order->items()
-            ->whereNotNull('split_box_slot_id')
-            ->lockForUpdate()
-            ->get();
+        return DB::transaction(function () use ($order) {
+            // LockForUpdate HARUS di dalam transaction
+            $items = $order->items()
+                ->whereNotNull('split_box_slot_id')
+                ->lockForUpdate()
+                ->get();
 
-        if ($items->isEmpty()) {
-            return true;
-        }
+            if ($items->isEmpty()) {
+                return true;
+            }
 
-        return DB::transaction(function () use ($order, $items) {
             $allocations = [];
 
+            // Tahap 1: alokasi semua slot (all-or-nothing)
             foreach ($items as $item) {
                 $allocation = $this->allocateFifo($item->split_box_slot_id, $item->qty);
 
                 if ($allocation === null) {
-                    // All-or-nothing: batal total, tidak ada slot terkunci.
+                    // Semua atau tidak sama sekali — rollback otomatis
                     return false;
                 }
 
                 $allocations[] = [$item, $allocation];
             }
 
+            // Tahap 2: commit alokasi + side effects
             foreach ($allocations as [$item, $allocation]) {
                 [$batchSlot, $batchNo] = $allocation;
 
@@ -118,20 +121,23 @@ class SplitBoxService
      */
     public function releaseSlotsForOrder(Order $order): void
     {
-        $items = $order->items()
-            ->whereNotNull('split_box_batch_slot_id')
-            ->get();
+        DB::transaction(function () use ($order) {
+            $items = $order->items()
+                ->whereNotNull('split_box_batch_slot_id')
+                ->lockForUpdate()
+                ->get();
 
-        foreach ($items as $item) {
-            $batchSlot = SplitBoxBatchSlot::find($item->split_box_batch_slot_id);
+            foreach ($items as $item) {
+                $batchSlot = SplitBoxBatchSlot::find($item->split_box_batch_slot_id);
 
-            if ($batchSlot) {
-                $batchSlot->decrement('qty_taken', $item->qty);
+                if ($batchSlot && $batchSlot->qty_taken > 0) {
+                    $batchSlot->decrement('qty_taken', min($item->qty, $batchSlot->qty_taken));
+                }
+
+                $item->update(['split_box_batch_slot_id' => null]);
+                $item->snapshot?->update(['split_batch_no' => null]);
             }
-
-            $item->update(['split_box_batch_slot_id' => null]);
-            $item->snapshot?->update(['split_batch_no' => null]);
-        }
+        });
     }
 
     /**
@@ -142,11 +148,11 @@ class SplitBoxService
     {
         $batch->update(['status' => SplitBoxBatch::STATUS_CLOSED]);
 
-        $orders = Order::query()
-            ->whereIn('id', OrderItem::whereIn('split_box_batch_slot_id',
+        $orderIds = OrderItem::whereIn('split_box_batch_slot_id',
                 SplitBoxBatchSlot::where('batch_id', $batch->id)->pluck('id')
-            )->pluck('order_id'))
-            ->get();
+            )->pluck('order_id')->unique();
+
+        $orders = Order::whereIn('id', $orderIds)->get();
 
         $refunds = app(RefundService::class);
 
@@ -158,6 +164,18 @@ class SplitBoxService
     }
 
     /**
+     * Pemeliharaan kloter (cron splitbox:check-batches): auto-open kloter baru bila slot habis / deadlock pair.
+     */
+    public function ensureBatchHealth(SplitBox $splitBox): void
+    {
+        DB::transaction(function () use ($splitBox) {
+            $this->autoOpenBatch($splitBox);
+        });
+    }
+
+    /**
+     * Alokasi FIFO: cari batch slot terbuka dengan stok cukup, urut dari batch_id terkecil.
+     *
      * @return array{0: SplitBoxBatchSlot, 1: int}|null [batch_slot, batch_no]
      */
     private function allocateFifo(int $slotId, int $qty): ?array
@@ -179,14 +197,6 @@ class SplitBoxService
     }
 
     /**
-     * Pemeliharaan kloter (cron splitbox:check-batches): auto-open kloter baru bila slot habis / deadlock pair.
-     */
-    public function ensureBatchHealth(SplitBox $splitBox): void
-    {
-        $this->autoOpenBatch($splitBox);
-    }
-
-    /**
      * Auto-open kloter N+1 (PRD 49.10) bila stok habis / deadlock pair.
      */
     private function autoOpenBatch(SplitBox $splitBox): void
@@ -195,26 +205,30 @@ class SplitBoxService
             return;
         }
 
-        $openBatches = $splitBox->batches()->where('status', SplitBoxBatch::STATUS_OPEN)->count();
+        // Cek apakah masih ada kloter terbuka dengan stok tersisa
+        $openBatchIds = $splitBox->batches()
+            ->where('status', SplitBoxBatch::STATUS_OPEN)
+            ->pluck('id');
 
-        if ($openBatches > 0) {
-            // Masih ada kloter terbuka dengan stok — tidak perlu buka baru.
+        if ($openBatchIds->isNotEmpty()) {
             $hasStock = SplitBoxBatchSlot::query()
-                ->whereIn('batch_id', $splitBox->batches()->where('status', SplitBoxBatch::STATUS_OPEN)->pluck('id'))
-                ->get()
-                ->contains(fn ($s) => $s->availableQty() > 0);
+                ->whereIn('batch_id', $openBatchIds)
+                ->whereColumn('qty_taken', '<', 'qty_total')
+                ->exists();
 
             if ($hasStock) {
                 return;
             }
         }
 
+        // Cek limit max_auto_batches
         $totalBatches = $splitBox->batches()->count();
 
         if ($totalBatches >= $splitBox->max_auto_batches) {
             return;
         }
 
+        // Buat kloter baru
         $batch = SplitBoxBatch::create([
             'split_box_id' => $splitBox->id,
             'batch_no' => $totalBatches + 1,
@@ -222,23 +236,31 @@ class SplitBoxService
             'is_auto_opened' => true,
         ]);
 
-        foreach ($splitBox->slots as $slot) {
-            SplitBoxBatchSlot::create([
-                'batch_id' => $batch->id,
-                'slot_id' => $slot->id,
-                'qty_total' => $slot->qty_per_box,
-                'qty_taken' => 0,
-            ]);
+        // Bulk insert slots untuk kloter baru
+        $slotData = $splitBox->slots->map(fn ($slot) => [
+            'batch_id' => $batch->id,
+            'slot_id' => $slot->id,
+            'qty_total' => $slot->qty_per_box,
+            'qty_taken' => 0,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ])->toArray();
+
+        if (! empty($slotData)) {
+            SplitBoxBatchSlot::insert($slotData);
         }
 
-        // PRD 49.10: kloter yang dibuka otomatis mengirim notifikasi ke Admin
-        // ("Box sudah dibuka" — perlu beli box baru).
-        foreach (User::where('role', User::ROLE_ADMIN)->get() as $admin) {
-            app(UserNotificationService::class)->notify(
+        // Notifikasi ke semua admin
+        $admins = User::where('role', User::ROLE_ADMIN)->get();
+
+        $notifService = app(UserNotificationService::class);
+
+        foreach ($admins as $admin) {
+            $notifService->notify(
                 $admin,
                 'split_box_opened',
                 "Box sudah dibuka — Kloter #{$batch->batch_no} (produk {$splitBox->product_id})",
-                '/office/products/'.$splitBox->product_id.'/edit'
+                '/office/products/' . $splitBox->product_id . '/edit'
             );
         }
     }
@@ -251,11 +273,13 @@ class SplitBoxService
     {
         $remaining = $this->remainingStock($slot->id);
 
+        // FIFO: order lama diprioritaskan survive
         $candidateItems = OrderItem::query()
             ->where('split_box_slot_id', $slot->id)
             ->whereHas('order', fn ($q) => $q->where('status', OrderStatus::MenungguPembayaran->value))
             ->where('order_id', '!=', $trigger->id)
             ->with('order')
+            ->orderBy('created_at')
             ->get();
 
         $statuses = app(OrderStatusService::class);
@@ -263,14 +287,13 @@ class SplitBoxService
         foreach ($candidateItems as $item) {
             if ($remaining >= $item->qty) {
                 $remaining -= $item->qty;
-
                 continue;
             }
 
             $order = $item->order;
             $order->update(['cancel_reason' => Order::CANCEL_SLOT_SOLD]);
 
-            // SLOT_SOLD — pintu forfeit (e) aktif otomatis via changeStatus.
+            // SLOT_SOLD — pintu forfeit (e) aktif otomatis via changeStatus
             $statuses->changeStatus(
                 $order,
                 OrderStatus::PembayaranGagal->value,
@@ -293,7 +316,8 @@ class SplitBoxService
             ->pluck('bundle_group_id');
 
         foreach ($bundles as $bundleId) {
-            $carts = Cart::where('bundle_group_id', $bundleId)->with('variant')->get();
+            $carts = Cart::where('bundle_group_id', $bundleId)->get();
+
             $needed = $carts->sum(fn ($c) => $c->variant_id === $slot->variant_id ? $c->qty : 0);
 
             if ($needed > $remaining) {
@@ -302,6 +326,9 @@ class SplitBoxService
         }
     }
 
+    /**
+     * Hitung stok tersisa untuk slot tertentu di semua kloter terbuka.
+     */
     private function remainingStock(int $slotId): int
     {
         return SplitBoxBatchSlot::query()
