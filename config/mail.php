@@ -39,7 +39,12 @@ return [
 
         'smtp' => [
             'transport' => 'smtp',
-            'scheme' => env('MAIL_SCHEME'),
+            // Doc (Tutorial VPS) memakai MAIL_ENCRYPTION: tls → smtp (STARTTLS), ssl → smtps.
+            'scheme' => env('MAIL_SCHEME', match (env('MAIL_ENCRYPTION')) {
+                'ssl' => 'smtps',
+                'tls' => 'smtp',
+                default => null,
+            }),
             'url' => env('MAIL_URL'),
             'host' => env('MAIL_HOST', '127.0.0.1'),
             'port' => env('MAIL_PORT', 2525),

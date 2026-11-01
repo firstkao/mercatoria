@@ -2,14 +2,18 @@
 
 use App\Models\Customer;
 use App\Models\OrderStatusLog;
+use App\Models\Page;
 use App\Models\Payment;
 use App\Models\Refund;
 use App\Models\Setting;
 use App\Models\Spammer;
+use App\Models\Tag;
 use App\Models\User;
 use App\Models\UserNotification;
 use App\Services\Order\LatePenaltyService;
 use App\Services\Order\OrderStatusService;
+use Database\Seeders\PageSeeder;
+use Database\Seeders\TagSeeder;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Cache;
 
@@ -135,4 +139,54 @@ test('PRD 7.3/48: tanggal lahir 1x set seumur hidup; no HP diblokir bila ada di 
         ['name' => 'Budi', 'email' => $user->email, 'provinsi' => 'DKI Jakarta', 'kota' => 'Jakarta', 'kecamatan' => 'X', 'alamat' => 'Jl. A', 'kode_pos' => '12345'],
         ['no_hp' => '081299998888'],
     ))->assertSessionHasErrors('no_hp');
+});
+
+test('Inject user hanya boleh role customer, bukan admin', function () {
+    $admin = User::factory()->admin()->create();
+    $payload = [
+        'name' => 'Budi Inject', 'email' => 'inject@example.com', 'no_hp' => '081234567890',
+        'provinsi' => 'DKI Jakarta', 'kota' => 'Jakarta', 'kecamatan' => 'X', 'alamat' => 'Jl. A', 'kode_pos' => '12345',
+    ];
+
+    $this->actingAs($admin)->post('/office/users', $payload + ['role' => 'admin'])->assertSessionHasErrors('role');
+    $this->assertDatabaseMissing('users', ['email' => 'inject@example.com']);
+
+    $this->actingAs($admin)->post('/office/users', $payload)->assertSessionHasNoErrors();
+    expect(User::where('email', 'inject@example.com')->value('role'))->toBe('customer');
+});
+
+test('Tolak bukti bayar wajib alasan', function () {
+    [, $order] = placeTestOrder();
+    $payment = Payment::factory()->create(['order_id' => $order->id]);
+    $url = "/office/orders/{$order->no_order}/payments/{$payment->id}/reject";
+    $this->actingAs(User::factory()->admin()->create());
+
+    $this->post($url)->assertSessionHasErrors('reason');
+    expect($payment->fresh()->status)->toBe(Payment::STATUS_PENDING);
+
+    $this->post($url, ['reason' => 'Nominal salah']);
+    expect($payment->fresh()->reject_reason)->toBe('Nominal salah');
+});
+
+test('Turnstile secret dibaca dari TURNSTILE_SECRET_KEY dan Mail scheme dari MAIL_ENCRYPTION', function () {
+    expect(file_get_contents(config_path('services.php')))->toContain("env('TURNSTILE_SECRET_KEY'");
+    expect(file_get_contents(config_path('mail.php')))->toContain("env('MAIL_ENCRYPTION')");
+});
+
+test('DatabaseSeeder menjalankan TagSeeder dan PageSeeder sesuai Tutorial 7.3', function () {
+    $this->seed(TagSeeder::class);
+    $this->seed(PageSeeder::class);
+
+    expect(Tag::pluck('name')->all())->toEqualCanonicalizing(['PRESALE', 'LIMITED'])
+        ->and(Page::pluck('slug')->all())->toEqualCanonicalizing(['tentang-kami', 'faq', 'cara-belanja', 'tnc', 'kebijakan-privasi'])
+        ->and(file_get_contents(database_path('seeders/DatabaseSeeder.php')))->toContain('TagSeeder::class', 'PageSeeder::class');
+});
+
+test('Nomor invoice memakai setting invoice_prefix', function () {
+    Setting::updateOrCreate(['key' => 'invoice_prefix'], ['value' => 'INV-XYZ', 'type' => 'string', 'group' => 'order']);
+    Cache::forget('app_settings_all');
+
+    [, $order] = placeTestOrder();
+
+    expect($order->invoice_number)->toStartWith('INV-XYZ-');
 });

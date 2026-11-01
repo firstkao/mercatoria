@@ -97,7 +97,7 @@
                     <label class="block text-xs font-medium text-ink/70 mb-1">Role</label>
                     <select name="role" class="h-11 w-full rounded-lg border border-rule px-3 text-sm text-ink">
                         <option value="customer" @selected(old('role', $user->role ?: 'customer') === 'customer')>Customer</option>
-                        <option value="admin" @selected(old('role') === 'admin' || $user->role === 'admin')>Admin</option>
+                        @if ($user->exists)<option value="admin" @selected(old('role') === 'admin' || $user->role === 'admin')>Admin</option>@endif
                     </select>
                 </div>
             </div>

@@ -38,7 +38,7 @@ test('jalur 2 — ditolak lalu tidak upload ulang sampai timeout hangus', functi
     ]);
 
     $payment = Payment::where('order_id', $order->id)->firstOrFail();
-    $this->actingAs($admin)->post("/office/orders/{$order->no_order}/payments/{$payment->id}/reject");
+    $this->actingAs($admin)->post("/office/orders/{$order->no_order}/payments/{$payment->id}/reject", ['reason' => 'Bukti tidak jelas']);
 
     // Tidak upload ulang sampai lewat deadline
     $order->update(['payment_deadline_at' => now()->subHour()]);

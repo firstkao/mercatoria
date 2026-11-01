@@ -102,7 +102,7 @@ test('reject melepas slot nyata — upload ulang mengunci lagi', function () {
     expect((int) SplitBoxBatchSlot::where('slot_id', $fx['hot']->id)->value('qty_taken'))->toBe(1);
 
     $payment = Payment::where('order_id', $order->id)->firstOrFail();
-    $this->actingAs($admin)->post("/office/orders/{$order->no_order}/payments/{$payment->id}/reject");
+    $this->actingAs($admin)->post("/office/orders/{$order->no_order}/payments/{$payment->id}/reject", ['reason' => 'Bukti tidak jelas']);
 
     expect((int) SplitBoxBatchSlot::where('slot_id', $fx['hot']->id)->value('qty_taken'))->toBe(0);
 

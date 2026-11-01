@@ -38,7 +38,7 @@ return [
     // PRD 8.1 — Cloudflare Turnstile (custom VerifyTurnstile + TurnstileService, AMANDEMEN).
     'turnstile' => [
         'site_key' => env('TURNSTILE_SITE_KEY'),
-        'secret' => env('TURNSTILE_SECRET'),
+        'secret' => env('TURNSTILE_SECRET_KEY', env('TURNSTILE_SECRET')),
     ],
 
     // PRD 9.5 — geo-IP lookup untuk share (stevebauman/location).

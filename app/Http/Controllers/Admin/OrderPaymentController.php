@@ -43,11 +43,13 @@ class OrderPaymentController extends Controller
     {
         $this->guard($order, $payment);
 
+        $data = $request->validate(['reason' => ['required', 'string', 'max:500']]);
+
         $payment->update([
             'status' => Payment::STATUS_REJECTED,
             'verified_by' => $request->user()->id,
             'verified_at' => now(),
-            'reject_reason' => $request->input('reason'),
+            'reject_reason' => $data['reason'],
         ]);
 
         // PRD 17.10: tolak → lock reset, user dapat upload ulang dalam 24 jam.

@@ -95,7 +95,7 @@ test('setelah ditolak boleh upload ulang', function () {
     ]);
 
     $payment = Payment::where('order_id', $order->id)->firstOrFail();
-    $this->actingAs($admin)->post("/office/orders/{$order->no_order}/payments/{$payment->id}/reject");
+    $this->actingAs($admin)->post("/office/orders/{$order->no_order}/payments/{$payment->id}/reject", ['reason' => 'Bukti tidak jelas']);
 
     $this->actingAs($user)->post("/orders/{$order->no_order}/payments", [
         'proof' => UploadedFile::fake()->image('bukti-2.jpg'),

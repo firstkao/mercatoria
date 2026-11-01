@@ -234,6 +234,7 @@
                                             </form>
                                             <form method="POST" action="{{ route('office.payments.reject', [$order->no_order, $payment->id]) }}" class="ml-2 inline">
                                                 @csrf
+                                                <input type="text" name="reason" placeholder="Alasan tolak" required maxlength="500" class="h-7 rounded border border-rule px-2 text-xs">
                                                 <button class="text-danger hover:underline">Tolak</button>
                                             </form>
                                         @endif

@@ -48,7 +48,7 @@ class UserController extends Controller
             'name' => ['required', 'string', 'min:2', 'max:100'],
             'email' => ['required', 'email', 'unique:users,email'],
             'password' => ['nullable', 'string', 'min:8'],
-            'role' => ['nullable', 'in:customer,admin'],
+            'role' => ['nullable', 'in:customer'],
             'tgl_lahir' => ['nullable', 'date'],
             'no_hp' => ['required', 'regex:/^(?:\+?62|0)8[1-9][0-9]{6,11}$/'],
             'provinsi' => ['required', 'string', 'max:100'],

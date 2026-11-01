@@ -18,7 +18,7 @@ class Order extends Model
     {
         static::creating(function (Order $order): void {
             if (! $order->invoice_number && $order->no_order) {
-                $order->invoice_number = 'INV-MER-'.substr($order->no_order, -4);
+                $order->invoice_number = setting('invoice_prefix', 'INV-MER').'-'.substr($order->no_order, -4);
             }
         });
     }

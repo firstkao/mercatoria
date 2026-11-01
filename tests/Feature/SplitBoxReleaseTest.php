@@ -23,7 +23,7 @@ test('bukti ditolak â†’ slot dilepas', function () {
     expect(slotTaken($fx['hot']->id))->toBe(1);
 
     $payment = Payment::where('order_id', $order->id)->firstOrFail();
-    $this->actingAs($admin)->post("/office/orders/{$order->no_order}/payments/{$payment->id}/reject");
+    $this->actingAs($admin)->post("/office/orders/{$order->no_order}/payments/{$payment->id}/reject", ['reason' => 'Bukti tidak jelas']);
 
     expect(slotTaken($fx['hot']->id))->toBe(0)
         ->and($order->fresh()->status)->toBe('menunggu_pembayaran');

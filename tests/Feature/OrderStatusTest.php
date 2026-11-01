@@ -77,7 +77,7 @@ test('admin menolak bukti â†’ kembali menunggu pembayaran dan deadline dire
 
     $this->travel(2)->hours();
 
-    $this->actingAs($admin)->post("/office/orders/{$order->no_order}/payments/{$payment->id}/reject")
+    $this->actingAs($admin)->post("/office/orders/{$order->no_order}/payments/{$payment->id}/reject", ['reason' => 'Bukti tidak jelas'])
         ->assertRedirect();
 
     $order->refresh();

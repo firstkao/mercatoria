@@ -17,7 +17,9 @@ class DatabaseSeeder extends Seeder
             StoreSeeder::class,
             MerchCategorySeeder::class,
             PaymentMethodSeeder::class,
+            TagSeeder::class,
             EmailTemplateSeeder::class,
+            PageSeeder::class,
             IndonesiaRegionsSeeder::class,
         ]);
     }

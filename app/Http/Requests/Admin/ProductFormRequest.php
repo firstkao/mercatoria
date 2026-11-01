@@ -39,7 +39,7 @@ class ProductFormRequest extends FormRequest
                 'sku' => ['required', 'string', 'max:64', $sku],
                 'slug' => ['nullable', 'string', 'max:170', $slug],
                 'price_rmb' => ['required', 'numeric', 'min:0'],
-                'weight_gram' => ['nullable', 'integer', 'min:0'],
+                'weight_gram' => ['nullable', 'integer', 'min:1'],
                 'type' => ['required', 'in:single,variant'],
                 'discount_amount' => ['nullable', 'numeric', 'min:0'],
                 'discount_start' => ['nullable', 'date'],
@@ -48,7 +48,7 @@ class ProductFormRequest extends FormRequest
                 'is_active' => ['nullable', 'boolean'],
                 'image_path' => ['nullable', 'string', 'max:255', 'starts_with:products/'],
                 'image' => ['nullable', 'file', 'mimes:jpg,jpeg,png,webp', 'max:6144'],
-                'description_image' => ['nullable', 'file', 'mimes:jpg,jpeg,png,webp', 'max:6144'],
+                'description_image' => ['nullable', 'file', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
                 'tags' => ['nullable', 'array'],
                 'tags.*' => ['integer', 'exists:tags,id'],
                 'variants' => ['nullable', 'array'],
@@ -61,7 +61,7 @@ class ProductFormRequest extends FormRequest
                     Rule::unique('product_variants', 'sku'),
                 ],
                 'variants.*.price_rmb' => ['nullable', 'numeric', 'min:0'],
-                'variants.*.weight_gram' => ['nullable', 'integer', 'min:0'],
+                'variants.*.weight_gram' => ['nullable', 'integer', 'min:1'],
                 'variants.*.availability' => ['nullable', 'in:tersedia,kosong'],
                 'variants.*.image' => ['nullable', 'file', 'mimes:jpg,jpeg,png,webp', 'max:6144'],
             ];
@@ -79,7 +79,7 @@ class ProductFormRequest extends FormRequest
                 'name' => ['required', 'string', 'max:150'],
                 'sku' => ['required', 'string', 'max:64', $sku],
                 'price_rmb' => ['nullable', 'numeric', 'min:0'],
-                'weight_gram' => ['nullable', 'integer', 'min:0'],
+                'weight_gram' => ['nullable', 'integer', 'min:1'],
                 'availability' => ['required', 'in:tersedia,kosong'],
                 'image' => ['nullable', 'file', 'mimes:jpg,jpeg,png,webp', 'max:6144'],
             ];
@@ -87,7 +87,7 @@ class ProductFormRequest extends FormRequest
 
         if ($action === 'bulkWeight') {
             return [
-                'weight_gram' => ['required', 'integer', 'min:0'],
+                'weight_gram' => ['required', 'integer', 'min:1'],
                 'ids' => ['required', 'array', 'min:1'],
                 'ids.*' => ['integer', 'exists:product_variants,id'],
             ];
