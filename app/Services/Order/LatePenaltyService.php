@@ -89,6 +89,31 @@ class LatePenaltyService
     }
 
     /**
+     * PRD 51.4: otomatis Hangus Permanen bila late_penalty_max_days > 0 terlampaui.
+     */
+    public function markOverMaxDaysPermanent(): int
+    {
+        $maxDays = (int) setting('late_penalty_max_days', 0);
+
+        if ($maxDays <= 0) {
+            return 0;
+        }
+
+        $orders = Order::query()
+            ->where('status', OrderStatus::Hangus->value)
+            ->whereNotNull('hangus_at')
+            ->where('hangus_at', '<=', now()->subDays($maxDays))
+            ->get();
+
+        foreach ($orders as $order) {
+            $order->update(['hangus_permanent_at' => now()]);
+            app(OrderStatusService::class)->changeStatus($order, OrderStatus::HangusPermanen, 'system', "Melewati batas maksimal {$maxDays} hari denda");
+        }
+
+        return $orders->count();
+    }
+
+    /**
      * PRD 51.1: Admin dapat menetapkan Hangus Permanen kapan saja.
      */
     public function markHangusPermanen(Order $order, User $admin): Order

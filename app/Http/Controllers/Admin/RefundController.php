@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\AdminLog;
 use App\Models\Order;
+use App\Models\Payment;
 use App\Models\Refund;
 use App\Services\Payment\RefundService;
 use Illuminate\Http\RedirectResponse;
@@ -56,6 +57,19 @@ class RefundController extends Controller
             'amount' => ['required', 'numeric', 'min:0.01'],
             'reason' => ['required', 'string', 'max:1000'],
         ]);
+
+        $paid = (float) $order->payments()
+            ->where('status', Payment::STATUS_VERIFIED)
+            ->where('type', '!=', Payment::TYPE_REFUND)
+            ->sum('amount');
+        $alreadyRefunded = (float) $order->refunds()
+            ->whereIn('status', [Refund::STATUS_REQUESTED, Refund::STATUS_COMPLETED])
+            ->sum('amount');
+        $refundable = max(0, $paid - $alreadyRefunded);
+
+        if ((float) $data['amount'] > $refundable) {
+            return back()->withErrors(['amount' => 'Nominal refund melebihi sisa pembayaran terverifikasi (Rp '.number_format($refundable, 0, ',', '.').').'])->withInput();
+        }
 
         $refund = $this->refunds->requestPartial($order, (float) $data['amount'], $data['reason'], $request->user());
         $this->log($request, 'refund_partial', $order, $refund);

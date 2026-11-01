@@ -22,9 +22,14 @@ class ReportController extends Controller
         $totalDp = (clone $verified())->where('type', Payment::TYPE_DP)->sum('amount');
         $totalSettlement = (clone $verified())->where('type', Payment::TYPE_SETTLEMENT)->sum('amount');
         $totalPenjualan = Order::where('status', 'selesai')->sum('total');
+        // PRD 28: Outstanding = DP belum lunas → total order dikurangi pembayaran DP/pelunasan terverifikasi.
         $outstanding = Order::where('scheme', 'dp')
             ->whereNotIn('status', ['selesai', 'pembayaran_gagal', 'dana_dikembalikan', 'hangus', 'hangus_permanen'])
-            ->sum('tagihan_web');
+            ->withSum(['payments as paid_amount' => fn ($q) => $q
+                ->where('status', Payment::STATUS_VERIFIED)
+                ->whereIn('type', [Payment::TYPE_DP, Payment::TYPE_SETTLEMENT, Payment::TYPE_FULL])], 'amount')
+            ->get()
+            ->sum(fn (Order $order) => max(0, (float) $order->total - (float) $order->paid_amount));
         $hangus = (clone $verified())
             ->whereHas('order', fn ($q) => $q->whereIn('status', ['hangus', 'hangus_permanen']))
             ->sum('amount');

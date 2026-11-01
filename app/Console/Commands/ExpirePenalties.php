@@ -24,8 +24,9 @@ class ExpirePenalties extends Command
     public function handle(LatePenaltyService $penalties): int
     {
         $count = $penalties->expireOverdue();
+        $permanent = $penalties->markOverMaxDaysPermanent();
 
-        $this->info("{$count} order kembali ke Hangus (denda tidak dibayar).");
+        $this->info("{$count} order kembali ke Hangus (denda tidak dibayar), {$permanent} jadi Hangus Permanen.");
 
         return self::SUCCESS;
     }

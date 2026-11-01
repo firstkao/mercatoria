@@ -58,6 +58,11 @@ class OrderStatusService
             $order->pickup_deadline_at = now()->addDays((int) setting('late_penalty_pickup_days', 7));
         }
 
+        // PRD 7.x/51: timestamp "keputus" tetap hangus_at walau order kembali ke Hangus dari Menunggu Denda.
+        if ($toValue === OrderStatus::Hangus->value && $order->hangus_at === null) {
+            $order->hangus_at = now();
+        }
+
         if ($toValue === OrderStatus::MenungguPembayaran->value) {
             // Reset batas upload bukti 1×24 jam (PRD 17.10 — setelah admin menolak).
             $order->payment_deadline_at = now()->addHours(24);

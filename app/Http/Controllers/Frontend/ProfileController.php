@@ -8,6 +8,7 @@ use App\Models\Coin;
 use App\Models\CoinTransaction;
 use App\Models\IndonesiaRegion;
 use App\Models\ShareClick;
+use App\Models\Spammer;
 use App\Models\User;
 use App\Models\UserNotification;
 use App\Models\UserVoucher;
@@ -105,6 +106,12 @@ class ProfileController extends Controller
             'kode_pos' => ['required', 'string', 'regex:/^[0-9]{5}$/'],
         ]);
 
+        // PRD 7.3: No HP boleh diubah dengan cek tabel spammer.
+        if (normalize_phone($data['no_hp']) !== $user->no_hp
+            && Spammer::query()->where('status', Spammer::STATUS_BLOCKED)->where('no_hp', normalize_phone($data['no_hp']))->exists()) {
+            throw ValidationException::withMessages(['no_hp' => 'Nomor HP ini tidak dapat digunakan.']);
+        }
+
         // Dropdown berantai alamat: rantai provinsi -> kota -> kecamatan harus valid.
         $chainErrors = IndonesiaRegion::chainErrors(
             $data['provinsi_id'] ?? null,
@@ -168,6 +175,11 @@ class ProfileController extends Controller
         $data = $request->validate([
             'tgl_lahir' => ['required', 'date'],
         ]);
+
+        // PRD 48: Tanggal Lahir locked, 1x set seumur hidup.
+        if ($request->user()->tgl_lahir !== null) {
+            return redirect()->route('dashboard');
+        }
 
         $request->user()->update(['tgl_lahir' => $data['tgl_lahir']]);
 
@@ -257,6 +269,15 @@ class ProfileController extends Controller
                 ->where('is_read', false)
                 ->count(),
         ]);
+    }
+
+    public function readNotification(Request $request, UserNotification $notification): RedirectResponse
+    {
+        abort_unless($notification->user_id === $request->user()->id, 403);
+
+        $notification->update(['is_read' => true]);
+
+        return $notification->target_url ? redirect($notification->target_url) : redirect()->back();
     }
 
     public function readAllNotifications(Request $request): RedirectResponse

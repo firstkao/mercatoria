@@ -3,6 +3,7 @@
 use App\Models\AdminLog;
 use App\Models\Coin;
 use App\Models\CoinTransaction;
+use App\Models\Payment;
 use App\Models\Refund;
 use App\Models\SplitBoxBatchSlot;
 use App\Models\User;
@@ -189,6 +190,7 @@ test('rollback saat gagal di tengah: koin dan status tidak berubah', function ()
 test('endpoint refund admin mencatat admin_logs dan non-admin ditolak 403', function () {
     $admin = User::factory()->admin()->create();
     [$user, $order] = refundReady(placeTestOrder());
+    Payment::factory()->create(['order_id' => $order->id, 'amount' => 100000, 'status' => Payment::STATUS_VERIFIED]);
 
     $this->actingAs($admin)->post("/office/orders/{$order->no_order}/refund", [
         'reason' => 'Barang kosong semua',
