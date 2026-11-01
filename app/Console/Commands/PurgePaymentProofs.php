@@ -20,7 +20,7 @@ class PurgePaymentProofs extends Command
      *
      * @var string
      */
-    protected $description = 'Hapus file bukti transfer order Selesai/Refunded/Hangus (PRD 17.7)';
+    protected $description = 'Hapus file bukti transfer order Selesai/Refunded/Hangus/Hangus Permanen/Pembayaran Gagal (PRD 17.7)';
 
     /**
      * Status terminal yang menutup riwayat pembayaran (PRD 17.7 + Hangus Permanen).
@@ -30,6 +30,7 @@ class PurgePaymentProofs extends Command
         OrderStatus::DanaDikembalikan->value,
         OrderStatus::Hangus->value,
         OrderStatus::HangusPermanen->value,
+        OrderStatus::PembayaranGagal->value,
     ];
 
     public function handle(): int

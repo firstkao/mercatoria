@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\AdminLog;
+use App\Models\Customer;
+use App\Models\ProductView;
 use App\Models\Spammer;
 use App\Services\Admin\AdminNotificationService;
 use Illuminate\Http\RedirectResponse;
@@ -64,6 +66,33 @@ class SpammerController extends Controller
 
         AdminLog::record($request->user(), 'update', 'Spammer', $spammer->id, $old, $new, 'Unblock spammer manual');
 
+        $this->startGrace($spammer);
+
         return redirect()->route('office.spammers.index')->with('status', 'Spammer di-unblock.');
+    }
+
+    /**
+     * PRD 7.8: setelah unblock, Customer Blocked masuk state Grace 7 hari (view di-reset 10/10).
+     * Setelah 2x gagal (unblock_count >= 2) → Blocked Permanen, tidak ada Grace lagi.
+     */
+    private function startGrace(Spammer $spammer): void
+    {
+        $customer = Customer::query()
+            ->where('current_state', 'Blocked')
+            ->where('unblock_count', '<', 2)
+            ->where(fn ($q) => $q->where('email', $spammer->email)->orWhere('no_hp', $spammer->no_hp))
+            ->first();
+
+        if (! $customer) {
+            return;
+        }
+
+        $customer->update([
+            'current_state' => 'Grace',
+            'unblock_grace_until' => now()->addDays(7),
+            'state_updated_at' => now(),
+        ]);
+
+        ProductView::where('user_id', $customer->user_id)->delete();
     }
 }

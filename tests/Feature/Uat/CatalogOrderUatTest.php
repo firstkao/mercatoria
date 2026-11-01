@@ -93,7 +93,7 @@ test('UAT settings: halaman terbuka dan update tidak crash', function () {
 test('UAT order: checkout customer lalu admin melihat dan mengubah status berurutan', function () {
     [$customer, $order] = placeTestOrder();
     expect($order->status->value ?? $order->status)->toBe('menunggu_pembayaran');
-    expect($order->no_order)->toMatch('/^MER-[A-Z0-9]{5}-\d{4}$/');
+    expect($order->no_order)->toMatch('/^MER-[A-Z]{4}-\d{4}$/');
 
     $this->get('/office/orders')->assertOk()->assertSee($order->no_order);
     $this->get("/office/orders/{$order->no_order}")->assertOk()->assertSee($order->no_order);

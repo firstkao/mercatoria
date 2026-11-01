@@ -29,10 +29,10 @@ test('frekuensi jadwal sesuai ketentuan', function () {
         fn ($event) => str_contains((string) $event->command, $name)
     );
 
-    // expire-unpaid & expire-penalties tiap 15 menit; hangus-expired 05:00 harian
+    // expire-unpaid & expire-penalties tiap 15 menit; hangus-expired juga tiap 15 menit (PRD v4.18)
     expect($find('orders:expire-unpaid')->expression)->toBe('*/15 * * * *')
         ->and($find('orders:expire-penalties')->expression)->toBe('*/15 * * * *')
-        ->and($find('orders:hangus-expired')->expression)->toBe('0 5 * * *');
+        ->and($find('orders:hangus-expired')->expression)->toBe('*/15 * * * *');
 });
 
 test('jam cron sesuai prd 37.3', function () {

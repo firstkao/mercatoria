@@ -22,7 +22,6 @@ class UpdateUserState extends Command
 
         Customer::query()
             ->whereIn('current_state', ['MVP', 'Ex', 'ONS'])
-            ->where(fn ($q) => $q->whereNull('unblock_grace_until')->orWhere('unblock_grace_until', '<=', now()))
             ->with('user')
             ->each(function (Customer $customer) use ($notifications, &$changed): void {
                 $user = $customer->user;
@@ -53,9 +52,13 @@ class UpdateUserState extends Command
                     $changed++;
                 }
 
-                // PRD 7.8: notif H-7 sebelum Blocked (hari ke-53 dari 60).
+                // PRD 7.8: notif H-7 — Ex → ONS di hari ke-23, ONS → Blocked di hari ke-53.
+                if ($target === 'Ex' && $days === 23) {
+                    $notifications->notify($user, 'state_warning', 'Kamu sudah 23 hari tidak order. Yuk order sebelum jadi ONS.', '/dashboard');
+                }
+
                 if ($target === 'ONS' && $days === 53) {
-                    $notifications->notify($user, 'state_warning', 'Akunmu akan diblokir dalam 7 hari. Selesaikan pesanan untuk tetap aktif.', '/dashboard');
+                    $notifications->notify($user, 'state_warning', 'Kamu sudah 53 hari tidak order. Yuk order sebelum akun ke-lock!', '/dashboard');
                 }
             });
 

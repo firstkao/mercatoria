@@ -12,6 +12,7 @@ use App\Models\User;
 use App\Models\UserNotification;
 use App\Services\Order\LatePenaltyService;
 use App\Services\Order\OrderStatusService;
+use App\Services\Order\ShippingCalculatorService;
 use Database\Seeders\PageSeeder;
 use Database\Seeders\TagSeeder;
 use Illuminate\Support\Facades\Artisan;
@@ -119,7 +120,7 @@ test('PRD 7.8: user:update-state — order aktif membuat Customer langsung MVP',
 
 test('PRD 7.8: spammer:recheck-grace memblokir kembali setelah grace 7 hari lewat tanpa bayar', function () {
     $user = User::factory()->create();
-    $customer = Customer::factory()->create(['user_id' => $user->id, 'current_state' => 'Ex', 'unblock_count' => 0, 'unblock_grace_until' => now()->subMinute()]);
+    $customer = Customer::factory()->create(['user_id' => $user->id, 'current_state' => 'Grace', 'unblock_count' => 0, 'unblock_grace_until' => now()->subMinute()]);
 
     Artisan::call('spammer:recheck-grace');
 
@@ -189,4 +190,27 @@ test('Nomor invoice memakai setting invoice_prefix', function () {
     [, $order] = placeTestOrder();
 
     expect($order->invoice_number)->toStartWith('INV-XYZ-');
+});
+
+test('PRD 17.8: nomor order berformat MER-XXXX-0001 (4 huruf + urutan harian 4 digit)', function () {
+    expect(generate_order_number())->toMatch('/^MER-[A-Z]{4}-\d{4}$/');
+});
+
+test('PRD 21: fee QRIS DP dihitung dari nominal web 50% dan threshold memakai nominal itu', function () {
+    $service = app(ShippingCalculatorService::class);
+
+    $below = $service->calculateCheckoutTotal([['final_price_bersih' => 800000, 'qty' => 1]], 0, 'dp', 'toco', 'qris');
+    $above = $service->calculateCheckoutTotal([['final_price_bersih' => 1000000, 'qty' => 1]], 0, 'dp', 'toco', 'qris');
+
+    expect($below['fee_qris'])->toEqual(0.0)
+        ->and($above['fee_qris'])->toEqual(150.0);
+});
+
+test('PRD 18.4: Menunggu Denda tampil di Tagihan Menunggu dengan tombol bayar denda', function () {
+    [$user, $order] = placeTestOrder(User::factory()->create());
+    $order->update(['status' => 'menunggu_denda', 'penalty_amount' => 70000, 'penalty_deadline_at' => now()->addDay()]);
+
+    $this->actingAs($user)->get('/dashboard')
+        ->assertOk()
+        ->assertSee('Unggah Bukti Denda', false);
 });

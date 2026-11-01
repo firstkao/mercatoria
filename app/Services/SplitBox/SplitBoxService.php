@@ -135,8 +135,8 @@ class SplitBoxService
     }
 
     /**
-     * Tutup kloter & refund semua order yang terkunci di kloter itu (PRD 49.11).
-     * Refund full otomatis via RefundService — koin/voucher kembali + 1 notif.
+     * Tutup kloter & buat permintaan refund full untuk tiap order di kloter (PRD 49.11).
+     * Transfer dana manual oleh Admin; koin/voucher kembali saat refund diselesaikan.
      */
     public function closeBatchAndRefund(SplitBoxBatch $batch, User $admin): int
     {
@@ -151,7 +151,7 @@ class SplitBoxService
         $refunds = app(RefundService::class);
 
         foreach ($orders as $order) {
-            $refunds->autoFull($order, 'Slot split box tidak terpenuhi', $admin);
+            $refunds->requestFull($order, 'Slot split box tidak terpenuhi', $admin);
         }
 
         return $orders->count();
@@ -176,6 +176,14 @@ class SplitBoxService
         }
 
         return null;
+    }
+
+    /**
+     * Pemeliharaan kloter (cron splitbox:check-batches): auto-open kloter baru bila slot habis / deadlock pair.
+     */
+    public function ensureBatchHealth(SplitBox $splitBox): void
+    {
+        $this->autoOpenBatch($splitBox);
     }
 
     /**

@@ -112,7 +112,7 @@ test('reject menyimpan alasan, notif, dan order tidak berubah', function () {
         ->toContain('Barang sudah dikirim');
 });
 
-test('split box refund otomatis membuat refund completed dan satu notif', function () {
+test('tutup kloter split box membuat permintaan refund (transfer manual) lalu koin kembali saat selesai', function () {
     $admin = User::factory()->admin()->create();
     $f = splitBoxFixture();
     Coin::factory()->create(['user_id' => $f['user']->id, 'balance' => 100]);
@@ -134,15 +134,15 @@ test('split box refund otomatis membuat refund completed dan satu notif', functi
     $refund = Refund::where('order_id', $order->id)->sole();
 
     expect($refund->type)->toBe('full')
-        ->and($refund->status)->toBe('completed')
+        ->and($refund->status)->toBe('requested')
         ->and($refund->reason)->toBe('Slot split box tidak terpenuhi')
-        ->and($refund->completed_at)->not->toBeNull()
-        ->and($order->fresh()->status)->toBe('dana_dikembalikan');
+        ->and($order->fresh()->status)->toBe('ditahan')
+        ->and(UserNotification::where('user_id', $user->id)->where('type', 'refund_requested')->exists())->toBeTrue();
 
-    // Koin kembali + hanya 1 notif refund (langsung completed)
+    app(RefundService::class)->complete($refund, $admin);
+
     expect((int) Coin::where('user_id', $user->id)->value('balance'))->toBe(100)
-        ->and(UserNotification::where('user_id', $user->id)->where('type', 'like', 'refund%')->count())->toBe(1)
-        ->and(UserNotification::where('user_id', $user->id)->where('type', 'refund_completed')->exists())->toBeTrue();
+        ->and($order->fresh()->status)->toBe('dana_dikembalikan');
 });
 
 test('pengembalian koin voucher tidak memicu jalur forfeit', function () {

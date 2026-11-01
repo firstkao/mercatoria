@@ -16,10 +16,22 @@ class RecheckUnblockGrace extends Command
         $count = 0;
 
         Customer::query()
+            ->where('current_state', 'Grace')
             ->whereNotNull('unblock_grace_until')
             ->where('unblock_grace_until', '<=', now())
-            ->where('current_state', '!=', 'MVP')
+            ->with('user')
             ->each(function (Customer $customer) use (&$count): void {
+                // CO (Buat Pesanan) dalam masa Grace → lanjut MVP (verifikasi pembayaran manual oleh admin).
+                $hasOrder = $customer->user?->orders()
+                    ->where('created_at', '>=', $customer->unblock_grace_until->copy()->subDays(7))
+                    ->exists();
+
+                if ($hasOrder) {
+                    $customer->update(['current_state' => 'MVP', 'unblock_grace_until' => null, 'state_updated_at' => now()]);
+
+                    return;
+                }
+
                 $customer->update([
                     'current_state' => 'Blocked',
                     'unblock_grace_until' => null,

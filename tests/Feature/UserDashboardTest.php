@@ -13,7 +13,7 @@ test('dashboard adalah tujuan setelah login', function () {
 
 test('halaman dashboard tampil sesuai prd 7.16 dan design spec 10.1', function () {
     $user = User::factory()->create();
-    Customer::factory()->create(['user_id' => $user->id, 'tier' => 'gold']);
+    Customer::factory()->create(['user_id' => $user->id, 'tier' => 'gold', 'total_belanja' => 5000000]);
     [$user, $order] = placeTestOrder($user);
 
     $this->actingAs($user)->get('/dashboard')
@@ -38,7 +38,7 @@ test('halaman dashboard tampil sesuai prd 7.16 dan design spec 10.1', function (
 
 test('dashboard menampilkan badge role dan tier', function () {
     $user = User::factory()->create();
-    Customer::factory()->create(['user_id' => $user->id, 'tier' => 'silver']);
+    Customer::factory()->create(['user_id' => $user->id, 'tier' => 'silver', 'total_belanja' => 1000000]);
 
     $this->actingAs($user)->get('/dashboard')
         ->assertOk()

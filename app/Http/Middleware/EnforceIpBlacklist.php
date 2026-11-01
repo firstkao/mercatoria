@@ -22,7 +22,7 @@ class EnforceIpBlacklist
 
         $user = $request->user();
         if ($user && $user->role === 'customer'
-            && in_array($user->customer?->current_state, ['MVP', 'Ex', 'ONS'], true)) {
+            && in_array($user->customer?->current_state, ['MVP', 'Ex', 'ONS', 'Grace'], true)) {
             return $next($request);
         }
 

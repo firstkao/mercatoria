@@ -25,6 +25,6 @@ class SplitBoxBatchController extends Controller
             $before, ['status' => $split_box_batch->fresh()->status],
             "Tutup kloter & refund {$count} order");
 
-        return redirect()->back()->with('status', "Kloter ditutup. {$count} order di-refund.");
+        return redirect()->back()->with('status', "Kloter ditutup. {$count} permintaan refund dibuat (transfer manual).");
     }
 }

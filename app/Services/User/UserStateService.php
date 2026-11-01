@@ -15,8 +15,8 @@ class UserStateService
 {
     public const VIEW_QUOTA = 10;
 
-    /** State dengan kuota view terbatas (PRD 7.9: Crush/Ex/ONS = 10x view produk). */
-    private const VIEW_LIMITED = ['crush', 'ex', 'ons'];
+    /** State dengan kuota view terbatas (PRD 7.9: Crush/Ex/ONS/Grace = 10x view produk). */
+    private const VIEW_LIMITED = ['crush', 'ex', 'ons', 'grace'];
 
     /**
      * Nama state user (lowercase, untuk logic).

@@ -129,6 +129,8 @@
                             <p class="text-sm font-semibold text-ink">{{ $order->no_order }}</p>
                             @if ($order->status === 'menunggu_pembayaran')
                                 <p class="text-xs text-ink/60">{{ format_rp($order->tagihan_web) }} · Menunggu Pembayaran</p>
+                            @elseif ($order->status === 'menunggu_denda')
+                                <p class="text-xs text-ink/60">Denda {{ format_rp($order->penalty_amount) }} · Menunggu Denda</p>
                             @else
                                 <p class="text-xs text-ink/60">
                                     Menunggu Pelunasan &amp; CO Marketplace
@@ -147,6 +149,11 @@
                             <a href="{{ route('orders.show', $order->no_order) }}"
                                class="rounded-lg bg-black px-4 py-2 text-xs font-semibold text-white transition-colors hover:bg-ink">
                                 Bayar &amp; Unggah Bukti
+                            </a>
+                        @elseif ($order->status === 'menunggu_denda')
+                            <a href="{{ route('orders.show', $order->no_order) }}"
+                               class="rounded-lg bg-black px-4 py-2 text-xs font-semibold text-white transition-colors hover:bg-ink">
+                                Bayar &amp; Unggah Bukti Denda
                             </a>
                         @else
                             <a href="{{ route('orders.show', $order->no_order) }}"

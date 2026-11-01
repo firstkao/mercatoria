@@ -10,6 +10,8 @@ use App\Models\UserVoucher;
 
 class DiscountForfeitureService
 {
+    public function __construct(private CoinWalletService $coins) {}
+
     /**
      * SATU PINTU hangus permanen koin & voucher checkout (PRD 9.3 / 17.10 / 49.7).
      *
@@ -22,6 +24,13 @@ class DiscountForfeitureService
      */
     public function forfeitUnpaidCheckoutDiscounts(Order $order): void
     {
+        // PRD 9.3 (v4.18): slot_sold = bukan salah customer → koin/voucher dikembalikan, bukan hangus.
+        if ($order->cancel_reason === Order::CANCEL_SLOT_SOLD) {
+            $this->returnCheckoutDiscounts($order);
+
+            return;
+        }
+
         if ($order->coin_spent > 0) {
             $this->forfeitCoins($order);
         }
@@ -37,6 +46,33 @@ class DiscountForfeitureService
                 'changed_by' => OrderStatusLog::ACTOR_SYSTEM,
                 'note' => 'Koin/voucher hangus permanen (PRD 9.3 — tanpa undo)',
             ]);
+        }
+    }
+
+    private function returnCheckoutDiscounts(Order $order): void
+    {
+        if ($order->coin_spent > 0) {
+            $alreadyReturned = CoinTransaction::query()
+                ->where('order_id', $order->id)
+                ->where('type', CoinTransaction::TYPE_REFUND_RETURNED)
+                ->exists();
+
+            if (! $alreadyReturned) {
+                $this->coins->credit(
+                    $order->user,
+                    (int) $order->coin_spent,
+                    $order,
+                    CoinTransaction::TYPE_REFUND_RETURNED,
+                    "Pengembalian koin: slot Split Box order {$order->no_order} diambil user lain"
+                );
+            }
+        }
+
+        if ($order->user_voucher_id) {
+            UserVoucher::query()
+                ->where('id', $order->user_voucher_id)
+                ->where('status', UserVoucher::STATUS_USED_AT_CHECKOUT)
+                ->update(['status' => UserVoucher::STATUS_ACTIVE, 'used_at' => null]);
         }
     }
 

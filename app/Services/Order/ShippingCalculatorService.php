@@ -155,8 +155,12 @@ class ShippingCalculatorService
         $totalBarang = max(0, $subtotal - $discount);
         $qrisThreshold = (float) setting('qris_threshold', 500000);
         $qrisRate = (float) setting('fee_qris_percent', 0.03) / 100;
-        $feeQris = ($method === 'qris' && $totalBarang >= $qrisThreshold)
-            ? round($totalBarang * $qrisRate, 2)
+        // PRD 21: fee QRIS dari nominal tagihan web yang sebenarnya dibayar (FP=100%, DP=50%).
+        $nominalTagihanWeb = $scheme === 'dp'
+            ? $totalBarang * ((float) setting('dp_minimum_percent', 50) / 100)
+            : $totalBarang;
+        $feeQris = ($method === 'qris' && $nominalTagihanWeb >= $qrisThreshold)
+            ? round($nominalTagihanWeb * $qrisRate, 2)
             : 0.0;
 
         if ($scheme === 'dp') {

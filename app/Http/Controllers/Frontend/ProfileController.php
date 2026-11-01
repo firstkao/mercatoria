@@ -58,7 +58,8 @@ class ProfileController extends Controller
             'countdownState' => $viewLimited ? $state->countdownLabel($user) : null,
             'waUrl' => $viewLimited ? setting('url_whatsapp') : null,
             'waUrlPrefill' => $waUrlPrefill,
-            'tierBadge' => $customer ? 'MVP '.ucfirst($customer->tier) : null,
+            // PRD 7.7: total_belanja = Rp0 → badge tier tidak muncul (none).
+            'tierBadge' => $customer && (float) $customer->total_belanja > 0 ? 'MVP '.ucfirst($customer->tier) : null,
             // PRD 50: progress bar antara batas tier saat ini dan berikutnya.
             'tierProgress' => array_merge([
                 'belanja' => (float) ($customer->total_belanja ?? 0),
@@ -68,7 +69,7 @@ class ProfileController extends Controller
                 ? app(UserTierService::class)->progress($customer)
                 : ['current_tier' => null, 'next_tier' => 'silver', 'progress_pct' => 0.0, 'belanja_sisa' => null]),
             'tagihan' => $user->orders()
-                ->whereIn('status', ['menunggu_pembayaran', 'menunggu_pelunasan_pengambilan'])
+                ->whereIn('status', ['menunggu_pembayaran', 'menunggu_pelunasan_pengambilan', 'menunggu_denda'])
                 ->orderByDesc('id')
                 ->get(),
             'orders' => $user->orders()->orderByDesc('id')->limit(10)->get(),

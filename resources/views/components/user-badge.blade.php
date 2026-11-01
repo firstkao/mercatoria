@@ -7,6 +7,7 @@
         'Ex' => ['bg' => '#64B5F6', 'text' => '#212121', 'icon' => 'clock'],
         'ONS' => ['bg' => '#FFB74D', 'text' => '#212121', 'icon' => 'moon'],
         'Blocked' => ['bg' => '#E53935', 'text' => '#FFFFFF', 'icon' => 'lock'],
+        'Grace' => ['bg' => '#FFD54F', 'text' => '#212121', 'icon' => 'hourglass-split'],
     ];
     $tier = [
         'MVP Silver' => ['bg' => '#B0BEC5', 'text' => '#212121', 'icon' => 'shield'],

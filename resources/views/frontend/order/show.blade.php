@@ -95,12 +95,15 @@
         @endif
     </div>
 
-    @if ($order->status === 'menunggu_pembayaran')
+    @if (in_array($order->status, ['menunggu_pembayaran', 'menunggu_denda'], true))
+        @php $isDenda = $order->status === 'menunggu_denda'; @endphp
         <div class="mt-6 rounded-xl border border-rule bg-white p-6">
-            <h2 class="font-mono text-[11px] font-medium uppercase tracking-[0.16em] text-ink">Bayar &amp; Unggah Bukti</h2>
+            <h2 class="font-mono text-[11px] font-medium uppercase tracking-[0.16em] text-ink">{{ $isDenda ? 'Bayar & Unggah Bukti Denda' : 'Bayar & Unggah Bukti' }}</h2>
             <p class="mt-1 text-sm text-ink/70">
-                Tagihan: <strong class="text-ink">{{ format_rp($order->tagihan_web) }}</strong>
-                @if ($order->payment_deadline_at)
+                {{ $isDenda ? 'Denda' : 'Tagihan' }}: <strong class="text-ink">{{ format_rp($isDenda ? $order->penalty_amount : $order->tagihan_web) }}</strong>
+                @if ($isDenda && $order->penalty_deadline_at)
+                    &middot; Batas waktu: {{ $order->penalty_deadline_at->format('d/m/Y H:i') }}
+                @elseif ($order->payment_deadline_at)
                     &middot; Batas waktu: {{ $order->payment_deadline_at->format('d/m/Y H:i') }}
                 @endif
             </p>

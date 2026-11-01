@@ -17,7 +17,7 @@ test('checkout membuat order, item, dan snapshot dalam satu transaksi', function
     $order = Order::where('user_id', $user->id)->firstOrFail();
 
     expect($order->status)->toBe('menunggu_pembayaran')
-        ->and($order->no_order)->toMatch('/^MER-[A-Z0-9]{5}-\d{4}$/')
+        ->and($order->no_order)->toMatch('/^MER-[A-Z]{4}-\d{4}$/')
         ->and((float) $order->subtotal)->toEqual(510000.0)
         ->and((float) $order->total)->toEqual(510000.0)
         ->and($order->customer_note)->toBe('bubble wrap extra')

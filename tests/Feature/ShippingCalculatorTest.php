@@ -174,7 +174,7 @@ test('checkout menggunakan setting dp dan fee qris yang aktif', function () {
         method: 'qris',
     );
 
-    expect($result['fee_qris'])->toEqual(60.0)
-        ->and($result['tagihan_web'])->toEqual(120060.0)
+    expect($result['fee_qris'])->toEqual(36.0)
+        ->and($result['tagihan_web'])->toEqual(120036.0)
         ->and($result['estimasi_co_marketplace'])->toEqual(100000.0);
 });

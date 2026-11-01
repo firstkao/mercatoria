@@ -17,7 +17,7 @@ test('nomor order tampil dengan format mer di view invoice', function () {
 
     $html = view('frontend.order.invoice', ['order' => $order->load('items.snapshot')])->render();
 
-    expect($order->no_order)->toMatch('/^MER-[A-Z0-9]{5}-\d{4}$/')
+    expect($order->no_order)->toMatch('/^MER-[A-Z]{4}-\d{4}$/')
         ->and($html)->toContain($order->no_order);
 });
 

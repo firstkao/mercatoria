@@ -22,12 +22,12 @@ Schedule::command('sitemap:generate')->dailyAt('06:00')->timezone('Asia/Jakarta'
 Schedule::command('user:birthday-bonus')->dailyAt('07:00')->timezone('Asia/Jakarta');
 Schedule::command('coin:expire')->dailyAt('08:10')->timezone('Asia/Jakarta');
 Schedule::command('coin:expiry-notify')->dailyAt('08:00')->timezone('Asia/Jakarta');
-Schedule::command('splitbox:check-batches')->dailyAt('08:30')->timezone('Asia/Jakarta');
+Schedule::command('splitbox:check-batches')->hourly()->timezone('Asia/Jakarta');
 
 // Timeout order (PRD 37.3/39.10) — wajib jalan agar status & forfeit koin/voucher aktif.
 Schedule::command('orders:expire-unpaid')->everyFifteenMinutes()->timezone('Asia/Jakarta');
 Schedule::command('orders:expire-penalties')->everyFifteenMinutes()->timezone('Asia/Jakarta');
-Schedule::command('orders:hangus-expired')->dailyAt('05:00')->timezone('Asia/Jakarta');
+Schedule::command('orders:hangus-expired')->everyFifteenMinutes()->timezone('Asia/Jakarta');
 
 // Cart reminder (PRD 16.3/37.3) — Bell + Email info@ tiap 30 menit selama item masih di cart.
 Schedule::command('cart:send-reminder')->everyThirtyMinutes()->timezone('Asia/Jakarta');

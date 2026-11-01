@@ -2,7 +2,10 @@
 
 namespace App\Console\Commands;
 
+use App\Models\SplitBox;
 use App\Models\SplitBoxBatch;
+use App\Services\Admin\AdminNotificationService;
+use App\Services\SplitBox\SplitBoxService;
 use Illuminate\Console\Command;
 
 class CheckSplitBoxBatches extends Command
@@ -21,8 +24,10 @@ class CheckSplitBoxBatches extends Command
      */
     protected $description = 'Cek kloter Split Box lewat closes_at yang belum full (PRD 49.14)';
 
-    public function handle(): int
+    public function handle(SplitBoxService $split, AdminNotificationService $adminNotifications): int
     {
+        SplitBox::query()->get()->each(fn (SplitBox $box) => $split->ensureBatchHealth($box));
+
         $overdue = SplitBoxBatch::query()
             ->where('status', SplitBoxBatch::STATUS_OPEN)
             ->whereNotNull('closes_at')
@@ -30,6 +35,11 @@ class CheckSplitBoxBatches extends Command
             ->get();
 
         foreach ($overdue as $batch) {
+            $adminNotifications->notify(
+                'split_batch_expired',
+                "Kloter #{$batch->batch_no} SplitBox #{$batch->split_box_id} terbuka melewati batas isi. Tutup + refund atau perpanjang closes_at.",
+                "/office/split-boxes/{$batch->split_box_id}/batches"
+            );
             $this->warn("Kloter #{$batch->batch_no} (split_box {$batch->split_box_id}) lewat closes_at — perlu ditutup/di-refund admin.");
         }
 

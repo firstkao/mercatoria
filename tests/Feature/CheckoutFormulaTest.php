@@ -83,16 +83,16 @@ test('fee qris hanya di atas threshold 500 ribu', function () {
 
 test('fee qris juga berlaku untuk dp', function () {
     $result = checkoutService()->calculateCheckoutTotal(
-        [['final_price_bersih' => 500000, 'qty' => 1]],
+        [['final_price_bersih' => 1000000, 'qty' => 1]],
         0,
         'dp',
         'toco',
         'qris'
     );
 
-    // tagihan web DP = 250.000 + fee_qris 150
+    // PRD 21: fee dari nominal web DP 500.000 (>= threshold) = 150
     expect($result['fee_qris'])->toEqual(150.0)
-        ->and($result['tagihan_web'])->toEqual(250150.0);
+        ->and($result['tagihan_web'])->toEqual(500150.0);
 });
 
 test('fee marketplace fp toco rp 1 dan shopee rp 109', function () {
