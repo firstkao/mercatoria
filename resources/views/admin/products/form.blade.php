@@ -1,5 +1,7 @@
 @extends('admin.layouts.admin')
 
+@section('title',admin.layouts.admin')
+
 @section('title', $product->exists ? 'Edit Produk' : 'Tambah Produk')
 
 @section('content')
@@ -83,20 +85,31 @@
     .variant-row .row-head .idx { font-family: monospace; font-size: 10px; text-transform: uppercase; letter-spacing: 0.14em; color: rgba(0,0,0,0.45); }
     .variant-row .remove-btn { color: #E53935; cursor: pointer; background: none; border: none; font-size: 1.1rem; line-height: 1; padding: 0.25rem; }
     .variant-row .remove-btn:hover { color: #C62828; }
-
-    .splitbox-toggle { position: relative; display: inline-block; width: 42px; height: 22px; }
-    .splitbox-toggle input { opacity: 0; width: 0; height: 0; }
-    .splitbox-toggle .slider {
-        position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
-        background-color: #d1d5db; transition: .2s; border-radius: 22px;
-    }
-    .splitbox-toggle .slider:before {
-        content: ""; position: absolute; height: 16px; width: 16px; left: 3px; bottom: 3px;
-        background-color: white; transition: .2s; border-radius: 50%;
-    }
-    .splitbox-toggle input:checked + .slider { background-color: #43A047; }
-    .splitbox-toggle input:checked + .slider:before { transform: translateX(20px); }
 </style>
+
+{{-- ═══ FLASH MESSAGES ═══ --}}
+@if (session('status'))
+    <div class="mb-4 rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-800">
+        {{ session('status') }}
+    </div>
+@endif
+@if (session('error'))
+    <div class="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
+        {{ session('error') }}
+    </div>
+@endif
+
+{{-- ═══ GENERAL VALIDATION ERRORS ═══ --}}
+@if ($errors->any())
+    <div class="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
+        <p class="font-semibold">Periksa kembali input berikut:</p>
+        <ul class="mt-1 list-inside list-disc">
+            @foreach ($errors->all() as $error)
+                <li>{{ $error }}</li>
+            @endforeach
+        </ul>
+    </div>
+@endif
 
 {{-- ═══ FORM UTAMA ═══ --}}
 <form method="POST"
@@ -178,6 +191,7 @@
                         <p class="font-mono text-[11px] font-medium uppercase tracking-[0.16em] text-ink">Kalkulasi Harga</p>
                         <div class="mt-4 h-px bg-rule"></div>
 
+                        {{-- Row 1: SKU + Harga RMB + Berat --}}
                         <div class="mt-4 grid grid-cols-1 gap-4 md:grid-cols-3">
                             <div>
                                 <label class="block text-sm font-medium text-ink">SKU <span class="text-danger">*</span></label>
@@ -207,21 +221,28 @@
 
                         <div class="mt-5 h-px bg-rule"></div>
 
+                        {{-- Row 2: 3 Ongkir --}}
                         <div class="mt-4 grid grid-cols-1 gap-4 md:grid-cols-3">
                             <div>
                                 <label class="block text-sm font-medium text-ink">Ongkir Lokal CN (RMB)</label>
                                 <div class="mt-1.5 rounded-lg border border-rule bg-paper/40 px-3 py-2.5 text-sm text-ink/60" id="disp-ongkir-lokal">Otomatis dari store</div>
-                                <p class="mt-1 text-[10px] text-ink/45"><span id="info-ongkir-lokal">Store: —</span></p>
+                                <p class="mt-1 text-[10px] text-ink/45">
+                                    <span id="info-ongkir-lokal">Store: —</span>
+                                </p>
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-ink">Ongkir CN-BTM (IDR)</label>
                                 <div class="mt-1.5 rounded-lg border border-rule bg-paper/40 px-3 py-2.5 text-sm text-ink/60" id="disp-ongkir-cnbtm">Otomatis dari berat</div>
-                                <p class="mt-1 text-[10px] text-ink/45"><span id="info-ongkir-cnbtm">—</span></p>
+                                <p class="mt-1 text-[10px] text-ink/45">
+                                    <span id="info-ongkir-cnbtm">—</span>
+                                </p>
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-ink">Ongkir BTM-JKT (IDR)</label>
                                 <div class="mt-1.5 rounded-lg border border-rule bg-paper/40 px-3 py-2.5 text-sm text-ink/60" id="disp-ongkir-btmjkt">Otomatis dari berat</div>
-                                <p class="mt-1 text-[10px] text-ink/45"><span id="info-ongkir-btmjkt">—</span></p>
+                                <p class="mt-1 text-[10px] text-ink/45">
+                                    <span id="info-ongkir-btmjkt">—</span>
+                                </p>
                             </div>
                         </div>
                         <p class="mt-2 flex items-start gap-1.5 text-xs text-ink/55">
@@ -307,6 +328,7 @@
                                     <option value="single" @selected(old('type', $product->type ?: 'single') === 'single')>Single</option>
                                     <option value="variant" @selected(old('type') === 'variant' || $product->type === 'variant')>Varian</option>
                                 </select>
+                                @error('type')<p class="mt-1 text-xs text-danger">{{ $message }}</p>@enderror
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-ink">Game <span class="text-danger">*</span></label>
@@ -315,6 +337,7 @@
                                         <option value="{{ $game->id }}" @selected(old('game_id', $product->game_id) == $game->id)>{{ $game->name }}</option>
                                     @endforeach
                                 </select>
+                                @error('game_id')<p class="mt-1 text-xs text-danger">{{ $message }}</p>@enderror
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-ink">Developer <span class="text-ink/45">(opsional)</span></label>
@@ -334,6 +357,7 @@
                                         <option value="{{ $category->id }}" @selected(old('merch_category_id', $product->merch_category_id) == $category->id)>{{ $category->name }}</option>
                                     @endforeach
                                 </select>
+                                @error('merch_category_id')<p class="mt-1 text-xs text-danger">{{ $message }}</p>@enderror
                             </div>
                         </div>
 
@@ -593,6 +617,7 @@
                         <option value="tersedia" @selected(old('availability', $product->availability ?: 'tersedia') === 'tersedia')>Tersedia</option>
                         <option value="kosong" @selected(old('availability') === 'kosong' || $product->availability === 'kosong')>Kosong</option>
                     </select>
+                    @error('availability')<p class="mt-1 text-xs text-danger">{{ $message }}</p>@enderror
                 </div>
 
                 {{-- STORE --}}
@@ -692,6 +717,7 @@
                         <input type="number" step="0.01" min="0" name="discount_amount"
                                value="{{ old('discount_amount', $product->discount_amount) }}"
                                class="mt-1 w-full rounded-lg border border-rule px-3 py-2 text-sm text-ink">
+                        @error('discount_amount')<p class="mt-1 text-xs text-danger">{{ $message }}</p>@enderror
                     </div>
                     <div class="mt-2 grid grid-cols-2 gap-2">
                         <div>
@@ -710,20 +736,51 @@
                     <p class="mt-2 text-[10px] text-ink/45">Diskon wajib &le; harga jual dalam Rupiah.</p>
                 </div>
 
-                {{-- SPLIT BOX — muncul di CREATE & EDIT --}}
+                {{-- SPLIT BOX --}}
                 <div class="border-b border-rule p-5">
-                    <div class="flex items-center justify-between">
-                        <p class="font-mono text-[11px] font-medium uppercase tracking-[0.16em] text-ink">Split Box</p>
-                        <label class="splitbox-toggle">
-                            <input type="checkbox" id="toggle-split-box"
-                                   {{ ($product->exists && $product->is_split_box) ? 'checked' : '' }}
-                                   onchange="document.getElementById('input-is-split-box').value = this.checked ? 1 : 0; document.getElementById('splitbox-hint').classList.toggle('hidden', !this.checked);">
-                            <span class="slider"></span>
-                        </label>
-                    </div>
-                    <p class="mt-1.5 text-xs text-ink/55" id="splitbox-hint" style="{{ ($product->exists && $product->is_split_box) ? '' : 'display:none;' }}">
-                        Aktifkan lalu simpan produk untuk mengelola slot &amp; kloter.
-                    </p>
+                    <p class="font-mono text-[11px] font-medium uppercase tracking-[0.16em] text-ink">Split Box</p>
+
+                    @if ($product->exists && ! $product->is_split_box)
+                        {{-- Produk asli: tombol buat salinan split --}}
+                        <p class="mt-2 text-xs text-ink/55">
+                            Buat salinan produk ini untuk jual per slot. Produk asli tetap jual utuh.
+                        </p>
+                        <button type="button" onclick="openSplitCloneModal()"
+                                class="mt-3 w-full rounded-lg border border-ink px-4 py-2.5 text-sm font-semibold text-ink transition-colors hover:bg-ink hover:text-white">
+                            <i class="bi bi-grid-3x3-gap me-1.5" style="font-size:0.85rem;"></i>
+                            Buat Split Box
+                        </button>
+
+                    @elseif ($product->exists && $product->is_split_box)
+                        {{-- Produk split: info + link ke parent --}}
+                        <div class="mt-2 rounded-lg border border-rule bg-paper/30 p-3">
+                            <p class="text-xs text-ink/70">
+                                <i class="bi bi-diagram-3 me-1" style="font-size:0.8rem;"></i>
+                                Salinan split dari
+                                @if ($product->parent_id)
+                                    <a href="{{ route('office.products.edit', $product->parent_id) }}"
+                                       class="font-semibold text-link underline underline-offset-2">{{ $product->parent->name ?? 'produk asli' }}</a>
+                                @else
+                                    produk lain
+                                @endif
+                            </p>
+                        </div>
+                        <p class="mt-2 text-xs text-ink/55">
+                            Buat varian slot manual di tab Varian. Contoh: "1a", "1b", "2a", "2b".
+                        </p>
+                        @if ($product->parent_id)
+                            <a href="{{ route('office.products.edit', $product->parent_id) }}"
+                               class="mt-2 block w-full rounded-lg border border-rule px-3 py-2 text-center text-xs font-medium text-ink/70 transition-colors hover:border-ink hover:text-ink">
+                                <i class="bi bi-arrow-left me-1" style="font-size:0.8rem;"></i> Lihat Produk Asli
+                            </a>
+                        @endif
+
+                    @else
+                        {{-- Produk baru (create) --}}
+                        <p class="mt-2 text-xs text-ink/55">
+                            Simpan produk dulu, lalu buat salinan split box.
+                        </p>
+                    @endif
                 </div>
 
                 {{-- HAPUS PRODUK --}}
@@ -743,7 +800,7 @@
 </form>
 {{-- AKHIR FORM UTAMA --}}
 
-{{-- ═══ SPLIT BOX MANAGER — muncul di bawah form ═══ --}}
+{{-- ═══ SPLIT BOX MANAGER ═══ --}}
 <div class="mt-5">
     @if ($product->exists)
         <livewire:split-box-manager :product="$product" />
@@ -755,7 +812,7 @@
                 </div>
                 <div>
                     <p class="text-sm font-semibold text-ink">Split Box — Slot &amp; Kloter</p>
-                    <p class="mt-0.5 text-xs text-ink/55">Aktifkan toggle Split Box di sidebar, lalu simpan produk untuk mengelola slot.</p>
+                    <p class="mt-0.5 text-xs text-ink/55">Simpan produk dulu, lalu buat salinan split box.</p>
                 </div>
             </div>
             <div class="mt-4 rounded-lg border-l-4 border-l-[#1A4D8F] bg-[#F8F9FA] p-3.5">
@@ -1012,6 +1069,69 @@
     </div>
 </div>
 
+{{-- ═══ MODAL: Buat Split Box ═══ --}}
+@if ($product->exists && ! $product->is_split_box)
+<div id="modal-split-clone" class="fixed inset-0 z-[100] hidden items-center justify-center bg-black/50 p-6">
+    <div class="w-full max-w-lg rounded-2xl border border-rule bg-white shadow-2xl">
+        <div class="flex items-center gap-4 border-b border-rule px-8 py-6">
+            <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-blue-100">
+                <i class="bi bi-grid-3x3-gap text-blue-600" style="font-size:1.35rem;"></i>
+            </div>
+            <div>
+                <h3 class="font-display text-lg font-semibold text-ink">Buat Split Box</h3>
+                <p class="mt-0.5 text-xs text-ink/55">Salinan produk untuk jual per slot.</p>
+            </div>
+        </div>
+        <form method="POST" action="{{ route('office.products.split-clone', $product) }}">
+            @csrf
+            <div class="px-8 py-6">
+                <div class="rounded-lg border-l-4 border-l-[#1A4D8F] bg-[#F8F9FA] p-4">
+                    <ul class="space-y-1.5 text-xs text-ink/70">
+                        <li class="flex items-start gap-2">
+                            <i class="bi bi-check text-green-600 mt-0.5"></i>
+                            <span>Nama, foto, deskripsi, game, dll di-copy</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <i class="bi bi-check text-green-600 mt-0.5"></i>
+                            <span>Flag <code>is_split_box</code> diaktifkan</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <i class="bi bi-arrow-right text-blue-500 mt-0.5"></i>
+                            <span><strong>Varian dipecah manual</strong> oleh admin (misal: 1 &rarr; 1a, 1b)</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <i class="bi bi-info text-blue-500 mt-0.5"></i>
+                            <span>Produk asli tetap ada &amp; tidak berubah</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="mt-4">
+                    <label class="block text-sm font-medium text-ink">Nama Produk Split <span class="text-danger">*</span></label>
+                    <input type="text" name="split_name" required
+                           value="{{ ($product->name ?? '') . ' (Split Box)' }}"
+                           class="mt-1.5 w-full rounded-lg border border-rule px-3 py-2.5 text-sm text-ink">
+                </div>
+                <div class="mt-3">
+                    <label class="block text-sm font-medium text-ink">Harga Per Slot (RMB) <span class="text-danger">*</span></label>
+                    <input type="number" step="0.01" name="split_price_rmb" required
+                           class="mt-1.5 w-full rounded-lg border border-rule px-3 py-2.5 text-sm text-ink">
+                </div>
+            </div>
+            <div class="flex items-center justify-end gap-3 border-t border-rule px-8 py-5">
+                <button type="button" onclick="closeSplitCloneModal()"
+                        class="rounded-lg border border-rule bg-white px-6 py-2.5 text-sm font-medium text-ink transition-colors hover:bg-paper">Batal</button>
+                <button type="submit"
+                        class="rounded-lg bg-black px-6 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-ink">
+                    <i class="bi bi-plus-lg me-1.5" style="font-size:0.85rem;"></i>
+                    Buat Produk Split
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+@endif
+
 {{-- ═══ VARIANT BUILDER JS ═══ --}}
 <script>
 (function () {
@@ -1066,7 +1186,7 @@
 })();
 </script>
 
-{{-- ═══ CONFIG ═══ --}}
+{{-- ═══ CONFIG UNTUK JS EKSTERNAL ═══ --}}
 @php
     $jsConfig = [
         'cfg'            => $cfg,
