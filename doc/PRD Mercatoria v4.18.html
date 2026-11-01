@@ -4,7 +4,7 @@
       xmlns="http://www.w3.org/TR/REC-html40">
 <head>
 <meta charset="UTF-8">
-<title>PRD Mercatoria v4.9 FINAL — AMANDEMEN applied</title>
+<title>PRD Mercatoria v4.18 FINAL — REVISI KLARIFIKASI</title>
 <!--[if gte mso 9]>
 <xml>
   <w:WordDocument>
@@ -54,8 +54,8 @@
   <h1>PRD MERCATORIA</h1>
   <div class="subtitle">Product Requirements Document</div>
   <div class="meta">
-    <p><strong>Versi:</strong> 4.9 (FINAL — AMANDEMEN applied)</p>
-    <p><strong>Tanggal:</strong> 26 Oktober 2026 · <strong>Riwayat:</strong> v4.9 menerapkan AMANDEMEN (Bootstrap Icons, Tailwind 4/Vite 6, package sesuai repo, tanpa folder Action/Cast)</p>
+    <p><strong>Versi:</strong> 4.18 (FINAL — REVISI KLARIFIKASI)</p>
+    <p><strong>Tanggal:</strong> 1 November 2026 · <strong>Riwayat:</strong> v4.9 = AMANDEMEN (Bootstrap Icons, Tailwind 4/Vite 6, package sesuai repo); <strong>v4.10–v4.18 = revisi klarifikasi, penyelarasan &amp; pemadatan</strong> (aturan koin/voucher refund &amp; slot_sold, state Grace, cron 15 menit, fee QRIS nominal tagihan, timer 7 hari, auto-delete bukti 5 status, Menunggu Denda di Tagihan Menunggu, format nomor order, larangan hard-delete Customer, denda dihitung ulang, Crush→MVP saat Pembayaran Diterima, tier badge none di Rp0) — detail di changelog.</p>
     <p><strong>Referensi Selaras:</strong> Design Spec v3.2 · Skema DB v1.6 · Backlog v1.7 · Struktur Folder v1.3 · Tutorial Sprint 0 v1.1</p>
     <p><strong>Status:</strong> Siap Development</p>
     <p><strong>Tech Stack:</strong> <strong>Laravel 13.x + PHP 8.5 + MySQL 8.0 + Redis 7</strong></p>
@@ -126,6 +126,8 @@
 </div>
 
 <div class="note-success">
+<strong>Perubahan v4.9 → v4.18 (revisi klarifikasi, penyelarasan &amp; pemadatan):</strong> (1) Koin/voucher: Full Refund &amp; slot_sold dikembalikan (expiry tetap semula); Partial/Pembayaran Gagal non-slot_sold/Hangus hangus. (2) State Grace (Masa Tenggang) setelah unblock: 7 hari untuk aksi CO (Buat Pesanan), badge kuning, masuk semua tabel state &amp; badge. (3) Cron <code>order:hangus-expired</code> tiap 15 menit. (4) Fee QRIS 0,03% dari nominal tagihan web (FP=100%, DP=50%). (5) Timer 7 hari mulai saat Menunggu Pelunasan &amp; Pengambilan; Hangus otomatis cron, Selesai manual admin. (6) Auto-delete bukti 5 status terminal. (7) Menunggu Denda masuk Tagihan Menunggu; denda dihitung ulang dari hangus_at. (8) Format nomor order 4 huruf kapital + 4 digit. (9) Customer tidak boleh hard-delete (soft-delete/nonaktifkan saja). (10) Crush→MVP saat Pembayaran Diterima. (11) Tier badge none saat total_belanja=Rp0. (12) Pemadatan changelog &amp; cross-reference. (13) Pemadatan Section 6 (Scope MVP: bullet dikelompokkan) &amp; penghapusan baris "Fitur ditunda v1.1+" yang redundan (sudah tercatat di Section 42 &amp; Out of Scope). (14) Penghapusan note-info duplikat di 17.10 (aturan koin/voucher saat Pembayaran Gagal sudah ada di bullet). (15) GA4: tambah event order_cancelled_slot_sold (selaras dengan Bell Notifikasi #31).
+
 <strong>Perubahan v4.7 → v4.8 (fitur baru + penyelarasan ikon):</strong>
 <ul>
   <li><strong>Split Box / Sharing Slot</strong> dengan syarat pair kumulatif +1/+2, tanpa booking: slot terkunci saat <strong>bukti bayar diupload</strong> (Section 49).</li>
@@ -198,126 +200,33 @@
 <h1>6. Scope MVP</h1>
 <h3>In Scope</h3>
 <ul>
-  <li>Katalog per game &amp; developer (many-to-many)</li>
-  <li><strong>Deep Search (Produk + Nama Varian/Karakter) &amp; Filter Lengkap</strong> — pencarian wajib membaca nama produk induk sekaligus nama varian/karakter (<code>product_variants.name</code>) dengan layout halaman Search khusus (Full-Width 6 Kolom + Horizontal Filter Bar) agar konsisten namun tidak membingungkan dengan halaman Katalog <span class="new">v4.8</span></li>
-  <li>Tag produk: kosong / PRESALE / LIMITED</li>
-  <li>Kategori merch auto-group by sistem (admin CRUD kategori &amp; keyword)</li>
-  <li>Produk single &amp; varian (Karakter, Ukuran, Model, Tipe: Random/Set/Jar)</li>
-  <li>Multi-varian kombinasi (Karakter + Model, Karakter + Ukuran, dll)</li>
-  <li>Varian punya gambar + preview; jika kosong → ambil gambar induk</li>
-  <li>Varian ditampilkan sebagai card/button grid (Shopee-style)</li>
-  <li>SKU &amp; slug unique per produk</li>
-  <li><strong>Deskripsi produk 1 gambar panjang</strong> + <strong>preview di admin</strong> (thumbnail + modal full)</li>
-  <li><strong>Zoom gambar induk &amp; varian</strong> di halaman produk (user) — deskripsi panjang tidak di-zoom</li>
-  <li><strong>Proteksi Anti-Download Foto &amp; Auto-Watermark (Bebas Copy-Paste Teks)</strong> — kalimat/kata tetap bebas di-copy user, namun seluruh foto produk, varian, &amp; deskripsi panjang dikunci dari klik-kanan/drag/save serta ditanamkan watermark <code>MERCATORIA.ID</code> otomatis di server <span class="new">v4.8</span></li>
-  <li>Produk terkait: 6 random dari game/developer sama, scroll horizontal</li>
-  <li><strong>Diskon Produk</strong> (nominal) + <strong>Penawaran Terbaik</strong></li>
-  <li><strong>Katalog dengan sidebar</strong></li>
-  <li><strong>Terakhir Dilihat</strong> (hanya user login)</li>
-  <li><strong>Toolbar katalog</strong> (Menampilkan X dari Y, Pengurutan, Pagination 30/halaman)</li>
-  <li><strong>Catatan Pembelian (customer_note)</strong> di cart</li>
-  <li><strong>Note to Customer</strong> (admin → customer, 1-way)</li>
-  <li><strong>Product vs Order Item — Hard Delete + Snapshot</strong> (data + gambar copy)</li>
-  <li><strong>Store Concept</strong> — tier ongkir lokal CN per toko (min_belanja, ongkir_rmb) <span class="new">v4.4</span></li>
-  <li><strong>Berat Produk</strong> — default di produk, override di varian, bulk edit varian <span class="new">v4.4</span></li>
-  <li><strong>Ongkir Internasional per kg</strong> — CN-BTM &amp; BTM-JKT dihitung dari berat total <span class="new">v4.4</span></li>
-  <li><strong>Snapshot Breakdown Ongkir</strong> — order item simpan detail 3 jenis ongkir + berat <span class="new">v4.4</span></li>
-  <li>User system lengkap + verifikasi email</li>
-  <li>State User System: Guest, Crush, Customer (sub-state MVP/Ex/ONS/Blocked), Admin</li>
-  <li>Home SAMA untuk guest &amp; login (cuma beda navbar)</li>
-  <li>Guest Human hanya lihat home &amp; halaman publik</li>
-  <li>Bot Crawler full akses konten publik (SEO)</li>
-  <li>Announcement Bar (promo bar) dismissible</li>
-  <li>Hero Carousel di Home</li>
-  <li>Home Layout: Game Grid + Penawaran Terbaik + Merch Baru</li>
-  <li>Auto-delete Crush 30 hari (HARD DELETE)</li>
-  <li>View limit Crush/Ex/ONS: 10x (detail produk)</li>
-  <li>Koin + Referral + Voucher</li>
-  <li><strong>2 Badge System</strong>: Role/State Badge + Tier Badge</li>
-  <li>Checkout: BCA / QRIS / ShopeePay (WAJIB LOGIN)</li>
-  <li>FP &amp; DP 50%</li>
-  <li>Platform pengiriman: Toco / Shopee</li>
-  <li>Freeze harga saat "Buat Pesanan"</li>
-  <li>Pembulatan harga ke kelipatan 5.000 (CEILING, sekali di harga item/varian; Cart &amp; Checkout tanpa pembulatan lagi)</li>
-  <li>Modal edukasi cara belanja setelah registrasi (1x seumur hidup)</li>
-  <li>Cart bulk selection + cart reminder per 30 menit</li>
-  <li>Notifikasi email + in-web</li>
-  <li><strong>Bell Notifikasi User</strong> (in-web)</li>
-  <li>Notifikasi H-7 sebelum state berubah</li>
-  <li>Indikator visual dashboard (2 badge, view counter)</li>
-  <li><strong>Dashboard Tab Layout</strong>: Pesanan Saya · Koin Saya · Undang Teman · Edit Profil</li>
-  <li><strong>Section "Tagihan Menunggu"</strong> di Dashboard &amp; Order List</li>
-  <li><strong>Tombol "Bayar &amp; Unggah Bukti"</strong> shortcut</li>
-  <li><strong>Riwayat Status (Timeline)</strong> di Detail Order</li>
-  <li><strong>Halaman Koin Saya</strong> dengan tabel riwayat koin</li>
-  <li><strong>Halaman Undang Teman</strong> dengan stats + share link</li>
-  <li><strong>Invoice PDF</strong> (user &amp; admin, tanpa alamat, cuma bukti pembayaran)</li>
-  <li><strong>Packing List PDF</strong> (admin only, tanpa alamat)</li>
-  <li><strong>Bell Notifikasi Admin</strong> (order baru, bukti bayar, refund, spammer)</li>
-  <li><strong>Search Admin</strong> (produk, order, user) di topbar</li>
-  <li><strong>Dashboard Admin</strong> dengan grafik &amp; stats</li>
-  <li><strong>Kirim Gift/Voucher/Koin</strong> ke user (dari Rank Pelanggan atau User Detail)</li>
-  <li><strong>Sidebar Admin collapse-able</strong></li>
-  <li>Template Email CRUD + <strong>Global Toggle "Stop Kirim Email ke Customer" (Mode Testing/Maintenance)</strong> <span class="new">v4.8</span></li>
-  <li>SEO (meta tags, Open Graph, sitemap, robots.txt)</li>
-  <li><strong>GA4 Settings</strong> (Measurement ID di /office/settings)</li>
-  <li>Crawler Bot Whitelist (Search Engine + AI + Social)</li>
-  <li>Real IP Detection (XFF-based)</li>
-  <li>Admin panel + migrasi data lama</li>
-  <li>CMS halaman statis</li>
-  <li>Preorder Builder (GrapesJS)</li>
-  <li>Refund manual (full/partial) — 3 event notif</li>
-  <li>Spammer list + auto block + multi-IP ban</li>
-  <li>Buyer Protection</li>
-  <li>Forever Delete (scope: spammer list only)</li>
-  <li><strong>Split Box / Sharing Slot</strong> — pair kumulatif +1/+2, slot terkunci saat bukti bayar diupload, FIFO lintas kloter, auto-open kloter <span class="new">v4.8</span></li>
-  <li><strong>Progress Tier</strong> saat Sedang Diproses (nilai penuh order, reversal saat Refund/Hangus) <span class="new">v4.8</span></li>
-  <li><strong>Denda Keterlambatan CO</strong> semi-manual (Rp 1.000/hari) + Hangus Permanen <span class="new">v4.8</span></li>
-  <li>Inject Data Manual: <strong>Produk → Customer → Pesanan</strong> (shortcut /create)</li>
-  <li>Landing &amp; Referral Tracking</li>
-  <li>Auto-delete file bukti transfer saat order Selesai/Refunded/Hangus</li>
-  <li>Auto-delete foto lama saat override</li>
-  <li>Activity Log System (user + auth + admin)</li>
-  <li>Modal only, no browser popup</li>
-  <li>Scroll to top + WA floating button</li>
-  <li>Bulk update status order</li>
-  <li>Rank pelanggan (hanya Customer)</li>
-  <li>Laporan penjualan (DP &amp; pelunasan terpisah)</li>
-  <li><strong>Share produk</strong> — 5 koin per IP unik <strong>INDONESIA ONLY</strong></li>
-  <li>Semua tampilan waktu: WIB (GMT+7)</li>
+  <li><strong>Katalog &amp; Pencarian:</strong> Katalog per game &amp; developer (many-to-many); Deep Search (produk + nama varian/karakter) &amp; Filter lengkap; Kategori merch auto-group (admin CRUD keyword); Toolbar katalog (Menampilkan X dari Y, sort, pagination 30/halaman) + sidebar; Terakhir Dilihat (login only); Produk terkait 6 random (game/developer sama, scroll horizontal).</li>
+  <li><strong>Produk &amp; Varian:</strong> Produk single &amp; multi-varian (Karakter/Ukuran/Model/Tipe: Random/Set/Jar, termasuk kombinasi); varian punya gambar+preview (kosong→ambil induk), ditampilkan card/button grid Shopee-style; SKU &amp; slug unique; Tag produk (kosong/PRESALE/LIMITED); Diskon produk (nominal) + Penawaran Terbaik.</li>
+  <li><strong>Media Produk:</strong> Deskripsi produk 1 gambar panjang + preview di admin (thumbnail+modal); Zoom gambar induk &amp; varian di halaman produk (deskripsi tidak di-zoom); Anti-Download Foto &amp; Auto-Watermark (teks bebas copy, foto diproteksi).</li>
+  <li><strong>Ongkir &amp; Berat:</strong> Store Concept — tier ongkir lokal CN per toko (min_belanja, ongkir_rmb); Berat produk (default di produk, override di varian, bulk edit); Ongkir internasional per kg (CN-BTM &amp; BTM-JKT dari berat total); Snapshot breakdown ongkir di order item (3 jenis ongkir + berat).</li>
+  <li><strong>User &amp; Akses:</strong> User system lengkap + verifikasi email; State User: Guest, Crush, Customer (sub-state MVP/Ex/ONS/Blocked/Grace), Admin; Home SAMA guest &amp; login (beda navbar); Guest Human hanya lihat home &amp; publik; Bot Crawler full akses publik (SEO) + Crawler Bot Whitelist (Search Engine + AI + Social); Real IP Detection (XFF-based).</li>
+  <li><strong>Aturan User:</strong> Auto-delete Crush 30 hari (HARD DELETE, koin ikut terhapus); View limit Crush/Ex/ONS/Grace: 10x detail produk; Modal edukasi cara belanja setelah registrasi (1x seumur hidup).</li>
+  <li><strong>Koin, Referral &amp; Badge:</strong> Koin + Referral + Voucher; Share produk 5 koin per IP unik (INDONESIA ONLY); Landing &amp; Referral Tracking; 2 Badge System (Role/State + Tier).</li>
+  <li><strong>Checkout &amp; Pembayaran:</strong> Checkout WAJIB LOGIN (BCA/QRIS/ShopeePay); FP &amp; DP 50%; Platform pengiriman Toco/Shopee; Freeze harga saat Buat Pesanan; Pembulatan CEILING ke kelipatan 5.000 (sekali di item/varian); Catatan Pembelian (customer_note) di cart; Cart bulk selection + cart reminder per 30 menit.</li>
+  <li><strong>Notifikasi:</strong> Notifikasi email + in-web (Bell Notifikasi User &amp; Admin); Notifikasi H-7 sebelum state berubah; Template Email CRUD + Global Toggle "Stop Kirim Email" (Mode Testing/Maintenance).</li>
+  <li><strong>Dashboard User:</strong> Indikator visual (2 badge + view counter); Tab Layout (Pesanan Saya · Koin Saya · Undang Teman · Edit Profil); Section "Tagihan Menunggu" + tombol "Bayar &amp; Unggah Bukti" shortcut; Riwayat Status (Timeline) di Detail Order; Halaman Koin Saya (tabel riwayat); Halaman Undang Teman (stats + share link).</li>
+  <li><strong>Dokumen PDF:</strong> Invoice PDF (user &amp; admin, tanpa alamat, bukti pembayaran); Packing List PDF (admin only, tanpa alamat).</li>
+  <li><strong>Admin Panel:</strong> Admin panel + migrasi data lama; Dashboard Admin (grafik &amp; stats) + Search topbar (produk/order/user) + Sidebar collapse-able; Bulk update status order; Inject Data Manual shortcut (/create): Produk → Customer → Pesanan; Kirim Gift/Voucher/Koin ke user; Rank pelanggan (hanya Customer); Laporan penjualan (DP &amp; pelunasan terpisah + denda terpisah).</li>
+  <li><strong>Konten &amp; Marketing:</strong> SEO (meta tags, OG, sitemap, robots.txt); GA4 Settings (Measurement ID di /office/settings); CMS halaman statis; Preorder Builder (GrapesJS).</li>
+  <li><strong>Lifecycle Order Lanjutan:</strong> Refund manual (full/partial) — 3 event notif; Note to Customer (admin→customer, 1-way); Product vs Order Item — Hard Delete + Snapshot (data+gambar copy); Split Box/Sharing Slot (pair kumulatif +1/+2, slot terkunci saat bukti bayar diupload, FIFO lintas kloter, auto-open kloter); Progress Tier saat Sedang Diproses (nilai penuh order, reversal saat Refund/Hangus); Denda keterlambatan CO semi-manual (Rp1.000/hari) + Hangus Permanen.</li>
+  <li><strong>Keamanan &amp; Kebersihan Data:</strong> Spammer list + auto block + multi-IP ban; Buyer Protection; Forever Delete (scope: spammer only); Auto-delete file bukti transfer (5 status terminal) + auto-delete foto lama saat override; Activity Log System (user+auth+admin).</li>
+  <li><strong>UI &amp; Lainnya:</strong> Home Layout: Announcement Bar (dismissible) + Hero Carousel + Game Grid + Penawaran Terbaik + Merch Baru; Modal only (no browser popup); Scroll to top + WA floating button; Semua tampilan waktu WIB (GMT+7).</li>
 </ul>
 <h3>Out of Scope (v1)</h3>
 <ul>
-  <li>Integrasi otomatis Taobao/Weidian</li>
-  <li>Fitur komunitas (review, forum, chat antar user)</li>
-  <li>Review produk</li>
-  <li>Wishlist / produk favorit</li>
-  <li>Galeri produk (multi-foto per produk)</li>
-  <li>Refund otomatis</li>
-  <li>Multi-bahasa</li>
-  <li>Mobile app native</li>
-  <li>Escrow otomatis</li>
-  <li>Integrasi logistik otomatis</li>
-  <li>Nomor resi di web</li>
-  <li>Pelunasan DP di web</li>
-  <li>Manajemen stok</li>
-  <li>Penukaran koin → voucher</li>
-  <li>API publik</li>
-  <li>Guest checkout</li>
-  <li><strong>Admin Note</strong> (hanya pakai customer_note)</li>
-  <li><strong>Bulk Verifikasi Pembayaran</strong> (verifikasi satu-satu)</li>
-  <li>Halaman Reseller (masuk v1.1)</li>
-  <li><strong>Preferensi Notifikasi User per Kategori</strong> (toggle di Edit Profil) — masuk v1.1</li>
-  <li><strong>Push Notification (Web Push / FCM)</strong> — masuk v1.1</li>
-  <li><strong>GTM (Google Tag Manager)</strong> — cuma GA4 aja</li>
-  <li><strong>Pembatasan IP Indonesia untuk Daftar &amp; Belanja</strong> — skip karena ada case real (user Turki)</li>
-  <li><strong>Customer Reply untuk Note to Customer</strong> — 1-way dulu, 2-way masuk v1.1</li>
-  <li><strong>Soft Delete untuk produk</strong> — hard delete permanen</li>
-  <li><strong>Restore produk yang sudah dihapus</strong> — hard delete permanen</li>
-  <li><strong>Pembulatan berat ke atas per kg</strong> — pakai berat aktual (gram) <span class="new">v4.4</span></li>
-  <li><strong>Buffer packaging di berat</strong> — pakai berat aktual <span class="new">v4.4</span></li>
+  <li><strong>Integrasi otomatis:</strong> Taobao/Weidian, logistik, escrow, refund otomatis, nomor resi di web, pelunasan DP di web, manajemen stok.</li>
+  <li><strong>Engagement &amp; komunitas:</strong> Review produk, forum/chat antar user, wishlist, galeri multi-foto per produk, penukaran koin → voucher.</li>
+  <li><strong>Platform:</strong> Multi-bahasa, mobile app native, API publik, guest checkout, GTM (cuma GA4).</li>
+  <li><strong>Admin:</strong> Admin Note (pakai customer_note), Bulk Verifikasi Pembayaran (verifikasi satu-satu).</li>
+  <li><strong>v1.1 deferred</strong> (detail tabel di Section 42): Halaman Reseller, Preferensi Notifikasi User, Web Push/FCM, Customer Reply 2-way, Soft Delete/Restore produk, Win-Back System, Grace Period 30 hari, IP Whitelist Admin, Floating Countdown Bar.</li>
+  <li><strong>Dibatasi/skip:</strong> Pembatasan IP Indonesia untuk daftar &amp; belanja (skip — ada case real user Turki); Pembulatan berat ke atas per kg &amp; Buffer packaging (pakai berat aktual gram).</li>
 </ul>
-<p><strong>Fitur yang ditunda ke v1.1+:</strong> Win-Back System, Grace Period 30 hari, IP Whitelist Admin, Floating Countdown Bar, Halaman Reseller, Preferensi Notifikasi, Web Push, Customer Reply, Soft Delete. Lihat Section 42.</p>
+
 
 <h1>7. User System</h1>
 <h3>7.1 Role &amp; Sub-State</h3>
@@ -326,15 +235,16 @@
   <tr><td><strong>Guest — Real Human</strong></td><td>—</td><td>Belum daftar</td><td>Home + halaman publik. Klik game/produk → redirect login.</td></tr>
   <tr><td><strong>Guest — Bot Crawler</strong></td><td>—</td><td>Bot resmi</td><td>Full akses konten publik (SEO).</td></tr>
   <tr><td>Crush</td><td>—</td><td>Setelah verifikasi email</td><td>Katalog (max 10x view), cart, checkout.</td></tr>
-  <tr><td rowspan="4">Customer</td><td><strong>MVP</strong></td><td>Ada pesanan aktif</td><td>Full access, unlimited view</td></tr>
+  <tr><td rowspan="5">Customer</td><td><strong>MVP</strong></td><td>Ada pesanan aktif</td><td>Full access, unlimited view</td></tr>
   <tr><td><strong>Ex</strong></td><td>Pesanan terakhir keputus 0–30 hari</td><td>View limit 10x, bisa order</td></tr>
   <tr><td><strong>ONS</strong></td><td>Pesanan terakhir keputus 30–60 hari</td><td>View limit 10x, bisa order</td></tr>
   <tr><td><strong>Blocked</strong></td><td>Pesanan terakhir keputus &gt; 60 hari</td><td>Dashboard only.</td></tr>
+  <tr><td><strong>Grace (Masa Tenggang)</strong></td><td>Setelah Admin unblock (maks 7 hari)</td><td>Katalog + Cart + Checkout (view 10x)</td></tr>
   <tr><td>Admin</td><td>—</td><td>Manual</td><td>Full access via /office</td></tr>
 </table>
 
 <div class="note-info">
-<strong>Definisi MVP:</strong> Customer dengan minimal 1 pesanan berstatus <strong>aktif</strong>. MVP tidak ada countdown ke Ex — transisi terjadi <strong>langsung</strong>.
+<strong>Definisi MVP:</strong> Customer dengan minimal 1 pesanan berstatus <strong>aktif</strong>. <strong>Transisi Crush → Customer (MVP) terjadi saat pembayaran pertama terverifikasi (status Pembayaran Diterima)</strong> — bukan saat Buat Pesanan. MVP tidak ada countdown ke Ex — transisi terjadi <strong>langsung</strong>.
 </div>
 
 <h3>7.2 Guest Behavior</h3>
@@ -438,7 +348,7 @@
 Guest (Bot)  ──[whitelist]──> Akses konten publik
 
 Crush ──[30 hari tanpa order]──> HARD DELETE
-Crush ──[order pertama verified]──> Customer (MVP)
+Crush ──[order pertama terverifikasi (status Pembayaran Diterima)]──> Customer (MVP)
 
 Customer (MVP)
   ├──[ada pesanan aktif]──> MVP (langsung, tidak ada countdown)
@@ -452,9 +362,9 @@ Ex / ONS
 
 Blocked (Hanya akses Dashboard)
   └──[WA Admin via tombol Unblock di Dashboard ──> Admin Unblock]
-        └──> Grace Period 7 Hari (Akses Katalog + Checkout dibuka &amp; kuota 10/10 view produk)
-               ├──[CO &amp; bayar verified dalam ≤ 7 hari]──> MVP
-               └──[Lewat 7 hari tanpa bayar]──> Blocked lagi (unblock_count + 1, maks 2x)</pre>
+        └──> Grace (Masa Tenggang) 7 Hari (Akses Katalog + Checkout dibuka &amp; kuota 10/10 view produk)
+               ├──[CO (Buat Pesanan) dalam ≤ 7 hari]──> MVP
+               └──[Lewat 7 hari tanpa CO]──> Blocked lagi (unblock_count + 1, maks 2x)</pre>
 
 <h3>7.9 State User System (FINAL)</h3>
 <table>
@@ -464,6 +374,7 @@ Blocked (Hanya akses Dashboard)
   <tr><td><strong>Ex</strong></td><td>10x detail produk</td><td>[ikon: x-circle]</td><td>[ikon: check-circle]</td><td>Katalog + Cart + Checkout</td><td>Reset View</td></tr>
   <tr><td><strong>ONS</strong></td><td>10x detail produk</td><td>[ikon: x-circle]</td><td>[ikon: check-circle]</td><td>Katalog + Cart + Checkout</td><td>Reset View</td></tr>
   <tr><td><strong>Blocked</strong></td><td>0 (locked)</td><td>[ikon: x-circle]</td><td>[ikon: x-circle]</td><td>Dashboard only</td><td>Unblock Akun</td></tr>
+  <tr><td><strong>Grace (Masa Tenggang)</strong></td><td>10x detail produk</td><td>[ikon: x-circle]</td><td>[ikon: check-circle]</td><td>Katalog + Cart + Checkout (maks 7 hari)</td><td>—</td></tr>
 </table>
 
 <h4>Aturan Penting State:</h4>
@@ -473,7 +384,7 @@ Blocked (Hanya akses Dashboard)
   <li><strong>MVP → Ex</strong> transisi langsung, tidak ada countdown</li>
   <li>View counter = hanya detail produk. Buka produk sama 2x → hitung 2x</li>
   <li>Koin &amp; voucher tetap berjalan &amp; bisa expired walau Blocked</li>
-  <li><strong>Blocked → wajib WA Admin via tombol Unblock di Dashboard</strong> = setelah di-unblock Admin secara manual, akun mendapat <strong>Grace Period 7 hari</strong> untuk CO &amp; mendapat kembali jatah <strong>10/10 view detail produk</strong> (agar bisa pilih barang namun tidak spam). Jika dalam 7 hari tidak menyelesaikan pembayaran → otomatis <strong>Blocked kembali</strong> (maksimal 2x unblock).</li>
+  <li><strong>Blocked → wajib WA Admin via tombol Unblock di Dashboard</strong> = setelah di-unblock, akun masuk state sementara <strong>Grace (Masa Tenggang)</strong> 7 hari (badge kuning, turunan Customer — bukan Crush, tidak auto-delete, view di-reset 10/10): akses Katalog+Cart+Checkout dibuka. Jika <strong>CO (Buat Pesanan) dalam ≤7 hari</strong> → verifikasi pembayaran lanjut manual oleh admin → <strong>MVP</strong>; jika lewat 7 hari belum CO → <strong>Blocked kembali</strong> (unblock_count+1, maks 2x; setelah 2x gagal → Blocked Permanen).</li>
   <li>Ex/ONS/Blocked tidak auto-delete</li>
   <li>Spammer HANYA untuk Crush (3x daftar / admin force-ban)</li>
   <li>Blocked ≠ Spammer</li>
@@ -491,7 +402,7 @@ Blocked (Hanya akses Dashboard)
 <h3>7.11 Customer</h3>
 <ul>
   <li>Customer (MVP/Ex/ONS/Blocked) tidak dihapus otomatis</li>
-  <li>Admin bisa hapus manual</li>
+  <li>Admin bisa <strong>soft-delete / nonaktifkan</strong>; <strong>hard-delete Customer DILARANG</strong> (<code>orders.user_id</code> tidak boleh NULL, selaras Section 22.6)</li>
   <li>Data order &amp; riwayat tetap tersimpan</li>
 </ul>
 
@@ -542,24 +453,24 @@ Blocked (Hanya akses Dashboard)
 <ul>
   <li><strong>2 badge di header</strong>:
     <ul>
-      <li><strong>Badge 1 — Role/State Badge</strong> (semua user): Crush / MVP / Ex / ONS / Blocked</li>
+      <li><strong>Badge 1 — Role/State Badge</strong> (semua user): Crush / MVP / Ex / ONS / Blocked / Grace</li>
       <li><strong>Badge 2 — Tier Badge</strong> (semua Customer, termasuk Ex/ONS/Blocked): MVP Silver / MVP Gold / MVP Platinum</li>
     </ul>
   </li>
   <li>View counter sisa untuk Crush/Ex/ONS</li>
   <li>Countdown untuk Ex &amp; ONS</li>
-  <li>Warna badge: Crush (Pink), MVP (Hijau), Ex (Biru), ONS (Oranye), Blocked (Merah)</li>
+  <li>Warna badge: Crush (Pink), MVP (Hijau), Ex (Biru), ONS (Oranye), Blocked (Merah), Grace (Kuning)</li>
   <li>Detail lengkap: Section 45</li>
 </ul>
 
 <h3>7.18 Notifikasi H-7 Sebelum State Berubah <span class="rev">REV v4.8</span></h3>
 <table>
   <tr><th>Transisi</th><th>Trigger Waktu</th><th>Pesan</th></tr>
-  <tr><td>Crush → Auto-Delete</td><td>Hari ke-23 sejak daftar (H-7 sebelum 30 hari)</td><td>"Akun kamu akan dihapus 7 hari lagi. Yuk order sebelum hilang!"</td></tr>
-  <tr><td>Ex → ONS</td><td>Hari ke-23 sejak pesanan terakhir selesai (H-7 sebelum 30 hari)</td><td>"Kamu sudah 23 hari tidak order. Yuk order sebelum jadi ONS."</td></tr>
-  <tr><td>ONS → Blocked</td><td>Hari ke-53 sejak pesanan terakhir selesai (H-7 sebelum 60 hari)</td><td>"Kamu sudah 53 hari tidak order. Yuk order sebelum akun ke-lock!"</td></tr>
+  <tr><td>Crush → Auto-Delete</td><td>Hari ke-23 sejak verifikasi email (H-7 sebelum 30 hari)</td><td>"Akun kamu akan dihapus 7 hari lagi. Yuk order sebelum hilang!"</td></tr>
+  <tr><td>Ex → ONS</td><td>Hari ke-23 sejak pesanan terakhir keputus (selesai/terputus) (H-7 sebelum 30 hari)</td><td>"Kamu sudah 23 hari tidak order. Yuk order sebelum jadi ONS."</td></tr>
+  <tr><td>ONS → Blocked</td><td>Hari ke-53 sejak pesanan terakhir keputus (selesai/terputus) (H-7 sebelum 60 hari)</td><td>"Kamu sudah 53 hari tidak order. Yuk order sebelum akun ke-lock!"</td></tr>
 </table>
-<p><strong>Catatan Penting:</strong> Channel melalui Email (<code>info@</code>) + In-web (Bell + toast). Transisi <strong><code>MVP → Ex</code> terjadi seketika (langsung / 0 hari)</strong> pada saat pesanan aktif terakhir berstatus <code>Selesai</code> (jika tidak ada pesanan aktif lain), sehingga <strong>tidak memiliki countdown dan tidak memiliki notifikasi H-7</strong>.</p>
+<p><strong>Catatan Penting:</strong> Channel melalui Email (<code>info@</code>) + In-web (Bell + toast). Transisi <strong><code>MVP → Ex</code> terjadi seketika (langsung / 0 hari)</strong> pada saat pesanan aktif terakhir berstatus <strong>keputus</strong> (Selesai / Pembayaran Gagal / Dana Dikembalikan / Hangus / Hangus Permanen), jika tidak ada pesanan aktif lain, sehingga <strong>tidak memiliki countdown dan tidak memiliki notifikasi H-7</strong>.</p>
 
 <h3>7.19 Badge Sisa Kuota View (Crush/Ex/ONS)</h3>
 <ul>
@@ -715,7 +626,7 @@ Blocked (Hanya akses Dashboard)
 <ul>
   <li>Diskon saat checkout (Max 5% per transaksi)</li>
   <li>Tidak bisa digabung dengan voucher</li>
-  <li><strong>Tidak Ada Undo (Koin &amp; Voucher Hangus Jika Batal Bayar):</strong> Begitu user klik <strong>"Buat Pesanan"</strong> menggunakan Koin atau Voucher, saldo Koin langsung terpotong / Voucher ditandai terpakai. Jika pesanan berakhir menjadi <code>Pembayaran Gagal</code> (karena tidak upload bukti bayar dalam <strong>1×24 jam</strong> atau bukti ditolak dan tidak diupload ulang dalam 24 jam) maupun <code>Hangus</code>, maka <strong>Koin atau Voucher tersebut OTOMATIS HANGUS dan tidak dikembalikan ke akun user</strong>.</li>
+  <li><strong>Aturan Koin &amp; Voucher Saat Pesanan Tidak Selesai (REV klarifikasi):</strong> Saat "Buat Pesanan" saldo langsung terpotong. <strong>Dikembalikan ke akun user:</strong> (a) Pembayaran Gagal karena <code>cancel_reason=slot_sold</code> (slot Split Box diambil orang lain — bukan salah customer); (b) Full Refund / Dana Dikembalikan (Full) — stok kosong supplier / kloter Split Box tidak penuh (kesalahan sistem/admin). <strong>Hangus (tanpa undo):</strong> Pembayaran Gagal non-slot_sold (telat upload bukti 1×24 jam / ditolak lalu telat upload ulang), Hangus &amp; Hangus Permanen, serta Partial Refund (koin &amp; voucher hangus seluruhnya). Koin/voucher yang dikembalikan (Full Refund/slot_sold) <strong>tetap memakai tanggal expiry semula</strong> (tidak di-reset).</li>
   <li>Expired 1 tahun sejak didapat (Notifikasi H-30, H-7, H-1)</li>
 </ul>
 
@@ -761,7 +672,7 @@ Blocked (Hanya akses Dashboard)
   <tr><td>Platinum</td><td>&gt; Rp 5.000.000</td><td>[ikon: sparkles] MVP Platinum</td></tr>
 </table>
 <ul>
-  <li><strong>Badge tier muncul untuk semua Customer</strong> (MVP/Ex/ONS/Blocked), berdasarkan total belanja historis</li>
+  <li><strong>Badge tier muncul untuk semua Customer</strong> (MVP/Ex/ONS/Blocked/Grace), berdasarkan total belanja historis; jika <code>total_belanja=Rp0</code> (order pertama belum Sedang Diproses) → badge tier <strong>tidak muncul (none)</strong>.</li>
   <li>Threshold bisa diubah admin</li>
   <li>Detail lengkap: Section 45</li>
 </ul>
@@ -818,9 +729,7 @@ Blocked (Hanya akses Dashboard)
 <h3>10.4 Unblock Manual oleh Admin &amp; Aturan Tanpa Tameng Tier <span class="rev">REV v4.8</span></h3>
 <ul>
   <li>Setiap user <code>Blocked</code> hanya bisa mengakses Dashboard dan wajib menghubungi Admin via tombol WA <strong>"Unblock Akun"</strong> di Dashboard untuk meminta unblock manual</li>
-  <li>Setelah Admin melakukan unblock, akun masuk masa <strong>Grace Period 7 hari</strong>: akses Katalog &amp; Checkout dibuka kembali dan user mendapatkan jatah kuota <strong>10/10 view detail produk</strong> (agar tidak spam lihat katalog)</li>
-  <li>Jika dalam 7 hari tidak ada pembayaran order yang terverifikasi → akun otomatis <strong>Blocked kembali</strong> (<code>unblock_count + 1</code>)</li>
-  <li>Setelah <strong>2x unblock gagal → block permanen</strong> (tidak bisa di-unblock lagi)</li>
+  <li>Setelah Admin unblock → state sementara <strong>Grace (Masa Tenggang)</strong> 7 hari (akses Katalog+Cart+Checkout, view di-reset 10/10). Jika lewat 7 hari belum CO (Buat Pesanan) → otomatis <strong>Blocked kembali</strong> (<code>unblock_count+1</code>); 2x gagal → <strong>Blocked Permanen</strong>.</li>
   <li><strong>Tier Badge Bukan Tameng:</strong> Kepemilikan Tier Badge (<code>MVP Silver</code>, <code>MVP Gold</code>, maupun <code>MVP Platinum</code>) <strong>tidak memberikan imunitas/tameng</strong> terhadap transisi ke <code>Blocked</code> saat vakum &gt; 60 hari maupun batas maksimal 2x unblock</li>
 </ul>
 
@@ -1209,21 +1118,20 @@ Blocked (Hanya akses Dashboard)
 
 <h3>17.4 Fee QRIS</h3>
 <ul>
-  <li>0,03% × total barang (setelah diskon) jika total ≥ Rp 500.000</li>
-  <li>Hanya untuk QRIS</li>
+  <li>0,03% × <strong>nominal tagihan web yang sebenarnya dibayar</strong> (FP = 100% total barang setelah diskon; DP = 50% total barang setelah diskon). Threshold ≥ Rp 500.000 juga dari nominal tagihan web tersebut. Hanya metode QRIS.</li>
 </ul>
 
 <h3>17.5 Alur Logistik Marketplace (DP 50% &amp; FP 100%) &amp; Timer 7 Hari <span class="rev">REV v4.8</span></h3>
 <ol>
   <li>Di website Mercatoria tidak ada penambahan ongkos kirim domestik Indonesia karena pengiriman lokal dari gudang Jakarta ke alamat pembeli menggunakan <strong>logistik marketplace (Shopee / Toco)</strong>.</li>
-  <li>Saat barang tiba di Indonesia (status <code>Sampai WH Indonesia</code> → <code>Menunggu Pelunasan &amp; Pengambilan</code>), <strong>Countdown Timer 7 Hari</strong> otomatis berjalan.</li>
+  <li>Saat barang tiba di Indonesia, Admin/sistem ubah status <code>Sampai WH Indonesia</code> → <code>Menunggu Pelunasan &amp; Pengambilan</code>; <strong>Countdown Timer 7 Hari berjalan mulai saat transisi ke status Menunggu Pelunasan &amp; Pengambilan</strong>.</li>
   <li>Customer <strong>wajib melakukan checkout (CO) barangnya di marketplace pilihan (Shopee/Toco) terlepas dari skema DP 50% maupun FP 100%</strong>:
     <ul>
       <li><strong>Order FP (100%):</strong> Tetap wajib CO di marketplace dengan membayar biaya admin logistik marketplace (Toco Rp 1 / Shopee Rp 109) agar resi logistik marketplace terbit.</li>
       <li><strong>Order DP (50%):</strong> Wajib CO di marketplace untuk melunasi sisa 50% + biaya admin logistik marketplace (Toco Rp 0 / Shopee 25% dari sisa tagihan).</li>
     </ul>
   </li>
-  <li><strong>Tidak Ada Tombol Pelunasan di Web:</strong> Pada halaman detail pesanan maupun section <em>Tagihan Menunggu</em>, <strong>tidak ada tombol <code>[Lunasi &amp; Ambil Sekarang]</code></strong>. Customer cukup memantau <strong>Countdown Timer 7 Hari</strong> dan informasi nominal CO marketplace, sementara perubahan status ke <code>Selesai</code> (atau <code>Hangus</code> jika lewat 7 hari tanpa CO) berjalan otomatis by sistem/sinkronisasi admin.</li>
+  <li><strong>Tidak Ada Tombol Pelunasan di Web:</strong> Pada halaman detail pesanan maupun section <em>Tagihan Menunggu</em>, <strong>tidak ada tombol <code>[Lunasi &amp; Ambil Sekarang]</code></strong>. Customer cukup memantau <strong>Countdown Timer 7 Hari</strong> dan informasi nominal CO marketplace, sementara <code>Hangus</code> (jika lewat 7 hari tanpa CO) berjalan otomatis by cron, dan status <code>Selesai</code> di-update manual oleh admin setelah cek di marketplace.</li>
 </ol>
 
 <h3>17.6 Pembulatan Harga ke Kelipatan 5.000 (Sekali, di Harga Item) <span class="rev">REV v4.7</span></h3>
@@ -1231,14 +1139,14 @@ Blocked (Hanya akses Dashboard)
 
 <h3>17.7 Auto-Delete File Bukti Transfer</h3>
 <ul>
-  <li>Saat order status Selesai, Refunded, atau <strong>Hangus</strong> → file bukti otomatis dihapus</li>
+  <li>Saat order berstatus <strong>Selesai / Dana Dikembalikan (Refunded) / Hangus / Hangus Permanen / Pembayaran Gagal</strong> → file bukti otomatis dihapus (5 status terminal; termasuk bukti yang ditolak lalu tidak diupload ulang)</li>
   <li>Berlaku untuk FP dan DP</li>
   <li><strong>Snapshot gambar TIDAK dihapus</strong> (retention permanen)</li>
 </ul>
 
 <h3>17.8 Format Nomor Order</h3>
 <pre>MER-{4 huruf random KAPITAL}-{4 digit}</pre>
-<p>Contoh: <code>MER-J79NR-0004</code></p>
+<p>Contoh: <code>MER-XKDR-0004</code> (4 huruf kapital acak + 4 digit)</p>
 
 <h3>17.9 Nama File Bukti Bayar</h3>
 <pre>{no_order} - {tipe_pembayaran} - {metode_pembayaran}.jpg</pre>
@@ -1248,12 +1156,8 @@ Blocked (Hanya akses Dashboard)
   <li><strong>Batas Waktu Upload Bukti Pertama (1×24 Jam):</strong> Sejak klik <strong>"Buat Pesanan"</strong> (status <code>Menunggu Pembayaran</code>), user wajib mengunggah bukti pembayaran dalam waktu maksimal <strong>1×24 jam</strong>.</li>
   <li><strong>Lock Submit 1x:</strong> Begitu bukti bayar di-submit 1x → form upload terkunci (locked) dan status pesanan berubah menjadi <code>Ditahan (Menunggu Verifikasi)</code>.</li>
   <li><strong>Reset Saat Ditolak Admin:</strong> Jika Admin menolak bukti bayar → lock otomatis di-reset dan user diberi waktu <strong>1×24 jam</strong> untuk upload ulang bukti yang valid.</li>
-  <li><strong>Konsekuensi Lewat 1×24 Jam (Koin &amp; Voucher Hangus):</strong> Jika lewat 1×24 jam tidak upload bukti bayar awal (atau lewat 24 jam setelah bukti ditolak), sistem otomatis mengubah status pesanan menjadi <code>Pembayaran Gagal</code>. <strong>Koin atau Voucher yang sudah dipakai pada pesanan tersebut langsung HANGUS (tidak dikembalikan / tidak ada undo)</strong>.</li>
+  <li><strong>Konsekuensi Lewat 1×24 Jam:</strong> Berlaku untuk semua produk (biasa &amp; Split Box). Jika lewat 1×24 jam tidak upload bukti (atau lewat 24 jam setelah ditolak), status → <code>Pembayaran Gagal</code>. <strong>Koin/Voucher HANGUS</strong> — <em>kecuali</em> <code>cancel_reason=slot_sold</code> (slot Split Box diambil orang lain) → <strong>dikembalikan</strong>.</li>
 </ul>
-
-<div class="note-info">
-<strong>Berlaku untuk semua produk (biasa dan Split Box):</strong> telat upload bukti bayar adalah tanggung jawab customer. Order yang batal otomatis, termasuk karena slot Split Box sudah diambil user lain sebelum customer membayar, berstatus <code>Pembayaran Gagal</code> dan Koin/Voucher yang dipakai <strong>hangus</strong> (tanpa pengecualian).
-</div>
 
 <h3>17.11 Email Notif Admin</h3>
 <ul>
@@ -1294,7 +1198,7 @@ Blocked (Hanya akses Dashboard)
 <strong>Perubahan Status:</strong>
 <ul>
   <li><strong>"DP Hangus" di-rename jadi "Hangus"</strong> — berlaku untuk DP &amp; FP yang lewat 7 hari di status "Menunggu Pelunasan &amp; Pengambilan"</li>
-  <li>Status baru: <strong>"Menunggu Pelunasan &amp; Pengambilan"</strong> — timer 7 hari mulai saat status "Sampai WH Indonesia"</li>
+  <li>Status baru: <strong>"Menunggu Pelunasan &amp; Pengambilan"</strong> — <strong>timer 7 hari mulai saat transisi ke status "Menunggu Pelunasan &amp; Pengambilan"</strong></li>
   <li>Kalau lewat 7 hari → status jadi <strong>"Hangus"</strong>, barang jadi milik Mercatoria, <strong>tanpa refund</strong></li>
 </ul>
 </div>
@@ -1323,12 +1227,12 @@ Blocked (Hanya akses Dashboard)
 <h3>18.4 Section "Tagihan Menunggu" <span class="rev">REV v4.8</span></h3>
 <p>Section khusus di Dashboard &amp; Order List yang menampilkan order yang butuh perhatian user.</p>
 <ul>
-  <li>Menampilkan order dengan status <strong>"Menunggu Pembayaran"</strong> + <strong>"Menunggu Pelunasan &amp; Pengambilan"</strong></li>
+  <li>Menampilkan order dengan status <strong>"Menunggu Pembayaran"</strong> + <strong>"Menunggu Pelunasan &amp; Pengambilan"</strong> + <strong>"Menunggu Denda"</strong></li>
   <li>Judul: "TAGIHAN MENUNGGU"</li>
   <li>Tombol "Lihat semua" di pojok kanan</li>
   <li>Setiap item menampilkan: No Order · Nominal Tagihan / Info CO Marketplace · Status</li>
   <li><strong>Khusus status "Menunggu Pembayaran":</strong> Menampilkan tombol <code>[Bayar &amp; Unggah Bukti]</code> yang mengarahkan ke form upload bukti transfer di detail pesanan.</li>
-  <li><strong>Khusus status "Menunggu Pelunasan &amp; Pengambilan" (DP maupun FP):</strong> <strong>TIDAK ADA tombol <code>[Lunasi &amp; Ambil Sekarang]</code></strong> karena proses CO dilakukan di marketplace (Shopee/Toco) sebagai logistik dan status diperbarui otomatis by sistem. User hanya melihat <strong>Countdown Timer 7 Hari</strong> beserta pengingat wajib CO di marketplace sebelum hangus.</li>
+  <li><strong>Khusus status "Menunggu Pelunasan &amp; Pengambilan" (DP maupun FP):</strong> <strong>TIDAK ADA tombol <code>[Lunasi &amp; Ambil Sekarang]</code></strong> karena proses CO di marketplace (Shopee/Toco), user hanya melihat <strong>Countdown Timer 7 Hari</strong>. <strong>Khusus status "Menunggu Denda":</strong> tampilkan nominal denda + tombol <code>[Bayar &amp; Unggah Bukti Denda]</code> (<code>payments.type=penalty</code>); lewat 24 jam → Hangus (denda dihitung ulang dari hangus_at saat Buka Kunci berikutnya, Section 51).</li>
 </ul>
 
 <h3>18.5 Tombol "Bayar &amp; Unggah Bukti"</h3>
@@ -1496,15 +1400,9 @@ subtotal_order = sum(harga_tayang_item × qty)
 #    Langsung dikurangkan, TANPA CEILING
 total_harga_barang = subtotal_order - diskon_koin_atau_voucher
 
-# 3. Fee muncul begitu platform/metode dipilih, bisa diganti sebelum maupun sesudah "Buat Pesanan"
-fee_qris = 0,03% × total_harga_barang   (hanya metode QRIS dan total ≥ Rp 500.000)
-
-# 4A. FULL PAYMENT (FP 100%)
-tagihan_web_fp = total_harga_barang + fee_qris
-#     Saat barang sampai WH Indonesia, CO resi di marketplace: Toco + Rp 1 / Shopee + Rp 109
-
-# 4B. DOWN PAYMENT (DP 50%)
-nominal_dp_web            = 0.50 × total_harga_barang   (+ fee_qris bila QRIS; boleh pecahan, tanpa fee marketplace di awal)
+# 3. Fee QRIS = 0,03% × NOMINAL TAGIHAN WEB YANG SEBENARNYA DIBAR (FP=100% total_barang; DP=50% total_barang); threshold ≥Rp500rb & perhitungan dari nominal itu. Hanya QRIS.
+# 4A. FP: tagihan_web_fp = total_harga_barang + fee_qris_fp (fee_qris_fp=0,03%×total_harga_barang jika ≥500rb). CO marketplace: Toco +Rp1 / Shopee +Rp109.
+# 4B. DP: nominal_dp_web = 0.50×total_harga_barang + fee_qris_dp (fee_qris_dp=0,03%×(0.50×total_harga_barang) jika ≥500rb; boleh pecahan, tanpa fee marketplace di awal).
 sisa_pokok_pelunasan      = 0.50 × total_harga_barang
 estimasi_pelunasan_toco   = sisa_pokok_pelunasan + 0
 estimasi_pelunasan_shopee = sisa_pokok_pelunasan + (0.25 × sisa_pokok_pelunasan)</pre>
@@ -1661,7 +1559,7 @@ Alasan: audit trail lengkap. Kalau ada komplain "kenapa ongkir gede?", admin bis
   <li>Kelola refund (3 event notif)</li>
   <li>Tambah User, Tambah Pesanan, Tambah Spammer (inject, urutan: Produk → Customer → Pesanan)</li>
   <li>Buat voucher template</li>
-  <li>Hapus user (soft/hard/forever delete)</li>
+  <li>Hapus user: <strong>Customer (pernah belanja) TIDAK boleh hard-delete</strong> (<code>orders.user_id</code> tidak boleh NULL; gunakan soft-delete/nonaktifkan); non-Customer (Crush/Guest) boleh hard-delete; Forever delete hanya untuk spammer.</li>
   <li>Kelola spammer list + multi-IP ban</li>
   <li>Kelola metode pembayaran</li>
   <li>Kelola template email + <strong>Toggle Stop Kirim Email ke Customer (Mode Testing/Maintenance)</strong> <span class="new">v4.8</span></li>
@@ -1723,7 +1621,7 @@ Alasan: audit trail lengkap. Kalau ada komplain "kenapa ongkir gede?", admin bis
   <tr><td>Fee QRIS</td><td>0,03%</td></tr>
   <tr><td>Threshold QRIS</td><td>Rp 500.000</td></tr>
   <tr><td>DP minimum</td><td>50%</td></tr>
-  <tr><td>Auto-cancel DP</td><td>7 hari setelah Sampai WH Indonesia</td></tr>
+  <tr><td>Auto-cancel DP</td><td>7 hari setelah status Menunggu Pelunasan &amp; Pengambilan</td></tr>
   <tr><td>Koin undang teman / referee / order / share</td><td>3.000 / 1.000 / 1% / 5</td></tr>
   <tr><td>Koin max diskon</td><td>5%</td></tr>
   <tr><td>Koin expiry</td><td>1 tahun</td></tr>
@@ -1744,7 +1642,7 @@ Alasan: audit trail lengkap. Kalau ada komplain "kenapa ongkir gede?", admin bis
   <tr><td>Stores (Tier Ongkir) <span class="new">v4.4</span></td><td>CRUD</td></tr>
   <tr><td>SEO title/description per halaman</td><td>CRUD</td></tr>
   <tr><td>GA4 Measurement ID</td><td>Kosong (format G-XXXXXXXXXX)</td></tr>
-  <tr><td>Auto-delete file bukti transfer</td><td>Aktif (Selesai/Refunded/Hangus)</td></tr>
+  <tr><td>Auto-delete file bukti transfer</td><td>Aktif (Selesai/Dana Dikembalikan/Hangus/Hangus Permanen/Pembayaran Gagal)</td></tr>
   <tr><td>Activity / Auth / Admin log retention</td><td>30 hari</td></tr>
   <tr><td>MVP Tier Silver / Gold / Platinum</td><td>0 / 2jt / 5jt</td></tr>
   <tr><td>Forever Delete aktif</td><td>Ya</td></tr>
@@ -2030,7 +1928,7 @@ Alasan: audit trail lengkap. Kalau ada komplain "kenapa ongkir gede?", admin bis
   <tr><td>Crush spam</td><td>Auto-delete 30 hari + spammer list</td></tr>
   <tr><td>Brute force</td><td>Turnstile + rate limit + lockout + 2FA</td></tr>
   <tr><td>False positive auto-ban</td><td>Buyer Protection</td></tr>
-  <tr><td>Storage penuh bukti transfer</td><td>Auto-delete file saat Selesai/Refunded/Hangus</td></tr>
+  <tr><td>Storage penuh bukti transfer</td><td>Auto-delete file saat Selesai/Dana Dikembalikan/Hangus/Hangus Permanen/Pembayaran Gagal</td></tr>
   <tr><td>Storage penuh foto produk</td><td>Auto-delete foto lama saat override</td></tr>
   <tr><td>Storage penuh log</td><td>Auto-purge 30 hari</td></tr>
   <tr><td>SEO tidak optimal</td><td>Bot Whitelist + Open Graph + JSON-LD + sitemap</td></tr>
@@ -2069,7 +1967,7 @@ Alasan: audit trail lengkap. Kalau ada komplain "kenapa ongkir gede?", admin bis
 <ul>
   <li>Full Refund: semua barang kosong</li>
   <li>Partial Refund: min 1 barang kosong</li>
-  <li>Manual admin</li>
+  <li>Manual admin. <strong>Koin &amp; Voucher:</strong> ikut aturan Section 9.3 (Full Refund / slot_sold dikembalikan; lainnya hangus).</li>
   <li><strong>Refund 3 Event Notif</strong>:
     <ul>
       <li><code>refund_requested</code> — "Refund pesanan #MER-XXXX sedang diproses"</li>
@@ -2078,7 +1976,7 @@ Alasan: audit trail lengkap. Kalau ada komplain "kenapa ongkir gede?", admin bis
     </ul>
   </li>
 </ul>
-<p><strong>Hangus:</strong> auto-cancel 7 hari setelah "Sampai WH Indonesia". <strong>TANPA REFUND.</strong> Barang jadi milik Mercatoria. Pengecualian: customer dapat menebus dengan denda keterlambatan (Section 51). Kloter Split Box yang tidak full terisi dikembalikan <strong>Full Refund secara manual</strong> oleh Admin (Section 49.11).</p>
+<p><strong>Hangus:</strong> auto-cancel 7 hari setelah status "Menunggu Pelunasan &amp; Pengambilan". <strong>TANPA REFUND.</strong> Barang jadi milik Mercatoria. Pengecualian: customer dapat menebus dengan denda keterlambatan (Section 51). Kloter Split Box yang tidak full terisi dikembalikan <strong>Full Refund secara manual</strong> oleh Admin (Section 49.11).</p>
 
 <h1>35. Entity Relationship <span class="rev">REV v4.4</span></h1>
 <pre>users ──┬── crushes (extension role crush, HARD DELETE 30 hari)
@@ -2224,7 +2122,7 @@ numprocs=2
 - log:purge                → tiap hari 03:00 WIB (Hapus activity/auth/admin log &gt; 30 hari)
 - notification:purge       → tiap hari 03:30 WIB (Hapus user_notifications &gt; 90 hari)
 - user:purge-crush         → tiap hari 04:00 WIB (Hard delete akun Crush &gt; 30 hari tanpa order)
-- order:hangus-expired     → tiap 15 menit / harian 05:00 WIB (Ubah order Menunggu Pembayaran &gt; 24 jam ke Pembayaran Gagal [Koin/Voucher Hangus] &amp; Menunggu Pelunasan &gt; 7 hari ke Hangus; Menunggu Denda yang lewat batas bayar kembali ke Hangus)
+- order:hangus-expired     → tiap 15 menit (presisi 1×24 jam & 7 hari terjaga, delay maks 15 menit; query ringan) (Ubah order Menunggu Pembayaran &gt; 24 jam ke Pembayaran Gagal [Koin/Voucher: hangus, kecuali slot_sold→dikembalikan] &amp; Menunggu Pelunasan &gt; 7 hari ke Hangus; Menunggu Denda lewat batas → Hangus)
 - spammer:recheck-grace    → tiap hari 05:30 WIB (Re-block akun yang gagal bayar dalam 7 hari grace period unblock)
 - sitemap:generate         → tiap hari 06:00 WIB (Update public/sitemap.xml)
 - user:birthday-bonus      → tiap hari 07:00 WIB (Kirim 5.000 koin + voucher ulang tahun Rp 25.000)
@@ -2240,7 +2138,7 @@ numprocs=2
 <p><code>view_home</code> · <code>view_game_catalog</code> · <code>view_developer_catalog</code> · <code>view_product</code> · <code>search</code> · <code>filter_applied</code> · <code>view_merch_category</code> · <code>view_penawaran_terbaik</code> · <code>view_terakhir_dilihat</code> · <code>filter_price_applied</code> · <code>sort_changed</code> · <code>pagination_changed</code></p>
 
 <h3>Transaksi</h3>
-<p><code>add_to_cart</code> · <code>view_cart</code> · <code>begin_checkout</code> · <code>add_payment_info</code> · <code>freeze_price</code> · <code>purchase</code> · <code>upload_payment_proof</code> · <code>cart_reminder_sent</code> · <code>checkout_with_note</code> · <code>download_invoice</code> · <code>order_hangus</code></p>
+<p><code>add_to_cart</code> · <code>view_cart</code> · <code>begin_checkout</code> · <code>add_payment_info</code> · <code>freeze_price</code> · <code>purchase</code> · <code>upload_payment_proof</code> · <code>cart_reminder_sent</code> · <code>checkout_with_note</code> · <code>download_invoice</code> · <code>order_hangus</code> · <code>order_cancelled_slot_sold</code></p>
 
 <h3>Koin &amp; Voucher</h3>
 <p><code>coin_earned</code> · <code>coin_used</code> · <code>coin_expired</code> · <code>view_wallet</code> · <code>view_koin_saya</code> · <code>view_undang_teman</code> · <code>view_voucher</code> · <code>use_voucher</code> · <code>voucher_expired</code> · <code>birthday_reward_received</code></p>
@@ -2305,7 +2203,7 @@ numprocs=2
 <p><code>/usr/bin/php8.5 artisan user:purge-crush</code> — Loop semua Crush &gt; 30 hari yang belum pernah order dan <strong>tidak sedang memiliki order berstatus Menunggu Pembayaran / Ditahan</strong>, lalu HARD DELETE. Tiap hari jam 04:00 WIB.</p>
 
 <h3>39.10 Scheduled Job: Order Expired (24 Jam Gagal Bayar &amp; 7 Hari Hangus)</h3>
-<p><code>/usr/bin/php8.5 artisan order:hangus-expired</code> — (1) Loop order <code>Menunggu Pembayaran</code> &gt; 24 jam (atau ditolak &gt; 24 jam tanpa upload ulang) → ubah ke <code>Pembayaran Gagal</code> (Koin/Voucher yang dipakai otomatis hangus tanpa undo); (2) Loop order <code>Menunggu Pelunasan &amp; Pengambilan</code> &gt; 7 hari → ubah ke <code>Hangus</code>, kirim notif, auto-delete bukti.</p>
+<p><code>/usr/bin/php8.5 artisan order:hangus-expired</code> — (1) Loop order <code>Menunggu Pembayaran</code> &gt; 24 jam (atau ditolak &gt; 24 jam tanpa upload ulang) → ubah ke <code>Pembayaran Gagal</code> (Koin/Voucher: hangus, kecuali cancel_reason=slot_sold → dikembalikan); (2) Loop order <code>Menunggu Pelunasan &amp; Pengambilan</code> &gt; 7 hari → ubah ke <code>Hangus</code>, kirim notif, auto-delete bukti.</p>
 
 <h1>40. Home Layout &amp; UI Components</h1>
 <h3>40.1 Announcement Bar</h3>
@@ -2617,6 +2515,7 @@ INDEX (created_at)</pre>
   <tr><td>Ex</td><td>[ikon: clock] Ex</td><td>#64B5F6</td><td>#212121</td></tr>
   <tr><td>ONS</td><td>[ikon: moon] ONS</td><td>#FFB74D</td><td>#212121</td></tr>
   <tr><td>Blocked</td><td>[ikon: lock-closed] Blocked</td><td>#E53935</td><td>#FFFFFF</td></tr>
+  <tr><td>Grace (Masa Tenggang)</td><td>[ikon: hourglass-split] Grace</td><td>#FFD54F</td><td>#212121</td></tr>
 </table>
 
 <h3>45.2 Badge 2 — Tier (Khusus Customer)</h3>
@@ -3254,7 +3153,7 @@ Rp 880.000
 <h3>49.7 Order Menunggu Pembayaran Batal Otomatis</h3>
 <ul>
   <li>Begitu sebuah slot terkunci dan stok karakter itu (di seluruh kloter terbuka) tak lagi mencukupi, order lain berstatus <code>Menunggu Pembayaran</code> yang memuatnya <strong>batal otomatis</strong>: <code>Pembayaran Gagal</code> dengan <code>cancel_reason = slot_sold</code>.</li>
-  <li>Aturan Koin/Voucher sama seperti Section 17.10: <strong>hangus, tanpa undo</strong>. Customer menerima Bell Notifikasi.</li>
+  <li><strong>Aturan Koin/Voucher:</strong> <code>slot_sold</code> → dikembalikan (ikut Section 9.3); customer dapat Bell Notifikasi.</li>
   <li>Berlaku untuk seluruh bundle: bila satu karakter dalam paket tidak tersedia, seluruh order batal.</li>
 </ul>
 
@@ -3278,7 +3177,7 @@ Rp 880.000
 <h3>49.11 Kloter Tidak Full Terisi: Full Refund Manual</h3>
 <ul>
   <li>Bila kloter tidak terisi penuh, seluruh order yang sudah terkunci di kloter itu di-<strong>Full Refund</strong>.</li>
-  <li>Kloter dengan <code>closes_at</code> terlewat dan belum full memunculkan notifikasi Admin (cron <code>splitbox:check-batches</code>). Admin klik <strong>"Tutup Kloter &amp; Refund Semua"</strong>: sistem membuat permintaan refund untuk tiap order dan mengirim notifikasi ke customer; transfer dana dilakukan <strong>manual oleh Admin</strong> (Section 34).</li>
+  <li>Kloter dengan <code>closes_at</code> terlewat dan belum full memunculkan notifikasi Admin (cron <code>splitbox:check-batches</code>). Admin klik <strong>"Tutup Kloter &amp; Refund Semua"</strong>: sistem membuat permintaan refund untuk tiap order dan mengirim notifikasi ke customer; transfer dana dilakukan <strong>manual oleh Admin</strong> (Section 34). <strong>Tanpa pengecualian:</strong> berlaku untuk semua order di kloter (termasuk slot sudah terkunci & sudah dibayar) — slot lock (49.6) menjamin alokasi antar-customer tapi tidak menjamin kloter berjalan; koin &amp; voucher dikembalikan (Full Refund).</li>
 </ul>
 
 <h3>49.12 Pembayaran &amp; Logistik</h3>
@@ -3334,7 +3233,7 @@ Progress menuju tier (Silver &gt; Rp 0, Gold &gt; Rp 2.000.000, Platinum &gt; Rp
   <li>Admin buka <code>/office/orders/{id}</code> lalu klik <strong>"Buka Kunci via Denda"</strong>. Sistem menghitung denda: <code>late_penalty_per_day × hari berjalan sejak hangus_at</code> (dibulatkan ke atas, minimal 1 hari); Admin boleh mengubah nominal. Nilai ditulis ke order (beku) dan status menjadi <strong>Menunggu Denda</strong> dengan batas bayar default 24 jam.</li>
   <li>Customer melihat tagihan denda di detail order, transfer, lalu upload bukti (form yang sama, <code>payments.type = penalty</code>). Admin verifikasi satu-satu.</li>
   <li>Terverifikasi: status kembali ke <strong>Menunggu Pelunasan &amp; Pengambilan</strong> dengan timer CO baru (default 7 hari). Nilai order dikembalikan ke total belanja (Section 50).</li>
-  <li>Tidak dibayar sampai batas: status kembali ke <strong>Hangus</strong> dan hitungan denda terus berjalan sampai Buka Kunci berikutnya.</li>
+  <li>Tidak dibayar sampai batas (24 jam): status kembali ke <strong>Hangus</strong>; hari keterlambatan terus berjalan sejak <code>hangus_at</code>. Saat Buka Kunci berikutnya, denda <strong>dihitung ulang dari nol (tidak ditumpuk)</strong>: <code>late_penalty_per_day × hari sejak hangus_at sampai saat Buka Kunci</code> (dibulatkan ke atas, min 1 hari; Admin boleh ubah nominal), status → Menunggu Denda dengan batas 24 jam baru.</li>
   <li>Admin dapat menetapkan <strong>Hangus Permanen</strong> kapan saja (atau otomatis bila <code>late_penalty_max_days</code> &gt; 0 terlampaui). Hangus Permanen tidak dapat dibuka lagi.</li>
 </ol>
 
@@ -3349,7 +3248,7 @@ Progress menuju tier (Silver &gt; Rp 0, Gold &gt; Rp 2.000.000, Platinum &gt; Rp
 <hr>
 <p style="text-align: center; color: #666; margin-top: 40px;">
 <strong>— End of Document —</strong><br>
-PRD Mercatoria v4.8 FINAL · 26 Oktober 2026<br>
+PRD Mercatoria v4.18 FINAL · 1 November 2026<br>
 VPS Hostinger KVM 1 (CloudPanel v2) · PHP 8.5 · Laravel 13.x · MySQL 8.0 · Redis 7 — Fondasi 100% Siap Coding
 </p>
 

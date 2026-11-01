@@ -4,7 +4,7 @@
       xmlns="http://www.w3.org/TR/REC-html40">
 <head>
 <meta charset="UTF-8">
-<title>Design Spec Mercatoria v3.3 FINAL — Full UI/UX Specification (PRD v4.9)</title>
+<title>Design Spec Mercatoria v3.4 FINAL — Full UI/UX Specification (PRD v4.18)</title>
 <!--[if gte mso 9]>
 <xml>
   <w:WordDocument>
@@ -52,11 +52,11 @@
 <body>
 
 <div class="cover">
-  <h1>DESIGN SPEC v3.3</h1>
+  <h1>DESIGN SPEC v3.4</h1>
   <div class="subtitle">Full UI/UX Specification — Selaras PRD v4.9 FINAL</div>
   <div class="meta">
-    <p><strong>Versi:</strong> 3.3 FINAL (AMANDEMEN: Bootstrap Icons + sinkron repo)</p>
-    <p><strong>Tanggal:</strong> 26 Oktober 2026 · <strong>Riwayat:</strong> v3.3 AMANDEMEN (Bootstrap Icons, Tailwind 4/Vite 6)</p>
+    <p><strong>Versi:</strong> 3.4 FINAL (AMANDEMEN + Addendum: 8 layout halaman yang kurang)</p>
+    <p><strong>Tanggal:</strong> 1 November 2026 · <strong>Riwayat:</strong> v3.3 AMANDEMEN (Bootstrap Icons, Tailwind 4/Vite 6); <strong>v3.4</strong> = tambah Bab 33 Addendum (8 layout: CMS statis, Lupa/Reset Password, Payment Methods, Tags, Merch Categories, Vouchers, Email Templates, Marketing) + perbaiki format nomor order</p>
     <p><strong>Referensi PRD:</strong> v4.9 FINAL (Section 1–48)</p>
     <p><strong>Referensi Backlog:</strong> MVP v1.6 FINAL (19 Epic · 276 Story · 1.319 SP)</p>
     <p><strong>Referensi Skema DB:</strong> v1.5 FINAL &amp; Struktur Folder v1.4 FINAL (VPS Hostinger KVM 1 · CloudPanel · PHP 8.5 · Laravel 13.x)</p>
@@ -1122,7 +1122,7 @@ Karena pengiriman lokal Indonesia menggunakan logistik marketplace (Shopee / Toc
 <div class="wire">DESKTOP (≥1024px)                                                      MOBILE (&lt;768px)
 ┌────────────────────────────────────────────────────────────────────┐ ┌────────────────────────────┐
 │  ← Kembali ke Pesanan Saya                 [ [ikon: document-text] Download Invoice ] │ │ ← Pesanan   [[ikon: document-text] Invoice]   │
-│  Pesanan #MER-J79NR-0004 · 19 Okt 2026 14:20 WIB                   │ │ #MER-J79NR-0004            │
+│  Pesanan #MER-XKDR-0004 · 19 Okt 2026 14:20 WIB                   │ │ #MER-XKDR-0004            │
 │  Status: [ ⏳ Menunggu Pelunasan &amp; Pengambilan ]                   │ │ [⏳ Menunggu Pelunasan]    │
 │  [ikon: clock] Sisa waktu pelunasan &amp; CO di Shopee/Toco: 06 Hari 18 Jam 12 Mnt│ │ [ikon: clock] Sisa waktu: 6h 18j 12m  │
 │  [ikon: exclamation-triangle] Lewat 7 hari otomatis berstatus HANGUS (tanpa refund).         │ │ [ikon: exclamation-triangle] CO di Shopee/Toco ≤7hr  │
@@ -1158,7 +1158,7 @@ Karena pengiriman lokal Indonesia menggunakan logistik marketplace (Shopee / Toc
 │  Email CS: cs@mercatoria.id · WA Admin: 62812xxxx       #INV-MER-0004    │
 │  Web: https://mercatoria.id                             19 Oktober 2026  │
 ├──────────────────────────────────────────────────────────────────────────┤
-│  No. Pesanan : MER-J79NR-0004                                            │
+│  No. Pesanan : MER-XKDR-0004                                            │
 │  Pembeli     : First Kao   [MVP] [[ikon: trophy] MVP Gold]             │
 │  (TANPA ALAMAT — Invoice hanya berfungsi sebagai bukti pembayaran sah)   │
 │  Metode Bayar: Bank BCA · Skema: Full Payment (100%) · Platform: Toco    │
@@ -1201,7 +1201,7 @@ Karena pengiriman lokal Indonesia menggunakan logistik marketplace (Shopee / Toc
 ├────────────────────────────────────────────────────────────────────┤ │ [●Pesanan][Koin][Undang].. │
 │  ┌──────────────────────────────────────────────────────────────┐  │ ├────────────────────────────┤
 │  │ [ikon: exclamation-circle] TAGIHAN MENUNGGU (2)                        [Lihat Semua] │  │ │ [ikon: exclamation-circle] TAGIHAN MENUNGGU (2)    │
-│  │ • #MER-J79NR-0004 · Rp 285.000 · Menunggu Pembayaran         │  │ │ #MER-J79NR-0004 · Rp285rb  │
+│  │ • #MER-XKDR-0004 · Rp 285.000 · Menunggu Pembayaran         │  │ │ #MER-XKDR-0004 · Rp285rb  │
 │  │                                   [ Bayar &amp; Unggah Bukti → ] │  │ │ [ Bayar &amp; Unggah Bukti → ] │
 │  │ • #MER-A12BC-0002 · Menunggu Pelunasan &amp; CO Marketplace      │  │ │ #MER-A12BC-0002 (CO Mktplc)│
 │  │   [ikon: clock] Sisa Waktu CO Shopee/Toco: 06 Hari 18 Jam (Auto Sistem) │  │ │ [ikon: clock] Timer: 06h 18j (No Btn) │
@@ -1304,7 +1304,7 @@ Karena pengiriman lokal Indonesia menggunakan logistik marketplace (Shopee / Toc
         │        "Bonus postcard sudah masuk ke..."    │
         │        5 menit yang lalu                     │
         ├──────────────────────────────────────────────┤
-        │ ● [[ikon: cube]] Status Pesanan #MER-J79NR-0004        │
+        │ ● [[ikon: cube]] Status Pesanan #MER-XKDR-0004        │
         │        Berubah ke: Sampai WH Indonesia       │
         │        2 jam yang lalu                       │
         ├──────────────────────────────────────────────┤
@@ -1324,8 +1324,8 @@ B. HALAMAN SEMUA NOTIFIKASI (/profile/notifications — Pagination 20/halaman):
 │  [ [ikon: magnifying-glass] Cari notifikasi...              ]   Sort: [ Terbaru ▾ ]            │
 │  Bulk Action: [☐ Pilih Semua] [Tandai Dibaca] [Tandai Belum] [Hapus]     │
 ├──────────────────────────────────────────────────────────────────────────┤
-│  [☑] ● [[ikon: chat-bubble-left-ellipsis]] Pesan dari Admin pada Pesanan #MER-J79NR-0004      5 mnt lalu│
-│  [☑] ● [[ikon: cube]] Pesanan #MER-J79NR-0004 Sampai WH Indonesia        2 jam lalu│
+│  [☑] ● [[ikon: chat-bubble-left-ellipsis]] Pesan dari Admin pada Pesanan #MER-XKDR-0004      5 mnt lalu│
+│  [☑] ● [[ikon: cube]] Pesanan #MER-XKDR-0004 Sampai WH Indonesia        2 jam lalu│
 │  [ ]   [[ikon: exclamation-triangle]] Peringatan H-7 State Change: Yuk belanja lagi!     3 hari llu│
 ├──────────────────────────────────────────────────────────────────────────┤
 │  Pagination: [■ 1] [ 2 ] [ 3 ] [ → ]  (20 item per halaman · Retensi 90h)│
@@ -2043,7 +2043,7 @@ Menu "Stores" (Tier Ongkir):
 │  └─────────────────────────────────┘  └────────────────────────────────┘ │
 │  ┌────────────────────────────────────────────────────────────────────┐  │
 │  │ [ikon: bell] 5 NOTIFIKASI ADMIN TERBARU (Data: admin_notifications)          │  │
-│  │ • [Bukti Bayar] First Kao upload bukti #MER-J79NR-0004 (2 mnt lalu)│  │
+│  │ • [Bukti Bayar] First Kao upload bukti #MER-XKDR-0004 (2 mnt lalu)│  │
 │  │ • [Order Baru]  Sora membuat pesanan #MER-P91KX-0005 (15 mnt lalu) │  │
 │  └────────────────────────────────────────────────────────────────────┘  │
 └──────────────────────────────────────────────────────────────────────────┘
@@ -3143,9 +3143,9 @@ Data yang ditampilkan:
 <h3>28.2 Verifikasi Pembayaran Satu-Satu (<code>/office/payments</code>) &amp; Refund (<code>/office/refunds</code>)</h3>
 <div class="wire">A. VERIFIKASI PEMBAYARAN SATU-SATU (Tidak ada bulk verify — PRD 17.10 &amp; 17.11):
 ┌──────────────────────────────────────────────────────────────────────────┐
-│  Verifikasi Pembayaran — #MER-J79NR-0004 (First Kao · Rp 285.000 · BCA)  │
+│  Verifikasi Pembayaran — #MER-XKDR-0004 (First Kao · Rp 285.000 · BCA)  │
 ├───────────────────────────────────┬──────────────────────────────────────┤
-│  [ PRATINJAU BUKTI TRANSFER ]     │  File: MER-J79NR-0004 - FP - BCA.jpg │
+│  [ PRATINJAU BUKTI TRANSFER ]     │  File: MER-XKDR-0004 - FP - BCA.jpg │
 │  ┌─────────────────────────────┐  │  Nominal Tagihan : Rp 285.000        │
 │  │                             │  │  Status Saat Ini : Ditahan           │
 │  │    [ FOTO BUKTI BAYAR ]     │  │  ──────────────────────────────────  │
@@ -3165,7 +3165,7 @@ B. MANAJEMEN REFUND MANUAL (Full / Partial — 3 Event Notifikasi, PRD 34):
 <div class="wire">┌──────────────────────────────────────────────────────────────────────────┐
 │  [M] MERCATORIA — PACKING LIST (INTERNAL GUDANG)                         │
 │  Email CS: cs@mercatoria.id · WA: 62812xxxx · Web: mercatoria.id         │
-│  No. Pesanan: MER-J79NR-0004 · Tanggal: 19 Okt 2026                      │
+│  No. Pesanan: MER-XKDR-0004 · Tanggal: 19 Okt 2026                      │
 │  Nama Pembeli: First Kao  (TANPA ALAMAT — Privasi &amp; Keamanan Gudang)     │
 ├──────┬───────────────────────────────────────────────────┬─────┬─────────┤
 │ Cek  │ Nama Produk &amp; Varian (Dari order_item_snapshots)  │ Qty │ SKU     │
@@ -3456,7 +3456,7 @@ MODAL KIRIM GIFT KE PELANGGAN (Dari Rank Pelanggan atau /office/users/{id}):
 <h3>32.4 Detail Pesanan Customer: Menunggu Denda &amp; Hangus</h3>
 <div class="wire">PANEL DI /orders/{id}
 ┌─────────────────────────────────────────────────────────────────────────┐
-│  Pesanan #MER-J79NR-0004                                                │
+│  Pesanan #MER-XKDR-0004                                                │
 │  Status: [ Menunggu Denda ]                                             │
 │  Sisa waktu bayar denda: 23 jam 10 menit                                │
 │  ──────────────────────────────────────────────────────                 │
@@ -3481,7 +3481,7 @@ MODAL KIRIM GIFT KE PELANGGAN (Dari Rank Pelanggan atau /office/users/{id}):
 ┌──────────────────────────────────────────────────────────────────────────────┐
 │  Buka Kunci via Denda                                                        │
 │  ────────────────────────────────────────────────────                        │
-│  Order: #MER-J79NR-0004 · First Kao                                          │
+│  Order: #MER-XKDR-0004 · First Kao                                          │
 │  Hangus sejak: 14 Okt 2026 (12 hari)                                         │
 │                                                                              │
 │  Denda per hari (setting)      Rp 1.000                                      │
@@ -3562,12 +3562,164 @@ MODAL KIRIM GIFT KE PELANGGAN (Dari Rank Pelanggan atau /office/users/{id}):
   <tr><td><code>trash.svg</code>, <code>exclamation-triangle.svg</code>, <code>star.svg</code>, <code>trophy.svg</code></td><td>Hapus paket, peringatan modal, badge MVP, badge Gold</td></tr>
 </table>
 
+<h1>33. Addendum v3.4 — Layout Halaman yang Kurang (selaras PRD v4.18)</h1>
+<p>8 halaman yang belum ada wireframe di v3.3. Gaya wireframe sama persis dengan bab sebelumnya (ASCII box-drawing, <code>[ikon: ...]</code> untuk ikon Bootstrap Icons, <code>[IMG]</code> untuk gambar). Mobile: stack vertikal full-width, sidebar admin jadi hamburger drawer.</p>
+
+<h3>33.1 Halaman CMS Statis Publik — /tentang-kami, /faq, /cara-belanja, /tnc, /kebijakan-privasi (1 layout generik)</h3>
+<div class="wire">┌────────────────────────────────────────────────────────────────────────────────────────────┐
+│ [ikon: house] Beranda   [ikon: grid-3x3] Game ▾   [ikon: controller] Developer ▾   [ikon: question-circle] Cara Belanja   [ikon: box-arrow-in-right] Masuk   [ikon: person-plus] Daftar   [ikon: shopping-bag] [ikon: person-circle] │
+├────────────────────────────────────────────────────────────────────────────────────────────┤
+│  Beranda / {Judul Halaman}                                                                  │
+│  ┌──────────────────────────────────────────────────────────────────────────────────────┐  │
+│  │                                                                                      │  │
+│  │                                  {JUDUL HALAMAN}                                     │  │
+│  │                                                                                      │  │
+│  └──────────────────────────────────────────────────────────────────────────────────────┘  │
+│  Konten CMS rich-text dari admin (/office/pages): teks, heading, gambar, list.             │
+│  - /faq: accordion Tanya-Jawab [ikon: chevron-down]                                       │
+│  - /cara-belanja: langkah berurutan 1→2→3→4 dengan [ikon: 1-circle] ... [ikon: 4-circle]  │
+│  - /tnc & /privasi: teks pasal bernomor.                                                  │
+│                                                                                            │
+├────────────────────────────────────────────────────────────────────────────────────────────┤
+│ Tentang Kami · FAQ · Cara Belanja · Syarat & Ketentuan · Kebijakan Privasi   [ikon: brand-whatsapp] Chat Admin   © 2026 Mercatoria │
+└────────────────────────────────────────────────────────────────────────────────────────────┘</div>
+
+<h3>33.2 Lupa Password — /forgot-password &amp; Reset Password — /reset-password?token=XXX</h3>
+<div class="wire">┌──────────────────────────────┐    ┌──────────────────────────────┐
+│ [navbar publik]               │    │ [navbar publik]               │
+├──────────────────────────────┤    ├──────────────────────────────┤
+│                              │    │                              │
+│      LUPA PASSWORD           │    │   BUAT PASSWORD BARU         │
+│                              │    │                              │
+│  Email / No HP               │    │  Password Baru (min 8 char)  │
+│  ┌────────────────────────┐  │    │  ┌────────────────────────┐  │
+│  │                        │  │    │  │ •••••••••••••••••••••• │  │
+│  └────────────────────────┘  │    │  └────────────────────────┘  │
+│                              │    │  Konfirmasi Password Baru    │
+│  [ Tombol Kirim Link Reset ] │    │  ┌────────────────────────┐  │
+│  [ikon: send-check]           │    │  │ •••••••••••••••••••••• │  │
+│                              │    │  └────────────────────────┘  │
+│  "Link reset dikirim ke email.│    │                              │
+│   Cek folder spam."           │    │  [ Simpan Password & Masuk ] │
+│  (tidak bocorkan apakah email │    │  [ikon: key-check]           │
+│   terdaftar — anti-enumerasi) │    │                              │
+│                              │    │  Token expired 60 menit →     │
+│                              │    │  arahkan ke /forgot-password  │
+└──────────────────────────────┘    └──────────────────────────────┘</div>
+
+<h3>33.3 Admin — Payment Methods CRUD — /office/payment-methods (QRIS fee 0,03% dari nominal tagihan web, threshold ≥Rp500.000)</h3>
+<div class="wire">┌──────────────┬──────────────────────────────────────────────────────────────────────────────┐
+│ SIDEBAR ADMIN│ TOPBAR: [ikon: search] Search...   [ikon: bell]³   Admin ▾                    │
+│              ├──────────────────────────────────────────────────────────────────────────────┤
+│ ▸ Dashboard  │  METODE PEMBAYARAN                                        [ + Tambah Metode ] │
+│ ▸ Produk ▾   │ ┌──────────────┬────────┬──────────┬──────────────────────┬───────┬─────────┐ │
+│ ▾ Payments ▾ │ │ Nama         │ Slug   │ Tipe     │ Fee                  │ Aktif │ Aksi    │ │
+│   • Verifikasi│ ├──────────────┼────────┼──────────┼──────────────────────┼───────┼─────────┤ │
+│   • Metode ★ │ │ Transfer BCA │ bca    │ manual   │ —                    │ ✅    │ Edit    │ │
+│ ▸ Orders     │ │ QRIS         │ qris   │ manual   │ 0,03% × tagihan web  │ ✅    │ Edit    │ │
+│ ▸ Refunds    │ │              │        │          │ (min ≥ Rp500.000)    │       │         │ │
+│ ▸ Vouchers   │ │ ShopeePay    │ shopeepay│ manual │ —                    │ ✅    │ Edit    │ │
+│ ▸ Email Tmpl │ └──────────────┴────────┴──────────┴──────────────────────┴───────┴─────────┘ │
+│ ▸ Stores     │  Form Edit: nama, slug, tipe, fee_pct, fee_threshold, instruksi bayar (rich),│
+│ ▾ Settings ▾ │  nomor rekening / QR image, aktif/nonaktif. Fee QRIS dari nominal tagihan   │
+│   • Umum     │  web (FP=100%, DP=50%) — selaras PRD v4.18 & Skema DB v1.9.                 │
+│   • Harga    │                                                                              │
+│   • Email    │                                                                              │
+└──────────────┴──────────────────────────────────────────────────────────────────────────────┘</div>
+
+<h3>33.4 Admin — Tags CRUD — /office/tags (PRESALE / LIMITED / kosong)</h3>
+<div class="wire">┌──────────────┬──────────────────────────────────────────────────────────────────────────────┐
+│ SIDEBAR ADMIN│ TOPBAR + [ + Tambah Tag ]                                                    │
+│              ├──────────────────────────────────────────────────────────────────────────────┤
+│ ▾ Produk ▾   │  TAG PRODUK                                                                 │
+│   • Games    │ ┌──────────────┬──────────┬────────────────────┬──────────────┬─────────────┐ │
+│   • Products │ │ Nama Tag     │ Slug     │ Warna Badge        │ Jml Produk   │ Aksi        │ │
+│   • Kategori │ ├──────────────┼──────────┼────────────────────┼──────────────┼─────────────┤ │
+│   • Tags ★   │ │ PRESALE      │ presale  │ [orange #ff9800]   │ 12           │ Edit · Hapus│ │
+│   • Stores   │ │ LIMITED      │ limited  │ [red #e53935]      │ 5            │ Edit · Hapus│ │
+│              │ └──────────────┴──────────┴────────────────────┴──────────────┴─────────────┘ │
+│              │  Form: nama, slug (auto), warna (color picker), deskripsi. Tag muncul di     │
+│              │  card katalog & detail produk. Hapus tag → produk terkait jadi tanpa tag.    │
+└──────────────┴──────────────────────────────────────────────────────────────────────────────┘</div>
+
+<h3>33.5 Admin — Merch Categories CRUD — /office/merch-categories (auto-group by keyword)</h3>
+<div class="wire">┌──────────────┬──────────────────────────────────────────────────────────────────────────────┐
+│ SIDEBAR ADMIN│ TOPBAR + [ + Tambah Kategori ]                                               │
+│              ├──────────────────────────────────────────────────────────────────────────────┤
+│ ▾ Produk ▾   │  KATEGORI MERCH (auto-group)                                                 │
+│   • Kategori │ ┌──────────────────┬──────────┬─────────────────────────────────┬──────┬────┐│
+│     Merch ★  │ │ Nama             │ Slug     │ Keyword Auto-Group              │ Produk│Aksi││
+│   • Tags     │ ├──────────────────┼──────────┼─────────────────────────────────┼──────┼────┤│
+│              │ │ Plushie/Boneka   │ plushie  │ plush, boneka, doll, plushie    │ 24   │Edit││
+│              │ │ Keychain/Gantungan│ keychain│ keychain, gantungan, strap, acrylic│31  │Edit││
+│              │ │ Standee/Acrylic  │ standee  │ standee, acrylic stand, stand   │ 18   │Edit││
+│              │ └──────────────────┴──────────┴─────────────────────────────────┴──────┴────┘│
+│              │  Form: nama, slug, keyword list (comma-separated), ikon. Sistem scan nama    │
+│              │  produk saat create/edit → auto assign. Admin bisa override manual.          │
+└──────────────┴──────────────────────────────────────────────────────────────────────────────┘</div>
+
+<h3>33.6 Admin — Vouchers CRUD — /office/vouchers (tidak bisa digabung koin; expiry tetap semula saat dikembalikan)</h3>
+<div class="wire">┌──────────────┬──────────────────────────────────────────────────────────────────────────────┐
+│ SIDEBAR ADMIN│ TOPBAR + [ + Buat Voucher ] [ Kirim Voucher Massal ]                         │
+│              ├──────────────────────────────────────────────────────────────────────────────┤
+│ ▾ Marketing ▾│  VOUCHER                                                                     │
+│   • Voucher ★│ ┌─────────────┬────────────┬──────────┬────────────┬───────────┬─────┬──────┐│
+│   • Gift/Koin│ │ Kode        │ Tipe       │ Nilai    │ Berlaku s/d│ Terklaim  │Aktif│ Aksi ││
+│   • SEO      │ ├─────────────┼────────────┼──────────┼────────────┼───────────┼─────┼──────┤│
+│              │ │ WELCOME25   │ potongan   │ Rp25.000 │ 31 Des 26  │ 142       │ ✅  │Edit  ││
+│              │ │ BIRTHDAY50K │ potongan   │ Rp50.000 │ per user   │ 87        │ ✅  │Edit  ││
+│              │ └─────────────┴────────────┴──────────┴────────────┴───────────┴─────┴──────┘│
+│              │  Form: kode (unique uppercase), tipe (tetap/persen), nilai, min belanja,     │
+│              │  maks potongan, periode, maks klaim total/user, aktif. Aturan: voucher &     │
+│              │  koin TIDAK bisa digabung (PRD 9.3). Dikembalikan saat refund/slot_sold →    │
+│              │  expiry TETAP tanggal semula (tidak di-reset).                               │
+└──────────────┴──────────────────────────────────────────────────────────────────────────────┘</div>
+
+<h3>33.7 Admin — Email Templates CRUD — /office/email-templates (27+ template; OTP Admin selalu terkirim)</h3>
+<div class="wire">┌──────────────┬──────────────────────────────────────────────────────────────────────────────┐
+│ SIDEBAR ADMIN│ TOPBAR: [ Toggle: Stop Kirim Email ke Customer (Mode Testing/Maintenance) ] [+ Template] │
+│              ├──────────────────────────────────────────────────────────────────────────────┤
+│ ▾ Settings ▾ │  TEMPLATE EMAIL                                                              │
+│   • Email ★  │ ┌───────────────────┬────────────────────────────┬──────────────┬──────────┬┐│
+│   • Umum     │ │ Kode              │ Subjek                     │ Trigger      │ Selalu   │││
+│              │ ├───────────────────┼────────────────────────────┼──────────────┼──────────┼┤│
+│              │ │ welcome           │ Selamat datang di Mercatoria!│ registrasi  │ —        │││
+│              │ │ payment_rejected  │ Bukti pembayaran ditolak   │ admin tolak  │ —        │││
+│              │ │ reset_password    │ Link reset password        │ lupa password│ —        │││
+│              │ │ verify_email      │ Verifikasi email kamu      │ registrasi   │ —        │││
+│              │ │ admin_otp         │ Kode OTP Login Admin       │ login admin  │ ✅ YA    │││
+│              │ └───────────────────┴────────────────────────────┴──────────────┴──────────┴┘│
+│              │  Editor: subjek + body rich-text (Blade var {{nama}}, {{order_no}}, {{total}})│
+│              │  + Preview + Test kirim ke email admin. Global Toggle stop SEMUA email        │
+│              │  customer — KECUALI admin_otp (agar admin tidak terkunci dari /office).       │
+│              │  Notif slot_sold hanya Bell (tidak ada email) — selaras PRD 49.7.            │
+└──────────────┴──────────────────────────────────────────────────────────────────────────────┘</div>
+
+<h3>33.8 Admin — Marketing Dashboard — /office/marketing (aggregator, tanpa fitur baru)</h3>
+<div class="wire">┌──────────────┬──────────────────────────────────────────────────────────────────────────────┐
+│ SIDEBAR ADMIN│ TOPBAR                                                                       │
+│              ├──────────────────────────────────────────────────────────────────────────────┤
+│ ▾ Marketing ▾│  MARKETING DASHBOARD                                                         │
+│   • ★ Dashboard│ ┌─────────────────┬──────────────────┬──────────────────┬────────────────┐ │
+│   • Voucher   │ │ Voucher Aktif   │ Koin Terkirim    │ Share Reward     │ Referral       │ │
+│   • Gift/Koin │ │      3          │ bulan ini 125.000│ terkirim 48      │ berhasil 17    │ │
+│   • SEO       │ └─────────────────┴──────────────────┴──────────────────┴────────────────┘ │
+│              │  Shortcut:                                                                   │
+│              │  [ikon: ticket] Buat Voucher        [ikon: gift] Kirim Gift/Koin ke user     │
+│              │  [ikon: share] Atur Share Reward (5 koin/IP unik Indonesia)                  │
+│              │  [ikon: people] Atur Referral (3000 pengundang / 1000 referee)              │
+│              │  [ikon: cake] Atur Birthday Bonus (5000 koin + voucher Rp25.000)            │
+│              │  (semua mengarah ke modul yang sudah ada; tidak ada fitur baru)              │
+└──────────────┴──────────────────────────────────────────────────────────────────────────────┘</div>
+
+<div class="note" style="background:#e8f5e9;border-left:4px solid #43a047;padding:10px 14px;font-size:11pt;margin:16px 0"><strong>Status:</strong> Setelah Bab 33 ini, SEMUA halaman di PRD Section 36 (Skema Halaman) sudah punya wireframe. Yang tidak perlu wireframe terpisah: /office/preorder (UI bawaan GrapesJS), /office/seo (meta fields di form produk/halaman), /office/developers &amp; /office/games list (pola CRUD sama seperti Stores di Bab 16–19).</div>
+
 <hr>
 <p style="text-align: center; color: #666; margin-top: 40px;">
 <strong>— End of Document —</strong><br>
-Design Spec Mercatoria v3.3 FINAL · 26 Oktober 2026<br>
-Selaras 100% dengan PRD v4.9 FINAL · Backlog MVP v1.8 · Skema DB v1.7 · Struktur Folder v1.4<br>
-<strong>32 Bab Urutan Waterfall (Awal → Akhir) · Isi Asli v2.2 100% Utuh</strong>
+Design Spec Mercatoria v3.4 FINAL · 1 November 2026<br>
+Selaras 100% dengan PRD v4.18 FINAL · Backlog MVP v1.8 · Skema DB v1.10 · Struktur Folder v1.6<br>
+<strong>33 Bab Urutan Waterfall (Awal → Akhir) · Isi Asli v2.2 100% Utuh + Addendum v3.4</strong>
 </p>
 
 </body>

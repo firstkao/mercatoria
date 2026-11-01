@@ -4,7 +4,7 @@
       xmlns="http://www.w3.org/TR/REC-html40">
 <head>
 <meta charset="UTF-8">
-<title>Struktur Folder &amp; Paket — Mercatoria v1.4 FINAL</title>
+<title>Struktur Folder &amp; Paket — Mercatoria v1.6 FINAL</title>
 <!--[if gte mso 9]>
 <xml>
   <w:WordDocument>
@@ -71,9 +71,9 @@
   <div class="subtitle">Mercatoria — Laravel Project Structure</div>
   <div class="meta">
     <p><strong>Catatan resmi:</strong> dokumen ini menggambarkan <em>kenyataan repo</em>, bukan sebaliknya. Folder/file di denah = hasil inspeksi direktori aktual. Item yang tidak ada di repo dicatat sebagai mapping di AMANDEMEN §7.1 — jangan membuatnya hanya untuk menyesuaikan dokumen.</p>
-    <p><strong>Versi:</strong> 1.4 (FINAL — Sinkron AMANDEMEN: struktur = implementasi repo)</p>
-    <p><strong>Tanggal:</strong> 26 Oktober 2026</p>
-    <p><strong>Referensi:</strong> PRD v4.8 FINAL · Design Spec v3.2 FINAL · Backlog v1.7 · Skema DB v1.6</p>
+    <p><strong>Versi:</strong> 1.6 (FINAL — Sinkron PRD v4.18 + komponen Split Box/Tier/Denda)</p>
+    <p><strong>Tanggal:</strong> 1 November 2026 · <strong>v1.5 = sinkron PRD v4.18</strong>; <strong>v1.6</strong> = tambah komponen baru (5 Service, 4 Listener, 2 Console Command, 5 Model, 1 Enum) — detail implementasi di Skema DB v1.9 (paket sudah sesuai: GrapesJS, Tailwind, Livewire, Bootstrap Icons/x-icon, DomPDF, Barryvdh, Excel, Intervention Image, Redis, Spatie)</p>
+    <p><strong>Referensi:</strong> PRD v4.18 FINAL · Design Spec v3.3 FINAL · Backlog MVP v1.8 · Skema DB v1.9</p>
     <p><strong>Server &amp; Panel:</strong> VPS Hostinger KVM 1 (1 vCPU · 4 GB RAM · 50 GB NVMe) + CloudPanel v2</p>
     <p><strong>Framework:</strong> <strong>Laravel 13.x</strong> (Arsitektur <code>bootstrap/app.php</code> &amp; <code>routes/console.php</code>)</p>
     <p><strong>PHP:</strong> <strong>PHP 8.5</strong> (<code>/usr/bin/php8.5</code> + OPcache + JIT)</p>
@@ -253,17 +253,17 @@ CATATAN RESMI: dokumen ini menggambarkan KENYATAAN REPO, bukan sebaliknya.
 <h3>3.1 Penjelasan Folder Kunci</h3>
 <table>
   <tr><th>Folder</th><th>Fungsi</th><th>Contoh File</th></tr>
-  <tr><td><span class="pill pill-core">CORE</span> <code>app/Models/</code></td><td>Representasi tabel DB</td><td>User.php, Order.php</td></tr>
+  <tr><td><span class="pill pill-core">CORE</span> <code>app/Models/</code></td><td>Representasi tabel DB</td><td>User.php, Order.php, Customer.php, Store.php, SplitBox.php, SplitBoxSlot.php, SplitBoxBatch.php, SplitBoxBatchSlot.php</td></tr>
   <tr><td><span class="pill pill-core">CORE</span> <code>app/Http/Controllers/</code></td><td>Handle request dari URL</td><td>HomeController.php</td></tr>
-  <tr><td><span class="pill pill-core">CORE</span> <code>app/Services/</code></td><td>Business logic (perhitungan, validasi kompleks)</td><td>PriceCalculatorService.php</td></tr>
-  <tr><td><span class="pill pill-core">CORE</span> <code>app/Enums/</code></td><td>Enum untuk status, tipe, state</td><td>OrderStatus.php</td></tr>
+  <tr><td><span class="pill pill-core">CORE</span> <code>app/Services/</code></td><td>Business logic (perhitungan, validasi kompleks)</td><td>PriceCalculatorService.php, ShippingCalculatorService.php, StoreService.php, SplitBoxService.php, LatePenaltyService.php, UserTierService.php</td></tr>
+  <tr><td><span class="pill pill-core">CORE</span> <code>app/Enums/</code></td><td>Enum untuk status, tipe, state</td><td>OrderStatus.php, SplitRole.php</td></tr>
   <tr><td><span class="pill pill-core">CORE</span> <code>app/Http/Requests/</code></td><td>Validasi input form</td><td>StoreProductRequest.php</td></tr>
   <tr><td><span class="pill pill-dev">DEV</span> <code>app/Events/</code></td><td>Sesuatu yang terjadi (pemicu)</td><td>OrderCreated.php</td></tr>
-  <tr><td><span class="pill pill-dev">DEV</span> <code>app/Listeners/</code></td><td>Reaksi terhadap event</td><td>SendOrderCreatedEmail.php</td></tr>
+  <tr><td><span class="pill pill-dev">DEV</span> <code>app/Listeners/</code></td><td>Reaksi terhadap event</td><td>SendOrderCreatedEmail.php, LockSplitSlotsOnPaymentUploaded.php, ReleaseSplitSlots.php, SyncTierOnOrderStatusChanged.php, SuppressCustomerEmailWhenPaused.php</td></tr>
   <tr><td><span class="pill pill-dev">DEV</span> <code>app/Jobs/</code></td><td>Proses background (queue)</td><td>CopySnapshotImageJob.php</td></tr>
   <tr><td><span class="pill pill-dev">DEV</span> <code>app/Notifications/</code></td><td>Notifikasi Laravel</td><td>OrderStatusChangedNotification.php</td></tr>
   <tr><td><span class="pill pill-ui">UI</span> <code>app/Livewire/</code></td><td>Komponen real-time</td><td>NotificationBell.php</td></tr>
-  <tr><td><span class="pill pill-ops">OPS</span> <code>app/Console/Commands/</code></td><td>Perintah CLI (<code>/usr/bin/php8.5 artisan ...</code>)</td><td>UpdateUserState.php</td></tr>
+  <tr><td><span class="pill pill-ops">OPS</span> <code>app/Console/Commands/</code></td><td>Perintah CLI (<code>/usr/bin/php8.5 artisan ...</code>)</td><td>UpdateUserState.php, HangusExpiredCommand.php (<code>order:hangus-expired</code>, tiap 15 menit), CheckSplitBatchesCommand.php (<code>splitbox:check-batches</code>)</td></tr>
   <tr><td><span class="pill pill-test">TEST</span> <code>tests/</code></td><td>Testing otomatis</td><td>OrderTest.php</td></tr>
 </table>
 
@@ -1007,7 +1007,7 @@ public function latest()
 <hr>
 <p style="text-align: center; color: #666; margin-top: 40px;">
 <strong>— End of Document —</strong><br>
-Struktur Folder &amp; Paket Mercatoria v1.4 FINAL · 26 Oktober 2026<br>
+Struktur Folder &amp; Paket Mercatoria v1.6 FINAL · 1 November 2026<br>
 10 Paket Composer (+dev) · 17 Paket NPM · 71 Migration · 50 Model<br>
 VPS Hostinger KVM 1 (CloudPanel v2) · Laravel 13.x · PHP 8.5 · MySQL 8.0 · Redis 7 · Blade + Alpine + Livewire + Tailwind
 </p>

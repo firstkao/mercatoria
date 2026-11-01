@@ -4,7 +4,7 @@
       xmlns="http://www.w3.org/TR/REC-html40">
 <head>
 <meta charset="UTF-8">
-<title>Skema Database Laravel Mercatoria v1.7 FINAL</title>
+<title>Skema Database Laravel Mercatoria v1.10 FINAL</title>
 <!--[if gte mso 9]>
 <xml>
   <w:WordDocument>
@@ -62,9 +62,9 @@
 <div class="cover">
   <h1>SKEMA DATABASE v1.7</h1>
   <div class="meta">
-    <p><strong>Versi:</strong> 1.7 (FINAL — AMANDEMEN #22 + Bootstrap Icons)</p>
-    <p><strong>Tanggal:</strong> 26 Oktober 2026 · <strong>Riwayat:</strong> v1.7 AMANDEMEN #22 (customers.tier NOT NULL default silver) + Bootstrap Icons</p>
-    <p><strong>Referensi:</strong> PRD v4.9 FINAL · Design Spec v3.3 FINAL · Backlog MVP v1.8 · Struktur Folder v1.4</p>
+    <p><strong>Versi:</strong> 1.10 (FINAL — Sinkron PRD v4.18)</p>
+    <p><strong>Tanggal:</strong> 1 November 2026 · <strong>Riwayat:</strong> v1.7 AMANDEMEN #22 + Bootstrap Icons; <strong>v1.8 = sinkron PRD v4.18</strong>; <strong>v1.9</strong> = perbaikan fee QRIS & slot_sold koin; <strong>v1.10</strong> = tambah Console Command splitbox:check-batches (hourly, selaras Struktur Folder v1.6) (semua field aturan baru sudah ada: cancel_reason=slot_sold, penalty_*, hangus_permanent_at, tier_counted, unblock_count, state grace, payments.type=penalty, OrderStatus lengkap)</p>
+    <p><strong>Referensi:</strong> PRD v4.18 FINAL · Design Spec v3.3 FINAL · Backlog MVP v1.8 · Struktur Folder v1.5</p>
     <p><strong>Infrastruktur &amp; Stack:</strong> <strong>VPS Hostinger KVM 1 (CloudPanel v2) · PHP 8.5 (<code>/usr/bin/php8.5</code>) · Laravel 13.x · MySQL 8.0 · Redis 7</strong></p>
     <p><strong>Status:</strong> Fondasi 100% Siap Coding (0 Inconsistency)</p>
   </div>
@@ -741,7 +741,8 @@
     ): array {
         $subtotal = (float) collect($items)-&gt;sum(fn ($i) =&gt; $i['final_price_bersih'] * $i['qty']);
         $totalBarang = max(0, $subtotal - $discount);
-        $feeQris = ($method === 'qris' &amp;&amp; $totalBarang &gt;= 500000) ? $totalBarang * 0.0003 : 0;
+        $nominalTagihanWeb = ($scheme === 'dp') ? $totalBarang * 0.5 : $totalBarang; // fee QRIS dari nominal tagihan web (FP=100%, DP=50%), threshold juga dari nominal ini
+        $feeQris = ($method === 'qris' &amp;&amp; $nominalTagihanWeb &gt;= 500000) ? $nominalTagihanWeb * 0.0003 : 0;
 
         if ($scheme === 'dp') {
             $dp = $totalBarang * 0.5;
@@ -1504,7 +1505,7 @@ Tabel di bawah ini diselaraskan dengan file migration asli yang diunggah (<code>
   <tr><td>Menunggu Denda</td><td>Menunggu Pelunasan &amp; Pengambilan</td><td>Bukti denda (<code>payments.type = penalty</code>) diverifikasi; timer CO baru</td></tr>
   <tr><td>Menunggu Denda</td><td>Hangus</td><td>Batas bayar denda lewat</td></tr>
   <tr><td>Hangus</td><td>Hangus Permanen</td><td>Admin, atau otomatis bila <code>late_penalty_max_days</code> &gt; 0 terlampaui</td></tr>
-  <tr><td>Menunggu Pembayaran</td><td>Pembayaran Gagal (<code>cancel_reason = slot_sold</code>)</td><td>Slot Split Box diambil user lain; Koin/Voucher hangus</td></tr>
+  <tr><td>Menunggu Pembayaran</td><td>Pembayaran Gagal (<code>cancel_reason = slot_sold</code>)</td><td>Slot Split Box diambil user lain; Koin/Voucher <strong>dikembalikan</strong> (bukan hangus, selaras PRD v4.18)</td></tr>
 </table>
 
 <h1>19. Migration Split Box, Tier &amp; Denda <span class="badge-new">NEW v1.6</span></h1>
@@ -1919,7 +1920,7 @@ class SplitBoxBatchSlot extends Model
 //                     (cast datetime/decimal)</pre>
 <h1>21. <code>SplitBoxService</code> &amp; Listener <span class="badge-new">NEW v1.6</span></h1>
 <div class="note-info">
-<strong>Aturan kunci:</strong> slot terkunci saat <strong>bukti bayar diupload</strong> (bukan saat verifikasi admin dan bukan saat masuk keranjang). Listener <code>LockSplitSlotsOnPaymentUploaded</code> harus <strong>sinkron</strong> dan berjalan sebelum status berubah ke Ditahan. Batal otomatis karena slot habis memakai <code>Pembayaran Gagal</code>, sehingga Koin/Voucher hangus seperti aturan biasa.
+<strong>Aturan kunci:</strong> slot terkunci saat <strong>bukti bayar diupload</strong> (bukan saat verifikasi admin dan bukan saat masuk keranjang). Listener <code>LockSplitSlotsOnPaymentUploaded</code> harus <strong>sinkron</strong> dan berjalan sebelum status berubah ke Ditahan. Batal otomatis karena slot habis memakai <code>Pembayaran Gagal</code> dengan <code>cancel_reason=slot_sold</code> → Koin/Voucher <strong>dikembalikan</strong> (bukan hangus). Hangus hanya untuk Pembayaran Gagal karena telat upload bukti.
 </div>
 <div class="file-header">app/Services/Split/SplitBoxService.php</div>
 <pre>&lt;?php
@@ -2121,7 +2122,7 @@ class SplitBoxService
             });
     }
 
-    /** Order Menunggu Pembayaran yang slotnya sudah habis: batal otomatis (Koin/Voucher hangus). */
+    /** Order Menunggu Pembayaran yang slotnya sudah habis: batal otomatis (cancel_reason=slot_sold → Koin/Voucher dikembalikan). */
     protected function cancelUnsatisfiablePendingOrders(SplitBox $box, int $exceptOrderId): void
     {
         $slotIds = $box-&gt;slots-&gt;pluck('id');
@@ -2140,7 +2141,7 @@ class SplitBoxService
                     return;
                 }
 
-                // Pembayaran Gagal =&gt; aturan hangus Koin/Voucher yang sudah ada berlaku apa adanya
+                // Pembayaran Gagal cancel_reason=slot_sold =&gt; Koin/Voucher dikembalikan (selaras PRD v4.18)
                 $this-&gt;statusService-&gt;transition($o, OrderStatus::PembayaranGagal, ['cancel_reason' =&gt; 'slot_sold']);
 
                 $this-&gt;userNotif-&gt;notify(
@@ -2527,6 +2528,40 @@ class LatePenaltyService
         $this-&gt;statusService-&gt;transition($order, OrderStatus::HangusPermanen, ['admin_id' =&gt; $admin?-&gt;id]);
     }
 }</pre>
+<h1>23.1 Console Command <code>splitbox:check-batches</code> <span class="badge-new">NEW v1.10</span></h1>
+<p>Dijalankan terjadwal (hourly) untuk memelihara kesehatan kloter Split Box. Memanggil <code>SplitBoxService::ensureBatchHealth()</code> untuk semua box (auto-open kloter baru bila slot habis / deadlock pair), lalu memeriksa kloter terbuka yang sudah melewati <code>closes_at</code> → notifikasi admin agar memutuskan: tutup + Full Refund manual, atau perpanjang <code>closes_at</code>.</p>
+<pre><code>app/Console/Commands/CheckSplitBatchesCommand.php
+&lt;?php
+namespace App\Console\Commands;
+use App\Models\SplitBox;
+use App\Models\SplitBoxBatch;
+use App\Services\Split\SplitBoxService;
+use App\Services\Notification\AdminNotificationService;
+use Illuminate\Console\Command;
+class CheckSplitBatchesCommand extends Command
+{
+    protected $signature = 'splitbox:check-batches';
+    protected $description = 'Cek kesehatan kloter Split Box: auto-open + notif admin kloter kedaluwarsa.';
+    public function __construct(
+        protected SplitBoxService $split,
+        protected AdminNotificationService $adminNotif,
+    ) { parent::__construct(); }
+    public function handle(): int
+    {
+        SplitBox::with('product')->get()->each(fn ($box) => $this->split->ensureBatchHealth($box));
+        $expired = SplitBoxBatch::where('status', 'open')
+            ->whereNotNull('closes_at')->where('closes_at', '<', now())->get();
+        foreach ($expired as $batch) {
+            $this->adminNotif->notify('split_batch_expired',
+                "Kloter {$batch->batch_no} SplitBox #{$batch->split_box_id} terbuka melewati batas isi. Tutup+refund atau perpanjang closes_at.",
+                "/office/split-boxes/{$batch->split_box_id}/batches");
+        }
+        $this->info("Checked. Kloter kedaluwarsa: {$expired->count()}.");
+        return self::SUCCESS;
+    }
+}
+// routes/console.php → Schedule::command('splitbox:check-batches')->hourly();
+// (berdampingan dengan order:hangus-expired tiap 15 menit)</code></pre>
 <h1>24. Komponen Livewire &amp; Blade <span class="badge-new">NEW v1.6</span></h1>
 <div class="note-info">
 Ikon memakai komponen <code>&lt;x-icon name="..."&gt;</code> yang membaca Bootstrap Icons (MIT) dari <code>resources/views/components/icons/</code>. Nama file yang dipakai bab ini: <code>fire.svg</code>, <code>fire-double.svg</code>, <code>handshake.svg</code>, <code>lock.svg</code>. Nama kolom <code>carts</code> pada <code>addBundleToCart()</code> perlu dicocokkan dengan migration asli.
@@ -2807,7 +2842,7 @@ class TierProgress extends Component
 <hr>
 <p style="text-align: center; color: #666; margin-top: 40px;">
 <strong>— End of Document —</strong><br>
-Skema Database Laravel Mercatoria v1.7 FINAL · 26 Oktober 2026<br>
+Skema Database Laravel Mercatoria v1.10 FINAL · 1 November 2026<br>
 <strong>Fondasi 100% Siap Coding — Store Concept + Berat Produk + User Migration</strong>
 </p>
 
