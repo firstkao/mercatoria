@@ -78,7 +78,6 @@
     .sidebar-photo-zone.drag-over { border-color: rgba(0,0,0,0.4); }
     .sidebar-photo-zone img { width: 100%; height: 8rem; object-fit: cover; }
 
-    /* Variant builder rows */
     .variant-row { border: 1px solid #e5e7eb; border-radius: 0.75rem; padding: 1rem; background: rgba(248,249,250,0.25); }
     .variant-row .row-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.75rem; }
     .variant-row .row-head .idx { font-family: monospace; font-size: 10px; text-transform: uppercase; letter-spacing: 0.14em; color: rgba(0,0,0,0.45); }
@@ -126,24 +125,25 @@
             {{-- ═══════════ KONTEN UTAMA (kiri) ═══════════ --}}
             <div class="pform-main">
 
-                {{-- Nama + Slug --}}
-                <div class="space-y-4 p-6">
-                    <div>
-                        <label class="block text-sm font-medium text-ink">Nama Produk: <span class="text-danger">*</span></label>
-                        <input type="text" name="name" id="input-name" value="{{ old('name', $product->name) }}" required
-                               class="mt-1.5 w-full rounded-lg border border-rule px-3 py-2.5 text-sm text-ink"
-                               placeholder="Millennium T-Shirt Vol.2">
-                        @error('name')<p class="mt-1 text-xs text-danger">{{ $message }}</p>@enderror
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-ink">
-                            Slug:
-                            <span class="ml-1 text-xs font-normal text-ink/45">otomatis dari nama</span>
-                        </label>
-                        <input type="text" name="slug" id="input-slug" value="{{ old('slug', $product->slug) }}"
-                               class="mt-1.5 w-full rounded-lg border border-rule bg-paper/30 px-3 py-2.5 text-sm text-ink"
-                               placeholder="millennium-tshirt-vol-2">
-                        @error('slug')<p class="mt-1 text-xs text-danger">{{ $message }}</p>@enderror
+                {{-- Nama + Slug — side-by-side --}}
+                <div class="p-6">
+                    <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+                        <div>
+                            <label class="block text-sm font-medium text-ink">Nama Produk: <span class="text-danger">*</span></label>
+                            <input type="text" name="name" id="input-name" value="{{ old('name', $product->name) }}" required
+                                   class="mt-1.5 w-full rounded-lg border border-rule px-3 py-2.5 text-sm text-ink"
+                                   placeholder="Millennium T-Shirt Vol.2">
+                            @error('name')<p class="mt-1 text-xs text-danger">{{ $message }}</p>@enderror
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-ink">
+                                Slug: <span class="ml-1 text-xs font-normal text-ink/45">otomatis dari nama</span>
+                            </label>
+                            <input type="text" name="slug" id="input-slug" value="{{ old('slug', $product->slug) }}"
+                                   class="mt-1.5 w-full rounded-lg border border-rule bg-paper/30 px-3 py-2.5 text-sm text-ink"
+                                   placeholder="millennium-tshirt-vol-2">
+                            @error('slug')<p class="mt-1 text-xs text-danger">{{ $message }}</p>@enderror
+                        </div>
                     </div>
                 </div>
 
@@ -163,7 +163,8 @@
                         <p class="font-mono text-[11px] font-medium uppercase tracking-[0.16em] text-ink">Kalkulasi Harga</p>
                         <div class="mt-4 h-px bg-rule"></div>
 
-                        <div class="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2">
+                        {{-- Row 1: SKU + Harga RMB + Berat — 3 kolom --}}
+                        <div class="mt-4 grid grid-cols-1 gap-4 md:grid-cols-3">
                             <div>
                                 <label class="block text-sm font-medium text-ink">SKU <span class="text-danger">*</span></label>
                                 <input type="text" name="sku" value="{{ old('sku', $product->sku) }}" required
@@ -177,59 +178,49 @@
                                        class="mt-1.5 w-full rounded-lg border border-rule px-3 py-2.5 text-sm text-ink">
                                 @error('price_rmb')<p class="mt-1 text-xs text-danger">{{ $message }}</p>@enderror
                             </div>
+                            <div>
+                                <label class="block text-sm font-medium text-ink">Berat (gram) <span class="text-danger">*</span></label>
+                                <input type="number" name="weight_gram" id="input-weight-gram"
+                                       value="{{ old('weight_gram', $product->weight_gram) }}"
+                                       class="mt-1.5 w-full rounded-lg border border-rule px-3 py-2.5 text-sm text-ink">
+                                @error('weight_gram')<p class="mt-1 text-xs text-danger">{{ $message }}</p>@enderror
+                            </div>
                         </div>
+                        <p class="mt-1.5 flex items-start gap-1.5 text-xs text-ink/55">
+                            <i class="bi bi-info-circle mt-0.5" style="font-size:0.75rem;"></i>
+                            Berat dipakai untuk hitung ongkir internasional per kg. Varian bisa override.
+                        </p>
 
                         <div class="mt-5 h-px bg-rule"></div>
 
-                        <div class="mt-4">
-                            <label class="block text-sm font-medium text-ink">Berat (gram) <span class="text-danger">*</span></label>
-                            <input type="number" name="weight_gram" id="input-weight-gram"
-                                   value="{{ old('weight_gram', $product->weight_gram) }}"
-                                   class="mt-1.5 w-full rounded-lg border border-rule px-3 py-2.5 text-sm text-ink">
-                            <p class="mt-1.5 flex items-start gap-1.5 text-xs text-ink/55">
-                                <i class="bi bi-info-circle mt-0.5" style="font-size:0.75rem;"></i>
-                                Berat produk default. Varian bisa override. Berat ini dipakai untuk hitung ongkir internasional per kg.
-                            </p>
-                            @error('weight_gram')<p class="mt-1 text-xs text-danger">{{ $message }}</p>@enderror
-                        </div>
-
-                        <div class="mt-5 h-px bg-rule"></div>
-
-                        <div class="mt-4 space-y-4">
+                        {{-- Row 2: 3 Ongkir — 3 kolom --}}
+                        <div class="mt-4 grid grid-cols-1 gap-4 md:grid-cols-3">
                             <div>
                                 <label class="block text-sm font-medium text-ink">Ongkir Lokal CN (RMB)</label>
-                                <div class="mt-1.5 flex items-center gap-2">
-                                    <div class="flex-1 rounded-lg border border-rule bg-paper/40 px-3 py-2.5 text-sm text-ink/60" id="disp-ongkir-lokal">Otomatis dari store</div>
-                                    <span class="text-xs text-ink/40">(read-only)</span>
-                                </div>
-                                <p class="mt-1 flex items-start gap-1.5 text-xs text-ink/55">
-                                    <i class="bi bi-info-circle mt-0.5" style="font-size:0.75rem;"></i>
-                                    <span id="info-ongkir-lokal">Store: — (Min — RMB, Ongkir — %)</span>
+                                <div class="mt-1.5 rounded-lg border border-rule bg-paper/40 px-3 py-2.5 text-sm text-ink/60" id="disp-ongkir-lokal">Otomatis dari store</div>
+                                <p class="mt-1 text-[10px] text-ink/45">
+                                    <span id="info-ongkir-lokal">Store: —</span>
                                 </p>
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-ink">Ongkir CN-BTM (IDR)</label>
-                                <div class="mt-1.5 flex items-center gap-2">
-                                    <div class="flex-1 rounded-lg border border-rule bg-paper/40 px-3 py-2.5 text-sm text-ink/60" id="disp-ongkir-cnbtm">Otomatis dari berat</div>
-                                    <span class="text-xs text-ink/40">(read-only)</span>
-                                </div>
-                                <p class="mt-1 flex items-start gap-1.5 text-xs text-ink/55">
-                                    <i class="bi bi-info-circle mt-0.5" style="font-size:0.75rem;"></i>
+                                <div class="mt-1.5 rounded-lg border border-rule bg-paper/40 px-3 py-2.5 text-sm text-ink/60" id="disp-ongkir-cnbtm">Otomatis dari berat</div>
+                                <p class="mt-1 text-[10px] text-ink/45">
                                     <span id="info-ongkir-cnbtm">—</span>
                                 </p>
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-ink">Ongkir BTM-JKT (IDR)</label>
-                                <div class="mt-1.5 flex items-center gap-2">
-                                    <div class="flex-1 rounded-lg border border-rule bg-paper/40 px-3 py-2.5 text-sm text-ink/60" id="disp-ongkir-btmjkt">Otomatis dari berat</div>
-                                    <span class="text-xs text-ink/40">(read-only)</span>
-                                </div>
-                                <p class="mt-1 flex items-start gap-1.5 text-xs text-ink/55">
-                                    <i class="bi bi-info-circle mt-0.5" style="font-size:0.75rem;"></i>
+                                <div class="mt-1.5 rounded-lg border border-rule bg-paper/40 px-3 py-2.5 text-sm text-ink/60" id="disp-ongkir-btmjkt">Otomatis dari berat</div>
+                                <p class="mt-1 text-[10px] text-ink/45">
                                     <span id="info-ongkir-btmjkt">—</span>
                                 </p>
                             </div>
                         </div>
+                        <p class="mt-2 flex items-start gap-1.5 text-xs text-ink/55">
+                            <i class="bi bi-info-circle mt-0.5" style="font-size:0.75rem;"></i>
+                            Semua ongkir dihitung otomatis (read-only). Rute: China &rarr; Batam &rarr; Jakarta.
+                        </p>
 
                         {{-- PREVIEW PERHITUNGAN --}}
                         <div class="mt-6 rounded-lg border-l-4 border-l-[#1A4D8F] bg-[#F8F9FA] p-5">
@@ -362,7 +353,6 @@
                         <div class="mt-4 h-px bg-rule"></div>
 
                         @if ($product->exists)
-                            {{-- PRODUK SUDAH ADA: table + modal --}}
                             @if ($product->variants->count())
                                 <div class="mt-4 flex items-center gap-3">
                                     <label class="flex items-center gap-2 text-sm text-ink/70">
@@ -436,13 +426,11 @@
                             @endif
 
                         @else
-                            {{-- PRODUK BARU: inline variant builder --}}
                             <p class="mt-4 text-xs text-ink/55">
                                 Tambahkan varian sekarang — produk + varian langsung tersimpan bersamaan.
                             </p>
 
                             <div id="variant-builder" class="mt-4 space-y-3">
-                                {{-- Row 0 (default kosong) --}}
                                 <div class="variant-row" data-vindex="0">
                                     <div class="row-head">
                                         <span class="idx">Varian #1</span>
@@ -591,7 +579,7 @@
                     @endif
                 </div>
 
-                {{-- KETERSEDIAAN [2] — di atas Store --}}
+                {{-- KETERSEDIAAN --}}
                 <div class="border-b border-rule p-5">
                     <p class="font-mono text-[11px] font-medium uppercase tracking-[0.16em] text-ink">Ketersediaan</p>
                     <select name="availability" class="mt-2 w-full rounded-lg border border-rule px-3 py-2 text-sm text-ink">
@@ -600,7 +588,7 @@
                     </select>
                 </div>
 
-                {{-- STORE [5] — required --}}
+                {{-- STORE --}}
                 <div class="border-b border-rule p-5">
                     <p class="font-mono text-[11px] font-medium uppercase tracking-[0.16em] text-ink">Store Override <span class="text-ink/45">(opsional)</span></p>
                     <div class="mt-2">
@@ -689,33 +677,30 @@
                     @error('image')<p class="mt-1 text-xs text-danger">{{ $message }}</p>@enderror
                 </div>
 
-                {{-- DISKON [1] — di atas Hapus Produk --}}
+                {{-- DISKON — compact --}}
                 <div class="border-b border-rule p-5">
                     <p class="font-mono text-[11px] font-medium uppercase tracking-[0.16em] text-ink">Diskon Produk</p>
-                    <div class="mt-2 space-y-3">
-                        <div>
-                            <label class="block text-xs text-ink/70">Nominal Diskon (Rp)</label>
-                            <input type="number" step="0.01" min="0" name="discount_amount"
-                                   value="{{ old('discount_amount', $product->discount_amount) }}"
-                                   class="mt-1 w-full rounded-lg border border-rule px-3 py-2 text-sm text-ink">
-                        </div>
+                    <div class="mt-2">
+                        <label class="block text-xs text-ink/70">Nominal (Rp)</label>
+                        <input type="number" step="0.01" min="0" name="discount_amount"
+                               value="{{ old('discount_amount', $product->discount_amount) }}"
+                               class="mt-1 w-full rounded-lg border border-rule px-3 py-2 text-sm text-ink">
+                    </div>
+                    <div class="mt-2 grid grid-cols-2 gap-2">
                         <div>
                             <label class="block text-xs text-ink/70">Mulai</label>
                             <input type="date" name="discount_start"
                                    value="{{ old('discount_start', $product->discount_start?->toDateString()) }}"
-                                   class="mt-1 w-full rounded-lg border border-rule px-3 py-2 text-sm text-ink">
+                                   class="mt-1 w-full rounded-lg border border-rule px-3 py-2 text-xs text-ink">
                         </div>
                         <div>
                             <label class="block text-xs text-ink/70">Berakhir</label>
                             <input type="date" name="discount_end"
                                    value="{{ old('discount_end', $product->discount_end?->toDateString()) }}"
-                                   class="mt-1 w-full rounded-lg border border-rule px-3 py-2 text-sm text-ink">
+                                   class="mt-1 w-full rounded-lg border border-rule px-3 py-2 text-xs text-ink">
                         </div>
                     </div>
-                    <p class="mt-2 flex items-start gap-1.5 text-xs text-ink/55">
-                        <i class="bi bi-info-circle mt-0.5" style="font-size:0.75rem;"></i>
-                        Diskon wajib &le; harga jual produk dalam Rupiah.
-                    </p>
+                    <p class="mt-2 text-[10px] text-ink/45">Diskon wajib &le; harga jual dalam Rupiah.</p>
                 </div>
 
                 {{-- HAPUS PRODUK --}}
@@ -1028,7 +1013,6 @@
         if (!row || !builder) return;
 
         if (builder.querySelectorAll('.variant-row').length <= 1) {
-            // Minimal 1 row — reset fields instead of remove
             row.querySelectorAll('input, select').forEach(function (el) {
                 if (el.type === 'file') { el.value = ''; }
                 else if (el.tagName === 'SELECT') { el.selectedIndex = 0; }
