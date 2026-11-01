@@ -24,7 +24,7 @@
                 {{ $user->exists ? 'Edit' : 'Tambah' }}
             </p>
             <h1 class="mt-2 font-display text-[1.5rem] font-semibold text-ink">
-                {{ $user->exists ? 'Edit: '.$user->name : 'Tambah User (Inject)' }}
+                {{ $user->exists ? 'Edit: '.$user->name : 'Tambah User' }}
             </h1>
         </div>
         <div class="flex items-center gap-2">
