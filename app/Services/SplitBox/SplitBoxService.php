@@ -87,7 +87,7 @@ class SplitBoxService
                 $allocation = $this->allocateFifo($item->split_box_slot_id, $item->qty);
 
                 if ($allocation === null) {
-                    // Semua atau tidak sama sekali — rollback otomatis
+                    // Semua atau tidak sama sekali
                     return false;
                 }
 
@@ -146,21 +146,30 @@ class SplitBoxService
      */
     public function closeBatchAndRefund(SplitBoxBatch $batch, User $admin): int
     {
-        $batch->update(['status' => SplitBoxBatch::STATUS_CLOSED]);
+        return DB::transaction(function () use ($batch, $admin) {
+            // Guard: jangan double-close
+            if ($batch->status !== SplitBoxBatch::STATUS_OPEN) {
+                return 0;
+            }
 
-        $orderIds = OrderItem::whereIn('split_box_batch_slot_id',
-                SplitBoxBatchSlot::where('batch_id', $batch->id)->pluck('id')
-            )->pluck('order_id')->unique();
+            $batch->update(['status' => SplitBoxBatch::STATUS_CLOSED]);
 
-        $orders = Order::whereIn('id', $orderIds)->get();
+            $orderIds = OrderItem::whereIn('split_box_batch_slot_id',
+                    SplitBoxBatchSlot::where('batch_id', $batch->id)->pluck('id')
+                )->pluck('order_id')->unique();
 
-        $refunds = app(RefundService::class);
+            $orders = Order::whereIn('id', $orderIds)->lockForUpdate()->get();
 
-        foreach ($orders as $order) {
-            $refunds->requestFull($order, 'Slot split box tidak terpenuhi', $admin);
-        }
+            $refunds = app(RefundService::class);
+            $count = 0;
 
-        return $orders->count();
+            foreach ($orders as $order) {
+                $refunds->requestFull($order, 'Slot split box tidak terpenuhi', $admin);
+                $count++;
+            }
+
+            return $count;
+        });
     }
 
     /**
@@ -228,16 +237,23 @@ class SplitBoxService
             return;
         }
 
+        // Fresh load slots
+        $slots = $splitBox->slots()->get();
+
+        if ($slots->isEmpty()) {
+            return;
+        }
+
         // Buat kloter baru
         $batch = SplitBoxBatch::create([
             'split_box_id' => $splitBox->id,
-            'batch_no' => $totalBatches + 1,
+            'batch_no' => ($splitBox->batches()->max('batch_no') ?? 0) + 1,
             'status' => SplitBoxBatch::STATUS_OPEN,
             'is_auto_opened' => true,
         ]);
 
         // Bulk insert slots untuk kloter baru
-        $slotData = $splitBox->slots->map(fn ($slot) => [
+        $slotData = $slots->map(fn ($slot) => [
             'batch_id' => $batch->id,
             'slot_id' => $slot->id,
             'qty_total' => $slot->qty_per_box,
@@ -252,7 +268,6 @@ class SplitBoxService
 
         // Notifikasi ke semua admin
         $admins = User::where('role', User::ROLE_ADMIN)->get();
-
         $notifService = app(UserNotificationService::class);
 
         foreach ($admins as $admin) {
