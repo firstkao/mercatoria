@@ -129,7 +129,7 @@
                         {{-- Nav --}}
             <nav id="sidebar-nav" class="space-y-0.5 px-3 py-3 text-[13px]" style="max-height:calc(100vh - 60px); overflow-y:auto;">
                 @php
-                    $currentRoute = request()->route()->getName();
+                    $currentRoute = request()->route()?->getName() ?? '';
                     $isActive = fn($prefix) => str_starts_with($currentRoute, $prefix) ? 'nav-link-active' : '';
                 @endphp
 
@@ -164,6 +164,7 @@
 
                     ['__SECTION__','','Konten'],
                     ['office.pages.index','bi-file-text','Pages CMS','office.pages'],
+                    ['office.preorder.index','bi-layout-text-window-reverse','Preorder Builder','office.preorder'],
                     ['office.email-templates.index','bi-envelope-paper','Email Templates','office.email-templates'],
                     ['office.hero-slides.index','bi-image','Hero Slides','office.hero-slides'],
 
@@ -241,7 +242,7 @@
                             @if(Route::has('office.settings.update'))
                                 <form method="POST" action="{{ route('office.settings.update') }}" class="inline ms-1">
                                     @csrf
-                                    <input type="hidden" name="settings[customer_emails_paused]" value="0">
+                                    <input type="hidden" name="settings[pause_customer_emails]" value="0">
                                     <button type="submit"
                                             class="rounded-full bg-[#E53935] px-2 py-0.5 text-[9px] font-semibold text-white transition-colors hover:bg-[#C62828] whitespace-nowrap">
                                         Aktifkan Kembali

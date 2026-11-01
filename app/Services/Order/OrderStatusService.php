@@ -2,6 +2,7 @@
 
 namespace App\Services\Order;
 
+use App\Events\OrderStatusChanged;
 use App\Models\CoinTransaction;
 use App\Models\Crush;
 use App\Models\Customer;
@@ -81,6 +82,7 @@ class OrderStatusService
 
         $order->refresh();
         $this->applySideEffects($order, $toValue);
+        OrderStatusChanged::dispatch($order, $from->value, $toValue);
 
         return $order;
     }

@@ -9,19 +9,19 @@ class StoreService
 {
     /**
      * Semua store untuk dropdown admin.
-     * [FIX #3] Select kolom yang benar-benar dipakai di blade & kalkulasi harga.
+     * Select only fields used by the store selector and shipping calculation.
      */
     public function getAllForDropdown(): Collection
     {
         return Store::orderBy('name')
-            ->get(['id', 'name', 'min_belanja_rmb', 'ongkir_lokal_cn_percent']);
+            ->get(['id', 'name', 'min_belanja_rmb', 'ongkir_rmb']);
     }
 
     /**
      * @param  array{
      *     name: string,
      *     min_belanja_rmb?: float|int|string,
-     *     ongkir_lokal_cn_percent?: float|int|string
+     *     ongkir_rmb?: float|int|string
      * }  $data
      */
     public function create(array $data): Store
@@ -29,8 +29,7 @@ class StoreService
         return Store::create([
             'name' => $data['name'],
             'min_belanja_rmb' => $data['min_belanja_rmb'] ?? 0,
-            // [FIX #1] Ganti dari ongkir_rmb → ongkir_lokal_cn_percent.
-            'ongkir_lokal_cn_percent' => $data['ongkir_lokal_cn_percent'] ?? 7,
+            'ongkir_rmb' => $data['ongkir_rmb'] ?? 0,
         ]);
     }
 
@@ -38,7 +37,7 @@ class StoreService
      * @param  array{
      *     name?: string,
      *     min_belanja_rmb?: float|int|string,
-     *     ongkir_lokal_cn_percent?: float|int|string
+     *     ongkir_rmb?: float|int|string
      * }  $data
      */
     public function update(Store $store, array $data): Store
@@ -46,8 +45,7 @@ class StoreService
         $store->update([
             'name' => $data['name'] ?? $store->name,
             'min_belanja_rmb' => $data['min_belanja_rmb'] ?? $store->min_belanja_rmb,
-            // [FIX #2] Handle field yang dipakai blade product form.
-            'ongkir_lokal_cn_percent' => $data['ongkir_lokal_cn_percent'] ?? $store->ongkir_lokal_cn_percent,
+            'ongkir_rmb' => $data['ongkir_rmb'] ?? $store->ongkir_rmb,
         ]);
 
         return $store->fresh();

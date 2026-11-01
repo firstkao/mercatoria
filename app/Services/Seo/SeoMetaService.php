@@ -3,6 +3,8 @@
 namespace App\Services\Seo;
 
 use App\Models\Game;
+use App\Models\Page;
+use App\Models\PreorderPage;
 use App\Models\Product;
 
 class SeoMetaService
@@ -84,6 +86,14 @@ class SeoMetaService
             $urls[] = '/'.$slug;
         }
 
-        return $urls;
+        foreach (Page::where('status', 'publish')->get(['slug']) as $page) {
+            $urls[] = '/'.$page->slug;
+        }
+
+        foreach (PreorderPage::where('status', 'publish')->get(['slug']) as $page) {
+            $urls[] = '/'.$page->slug;
+        }
+
+        return array_values(array_unique($urls));
     }
 }

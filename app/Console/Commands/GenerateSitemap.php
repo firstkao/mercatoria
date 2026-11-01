@@ -4,6 +4,8 @@ namespace App\Console\Commands;
 
 use App\Services\Seo\SeoMetaService;
 use Illuminate\Console\Command;
+use Spatie\Sitemap\Sitemap;
+use Spatie\Sitemap\Tags\Url;
 
 class GenerateSitemap extends Command
 {
@@ -13,15 +15,16 @@ class GenerateSitemap extends Command
 
     public function handle(SeoMetaService $seo): int
     {
-        $urls = collect($seo->sitemapUrls())
-            ->map(fn (string $path) => '<url><loc>'.e(url($path)).'</loc></url>')
-            ->implode('');
+        $paths = $seo->sitemapUrls();
+        $sitemap = Sitemap::create();
 
-        $xml = '<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'.$urls.'</urlset>';
+        foreach ($paths as $path) {
+            $sitemap->add(Url::create(url($path)));
+        }
 
-        file_put_contents(public_path('sitemap.xml'), $xml);
+        $sitemap->writeToFile(public_path('sitemap.xml'));
 
-        $this->info('public/sitemap.xml diperbarui ('.count($seo->sitemapUrls()).' URL).');
+        $this->info('public/sitemap.xml diperbarui ('.count($paths).' URL).');
 
         return self::SUCCESS;
     }

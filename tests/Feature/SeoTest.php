@@ -1,6 +1,8 @@
 <?php
 
 use App\Models\Game;
+use App\Models\Page;
+use App\Models\PreorderPage;
 use App\Models\Product;
 
 test('landing memuat meta og dan twitter card', function () {
@@ -26,12 +28,21 @@ test('landing memuat json ld organization dan product', function () {
 
 test('sitemap xml dapat diakses berisi url game', function () {
     Game::factory()->create(['slug' => 'genshin-impact', 'is_active' => true]);
+    Page::factory()->create(['slug' => 'reseller', 'status' => 'publish']);
+    PreorderPage::create([
+        'title' => 'Preorder',
+        'slug' => 'preorder-baru',
+        'content' => '<p>Detail preorder.</p>',
+        'status' => 'publish',
+    ]);
 
     $response = $this->get('/sitemap.xml');
 
     $response->assertOk();
     expect($response->headers->get('Content-Type'))->toContain('xml')
-        ->and($response->getContent())->toContain('/genshin-impact');
+        ->and($response->getContent())->toContain('/genshin-impact')
+        ->toContain('/reseller')
+        ->toContain('/preorder-baru');
 });
 
 test('robots txt melarang path sensitif', function () {

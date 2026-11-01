@@ -23,10 +23,10 @@
                         @endif
                     </div>
                     <div class="flex items-center gap-3">
-                        @if ($page->is_active)
-                            <span class="rounded-full bg-[#E8F5E9] px-2.5 py-0.5 text-[10px] font-semibold text-[#2E7D32]">AKTIF</span>
+                        @if ($page->status === 'publish')
+                            <span class="rounded-full bg-[#E8F5E9] px-2.5 py-0.5 text-[10px] font-semibold text-[#2E7D32]">PUBLISH</span>
                         @else
-                            <span class="rounded-full bg-paper px-2.5 py-0.5 text-[10px] font-semibold text-ink/45">NONAKTIF</span>
+                            <span class="rounded-full bg-paper px-2.5 py-0.5 text-[10px] font-semibold text-ink/45">DRAFT</span>
                         @endif
                         <a href="{{ route('office.pages.edit', $page) }}" class="text-sm font-medium text-link underline decoration-link/35 underline-offset-4">Edit</a>
                         <button type="button" onclick="document.getElementById('cms-del-{{ $page->id }}').showModal()"

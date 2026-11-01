@@ -13,17 +13,17 @@ class StoreSeeder extends Seeder
             [
                 'name' => 'Official Store',
                 'min_belanja_rmb' => 100,
-                'ongkir_lokal_cn_percent' => 7,
+                'ongkir_rmb' => 7,
             ],
             [
                 'name' => 'Fanmade Studio',
                 'min_belanja_rmb' => 0,
-                'ongkir_lokal_cn_percent' => 0,
+                'ongkir_rmb' => 0,
             ],
             [
                 'name' => 'Toko Baju Collab',
                 'min_belanja_rmb' => 150,
-                'ongkir_lokal_cn_percent' => 10,
+                'ongkir_rmb' => 10,
             ],
         ];
 

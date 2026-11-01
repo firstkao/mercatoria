@@ -15,6 +15,7 @@ use App\Http\Controllers\Admin\OrderStatusController;
 use App\Http\Controllers\Admin\PageController as AdminPageController;
 use App\Http\Controllers\Admin\PaymentController as AdminPaymentController;
 use App\Http\Controllers\Admin\PaymentMethodController as AdminPaymentMethodController;
+use App\Http\Controllers\Admin\PreorderPageController as AdminPreorderPageController;
 use App\Http\Controllers\Admin\ProductController as AdminProductController;
 use App\Http\Controllers\Admin\RefundController as AdminRefundController;
 use App\Http\Controllers\Admin\ReportController as AdminReportController;
@@ -40,6 +41,7 @@ use App\Http\Controllers\Frontend\OrderController;
 use App\Http\Controllers\Frontend\PageController;
 use App\Http\Controllers\Frontend\ProductController;
 use App\Http\Controllers\Frontend\ProfileController;
+use App\Http\Controllers\Frontend\PublicSlugController;
 use App\Http\Controllers\Frontend\SearchController;
 use App\Http\Controllers\Frontend\ShareController;
 use App\Http\Controllers\ProtectedImageController;
@@ -260,7 +262,7 @@ Route::middleware(['auth', 'admin'])->prefix('office')->name('office.')->group(f
     Route::get('/settings', [AdminSettingsController::class, 'index'])->name('settings.index');
     Route::post('/settings', [AdminSettingsController::class, 'update'])->name('settings.update');
     Route::post('/settings/test-email', [AdminSettingsController::class, 'testEmail'])
-    	->name('settings.test-email');
+        ->name('settings.test-email');
     Route::get('/seo', [AdminSettingsController::class, 'seo'])->name('seo.index');
     Route::post('/seo', [AdminSettingsController::class, 'updateSeo'])->name('seo.update');
 
@@ -271,6 +273,13 @@ Route::middleware(['auth', 'admin'])->prefix('office')->name('office.')->group(f
     Route::get('/pages/{page}/edit', [AdminPageController::class, 'edit'])->name('pages.edit');
     Route::put('/pages/{page}', [AdminPageController::class, 'update'])->name('pages.update');
     Route::delete('/pages/{page}', [AdminPageController::class, 'destroy'])->name('pages.destroy');
+
+    // ── Preorder Builder ──
+    Route::get('/preorder', [AdminPreorderPageController::class, 'index'])->name('preorder.index');
+    Route::get('/preorder/create', [AdminPreorderPageController::class, 'create'])->name('preorder.create');
+    Route::post('/preorder', [AdminPreorderPageController::class, 'store'])->name('preorder.store');
+    Route::get('/preorder/{preorderPage}/edit', [AdminPreorderPageController::class, 'edit'])->name('preorder.edit');
+    Route::put('/preorder/{preorderPage}', [AdminPreorderPageController::class, 'update'])->name('preorder.update');
 
     // ── Hero Slides ──
     Route::get('/hero-slides', [AdminHeroSlideController::class, 'index'])->name('hero-slides.index');
@@ -370,6 +379,6 @@ Route::middleware('auth')->group(function () {
     Route::get('/{game:slug}/{product:slug}', [ProductController::class, 'show'])
         ->name('product.show');
 
-    Route::get('/{game:slug}', [CatalogController::class, 'game'])
-        ->name('catalog.game');
 });
+
+Route::get('/{slug}', [PublicSlugController::class, 'show'])->name('catalog.game');

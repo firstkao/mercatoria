@@ -2,8 +2,10 @@
 
 use App\Models\Product;
 use App\Models\ProductVariant;
+use App\Models\Setting;
 use App\Models\Store;
 use App\Services\Order\ShippingCalculatorService;
+use Illuminate\Support\Facades\Cache;
 
 function shippingService(): ShippingCalculatorService
 {
@@ -157,4 +159,22 @@ test('varian tanpa harga dan berat fallback ke produk', function () {
     expect($result['price_rmb'])->toEqual(58.0)
         ->and($result['weight_gram'])->toEqual(50)
         ->and($result['base_price_bersih'])->toEqual(215000.0);
+});
+
+test('checkout menggunakan setting dp dan fee qris yang aktif', function () {
+    Setting::create(['key' => 'dp_minimum_percent', 'value' => '60', 'type' => 'int', 'group' => 'pricing']);
+    Setting::create(['key' => 'qris_threshold', 'value' => '100000', 'type' => 'int', 'group' => 'pricing']);
+    Setting::create(['key' => 'fee_qris_percent', 'value' => '0.03', 'type' => 'string', 'group' => 'pricing']);
+    Cache::forget('app_settings_all');
+
+    $result = shippingService()->calculateCheckoutTotal(
+        [['final_price_bersih' => 200000, 'qty' => 1]],
+        scheme: 'dp',
+        platform: 'shopee',
+        method: 'qris',
+    );
+
+    expect($result['fee_qris'])->toEqual(60.0)
+        ->and($result['tagihan_web'])->toEqual(120060.0)
+        ->and($result['estimasi_co_marketplace'])->toEqual(100000.0);
 });

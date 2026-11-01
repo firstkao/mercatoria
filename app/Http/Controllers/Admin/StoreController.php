@@ -3,11 +3,11 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\StoreFormRequest;
 use App\Models\AdminLog;
 use App\Models\Store;
 use App\Services\Product\StoreService;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
@@ -22,14 +22,9 @@ class StoreController extends Controller
         ]);
     }
 
-    public function store(Request $request): RedirectResponse
+    public function store(StoreFormRequest $request): RedirectResponse
     {
-        $data = $request->validate([
-            'name' => ['required', 'string', 'max:100'],
-            'min_belanja_rmb' => ['required', 'numeric', 'min:0'],
-            // [FIX #1] Rename — sesuai migration & StoreService.
-            'ongkir_lokal_cn_percent' => ['required', 'numeric', 'min:0', 'max:100'],
-        ]);
+        $data = $request->validated();
 
         $store = $this->stores->create($data);
         AdminLog::record($request->user(), 'create', 'Store', $store->id, null, $data, 'Tambah store');
@@ -37,23 +32,18 @@ class StoreController extends Controller
         return redirect()->route('office.stores.index')->with('status', 'Store dibuat.');
     }
 
-    public function update(Request $request, Store $store): RedirectResponse
+    public function update(StoreFormRequest $request, Store $store): RedirectResponse
     {
-        $data = $request->validate([
-            'name' => ['required', 'string', 'max:100'],
-            'min_belanja_rmb' => ['required', 'numeric', 'min:0'],
-            // [FIX #1] Rename.
-            'ongkir_lokal_cn_percent' => ['required', 'numeric', 'min:0', 'max:100'],
-        ]);
+        $data = $request->validated();
 
-        [$old, $new] = AdminLog::diff($store, ['name', 'min_belanja_rmb', 'ongkir_lokal_cn_percent'], $data);
+        [$old, $new] = AdminLog::diff($store, ['name', 'min_belanja_rmb', 'ongkir_rmb'], $data);
         $this->stores->update($store, $data);
         AdminLog::record($request->user(), 'update', 'Store', $store->id, $old, $new, 'Ubah store');
 
         return redirect()->route('office.stores.index')->with('status', 'Store diperbarui.');
     }
 
-    public function destroy(Request $request, Store $store): RedirectResponse
+    public function destroy(StoreFormRequest $request, Store $store): RedirectResponse
     {
         $usage = $this->stores->getUsageCount($store);
         AdminLog::record($request->user(), 'delete', 'Store', $store->id, $store->only(['name']), null, "Hapus store (produk: {$usage['products']}, game: {$usage['games']})");
@@ -65,16 +55,9 @@ class StoreController extends Controller
     /**
      * Bulk store: item dengan id = update, tanpa id = create (validasi per item).
      */
-    public function bulk(Request $request): RedirectResponse
+    public function bulk(StoreFormRequest $request): RedirectResponse
     {
-        $data = $request->validate([
-            'stores' => ['required', 'array', 'min:1'],
-            'stores.*.id' => ['nullable', 'integer', 'exists:stores,id'],
-            'stores.*.name' => ['required', 'string', 'max:100'],
-            'stores.*.min_belanja_rmb' => ['required', 'numeric', 'min:0'],
-            // [FIX #1] Rename.
-            'stores.*.ongkir_lokal_cn_percent' => ['required', 'numeric', 'min:0', 'max:100'],
-        ]);
+        $data = $request->validated();
 
         $diperbarui = 0;
         $dibuat = 0;
@@ -82,7 +65,7 @@ class StoreController extends Controller
         foreach ($data['stores'] as $item) {
             if (! empty($item['id'])) {
                 $store = Store::findOrFail($item['id']);
-                [$old, $new] = AdminLog::diff($store, ['name', 'min_belanja_rmb', 'ongkir_lokal_cn_percent'], $item);
+                [$old, $new] = AdminLog::diff($store, ['name', 'min_belanja_rmb', 'ongkir_rmb'], $item);
                 $this->stores->update($store, $item);
                 AdminLog::record($request->user(), 'update', 'Store', $store->id, $old, $new, 'Bulk ubah store');
                 $diperbarui++;
@@ -100,12 +83,9 @@ class StoreController extends Controller
     /**
      * Bulk hapus store — ditolak bila ada store yang masih punya produk/game.
      */
-    public function bulkDelete(Request $request): RedirectResponse
+    public function bulkDelete(StoreFormRequest $request): RedirectResponse
     {
-        $data = $request->validate([
-            'ids' => ['required', 'array', 'min:1'],
-            'ids.*' => ['integer', 'exists:stores,id'],
-        ]);
+        $data = $request->validated();
 
         $stores = Store::withCount(['products', 'games'])->whereIn('id', $data['ids'])->get();
         $terpakai = $stores->filter(fn (Store $store) => $store->products_count > 0 || $store->games_count > 0);

@@ -14,13 +14,6 @@ class Page extends Model
         'slug',
         'content',
         'meta_description',
-        'is_active',
+        'status',
     ];
-
-    protected function casts(): array
-    {
-        return [
-            'is_active' => 'boolean',
-        ];
-    }
 }

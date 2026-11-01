@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\ProductFormRequest;
 use App\Models\AdminLog;
 use App\Models\Developer;
 use App\Models\Game;
@@ -33,48 +34,48 @@ class ProductController extends Controller
     // ──────────────────────────────────────
 
     public function index(): View
-{
-    $query = Product::with(['game', 'developer', 'store', 'merchCategory']);
+    {
+        $query = Product::with(['game', 'developer', 'store', 'merchCategory']);
 
-    if (request()->filled('game_id')) {
-        $query->where('game_id', request('game_id'));
-    }
-    if (request()->filled('developer_id')) {
-        $query->where('developer_id', request('developer_id'));
-    }
-    if (request()->filled('q')) {
-        $q = request('q');
-        $query->where(fn ($s) => $s->where('name', 'like', "%{$q}%")->orWhere('sku', 'like', "%{$q}%"));
-    }
+        if (request()->filled('game_id')) {
+            $query->where('game_id', request('game_id'));
+        }
+        if (request()->filled('developer_id')) {
+            $query->where('developer_id', request('developer_id'));
+        }
+        if (request()->filled('q')) {
+            $q = request('q');
+            $query->where(fn ($s) => $s->where('name', 'like', "%{$q}%")->orWhere('sku', 'like', "%{$q}%"));
+        }
 
-    return view('admin.products.index', [
-        'products' => $query->orderByDesc('id')->paginate(30),
-        'games' => Game::orderBy('name')->get(),
-        'developers' => Developer::orderBy('name')->get(),
-    ]);
-}
+        return view('admin.products.index', [
+            'products' => $query->orderByDesc('id')->paginate(30),
+            'games' => Game::orderBy('name')->get(),
+            'developers' => Developer::orderBy('name')->get(),
+        ]);
+    }
 
     public function create(): View
     {
         return view('admin.products.form', [
-            'product'     => new Product,
-            'games'       => Game::orderBy('name')->get(),
-            'stores'      => Store::orderBy('name')->get(),
-            'categories'  => MerchCategory::orderBy('priority')->get(),
-            'tags'        => Tag::orderBy('name')->get(),
-            'developers'  => Developer::orderBy('name')->get(),
+            'product' => new Product,
+            'games' => Game::orderBy('name')->get(),
+            'stores' => Store::orderBy('name')->get(),
+            'categories' => MerchCategory::orderBy('priority')->get(),
+            'tags' => Tag::orderBy('name')->get(),
+            'developers' => Developer::orderBy('name')->get(),
         ]);
     }
 
     public function edit(Product $product): View
     {
         return view('admin.products.form', [
-            'product'     => $product->load('variants', 'tags', 'developer'),
-            'games'       => Game::orderBy('name')->get(),
-            'stores'      => Store::orderBy('name')->get(),
-            'categories'  => MerchCategory::orderBy('priority')->get(),
-            'tags'        => Tag::orderBy('name')->get(),
-            'developers'  => Developer::orderBy('name')->get(),
+            'product' => $product->load('variants', 'tags', 'developer'),
+            'games' => Game::orderBy('name')->get(),
+            'stores' => Store::orderBy('name')->get(),
+            'categories' => MerchCategory::orderBy('priority')->get(),
+            'tags' => Tag::orderBy('name')->get(),
+            'developers' => Developer::orderBy('name')->get(),
         ]);
     }
 
@@ -82,103 +83,70 @@ class ProductController extends Controller
     // STORE / UPDATE / DESTROY
     // ──────────────────────────────────────
 
-    public function store(Request $request): RedirectResponse
-{
-    $data = $this->validateProduct($request);
-
-    // [FIX #6] Validasi inline variants SEBELUM create product
-    $this->validateInlineVariants($request);
-
-    $data['slug'] = $data['slug'] ?: Str::slug($data['name']).'-'.Str::random(4);
-    $data = $this->processUploads($request, $data, null);
-
-    // Auto type=variant kalau ada inline variants
-    $variantRows = collect($request->input('variants', []))
-        ->filter(fn ($v) => filled(data_get($v, 'name')) || filled(data_get($v, 'sku')));
-    if ($variantRows->isNotEmpty()) {
-        $data['type'] = 'variant';
-    }
-
-    $product = Product::create($data + ['sold_count' => 0]);
-
-    if (! $product->merch_category_id) {
-        $product->update(['merch_category_id' => MerchCategory::matchFor($product->name, $product->slug)?->id]);
-    }
-
-    if ($request->filled('tags')) {
-        $product->tags()->sync($request->input('tags'));
-    }
-
-    // [FIX #6] Create inline variants
-    $this->processInlineVariants($request, $product);
-
-    AdminLog::record($request->user(), 'create', 'Product', $product->id, null, $product->only(array_keys($data)), 'Tambah produk');
-
-    return redirect()->route('office.products.edit', $product)->with('status', 'Produk dibuat.');
-}
-
-/**
- * [FIX #6] Validasi inline variants sebelum product dibuat.
- */
-private function validateInlineVariants(Request $request): void
-{
-    $rows = collect($request->input('variants', []));
-
-    foreach ($rows as $i => $v) {
-        $name = data_get($v, 'name');
-        $sku  = data_get($v, 'sku');
-
-        // Skip baris kosong
-        if (blank($name) && blank($sku)) {
-            continue;
-        }
-
-        $validator = validator($v, [
-            'name'          => ['required', 'string', 'max:150'],
-            'sku'           => ['required', 'string', 'max:64', 'unique:product_variants,sku'],
-            'price_rmb'     => ['nullable', 'numeric', 'min:0'],
-            'weight_gram'   => ['nullable', 'integer', 'min:0'],
-            'availability'  => ['nullable', 'in:tersedia,kosong'],
-        ]);
-
-        if ($validator->fails()) {
-            $messages = [];
-            foreach ($validator->errors()->toArray() as $field => $errs) {
-                foreach ($errs as $msg) {
-                    $messages[] = "Varian #".($i+1).": {$msg}";
-                }
-            }
-            throw \Illuminate\Validation\ValidationException::withMessages(['variants' => $messages]);
-        }
-    }
-}
-
-/**
- * [FIX #6] Simpan inline variants setelah product dibuat.
- */
-private function processInlineVariants(Request $request, Product $product): void
-{
-    $rows = collect($request->input('variants', []));
-
-    foreach ($rows as $i => $v) {
-        if (blank(data_get($v, 'name')) && blank(data_get($v, 'sku'))) {
-            continue;
-        }
-
-        $v['availability'] = $v['availability'] ?? 'tersedia';
-
-        if ($request->hasFile("variants.{$i}.image")) {
-            $v['image_path'] = $this->storeImage($request->file("variants.{$i}.image"), 'var', null);
-        }
-        unset($v['image']);
-
-        $product->variants()->create($v);
-    }
-}
-
-    public function update(Request $request, Product $product): RedirectResponse
+    public function store(ProductFormRequest $request): RedirectResponse
     {
-        $data = $this->validateProduct($request, $product);
+        $data = $request->validated();
+        unset($data['variants'], $data['tags']);
+        $data['is_active'] = $request->boolean('is_active');
+
+        $data['slug'] = blank($data['slug'] ?? null)
+            ? Str::slug($data['name']).'-'.Str::random(4)
+            : $data['slug'];
+        $data = $this->processUploads($request, $data, null);
+
+        // Auto type=variant kalau ada inline variants
+        $variantRows = collect($request->input('variants', []))
+            ->filter(fn ($v) => filled(data_get($v, 'name')) || filled(data_get($v, 'sku')));
+        if ($variantRows->isNotEmpty()) {
+            $data['type'] = 'variant';
+        }
+
+        $product = Product::create($data + ['sold_count' => 0]);
+
+        if (! $product->merch_category_id) {
+            $product->update(['merch_category_id' => MerchCategory::matchFor($product->name, $product->slug)?->id]);
+        }
+
+        if ($request->filled('tags')) {
+            $product->tags()->sync($request->input('tags'));
+        }
+
+        // [FIX #6] Create inline variants
+        $this->processInlineVariants($request, $product);
+
+        AdminLog::record($request->user(), 'create', 'Product', $product->id, null, $product->only(array_keys($data)), 'Tambah produk');
+
+        return redirect()->route('office.products.edit', $product)->with('status', 'Produk dibuat.');
+    }
+
+    /**
+     * [FIX #6] Simpan inline variants setelah product dibuat.
+     */
+    private function processInlineVariants(Request $request, Product $product): void
+    {
+        $rows = collect($request->input('variants', []));
+
+        foreach ($rows as $i => $v) {
+            if (blank(data_get($v, 'name')) && blank(data_get($v, 'sku'))) {
+                continue;
+            }
+
+            $v['availability'] = $v['availability'] ?? 'tersedia';
+
+            if ($request->hasFile("variants.{$i}.image")) {
+                $v['image_path'] = $this->storeImage($request->file("variants.{$i}.image"), 'var', null);
+            }
+            unset($v['image']);
+
+            $product->variants()->create($v);
+        }
+    }
+
+    public function update(ProductFormRequest $request, Product $product): RedirectResponse
+    {
+        $data = $request->validated();
+        unset($data['variants'], $data['tags']);
+        $data['is_active'] = $request->boolean('is_active');
         $data = $this->processUploads($request, $data, $product);
         [$old, $new] = AdminLog::diff($product, array_keys($data), $data);
 
@@ -280,13 +248,9 @@ private function processInlineVariants(Request $request, Product $product): void
     // BULK OPERATIONS
     // ──────────────────────────────────────
 
-    public function bulk(Request $request): RedirectResponse
+    public function bulk(ProductFormRequest $request): RedirectResponse
     {
-        $data = $request->validate([
-            'action' => ['required', 'in:aktifkan,nonaktifkan,hapus'],
-            'ids' => ['required', 'array', 'min:1'],
-            'ids.*' => ['integer', 'exists:products,id'],
-        ]);
+        $data = $request->validated();
 
         $products = Product::whereIn('id', $data['ids'])->get();
 
@@ -309,13 +273,9 @@ private function processInlineVariants(Request $request, Product $product): void
      *
      * @return JsonResponse|RedirectResponse
      */
-    public function bulkWeight(Request $request, Product $product)
+    public function bulkWeight(ProductFormRequest $request, Product $product)
     {
-        $data = $request->validate([
-            'weight_gram' => ['required', 'integer', 'min:0'],
-            'ids' => ['required', 'array', 'min:1'],
-            'ids.*' => ['integer', 'exists:product_variants,id'],
-        ]);
+        $data = $request->validated();
 
         $updated = ProductVariant::whereIn('id', $data['ids'])
             ->where('product_id', $product->id)
@@ -338,17 +298,9 @@ private function processInlineVariants(Request $request, Product $product): void
     // VARIANT CRUD
     // ──────────────────────────────────────
 
-    public function storeVariant(Request $request, Product $product): RedirectResponse
+    public function storeVariant(ProductFormRequest $request, Product $product): RedirectResponse
     {
-        $data = $request->validate([
-            'name' => ['required', 'string', 'max:150'],
-            'sku' => ['required', 'string', 'max:64', 'unique:product_variants,sku'],
-            'price_rmb' => ['nullable', 'numeric', 'min:0'],
-            'weight_gram' => ['nullable', 'integer', 'min:0'],
-            'availability' => ['required', 'in:tersedia,kosong'],
-            // PRD 13.6: foto varian 1 per varian, max 6 MB.
-            'image' => ['nullable', 'file', 'mimes:jpg,jpeg,png,webp', 'max:6144'],
-        ]);
+        $data = $request->validated();
 
         if ($request->hasFile('image')) {
             $data['image_path'] = $this->storeImage($request->file('image'), 'var', null);
@@ -362,18 +314,11 @@ private function processInlineVariants(Request $request, Product $product): void
         return redirect()->route('office.products.edit', $product)->with('status', 'Varian dibuat.');
     }
 
-    public function updateVariant(Request $request, Product $product, ProductVariant $variant): RedirectResponse
+    public function updateVariant(ProductFormRequest $request, Product $product, ProductVariant $variant): RedirectResponse
     {
         abort_unless($variant->product_id === $product->id, 404);
 
-        $data = $request->validate([
-            'name' => ['required', 'string', 'max:150'],
-            'sku' => ['required', 'string', 'max:64', 'unique:product_variants,sku,'.$variant->id],
-            'price_rmb' => ['nullable', 'numeric', 'min:0'],
-            'weight_gram' => ['nullable', 'integer', 'min:0'],
-            'availability' => ['required', 'in:tersedia,kosong'],
-            'image' => ['nullable', 'file', 'mimes:jpg,jpeg,png,webp', 'max:6144'],
-        ]);
+        $data = $request->validated();
 
         $old = $variant->only(['name', 'sku', 'price_rmb', 'weight_gram', 'availability']);
 
@@ -409,37 +354,6 @@ private function processInlineVariants(Request $request, Product $product): void
     // ──────────────────────────────────────
     // PRIVATE HELPERS
     // ──────────────────────────────────────
-
-    /**
-     * @return array<string, mixed>
-     */
-    private function validateProduct(Request $request, ?Product $product = null): array
-{
-    $data = $request->validate([
-        'game_id' => ['required', 'exists:games,id'],
-        'developer_id' => ['required', 'exists:developers,id'],  // ← REQUIRED
-        'store_id' => ['required', 'exists:stores,id'],          // ← REQUIRED
-        'merch_category_id' => ['nullable', 'exists:merch_categories,id'],
-        'name' => ['required', 'string', 'max:150'],
-        'sku' => ['required', 'string', 'max:64', $product ? 'unique:products,sku,'.$product->id : 'unique:products,sku'],
-        'slug' => ['nullable', 'string', 'max:170', $product ? 'unique:products,slug,'.$product->id : 'unique:products,slug'],
-        'price_rmb' => ['required', 'numeric', 'min:0'],
-        'weight_gram' => ['nullable', 'integer', 'min:0'],
-        'type' => ['required', 'in:single,variant'],
-        'discount_amount_rmb' => ['nullable', 'numeric', 'min:0'],
-        'discount_start' => ['nullable', 'date'],
-        'discount_end' => ['nullable', 'date'],
-        'availability' => ['required', 'in:tersedia,kosong'],   // ← REQUIRED
-        'is_active' => ['nullable', 'boolean'],
-        'image' => ['nullable', 'file', 'mimes:jpg,jpeg,png,webp', 'max:6144'],
-        'description_image' => ['nullable', 'file', 'mimes:jpg,jpeg,png,webp', 'max:6144'],
-    ]);
-
-    $data['is_active'] = $request->boolean('is_active');
-    $data['slug'] = $data['slug'] ?? '';
-
-    return $data;
-}
 
     /**
      * PRD 13.6: upload gambar → watermark + master asli; handle remove flag.

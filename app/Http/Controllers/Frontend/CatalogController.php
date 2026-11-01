@@ -89,8 +89,8 @@ class CatalogController extends Controller
             'games' => Game::where('is_active', true)->orderBy('name')->get(['id', 'name', 'slug']),
             'categories' => MerchCategory::orderBy('priority')->get(),
             'bestOffers' => Product::where('is_active', true)
-                ->whereNotNull('discount_amount_rmb') // [FIX #1] rename dari discount_amount
-                ->orderByDesc('discount_amount_rmb')   // [FIX #1] rename dari discount_amount
+                ->whereNotNull('discount_amount')
+                ->orderByDesc('discount_amount')
                 ->limit((int) setting('best_offers_count', 5))
                 ->with(['game', 'tags'])
                 ->get(),

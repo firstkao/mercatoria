@@ -27,12 +27,14 @@ test('admin dapat kelola metode bayar', function () {
         'type' => 'bank_transfer',
         'fee' => 2500,
         'is_active' => 0,
-    ])->assertRedirect();
+    ])->assertOk()->assertJson(['message' => 'Metode bayar diperbarui.']);
 
     expect($method->fresh()->name)->toBe('DANA Indonesia')
         ->and($method->fresh()->is_active)->toBeFalse();
 
-    $this->actingAs($admin)->delete("/office/payment-methods/{$method->id}")->assertRedirect();
+    $this->actingAs($admin)->delete("/office/payment-methods/{$method->id}")
+        ->assertOk()
+        ->assertJson(['message' => 'Metode bayar dihapus.']);
 
     expect(PaymentMethod::whereKey($method->id)->exists())->toBeFalse();
 });

@@ -28,22 +28,31 @@
             @csrf @method('PUT')
             <div>
                 <label class="block font-mono text-[10px] font-medium uppercase tracking-[0.14em] text-ink/70">Judul Halaman <span class="text-danger">*</span></label>
-                <input type="text" name="title" required maxlength="150" value="{{ $page->title }}"
+                <input type="text" name="title" required maxlength="150" value="{{ old('title', $page->title) }}"
+                       class="mt-2 w-full rounded-lg border border-rule px-4 py-3 text-sm text-ink">
+            </div>
+            <div>
+                <label class="block font-mono text-[10px] font-medium uppercase tracking-[0.14em] text-ink/70">Slug <span class="text-danger">*</span></label>
+                <input type="text" name="slug" required maxlength="170" value="{{ old('slug', $page->slug) }}"
                        class="mt-2 w-full rounded-lg border border-rule px-4 py-3 text-sm text-ink">
             </div>
             <div>
                 <label class="block font-mono text-[10px] font-medium uppercase tracking-[0.14em] text-ink/70">Meta Deskripsi</label>
                 <textarea name="meta_description" rows="2" maxlength="300" placeholder="Deskripsi untuk SEO (maks 300 karakter)"
-                          class="mt-2 w-full rounded-lg border border-rule px-4 py-3 text-sm text-ink">{{ $page->meta_description }}</textarea>
+                          class="mt-2 w-full rounded-lg border border-rule px-4 py-3 text-sm text-ink">{{ old('meta_description', $page->meta_description) }}</textarea>
             </div>
             <div>
                 <label class="block font-mono text-[10px] font-medium uppercase tracking-[0.14em] text-ink/70">Konten</label>
-                <input type="hidden" name="content" id="content-field">
+                <input type="hidden" name="content" id="content-field" value="{{ old('content', $page->content) }}">
                 <div id="editor" class="mt-2"></div>
             </div>
-            <label class="flex items-center gap-2 text-sm text-ink/80">
-                <input type="checkbox" name="is_active" value="1" @checked($page->is_active) class="rounded border-rule"> Aktif (tampil di publik)
-            </label>
+            <div>
+                <label class="block font-mono text-[10px] font-medium uppercase tracking-[0.14em] text-ink/70">Status</label>
+                <select name="status" required class="mt-2 rounded-lg border border-rule px-3 py-2 text-sm text-ink">
+                    <option value="draft" @selected(old('status', $page->status) === 'draft')>Draft</option>
+                    <option value="publish" @selected(old('status', $page->status) === 'publish')>Publish</option>
+                </select>
+            </div>
             <div class="flex items-center gap-3 pt-2">
                 <button type="submit" class="rounded-lg bg-black px-8 py-3 text-sm font-semibold tracking-[0.12em] text-white transition-colors hover:bg-ink">SIMPAN PERUBAHAN</button>
                 <button type="button" onclick="previewContent()" class="rounded-lg border border-rule px-8 py-3 text-sm font-semibold text-ink transition-colors hover:border-ink">Preview</button>
@@ -78,7 +87,7 @@
                     ]
                 }
             });
-            window._quill.root.innerHTML = @js($page->content ?? '');
+            window._quill.root.innerHTML = document.getElementById('content-field').value;
             document.getElementById('page-form').addEventListener('submit', function () {
                 document.getElementById('content-field').value = window._quill.root.innerHTML;
             });

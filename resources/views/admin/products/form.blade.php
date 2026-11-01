@@ -5,9 +5,9 @@
 @section('content')
 @php
     $cfg = [
-        'rate_rmb'       => (float) setting('rate_rmb', 3000),
-        'ongkir_cn_btm'  => (float) setting('ongkir_cn_batam_per_kg', 25000),
-        'ongkir_btm_jkt' => (float) setting('ongkir_batam_jakarta_per_kg', 60000),
+        'rate_rmb'       => (float) setting('rate_rmb_idr', 3000),
+        'ongkir_cn_btm'  => (float) setting('ongkir_cn_btm_per_kg', 25000),
+        'ongkir_btm_jkt' => (float) setting('ongkir_btm_jkt_per_kg', 60000),
         'profit_percent' => (float) setting('profit_percent', 11),
         'default_weight' => (float) setting('default_weight_gram', 500),
     ];
@@ -319,9 +319,9 @@
                                 </select>
                             </div>
                             <div>
-                                <label class="block text-sm font-medium text-ink">Developer <span class="text-danger">*</span></label>
-                                <select name="developer_id" id="input-developer-id" required class="mt-1.5 w-full rounded-lg border border-rule px-3 py-2.5 text-sm text-ink">
-                                    <option value="">— pilih developer —</option>
+                                <label class="block text-sm font-medium text-ink">Developer <span class="text-ink/45">(opsional)</span></label>
+                                <select name="developer_id" id="input-developer-id" class="mt-1.5 w-full rounded-lg border border-rule px-3 py-2.5 text-sm text-ink">
+                                    <option value="">— tanpa developer —</option>
                                     @foreach ($developerList as $dev)
                                         <option value="{{ $dev->id }}" @selected(old('developer_id', $product->developer_id) == $dev->id)>{{ $dev->name }}</option>
                                     @endforeach
@@ -602,14 +602,14 @@
 
                 {{-- STORE [5] — required --}}
                 <div class="border-b border-rule p-5">
-                    <p class="font-mono text-[11px] font-medium uppercase tracking-[0.16em] text-ink">Store <span class="text-danger">*</span></p>
+                    <p class="font-mono text-[11px] font-medium uppercase tracking-[0.16em] text-ink">Store Override <span class="text-ink/45">(opsional)</span></p>
                     <div class="mt-2">
-                        <select name="store_id" id="sidebar-store-id" required class="w-full rounded-lg border border-rule px-3 py-2 text-sm text-ink">
-                            <option value="">— pilih store —</option>
+                        <select name="store_id" id="sidebar-store-id" class="w-full rounded-lg border border-rule px-3 py-2 text-sm text-ink">
+                            <option value="">— gunakan default game —</option>
                             @foreach ($stores as $store)
                                 <option value="{{ $store->id }}" @selected(old('store_id', $product->store_id) == $store->id)
                                         data-min="{{ $store->min_belanja_rmb ?? 0 }}"
-                                        data-ongkir="{{ $store->ongkir_lokal_cn_percent ?? 7 }}">{{ $store->name }}</option>
+                                        data-ongkir="{{ $store->ongkir_rmb ?? 0 }}">{{ $store->name }}</option>
                             @endforeach
                         </select>
                     </div>
@@ -694,9 +694,9 @@
                     <p class="font-mono text-[11px] font-medium uppercase tracking-[0.16em] text-ink">Diskon Produk</p>
                     <div class="mt-2 space-y-3">
                         <div>
-                            <label class="block text-xs text-ink/70">Nominal Diskon (RMB)</label>
-                            <input type="number" step="0.01" name="discount_amount_rmb"
-                                   value="{{ old('discount_amount_rmb', $product->discount_amount_rmb) }}"
+                            <label class="block text-xs text-ink/70">Nominal Diskon (Rp)</label>
+                            <input type="number" step="0.01" min="0" name="discount_amount"
+                                   value="{{ old('discount_amount', $product->discount_amount) }}"
                                    class="mt-1 w-full rounded-lg border border-rule px-3 py-2 text-sm text-ink">
                         </div>
                         <div>
@@ -714,7 +714,7 @@
                     </div>
                     <p class="mt-2 flex items-start gap-1.5 text-xs text-ink/55">
                         <i class="bi bi-info-circle mt-0.5" style="font-size:0.75rem;"></i>
-                        Diskon wajib &le; Harga RMB.
+                        Diskon wajib &le; harga jual produk dalam Rupiah.
                     </p>
                 </div>
 

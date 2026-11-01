@@ -21,7 +21,7 @@ class PageController extends Controller
 
         // Halaman nonaktif / tidak ada → 404 untuk CMS yang sudah dibuat;
         // slug tanpa entri CMS sama sekali → placeholder "Menyusul".
-        if ($page && ! $page->is_active) {
+        if ($page && $page->status !== 'publish') {
             abort(404);
         }
 

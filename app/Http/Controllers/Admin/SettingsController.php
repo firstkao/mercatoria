@@ -8,7 +8,6 @@ use App\Models\Setting;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Validation\ValidationException;
@@ -33,7 +32,7 @@ class SettingsController extends Controller
 
         // [FIX] Checkbox HTML: unchecked = tidak terkirim = harus diset '0'.
         $checkboxKeys = [
-            'customer_emails_paused', 'notif_admin_bukti_bayar',
+            'pause_customer_emails', 'notif_admin_bukti_bayar',
             'anti_download_enabled', 'auto_watermark_enabled', 'heavy_watermark',
         ];
         foreach ($checkboxKeys as $ck) {
@@ -60,14 +59,16 @@ class SettingsController extends Controller
 
         // Simpan semua settings (auto-create jika belum ada)
         foreach ($input as $key => $value) {
-            if (! is_scalar($value)) continue;
+            if (! is_scalar($value)) {
+                continue;
+            }
 
             $setting = Setting::firstOrCreate(
                 ['key' => $key],
                 [
-                    'value'       => (string) $value,
-                    'type'        => $this->guessType($key),
-                    'group'       => $this->guessGroup($key),
+                    'value' => (string) $value,
+                    'type' => $this->guessType($key),
+                    'group' => $this->guessGroup($key),
                     'description' => $this->guessDescription($key),
                 ]
             );
@@ -122,8 +123,8 @@ class SettingsController extends Controller
     public function marketing(): View
     {
         return view('admin.marketing.index', [
-            'promo_bar_text'   => (string) setting('promo_bar_text', ''),
-            'promo_bar_link'   => (string) setting('promo_bar_link', ''),
+            'promo_bar_text' => (string) setting('promo_bar_text', ''),
+            'promo_bar_link' => (string) setting('promo_bar_link', ''),
             'promo_bar_active' => (string) setting('promo_bar_active', '1'),
         ]);
     }
@@ -131,8 +132,8 @@ class SettingsController extends Controller
     public function updateMarketing(Request $request): RedirectResponse
     {
         $data = $request->validate([
-            'promo_bar_text'   => ['nullable', 'string', 'max:500'],
-            'promo_bar_link'   => ['nullable', 'string', 'max:255'],
+            'promo_bar_text' => ['nullable', 'string', 'max:500'],
+            'promo_bar_link' => ['nullable', 'string', 'max:255'],
             'promo_bar_active' => ['nullable', 'boolean'],
         ]);
 
@@ -154,8 +155,8 @@ class SettingsController extends Controller
         try {
             Mail::raw(
                 "Ini adalah email test dari Mercatoria Admin Panel.\n\n".
-                "Waktu: ".now()->format('Y-m-d H:i:s')."\n\n".
-                "Jika Anda menerima email ini, konfigurasi SMTP sudah benar.",
+                'Waktu: '.now()->format('Y-m-d H:i:s')."\n\n".
+                'Jika Anda menerima email ini, konfigurasi SMTP sudah benar.',
                 function ($message) use ($adminEmail) {
                     $message->to($adminEmail)
                         ->subject('[Test] Mercatoria — Email Test');
@@ -195,10 +196,10 @@ class SettingsController extends Controller
     {
         $defaults = [
             // ── Harga & Pengiriman (DS 15.1) ──
-            ['key' => 'rate_rmb',                   'group' => 'pricing',  'type' => 'string', 'value' => '3000',      'description' => 'Rate RMB ke IDR'],
+            ['key' => 'rate_rmb_idr',               'group' => 'pricing',  'type' => 'string', 'value' => '3000',      'description' => 'Rate RMB ke IDR'],
             ['key' => 'profit_percent',              'group' => 'pricing',  'type' => 'string', 'value' => '11',        'description' => 'Profit persen'],
-            ['key' => 'ongkir_cn_batam_per_kg',      'group' => 'pricing',  'type' => 'string', 'value' => '25000',     'description' => 'Ongkir CN ke Batam per kg'],
-            ['key' => 'ongkir_batam_jakarta_per_kg', 'group' => 'pricing',  'type' => 'string', 'value' => '60000',     'description' => 'Ongkir Batam ke Jakarta per kg'],
+            ['key' => 'ongkir_cn_btm_per_kg',        'group' => 'pricing',  'type' => 'string', 'value' => '25000',     'description' => 'Ongkir CN ke Batam per kg'],
+            ['key' => 'ongkir_btm_jkt_per_kg',       'group' => 'pricing',  'type' => 'string', 'value' => '60000',     'description' => 'Ongkir Batam ke Jakarta per kg'],
             ['key' => 'default_weight_gram',         'group' => 'pricing',  'type' => 'string', 'value' => '0',         'description' => 'Default berat produk gram'],
             ['key' => 'fee_toco_fp',                 'group' => 'pricing',  'type' => 'string', 'value' => '1',         'description' => 'Fee Toco FP'],
             ['key' => 'fee_toco_dp',                 'group' => 'pricing',  'type' => 'string', 'value' => '0',         'description' => 'Fee Toco DP'],
@@ -209,7 +210,7 @@ class SettingsController extends Controller
             ['key' => 'dp_minimum_percent',          'group' => 'pricing',  'type' => 'string', 'value' => '50',        'description' => 'DP minimum persen'],
 
             // ── Email (DS 15.2) ──
-            ['key' => 'customer_emails_paused',      'group' => 'email',    'type' => 'bool',   'value' => '0',         'description' => 'Stop kirim email ke customer'],
+            ['key' => 'pause_customer_emails',       'group' => 'email',    'type' => 'bool',   'value' => '0',         'description' => 'Stop kirim email ke customer'],
             ['key' => 'email_stop_reason',           'group' => 'email',    'type' => 'string', 'value' => '',          'description' => 'Alasan stop email'],
             ['key' => 'email_security',              'group' => 'email',    'type' => 'string', 'value' => 'security@mercatoria.id',     'description' => 'Email keamanan'],
             ['key' => 'email_notification',          'group' => 'email',    'type' => 'string', 'value' => 'info@mercatoria.id',         'description' => 'Email notifikasi sistem'],
@@ -228,18 +229,18 @@ class SettingsController extends Controller
             ['key' => 'ga4_measurement_id',          'group' => 'seo',      'type' => 'string', 'value' => '',          'description' => 'Google Analytics 4 Measurement ID'],
 
             // ── Marketing ──
-            ['key' => 'promo_bar_text',              'group' => 'marketing','type' => 'string', 'value' => '',          'description' => 'Teks promo bar'],
-            ['key' => 'promo_bar_link',              'group' => 'marketing','type' => 'string', 'value' => '',          'description' => 'Link promo bar'],
-            ['key' => 'promo_bar_active',            'group' => 'marketing','type' => 'bool',   'value' => '1',         'description' => 'Status promo bar'],
+            ['key' => 'promo_bar_text',              'group' => 'marketing', 'type' => 'string', 'value' => '',          'description' => 'Teks promo bar'],
+            ['key' => 'promo_bar_link',              'group' => 'marketing', 'type' => 'string', 'value' => '',          'description' => 'Link promo bar'],
+            ['key' => 'promo_bar_active',            'group' => 'marketing', 'type' => 'bool',   'value' => '1',         'description' => 'Status promo bar'],
         ];
 
         foreach ($defaults as $d) {
             Setting::firstOrCreate(
                 ['key' => $d['key']],
                 [
-                    'value'       => $d['value'],
-                    'type'        => $d['type'],
-                    'group'       => $d['group'],
+                    'value' => $d['value'],
+                    'type' => $d['type'],
+                    'group' => $d['group'],
                     'description' => $d['description'],
                 ]
             );
@@ -264,15 +265,16 @@ class SettingsController extends Controller
 
         // Numeric umum (tanpa overlap dengan percentKeys).
         $numericKeys = [
-            'rate_rmb',
-            'ongkir_cn_batam_per_kg', 'ongkir_batam_jakarta_per_kg',
+            'rate_rmb_idr',
+            'ongkir_cn_btm_per_kg', 'ongkir_btm_jkt_per_kg',
             'default_weight_gram', 'fee_toco_fp', 'fee_toco_dp',
             'fee_shopee_fp',
             'qris_threshold',
+            'catalog_per_page',
         ];
 
         $boolKeys = [
-            'customer_emails_paused', 'notif_admin_bukti_bayar',
+            'pause_customer_emails', 'notif_admin_bukti_bayar',
             'anti_download_enabled', 'auto_watermark_enabled', 'heavy_watermark',
         ];
 
@@ -281,32 +283,25 @@ class SettingsController extends Controller
         foreach ($input as $key => $value) {
             $rules[$key] = match (true) {
                 // Bool fields
-                in_array($key, $boolKeys)
-                    => ['required', 'in:0,1'],
+                in_array($key, $boolKeys) => ['required', 'in:0,1'],
 
                 // Percentage fields (0-100) — dicek SEBELUM numeric umum
-                in_array($key, $percentKeys)
-                    => ['required', 'numeric', 'min:0', 'max:100'],
+                in_array($key, $percentKeys) => ['required', 'numeric', 'min:0', 'max:100'],
 
                 // Numeric / price fields (tanpa overlap)
-                in_array($key, $numericKeys)
-                    => ['required', 'numeric', 'min:0'],
+                in_array($key, $numericKeys) => ['required', 'numeric', 'min:0'],
 
                 // Email fields
-                in_array($key, $emailKeys)
-                    => ['nullable', 'email', 'max:255'],
+                in_array($key, $emailKeys) => ['nullable', 'email', 'max:255'],
 
                 // Watermark pattern
-                $key === 'watermark_pattern'
-                    => ['nullable', 'string', 'in:diagonal_tiled,center,bottom_right,corner_4'],
+                $key === 'watermark_pattern' => ['nullable', 'string', 'in:diagonal_tiled,center,bottom_right,corner_4'],
 
                 // Email stop reason (textarea)
-                $key === 'email_stop_reason'
-                    => ['nullable', 'string', 'max:1000'],
+                $key === 'email_stop_reason' => ['nullable', 'string', 'max:1000'],
 
                 // Watermark text
-                $key === 'watermark_text'
-                    => ['nullable', 'string', 'max:255'],
+                $key === 'watermark_text' => ['nullable', 'string', 'max:255'],
 
                 // Default (semua lainnya)
                 default => ['nullable', 'string', 'max:500'],
@@ -322,10 +317,12 @@ class SettingsController extends Controller
     private function guessType(string $key): string
     {
         if (in_array($key, [
-            'customer_emails_paused', 'notif_admin_bukti_bayar',
+            'pause_customer_emails', 'notif_admin_bukti_bayar',
             'anti_download_enabled', 'auto_watermark_enabled', 'heavy_watermark',
             'promo_bar_active',
-        ])) return 'bool';
+        ])) {
+            return 'bool';
+        }
 
         return 'string';
     }
@@ -339,14 +336,13 @@ class SettingsController extends Controller
             str_starts_with($key, 'rate_'), str_starts_with($key, 'profit_'),
             str_starts_with($key, 'ongkir_'), str_starts_with($key, 'default_weight'),
             str_starts_with($key, 'fee_'), str_starts_with($key, 'qris_'),
-            str_starts_with($key, 'dp_')     => 'pricing',
+            str_starts_with($key, 'dp_') => 'pricing',
 
             str_starts_with($key, 'email_'), str_starts_with($key, 'notif_'),
-            $key === 'customer_emails_paused' => 'email',
+            $key === 'pause_customer_emails' => 'email',
 
             str_starts_with($key, 'watermark_'), str_starts_with($key, 'anti_'),
-            str_starts_with($key, 'auto_watermark'), $key === 'heavy_watermark'
-                => 'security',
+            str_starts_with($key, 'auto_watermark'), $key === 'heavy_watermark' => 'security',
 
             str_starts_with($key, 'ga4_') => 'seo',
 
@@ -370,9 +366,9 @@ class SettingsController extends Controller
     private function saveSetting(Request $request, string $key, string $value, string $group = 'marketing'): void
     {
         $setting = Setting::firstOrCreate(['key' => $key], [
-            'value'       => $value,
-            'type'        => 'string',
-            'group'       => $group,
+            'value' => $value,
+            'type' => 'string',
+            'group' => $group,
             'description' => $this->guessDescription($key),
         ]);
 

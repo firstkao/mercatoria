@@ -33,8 +33,8 @@ class HomeController extends Controller
         // PRD 40.5 Penawaran Terbaik — produk diskon.
         $bestOffers = Product::where('is_active', true)
             // SESUDAH:
-	    ->whereNotNull('discount_amount_rmb')
-	    ->orderByDesc('discount_amount_rmb')
+            ->whereNotNull('discount_amount')
+            ->orderByDesc('discount_amount')
             ->limit((int) setting('best_offers_count', 5))
             ->with(['game', 'tags'])
             ->get();

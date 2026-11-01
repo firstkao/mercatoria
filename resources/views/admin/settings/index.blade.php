@@ -133,11 +133,11 @@
 
         <div class="mt-5 grid grid-cols-1 gap-5 md:grid-cols-2">
             <div>
-                <label class="block text-sm font-medium text-ink" for="setting-rate_rmb">Rate RMB &rarr; IDR *</label>
-                <input type="text" name="settings[rate_rmb]" id="setting-rate_rmb"
-                       value="{{ $sv('rate_rmb') }}"
+                <label class="block text-sm font-medium text-ink" for="setting-rate_rmb_idr">Rate RMB &rarr; IDR *</label>
+                <input type="text" name="settings[rate_rmb_idr]" id="setting-rate_rmb_idr"
+                       value="{{ $sv('rate_rmb_idr') }}"
                        class="mt-1.5 w-full rounded-lg border border-rule px-3 py-2.5 text-sm text-ink">
-                @error('settings.rate_rmb')<p class="text-xs text-danger">{{ $message }}</p>@enderror
+                @error('settings.rate_rmb_idr')<p class="text-xs text-danger">{{ $message }}</p>@enderror
             </div>
             <div>
                 <label class="block text-sm font-medium text-ink" for="setting-profit_percent">Profit (%) *</label>
@@ -155,13 +155,13 @@
             </h3>
             <div class="mt-4 space-y-4">
                 <div>
-                    <label class="block text-sm font-medium text-ink" for="setting-ongkir_cn_batam_per_kg">
+                    <label class="block text-sm font-medium text-ink" for="setting-ongkir_cn_btm_per_kg">
                         Ongkir CN &rarr; Batam (per kg) *
                         <span class="ml-1 text-[10px] font-normal text-ink/45">+ NEW v2.1</span>
                     </label>
                     <div class="mt-1 flex items-center gap-2">
-                        <input type="text" name="settings[ongkir_cn_batam_per_kg]" id="setting-ongkir_cn_batam_per_kg"
-                               value="{{ $sv('ongkir_cn_batam_per_kg') }}"
+                        <input type="text" name="settings[ongkir_cn_btm_per_kg]" id="setting-ongkir_cn_btm_per_kg"
+                               value="{{ $sv('ongkir_cn_btm_per_kg') }}"
                                class="w-full rounded-lg border border-rule bg-white px-3 py-2.5 text-sm text-ink">
                         <span class="whitespace-nowrap text-xs text-ink/50">Rp/kg</span>
                     </div>
@@ -171,13 +171,13 @@
                     </p>
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-ink" for="setting-ongkir_batam_jakarta_per_kg">
+                    <label class="block text-sm font-medium text-ink" for="setting-ongkir_btm_jkt_per_kg">
                         Ongkir Batam &rarr; Jakarta (per kg) *
                         <span class="ml-1 text-[10px] font-normal text-ink/45">+ NEW v2.1</span>
                     </label>
                     <div class="mt-1 flex items-center gap-2">
-                        <input type="text" name="settings[ongkir_batam_jakarta_per_kg]" id="setting-ongkir_batam_jakarta_per_kg"
-                               value="{{ $sv('ongkir_batam_jakarta_per_kg') }}"
+                        <input type="text" name="settings[ongkir_btm_jkt_per_kg]" id="setting-ongkir_btm_jkt_per_kg"
+                               value="{{ $sv('ongkir_btm_jkt_per_kg') }}"
                                class="w-full rounded-lg border border-rule bg-white px-3 py-2.5 text-sm text-ink">
                         <span class="whitespace-nowrap text-xs text-ink/50">Rp/kg</span>
                     </div>
@@ -289,11 +289,11 @@
                     <p class="mt-1 text-xs text-ink/55">Global Kill-Switch</p>
                 </div>
                 @php
-                    $emailPaused = $sv('customer_emails_paused') === '1';
+                    $emailPaused = $sv('pause_customer_emails') === '1';
                 @endphp
                 <label class="flex cursor-pointer select-none items-center gap-3">
                     <span class="relative inline-flex">
-                        <input type="checkbox" name="settings[customer_emails_paused]"
+                        <input type="checkbox" name="settings[pause_customer_emails]"
                                value="1" id="kill-switch"
                                {{ $emailPaused ? 'checked' : '' }}
                                class="peer sr-only">
@@ -370,7 +370,7 @@
 
         {{-- Generic Email settings --}}
         @php
-            $skipEmailKeys = ['customer_emails_paused','email_stop_reason','email_security','email_notification','email_cs','notif_admin_bukti_bayar'];
+            $skipEmailKeys = ['pause_customer_emails','email_stop_reason','email_security','email_notification','email_cs','notif_admin_bukti_bayar'];
             $genericEmail = collect($sections['Email'] ?? [])->filter(function ($s) use ($skipEmailKeys) {
                 return !in_array($s->key, $skipEmailKeys);
             });

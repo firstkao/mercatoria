@@ -3,7 +3,20 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>@yield('title', 'Mercatoria')</title>
+    <title>{{ $seo['title'] ?? trim($__env->yieldContent('title', 'Mercatoria')) }}</title>
+    @if (isset($seo))
+        <meta name="description" content="{{ $seo['description'] }}">
+        <link rel="canonical" href="{{ $seo['url'] }}">
+        <meta property="og:title" content="{{ $seo['title'] }}">
+        <meta property="og:description" content="{{ $seo['description'] }}">
+        <meta property="og:image" content="{{ $seo['image'] }}">
+        <meta property="og:url" content="{{ $seo['url'] }}">
+        <meta property="og:type" content="website">
+        <meta name="twitter:card" content="summary_large_image">
+        <meta name="twitter:title" content="{{ $seo['title'] }}">
+        <meta name="twitter:description" content="{{ $seo['description'] }}">
+        <meta name="twitter:image" content="{{ $seo['image'] }}">
+    @endif
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=IBM+Plex+Mono:wght@400;500;600&family=Schibsted+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -55,7 +68,7 @@
                         </div>
                     </details>
 
-                    <a href="{{ route('coming-soon') }}" class="text-[13px] font-medium text-[#333] transition-colors hover:text-[#4FC3F7]">Pre-order Baru</a>
+                    <a href="{{ route('catalog.game', 'preorder-baru') }}" class="text-[13px] font-medium text-[#333] transition-colors hover:text-[#4FC3F7]">Pre-order Baru</a>
                 </nav>
 
                 <a href="{{ route('home') }}" class="flex items-center justify-center no-underline">
@@ -123,7 +136,7 @@
                         <a href="{{ route('search') }}" class="block px-4 py-2.5 text-[13px] text-[#333]">Cari</a>
                         <a href="{{ route('cart.index') }}" class="block px-4 py-2.5 text-[13px] text-[#333]">Keranjang</a>
                         <a href="{{ route('dashboard') }}" class="block px-4 py-2.5 text-[13px] text-[#333]">Dashboard</a>
-                        <a href="{{ route('coming-soon') }}" class="block px-4 py-2.5 text-[13px] text-[#333]">Pre-order Baru</a>
+                        <a href="{{ route('catalog.game', 'preorder-baru') }}" class="block px-4 py-2.5 text-[13px] text-[#333]">Pre-order Baru</a>
 
                         <div class="mt-1 border-t border-[#EAEAEA] pt-1">
                             <p class="px-4 py-1.5 font-mono text-[10px] uppercase tracking-wider text-ink/45">Game</p>

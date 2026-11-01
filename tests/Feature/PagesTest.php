@@ -11,15 +11,16 @@ test('admin dapat membuat dan mengubah halaman cms', function () {
         'title' => 'Tentang Kami',
         'slug' => 'tentang-kami',
         'content' => 'Kami adalah toko merch.',
-        'is_active' => 1,
+        'status' => 'publish',
     ])->assertRedirect();
 
     $page = Page::where('slug', 'tentang-kami')->firstOrFail();
 
     $this->actingAs($admin)->put("/office/pages/{$page->id}", [
         'title' => 'Tentang Kami',
+        'slug' => 'tentang-kami',
         'content' => 'Teks baru.',
-        'is_active' => 1,
+        'status' => 'publish',
     ])->assertRedirect();
 
     expect($page->fresh()->content)->toBe('Teks baru.');
@@ -36,7 +37,7 @@ test('konten cms panjang berformat html tersimpan utuh tanpa strip tags', functi
         'title' => 'Panduan Panjang',
         'slug' => 'panduan-panjang',
         'content' => $content,
-        'is_active' => 1,
+        'status' => 'publish',
     ])->assertRedirect();
 
     expect(strlen($content))->toBeGreaterThan(10000)
@@ -48,7 +49,7 @@ test('halaman cms aktif tampil di halaman publik', function () {
         'slug' => 'tentang-kami',
         'title' => 'Tentang Kami',
         'content' => 'Kami adalah toko merch terpercaya.',
-        'is_active' => true,
+        'status' => 'publish',
     ]);
 
     $this->get('/tentang-kami')
@@ -57,12 +58,25 @@ test('halaman cms aktif tampil di halaman publik', function () {
         ->assertSee('toko merch terpercaya');
 });
 
+test('halaman cms custom dirender sebagai rich text pada slug yang dipublikasikan', function () {
+    Page::factory()->create([
+        'slug' => 'reseller',
+        'title' => 'Informasi Reseller',
+        'content' => '<p>Hubungi <strong>tim reseller</strong>.</p>',
+        'status' => 'publish',
+    ]);
+
+    $this->get('/reseller')
+        ->assertOk()
+        ->assertSee('<strong>tim reseller</strong>', false);
+});
+
 test('halaman cms nonaktif tidak tampil', function () {
     Page::factory()->create([
         'slug' => 'faq',
         'title' => 'FAQ',
         'content' => 'Isi FAQ',
-        'is_active' => false,
+        'status' => 'draft',
     ]);
 
     $this->get('/faq')->assertNotFound();
@@ -74,12 +88,13 @@ test('halaman publik tetap placeholder bila belum ada di cms', function () {
 
 test('perubahan halaman tercatat di admin logs', function () {
     $admin = User::factory()->admin()->create();
-    $page = Page::factory()->create(['slug' => 'tnc', 'content' => 'Lama', 'is_active' => true]);
+    $page = Page::factory()->create(['slug' => 'tnc', 'content' => 'Lama', 'status' => 'publish']);
 
     $this->actingAs($admin)->put("/office/pages/{$page->id}", [
         'title' => $page->title,
+        'slug' => $page->slug,
         'content' => 'Baru',
-        'is_active' => 1,
+        'status' => 'publish',
     ]);
 
     expect(AdminLog::where('model', 'Page')->exists())->toBeTrue();

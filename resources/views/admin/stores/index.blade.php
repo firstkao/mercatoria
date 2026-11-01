@@ -61,10 +61,8 @@
                     </div>
 
                     <div class="w-[170px] shrink-0">
-                        <label class="block text-xs font-medium text-ink/70 mb-1">Ongkir Lokal (%) <span class="text-danger">*</span></label>
-                        <input type="text" name="ongkir_lokal_cn_percent" required value="{{ old('ongkir_lokal_cn_percent') }}" placeholder="10"
-                               inputmode="numeric" pattern="[0-9]*"
-                               oninput="this.value=this.value.replace(/[^0-9]/g,'')"
+                        <label class="block text-xs font-medium text-ink/70 mb-1">Ongkir Lokal (RMB) <span class="text-danger">*</span></label>
+                        <input type="number" name="ongkir_rmb" required min="0" step="0.01" value="{{ old('ongkir_rmb', '0') }}" placeholder="7"
                                class="h-11 w-full rounded-lg border border-rule px-3 text-sm text-ink">
                     </div>
 
@@ -161,10 +159,8 @@
 
                             {{-- Ongkir Lokal --}}
                             <td class="px-2 py-3">
-                                <input type="text" value="{{ (int) $store->ongkir_lokal_cn_percent }}"
-                                       inputmode="numeric" pattern="[0-9]*"
-                                       oninput="this.value=this.value.replace(/[^0-9]/g,'')"
-                                       data-field="ongkir_lokal_cn_percent" data-orig="{{ (int) $store->ongkir_lokal_cn_percent }}"
+                                <input type="number" min="0" step="0.01" value="{{ $store->ongkir_rmb }}"
+                                       data-field="ongkir_rmb" data-orig="{{ $store->ongkir_rmb }}"
                                        class="w-full px-2.5 py-1.5 text-sm text-ink"
                                        style="border:2px solid #f5f5f5;background:#fff;border-radius:6px;outline:none;transition:border-color .15s,box-shadow .15s;"
                                        onmouseover="this.style.borderColor='#e0e0e0'" onmouseout="this.style.borderColor='#f5f5f5'"
@@ -346,7 +342,7 @@
                     form.append('_method', 'PUT');
                     form.append('name', item.fields.name);
                     form.append('min_belanja_rmb', item.fields.min_belanja_rmb);
-                    form.append('ongkir_lokal_cn_percent', item.fields.ongkir_lokal_cn_percent);
+                    form.append('ongkir_rmb', item.fields.ongkir_rmb);
 
                     fetch(config.baseUrl + '/' + item.id, {
                         method: 'POST', body: form, headers: { 'X-CSRF-TOKEN': config.csrf }

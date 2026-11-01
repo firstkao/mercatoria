@@ -17,7 +17,7 @@ class PageFactory extends Factory
             'slug' => fake()->unique()->slug(2),
             'content' => fake()->paragraph(),
             'meta_description' => fake()->sentence(8),
-            'is_active' => true,
+            'status' => 'publish',
         ];
     }
 }

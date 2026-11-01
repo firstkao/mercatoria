@@ -34,7 +34,7 @@ class Product extends Model
         'type',
         'image_path',
         'description_image_path',
-        'discount_amount_rmb',
+        'discount_amount',
         'discount_start',
         'discount_end',
         'availability',
@@ -48,7 +48,7 @@ class Product extends Model
         return [
             'price_rmb' => 'decimal:2',
             'weight_gram' => 'integer',
-            'discount_amount_rmb' => 'decimal:2',
+            'discount_amount' => 'decimal:2',
             'discount_start' => 'date',
             'discount_end' => 'date',
             'is_active' => 'boolean',
@@ -145,7 +145,7 @@ class Product extends Model
      */
     public function hasActiveDiscount(): bool
     {
-        if ($this->discount_amount_rmb === null) {
+        if ($this->discount_amount === null) {
             return false;
         }
 
@@ -165,8 +165,8 @@ class Product extends Model
     /**
      * Diskon aktif dalam RMB (0 kalau tidak ada diskon aktif).
      */
-    public function activeDiscountRmb(): float
+    public function activeDiscountAmount(): float
     {
-        return $this->hasActiveDiscount() ? (float) $this->discount_amount_rmb : 0.0;
+        return $this->hasActiveDiscount() ? (float) $this->discount_amount : 0.0;
     }
 }

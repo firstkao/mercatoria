@@ -110,9 +110,7 @@ class ShippingCalculatorService
         $rawTotal = $modalItem + $profitIdr;
 
         $basePriceBersih = (float) (ceil($rawTotal / $rounding) * $rounding);
-        $discountAmount = $product->hasActiveDiscount()
-            ? (float) $product->discount_amount
-            : 0.0;
+        $discountAmount = $product->activeDiscountAmount();
         $finalPriceBersih = max(0, $basePriceBersih - $discountAmount);
 
         return [
@@ -155,12 +153,14 @@ class ShippingCalculatorService
     ): array {
         $subtotal = (float) collect($items)->sum(fn ($i) => $i['final_price_bersih'] * $i['qty']);
         $totalBarang = max(0, $subtotal - $discount);
-        $feeQris = ($method === 'qris' && $totalBarang >= 500000)
-            ? $totalBarang * 0.0003
+        $qrisThreshold = (float) setting('qris_threshold', 500000);
+        $qrisRate = (float) setting('fee_qris_percent', 0.03) / 100;
+        $feeQris = ($method === 'qris' && $totalBarang >= $qrisThreshold)
+            ? round($totalBarang * $qrisRate, 2)
             : 0.0;
 
         if ($scheme === 'dp') {
-            $dp = $totalBarang * 0.5;
+            $dp = $totalBarang * ((float) setting('dp_minimum_percent', 50) / 100);
             $sisa = $totalBarang - $dp;
             $shopeePercent = ((float) setting('fee_shopee_dp', 25)) / 100;
 
@@ -169,10 +169,10 @@ class ShippingCalculatorService
                 'discount' => $discount,
                 'total_barang' => $totalBarang,
                 'fee_qris' => $feeQris,
-                'tagihan_web' => $dp + $feeQris,
+                'tagihan_web' => round($dp + $feeQris, 2),
                 'estimasi_co_marketplace' => $platform === 'shopee'
-                    ? $sisa * (1 + $shopeePercent)
-                    : $sisa + (float) setting('fee_toco_dp', 0),
+                    ? round($sisa * (1 + $shopeePercent), 2)
+                    : round($sisa + (float) setting('fee_toco_dp', 0), 2),
             ];
         }
 
@@ -181,7 +181,7 @@ class ShippingCalculatorService
             'discount' => $discount,
             'total_barang' => $totalBarang,
             'fee_qris' => $feeQris,
-            'tagihan_web' => $totalBarang + $feeQris,
+            'tagihan_web' => round($totalBarang + $feeQris, 2),
             'fee_co_marketplace' => (float) ($platform === 'shopee'
                 ? setting('fee_shopee_fp', 109)
                 : setting('fee_toco_fp', 1)),
