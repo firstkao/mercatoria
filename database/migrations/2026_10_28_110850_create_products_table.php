@@ -23,7 +23,7 @@ return new class extends Migration
             $table->string('image_path')->nullable();
             $table->string('description_image_path')->nullable();
             $table->text('description')->nullable();
-            $table->decimal('discount_amount_rmb', 12, 2)->nullable();
+            $table->decimal('discount_amount', 12, 2)->nullable();
             $table->date('discount_start')->nullable();
             $table->date('discount_end')->nullable();
             $table->string('availability', 16)->default('tersedia');
