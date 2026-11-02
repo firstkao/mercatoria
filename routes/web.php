@@ -62,7 +62,7 @@ Route::get('/robots.txt', [HomeController::class, 'robots'])->name('robots');
 Route::get('/menyusul', ComingSoonController::class)->name('coming-soon');
 
 // Halaman CMS publik (PRD 25/36)
-foreach (['tentang-kami', 'faq', 'cara-belanja', 'tnc', 'kebijakan-privasi'] as $staticPage) {
+foreach (['tentang-kami', 'faq', 'cara-belanja', 'tnc', 'kebijakan-privasi', 'blacklist', 'reseller'] as $staticPage) {
     Route::get('/'.$staticPage, [PageController::class, 'show'])
         ->defaults('slug', $staticPage)
         ->name('page.'.$staticPage);

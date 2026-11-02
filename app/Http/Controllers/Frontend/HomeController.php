@@ -25,7 +25,7 @@ class HomeController extends Controller
     {
         $games = Game::where('is_active', true)->orderBy('name')->get();
         $products = Product::where('is_active', true)
-            ->with(['game.defaultStore', 'store', 'tags'])
+            ->with(['game.defaultStore', 'store', 'tags', 'variants'])
             ->orderByDesc('id')
             ->limit(14)
             ->get();
@@ -43,6 +43,22 @@ class HomeController extends Controller
         foreach ([$products, $bestOffers] as $set) {
             foreach ($set as $product) {
                 $product->setAttribute('price_idr', $this->shipping->calculateItemShipping($product)['final_price_bersih']);
+            }
+        }
+
+        // Range harga min-maks varian (tampilan "Rp50.000 – Rp190.000") bila harga varian berbeda.
+        foreach ($products as $product) {
+            if ($product->variants->count() < 2) {
+                continue;
+            }
+
+            $prices = $product->variants->map(
+                fn ($variant) => (float) $this->shipping->calculateItemShipping($product, $variant)['final_price_bersih']
+            );
+
+            if ($prices->min() !== $prices->max()) {
+                $product->setAttribute('price_min', $prices->min());
+                $product->setAttribute('price_max', $prices->max());
             }
         }
 

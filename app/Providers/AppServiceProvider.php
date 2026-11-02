@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use App\Models\Cart;
+use App\Models\Coin;
 use App\Models\Developer;
 use App\Models\Game;
 use App\Models\Product;
@@ -73,7 +74,10 @@ class AppServiceProvider extends ServiceProvider
                     ? self::perRequest('nav_unread', fn () => (int) UserNotification::where('user_id', $user->id)->where('is_read', false)->count())
                     : 0)
                 ->with('cartTotal', $cartTotal)
-                ->with('cartCount', $cartCount);
+                ->with('cartCount', $cartCount)
+                ->with('coinBalance', $user
+                    ? self::perRequest('nav_coin', fn () => (int) Coin::where('user_id', $user->id)->value('balance'))
+                    : 0);
         });
 
         // Footer "Produk Terpopuler" (Design Spec 4.4.5) — {image, url, name, price}.
