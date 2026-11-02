@@ -65,6 +65,7 @@ test('upload gambar varian', function () {
     $this->actingAs($admin)->post("/office/products/{$product->id}/variants", [
         'name' => 'Varian Foto',
         'sku' => 'VAR-'.uniqid(),
+        'price_rmb' => 50,
         'availability' => 'tersedia',
         'image' => UploadedFile::fake()->image('varian.jpg'),
     ])->assertRedirect();
@@ -75,11 +76,11 @@ test('upload gambar varian', function () {
         ->and(file_exists(storage_path('app/private/'.$variant->image_path)))->toBeTrue();
 });
 
-test('upload gambar lebih dari 5mb ditolak', function () {
+test('upload gambar lebih dari 6mb ditolak', function () {
     $admin = User::factory()->admin()->create();
 
     $this->actingAs($admin)->post('/office/products', productUploadPayload([
-        'image' => UploadedFile::fake()->image('besar.jpg')->size(5121),
+        'image' => UploadedFile::fake()->image('besar.jpg')->size(6145),
     ]))->assertSessionHasErrors('image');
 
     expect(Product::where('sku', 'like', 'IMG-%')->exists())->toBeFalse();
