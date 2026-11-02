@@ -51,30 +51,30 @@
         <section id="merch-baru" class="mx-auto max-w-[1200px] px-8 pb-14">
             <h2 class="text-center text-[18px] font-bold uppercase tracking-wide text-ink">MERCH BARU</h2>
 
-            <div class="mt-5 grid grid-cols-2 gap-3.5 md:grid-cols-5 lg:grid-cols-7">
+            <div class="mt-5 grid grid-cols-2 gap-3.5 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-7">
                 @foreach (($products ?? collect()) as $product)
                     <a href="{{ route('product.show', [$product->game->slug, $product->slug]) }}" class="group block">
-                        <div class="relative aspect-square overflow-hidden rounded bg-paper">
+                        <div class="relative aspect-[5/4] overflow-hidden rounded bg-paper">
                             @if ($product->image_path)
                                 <img src="{{ \App\Services\Image\ImageOptimizerService::url($product->image_path, 'thumb') }}" alt="{{ $product->name }}" class="h-full w-full object-cover">
                             @endif
                             @if ($product->tags->contains('slug', 'presale'))
-                                <span class="absolute left-2 top-2 rounded-sm bg-[#3986C6] px-2 py-[3px] text-[9px] font-bold uppercase tracking-wide text-white">PRESALE</span>
+                                <span class="absolute left-2 top-2 rounded bg-[#3986C6] px-2 py-[3px] text-[9px] font-bold uppercase text-white">PRESALE</span>
                             @elseif ($product->tags->contains('slug', 'limited'))
-                                <span class="absolute left-2 top-2 rounded-sm bg-[#E53935] px-2 py-[3px] text-[9px] font-bold uppercase tracking-wide text-white">LIMITED</span>
+                                <span class="absolute left-2 top-2 rounded bg-[#E53935] px-2 py-[3px] text-[9px] font-bold uppercase text-white">LIMITED</span>
                             @endif
                         </div>
-                        <p class="mt-1.5 text-[11.5px] font-bold leading-[1.35] text-ink">
-                            <span class="text-ink/55">[{{ $product->game->name }}]</span> {{ $product->name }}
+                        <p class="mt-1.5 text-[11.5px] leading-[1.35] text-ink">
+                            <strong>[{{ strtoupper($product->game->name) }}]</strong> {{ $product->name }}
                         </p>
                         @if (!empty($product->price_min) && !empty($product->price_max))
-                            <p class="mt-0.5 text-[11.5px] leading-none">
-                                <span class="text-[10px] text-ink/45">{{ format_rp($product->price_min) }}</span>
+                            <p class="mt-0.5 text-[11.5px]">
+                                <span class="text-ink/45 line-through">{{ format_rp($product->price_min) }}</span>
                                 <span class="text-ink/45"> – </span>
-                                <strong class="text-[#3986C6]">{{ format_rp($product->price_max) }}</strong>
+                                <strong class="text-[#0299E7]">{{ format_rp($product->price_max) }}</strong>
                             </p>
                         @elseif (!empty($product->price_idr))
-                            <p class="mt-0.5 text-[11.5px] font-bold text-[#3986C6]">{{ format_rp($product->price_idr) }}</p>
+                            <p class="mt-0.5 text-[11.5px] font-bold text-[#0299E7]">{{ format_rp($product->price_idr) }}</p>
                         @endif
                     </a>
                 @endforeach
