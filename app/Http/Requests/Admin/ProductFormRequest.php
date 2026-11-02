@@ -40,7 +40,7 @@ class ProductFormRequest extends FormRequest
                 'sku' => ['required', 'string', 'max:64', $sku],
                 'slug' => ['nullable', 'string', 'max:170', $slug],
                 'price_rmb' => ['required', 'numeric', 'min:0'],
-                'weight_gram' => ['required', 'integer', 'min:1'],          // [FIX #1] required
+                'weight_gram' => ['nullable', 'integer', 'min:1'],          // [FIX #1] wajib via after() saat default_weight_gram = 0
                 'type' => ['required', 'in:single,variant'],
                 'discount_amount' => ['nullable', 'numeric', 'min:0'],
                 'discount_start' => ['nullable', 'date'],
@@ -119,6 +119,21 @@ class ProductFormRequest extends FormRequest
         }
 
         return [
+            function (Validator $validator): void {
+                // default_weight_gram = 0 berarti belum ada default: berat wajib diisi manual.
+                if ($validator->errors()->has('weight_gram') || $this->filled('weight_gram')) {
+                    return;
+                }
+
+                if ((int) setting('default_weight_gram', 0) > 0) {
+                    return;
+                }
+
+                $validator->errors()->add(
+                    'weight_gram',
+                    'Berat wajib diisi karena default berat belum diset'
+                );
+            },
             function (Validator $validator): void {
                 if ($validator->errors()->hasAny(['price_rmb', 'store_id', 'discount_amount'])) {
                     return;
