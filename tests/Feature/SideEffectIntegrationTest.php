@@ -58,7 +58,7 @@ test('perjalanan penuh — lock, kredit koin, tier, selesai', function () {
         ->and((float) Customer::where('user_id', $referee->id)->value('total_belanja'))->toEqual(417250.0);
 });
 
-test('slot_sold nyata — order lain batal, koin hangus, voucher hangus', function () {
+test('slot_sold nyata — order lain batal, koin dan voucher dikembalikan', function () {
     $fx = splitBoxFixture(); // stok 1 per slot
 
     // Order A mengunci stok lewat upload
@@ -85,8 +85,8 @@ test('slot_sold nyata — order lain batal, koin hangus, voucher hangus', functi
     $orderB->refresh();
     expect($orderB->status)->toBe('pembayaran_gagal')
         ->and($orderB->cancel_reason)->toBe('slot_sold')
-        ->and(CoinTransaction::where('order_id', $orderB->id)->where('type', 'forfeit_at_checkout')->exists())->toBeTrue()
-        ->and(Coin::where('user_id', $userB->id)->value('balance'))->toBe(0)
+        ->and(CoinTransaction::where('order_id', $orderB->id)->where('type', 'refund_returned')->exists())->toBeTrue()
+        ->and(Coin::where('user_id', $userB->id)->value('balance'))->toBe(12750)
         // slot A tetap terkunci (all-or-nothing B tidak mengubah stok)
         ->and((int) SplitBoxBatchSlot::where('slot_id', $fx['hot']->id)->value('qty_taken'))->toBe(1);
 });

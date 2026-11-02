@@ -12,7 +12,7 @@ use App\Services\SplitBox\SplitBoxService;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Str;
 
-test('titik a â€” lock gagal: order batal slot_sold, koin dan voucher hangus', function () {
+test('titik a â€” lock gagal: order batal slot_sold, koin dan voucher dikembalikan', function () {
     $fx = splitBoxFixture();
     $user = $fx['user'];
     Coin::factory()->create(['user_id' => $user->id, 'balance' => 12750]);
@@ -39,8 +39,8 @@ test('titik a â€” lock gagal: order batal slot_sold, koin dan voucher hangu
     expect($order->status)->toBe('pembayaran_gagal')
         ->and($order->cancel_reason)->toBe('slot_sold');
 
-    expect(CoinTransaction::where('order_id', $order->id)->where('type', 'forfeit_at_checkout')->exists())->toBeTrue()
-        ->and(Coin::where('user_id', $user->id)->value('balance'))->toBe(0);
+    expect(CoinTransaction::where('order_id', $order->id)->where('type', 'refund_returned')->exists())->toBeTrue()
+        ->and(Coin::where('user_id', $user->id)->value('balance'))->toBe(12750);
 });
 
 test('titik b â€” stok habis: order lain menunggu pembayaran ikut batal slot_sold', function () {
@@ -66,8 +66,8 @@ test('titik b â€” stok habis: order lain menunggu pembayaran ikut batal slo
     expect($orderA->fresh()->status)->toBe('ditahan')
         ->and($orderB->status)->toBe('pembayaran_gagal')
         ->and($orderB->cancel_reason)->toBe('slot_sold')
-        ->and(CoinTransaction::where('order_id', $orderB->id)->where('type', 'forfeit_at_checkout')->exists())->toBeTrue()
-        ->and(Coin::where('user_id', $userB->id)->value('balance'))->toBe(0);
+        ->and(CoinTransaction::where('order_id', $orderB->id)->where('type', 'refund_returned')->exists())->toBeTrue()
+        ->and(Coin::where('user_id', $userB->id)->value('balance'))->toBe(12750);
 });
 
 test('order lain yang tidak memuat slot terdampak tidak ikut batal', function () {
@@ -87,7 +87,7 @@ test('order lain yang tidak memuat slot terdampak tidak ikut batal', function ()
         ->and($orderC->fresh()->cancel_reason)->toBeNull();
 });
 
-test('voucher ikut hangus saat slot sold', function () {
+test('voucher kembali aktif saat slot sold', function () {
     $fx = splitBoxFixture();
     $user = $fx['user'];
     $voucher = Voucher::factory()->create(['nominal' => 25000, 'min_belanja' => 0, 'is_active' => true]);
@@ -116,6 +116,6 @@ test('voucher ikut hangus saat slot sold', function () {
         'proof' => UploadedFile::fake()->image('bukti.jpg'),
     ]);
 
-    expect($userVoucher->fresh()->status)->toBe('hangus')
+    expect($userVoucher->fresh()->status)->toBe('active')
         ->and($order->fresh()->cancel_reason)->toBe('slot_sold');
 });
