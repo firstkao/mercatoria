@@ -65,7 +65,7 @@ class PaymentProofService
 
         // PRD 17.11: email notif ke admin utama + cs@ saat bukti bayar masuk.
         Notification::send(
-            User::where('role', User::ROLE_ADMIN)->get(),
+            User::admins()->get(),
             new PaymentProofAdminNotification($order, $payment)
         );
         Notification::route('mail', 'cs@mercatoria.id')

@@ -30,7 +30,7 @@ class DashboardController extends Controller
                 ->whereHas('order', fn ($q) => $q->whereNotIn('status', ['pembayaran_gagal', 'hangus', 'hangus_permanen', 'dana_dikembalikan']))
                 ->where('created_at', '>=', $month)
                 ->sum('amount'),
-            'newUsers' => User::where('role', '!=', User::ROLE_ADMIN)
+            'newUsers' => User::whereNotIn('role', [User::ROLE_ADMIN, User::ROLE_SUPER_ADMIN])
                 ->where('created_at', '>=', $week)
                 ->count(),
             'pendingVerifications' => Payment::where('status', Payment::STATUS_PENDING)->count(),

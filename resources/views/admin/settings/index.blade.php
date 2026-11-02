@@ -137,6 +137,10 @@
                 <input type="text" name="settings[rate_rmb_idr]" id="setting-rate_rmb_idr"
                        value="{{ $sv('rate_rmb_idr') }}"
                        class="mt-1.5 w-full rounded-lg border border-rule px-3 py-2.5 text-sm text-ink">
+                <p class="mt-1 text-xs text-ink/50">Min 1.000, maks 10.000.</p>
+                @if ($rateLastChange)
+                    <p class="mt-1 text-xs text-ink/60">Kurs terakhir diubah: {{ $rateLastChange->created_at->format('d M Y H:i') }} oleh {{ $rateLastChange->admin?->name ?? '—' }}</p>
+                @endif
                 @error('settings.rate_rmb_idr')<p class="text-xs text-danger">{{ $message }}</p>@enderror
             </div>
             <div>

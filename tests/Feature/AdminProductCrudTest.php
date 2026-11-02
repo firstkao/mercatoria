@@ -182,7 +182,7 @@ test('admin tidak dapat menghapus atau menurunkan role akunnya sendiri', functio
     $this->actingAs($admin)->delete("/office/users/{$admin->id}")->assertSessionHasErrors('delete');
     $this->actingAs($admin)->put("/office/users/{$admin->id}", [
         'name' => $admin->name, 'email' => $admin->email, 'role' => 'customer',
-    ])->assertSessionHasErrors('role');
+    ])->assertForbidden();
 
     expect($admin->fresh()->role)->toBe('admin');
 });

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\UpdateUserRequest;
 use App\Models\AdminLog;
 use App\Models\Spammer;
 use App\Models\User;
@@ -127,6 +128,10 @@ class UserController extends Controller
             return back()->withErrors(['delete' => 'Anda tidak dapat menghapus akun Anda sendiri.']);
         }
 
+        if ($user->isSuperAdmin()) {
+            return back()->withErrors(['delete' => 'Akun super_admin tidak dapat dihapus.']);
+        }
+
         if ($user->orders()->exists()) {
             return back()->withErrors(['delete' => 'User memiliki riwayat order dan tidak dapat dihapus.']);
         }
@@ -146,6 +151,10 @@ class UserController extends Controller
         $data = $request->validate([
             'confirmation' => ['required', 'string'],
         ]);
+
+        if ($user->isSuperAdmin() || $user->is($request->user())) {
+            return back()->withErrors(['confirmation' => 'Akun super_admin atau akun Anda sendiri tidak dapat dihapus.']);
+        }
 
         $inSpammerList = Spammer::where('email', $user->email)->exists();
 
@@ -191,18 +200,9 @@ class UserController extends Controller
         ];
     }
 
-    public function update(Request $request, User $user): RedirectResponse
+    public function update(UpdateUserRequest $request, User $user): RedirectResponse
     {
-        $data = $request->validate([
-            'name' => ['required', 'string', 'min:2', 'max:100'],
-            'email' => ['required', 'email', 'unique:users,email,'.$user->id],
-            'role' => ['required', 'in:crush,customer,admin'],
-            'password' => ['nullable', 'string', 'min:8'],
-        ]);
-
-        if ($user->is($request->user()) && $data['role'] !== User::ROLE_ADMIN) {
-            return back()->withErrors(['role' => 'Anda tidak dapat menurunkan role akun Anda sendiri.'])->withInput();
-        }
+        $data = $request->validated();
 
         [$old, $new] = AdminLog::diff($user, ['name', 'email', 'role'], $data);
 

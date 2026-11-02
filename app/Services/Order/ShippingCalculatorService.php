@@ -41,7 +41,7 @@ class ShippingCalculatorService
         }
 
         $ongkirLokalRmb = ($hargaRmb * $ongkirRmb) / $minBelanja;
-        $rate = (float) setting('rate_rmb_idr', 3000);
+        $rate = rmb_rate();
 
         return round($ongkirLokalRmb * $rate, 2);
     }
@@ -95,7 +95,7 @@ class ShippingCalculatorService
         $hargaRmb = $variant
             ? $variant->effectivePriceRmb()
             : (float) $product->price_rmb;
-        $rate = (float) setting('rate_rmb_idr', 3000);
+        $rate = rmb_rate();
         $profitPct = ((float) setting('profit_percent', 11)) / 100;
         $rounding = (int) setting('price_rounding', 5000);
 

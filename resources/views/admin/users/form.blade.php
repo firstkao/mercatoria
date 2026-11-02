@@ -29,8 +29,8 @@
         </div>
         <div class="flex items-center gap-2">
             @if ($user->exists)
-                <span class="rounded-full {{ $user->role === 'admin' ? 'bg-[#43A047]' : 'bg-[#9E9E9E]' }} px-2.5 py-1 text-[10px] font-bold text-white">
-                    {{ ucfirst($user->role) }}
+                <span class="rounded-full {{ $user->isAdmin() ? 'bg-[#43A047]' : 'bg-[#9E9E9E]' }} px-2.5 py-1 text-[10px] font-bold text-white">
+                    {{ \Illuminate\Support\Str::headline($user->role) }}
                 </span>
             @endif
             <a href="{{ route('office.users.index') }}"
@@ -95,11 +95,19 @@
                 </div>
                 <div class="w-[150px] shrink-0">
                     <label class="block text-xs font-medium text-ink/70 mb-1">Role</label>
-                    <select name="role" class="h-11 w-full rounded-lg border border-rule px-3 text-sm text-ink">
-                        @if ($user->exists && $user->role === 'crush')<option value="crush" selected>Crush</option>@endif
-                        <option value="customer" @selected(old('role', $user->role ?: 'customer') === 'customer')>Customer</option>
-                        @if ($user->exists)<option value="admin" @selected(old('role') === 'admin' || $user->role === 'admin')>Admin</option>@endif
-                    </select>
+                    @if (! $user->exists)
+                        <select name="role" class="h-11 w-full rounded-lg border border-rule px-3 text-sm text-ink">
+                            <option value="customer" @selected(old('role', 'customer') === 'customer')>Customer</option>
+                        </select>
+                    @elseif (auth()->user()->can('changeRole', $user))
+                        <select name="role" class="h-11 w-full rounded-lg border border-rule px-3 text-sm text-ink">
+                            @foreach (['crush' => 'Crush', 'customer' => 'Customer', 'admin' => 'Admin', 'super_admin' => 'Super Admin'] as $value => $label)
+                                <option value="{{ $value }}" @selected(old('role', $user->role) === $value)>{{ $label }}</option>
+                            @endforeach
+                        </select>
+                    @else
+                        <span class="inline-flex h-11 items-center rounded-full bg-[#9E9E9E] px-3 text-xs font-bold text-white">{{ \Illuminate\Support\Str::headline($user->role) }}</span>
+                    @endif
                 </div>
             </div>
 

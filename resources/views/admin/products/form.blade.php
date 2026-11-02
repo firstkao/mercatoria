@@ -5,7 +5,7 @@
 @section('content')
 @php
     $cfg = [
-        'rate_rmb'       => (float) setting('rate_rmb_idr', 3000),
+        'rate_rmb'       => rmb_rate(),
         'ongkir_cn_btm'  => (float) setting('ongkir_cn_btm_per_kg', 25000),
         'ongkir_btm_jkt' => (float) setting('ongkir_btm_jkt_per_kg', 60000),
         'profit_percent' => (float) setting('profit_percent', 11),

@@ -21,6 +21,7 @@ class SettingsController extends Controller
 
         return view('admin.settings.index', [
             'groups' => Setting::orderBy('group')->orderBy('key')->get()->groupBy('group'),
+            'rateLastChange' => $this->rateLastChange(),
         ]);
     }
 
@@ -94,6 +95,22 @@ class SettingsController extends Controller
         Cache::forget('app_settings_all');
 
         return redirect()->route('office.settings.index')->with('status', 'Settings disimpan.');
+    }
+
+    private function rateLastChange(): ?AdminLog
+    {
+        $setting = Setting::where('key', 'rate_rmb_idr')->first();
+
+        if (! $setting) {
+            return null;
+        }
+
+        return AdminLog::with('admin')
+            ->where('model', 'Setting')
+            ->where('model_id', $setting->id)
+            ->where('action', 'update')
+            ->latest('id')
+            ->first();
     }
 
     /**
@@ -265,7 +282,6 @@ class SettingsController extends Controller
 
         // Numeric umum (tanpa overlap dengan percentKeys).
         $numericKeys = [
-            'rate_rmb_idr',
             'ongkir_cn_btm_per_kg', 'ongkir_btm_jkt_per_kg',
             'default_weight_gram', 'fee_toco_fp', 'fee_toco_dp',
             'fee_shopee_fp',
@@ -284,6 +300,8 @@ class SettingsController extends Controller
             $rules[$key] = match (true) {
                 // Bool fields
                 in_array($key, $boolKeys) => ['required', 'in:0,1'],
+
+                $key === 'rate_rmb_idr' => ['required', 'numeric', 'min:1000', 'max:10000'],
 
                 // Percentage fields (0-100) — dicek SEBELUM numeric umum
                 in_array($key, $percentKeys) => ['required', 'numeric', 'min:0', 'max:100'],

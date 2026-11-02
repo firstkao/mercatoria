@@ -24,6 +24,16 @@ if (! function_exists('setting')) {
     }
 }
 
+if (! function_exists('rmb_rate')) {
+    /**
+     * Kurs RMB → IDR dari setting rate_rmb_idr (default 3000).
+     */
+    function rmb_rate(): float
+    {
+        return (float) setting('rate_rmb_idr', 3000);
+    }
+}
+
 if (! function_exists('format_rp')) {
     /**
      * Format angka ke Rupiah (contoh: Rp255.000).

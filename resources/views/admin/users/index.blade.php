@@ -11,7 +11,7 @@
     @php
         $stats = [
             'total' => $users->total(),
-            'admin' => $users->where('role', 'admin')->count(),
+            'admin' => $users->whereIn('role', ['admin', 'super_admin'])->count(),
             'customer' => $users->where('role', 'customer')->count(),
         ];
     @endphp
@@ -129,14 +129,20 @@
 
                             {{-- Role --}}
                             <td class="px-2 py-3">
+@if (auth()->user()->can('changeRole', $user))
                                 <select data-field="role" data-orig="{{ $user->role }}"
                                         class="w-full px-2 py-1.5 text-sm text-ink"
                                         style="border:2px solid #f5f5f5;background:#fff;border-radius:6px;outline:none;transition:border-color .15s,box-shadow .15s;"
                                         onmouseover="this.style.borderColor='#e0e0e0'" onmouseout="this.style.borderColor='#f5f5f5'"
                                         onfocus="this.style.borderColor='#aaa';this.style.boxShadow='0 0 0 2px rgba(0,0,0,0.05)'" onblur="this.style.borderColor='#f5f5f5';this.style.boxShadow='none'">
+                                    <option value="crush" @selected($user->role === 'crush')>crush</option>
                                     <option value="customer" @selected($user->role === 'customer')>customer</option>
                                     <option value="admin" @selected($user->role === 'admin')>admin</option>
+                                    <option value="super_admin" @selected($user->role === 'super_admin')>super_admin</option>
                                 </select>
+                                @else
+                                    <span class="inline-block rounded-full bg-[#9E9E9E] px-2.5 py-1 text-[10px] font-bold text-white">{{ $user->role }}</span>
+                                @endif
                             </td>
 
                             {{-- Aksi --}}
@@ -395,7 +401,7 @@
                     form.append('_method', 'PUT');
                     form.append('name', item.fields.name);
                     form.append('email', item.fields.email);
-                    form.append('role', item.fields.role);
+                    if (item.fields.role !== undefined) { form.append('role', item.fields.role); }
 
                     fetch(config.baseUrl + '/' + item.id, {
                         method: 'POST', body: form, headers: { 'X-CSRF-TOKEN': config.csrf }

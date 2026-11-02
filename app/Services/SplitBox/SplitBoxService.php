@@ -270,7 +270,7 @@ class SplitBoxService
         }
 
         // Notifikasi ke semua admin
-        $admins = User::where('role', User::ROLE_ADMIN)->get();
+        $admins = User::admins()->get();
         $notifService = app(UserNotificationService::class);
 
         foreach ($admins as $admin) {

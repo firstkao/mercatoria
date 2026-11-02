@@ -44,7 +44,7 @@ class SuppressCustomerEmailWhenPaused
 
         $onlyAdminRecipients = $recipients->every(
             fn (string $addr) => strcasecmp($addr, 'cs@mercatoria.id') === 0
-                || User::where('email', $addr)->where('role', User::ROLE_ADMIN)->exists()
+                || User::admins()->where('email', $addr)->exists()
         );
 
         if ($onlyAdminRecipients) {
