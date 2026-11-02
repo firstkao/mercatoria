@@ -16,6 +16,7 @@ use App\Services\User\CoinWalletService;
 use App\Services\User\DiscountForfeitureService;
 use App\Services\User\UserNotificationService;
 use App\Services\User\UserTierService;
+use Illuminate\Support\Facades\DB;
 
 class OrderStatusService
 {
@@ -40,53 +41,61 @@ class OrderStatusService
     {
         $toValue = $to instanceof OrderStatus ? $to->value : $to;
 
-        // Gate membaca status terkini di DB (sumber kebenaran), bukan model yang mungkin stale.
-        $order->refresh();
-        $from = OrderStatus::tryFrom($order->status);
+        // Satu transaksi + row lock: dua admin/cron yang mengubah order bersamaan tidak lolos gate dua kali,
+        // dan kegagalan side-effect membatalkan perubahan status.
+        $from = DB::transaction(function () use ($order, $toValue, $actor, $note): OrderStatus {
+            // Gate membaca status terkini di DB (sumber kebenaran), bukan model yang mungkin stale.
+            Order::query()->whereKey($order->id)->lockForUpdate()->first();
+            $order->refresh();
+            $from = OrderStatus::tryFrom($order->status);
 
-        if (! $from) {
-            throw new \RuntimeException("Status order tidak dikenal: {$order->status}");
-        }
+            if (! $from) {
+                throw new \RuntimeException("Status order tidak dikenal: {$order->status}");
+            }
 
-        if (! $from->canTransitionTo($toValue)) {
-            throw new \RuntimeException("Transisi status tidak sah: {$order->status} → {$toValue}");
-        }
+            if (! $from->canTransitionTo($toValue)) {
+                throw new \RuntimeException("Transisi status tidak sah: {$order->status} → {$toValue}");
+            }
 
-        $order->status = $toValue;
+            $order->status = $toValue;
 
-        if ($toValue === OrderStatus::MenungguPelunasanPengambilan->value) {
-            $order->pickup_deadline_at = now()->addDays((int) setting('late_penalty_pickup_days', 7));
-        }
+            if ($toValue === OrderStatus::MenungguPelunasanPengambilan->value) {
+                $order->pickup_deadline_at = now()->addDays((int) setting('late_penalty_pickup_days', 7));
+            }
 
-        // PRD 7.x/51: timestamp "keputus" tetap hangus_at walau order kembali ke Hangus dari Menunggu Denda.
-        if ($toValue === OrderStatus::Hangus->value && $order->hangus_at === null) {
-            $order->hangus_at = now();
-        }
+            // PRD 7.x/51: timestamp "keputus" tetap hangus_at walau order kembali ke Hangus dari Menunggu Denda.
+            if ($toValue === OrderStatus::Hangus->value && $order->hangus_at === null) {
+                $order->hangus_at = now();
+            }
 
-        if ($toValue === OrderStatus::MenungguPembayaran->value) {
-            // Reset batas upload bukti 1×24 jam (PRD 17.10 — setelah admin menolak).
-            $order->payment_deadline_at = now()->addHours(24);
-        }
+            if ($toValue === OrderStatus::MenungguPembayaran->value) {
+                // Reset batas upload bukti 1×24 jam (PRD 17.10 — setelah admin menolak).
+                $order->payment_deadline_at = now()->addHours(24);
+            }
 
-        $order->save();
+            $order->save();
 
-        OrderStatusLog::create([
-            'order_id' => $order->id,
-            'status' => $toValue,
-            'changed_by' => $actor,
-            'note' => $note,
-        ]);
+            OrderStatusLog::create([
+                'order_id' => $order->id,
+                'status' => $toValue,
+                'changed_by' => $actor,
+                'note' => $note,
+            ]);
 
-        // PRD 43: perubahan status order → bell ke detail order.
-        app(UserNotificationService::class)->notify(
-            $order->user,
-            'order_status',
-            'Status pesanan '.$order->no_order.' kini '.ucwords(str_replace('_', ' ', $toValue)),
-            '/orders/'.$order->no_order
-        );
+            // PRD 43: perubahan status order → bell ke detail order.
+            app(UserNotificationService::class)->notify(
+                $order->user,
+                'order_status',
+                'Status pesanan '.$order->no_order.' kini '.ucwords(str_replace('_', ' ', $toValue)),
+                '/orders/'.$order->no_order
+            );
 
-        $order->refresh();
-        $this->applySideEffects($order, $toValue);
+            $order->refresh();
+            $this->applySideEffects($order, $toValue);
+
+            return $from;
+        });
+
         OrderStatusChanged::dispatch($order, $from->value, $toValue);
 
         return $order;

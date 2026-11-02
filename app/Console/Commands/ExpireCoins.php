@@ -5,6 +5,7 @@ namespace App\Console\Commands;
 use App\Models\Coin;
 use App\Models\CoinTransaction;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\DB;
 
 class ExpireCoins extends Command
 {
@@ -41,30 +42,33 @@ class ExpireCoins extends Command
         $count = 0;
 
         foreach ($lots as $lot) {
-            // Idempoten: baris expired dengan note "lot:{id}" sudah pernah memproses lot ini.
-            $already = CoinTransaction::where('type', CoinTransaction::TYPE_EXPIRED)
-                ->where('note', 'lot:'.$lot->id)
-                ->exists();
+            // Cek idempoten + saldo dalam satu transaksi dengan row lock; lot dengan note "lot:{id}" sudah diproses = lewati.
+            $processed = DB::transaction(function () use ($lot): bool {
+                $coin = Coin::where('user_id', $lot->user_id)->lockForUpdate()->first();
 
-            if ($already) {
+                if (CoinTransaction::where('type', CoinTransaction::TYPE_EXPIRED)->where('note', 'lot:'.$lot->id)->exists()) {
+                    return false;
+                }
+
+                if ($coin) {
+                    $deduct = min($lot->amount, $coin->balance);
+                    $coin->decrement('balance', $deduct);
+
+                    CoinTransaction::create([
+                        'user_id' => $lot->user_id,
+                        'order_id' => $lot->order_id,
+                        'type' => CoinTransaction::TYPE_EXPIRED,
+                        'amount' => -$deduct,
+                        'balance_after' => $coin->fresh()->balance,
+                        'note' => 'lot:'.$lot->id,
+                    ]);
+                }
+
+                return true;
+            });
+
+            if (! $processed) {
                 continue;
-            }
-
-            $coin = Coin::where('user_id', $lot->user_id)->lockForUpdate()->first();
-
-            if ($coin) {
-                $before = $coin->balance;
-                $deduct = min($lot->amount, $before);
-                $coin->decrement('balance', $deduct);
-
-                CoinTransaction::create([
-                    'user_id' => $lot->user_id,
-                    'order_id' => $lot->order_id,
-                    'type' => CoinTransaction::TYPE_EXPIRED,
-                    'amount' => -$deduct,
-                    'balance_after' => $coin->fresh()->balance,
-                    'note' => 'lot:'.$lot->id,
-                ]);
             }
 
             $count++;

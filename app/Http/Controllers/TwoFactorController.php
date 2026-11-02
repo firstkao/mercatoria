@@ -32,6 +32,15 @@ class TwoFactorController extends Controller
         $expected = Cache::get('admin_otp:'.$userId);
 
         if (! $user || ! $user->isAdmin() || $expected === null || ! hash_equals((string) $expected, (string) $request->input('code'))) {
+            // Batasi tebakan per OTP: 5 salah = OTP dihanguskan, admin harus login ulang.
+            $attemptsKey = 'admin_otp_attempts:'.$userId;
+            Cache::add($attemptsKey, 0, 300);
+
+            if (Cache::increment($attemptsKey) >= 5) {
+                Cache::forget('admin_otp:'.$userId);
+                Cache::forget($attemptsKey);
+            }
+
             return back()->withErrors(['code' => 'Kode OTP salah atau kedaluwarsa.']);
         }
 
@@ -53,6 +62,7 @@ class TwoFactorController extends Controller
         $code = str_pad((string) random_int(0, 999999), 6, '0', STR_PAD_LEFT);
 
         Cache::put('admin_otp:'.$user->id, $code, 300);
+        Cache::forget('admin_otp_attempts:'.$user->id);
         Cache::put('admin_otp_expires_at:'.$user->id, now()->addSeconds(300)->toIso8601String(), 300);
         $user->notify(new AdminOtpNotification($code));
 

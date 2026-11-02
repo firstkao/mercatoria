@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\AdminLog;
 use App\Models\Order;
+use App\Models\OrderStatus;
 use App\Models\Payment;
 use App\Models\Refund;
 use App\Services\Payment\RefundService;
@@ -42,6 +43,10 @@ class RefundController extends Controller
             'reason' => ['required', 'string', 'max:1000'],
         ]);
 
+        if ($error = $this->refundBlockedReason($order)) {
+            return back()->withErrors(['reason' => $error]);
+        }
+
         $refund = $this->refunds->requestFull($order, $data['reason'], $request->user());
         $this->log($request, 'refund_full', $order, $refund);
 
@@ -57,6 +62,10 @@ class RefundController extends Controller
             'amount' => ['required', 'numeric', 'min:0.01'],
             'reason' => ['required', 'string', 'max:1000'],
         ]);
+
+        if ($error = $this->refundBlockedReason($order)) {
+            return back()->withErrors(['amount' => $error])->withInput();
+        }
 
         $paid = (float) $order->payments()
             ->where('status', Payment::STATUS_VERIFIED)
@@ -103,6 +112,24 @@ class RefundController extends Controller
         $this->log($request, 'refund_reject', $refund->order, $refund);
 
         return redirect()->route('office.orders.show', $refund->order)->with('status', 'Refund ditolak.');
+    }
+
+    private function refundBlockedReason(Order $order): ?string
+    {
+        if (! OrderStatus::tryFrom($order->status)?->canTransitionTo(OrderStatus::DanaDikembalikan->value)) {
+            return 'Status pesanan saat ini tidak dapat direfund.';
+        }
+
+        if ($order->refunds()->where('status', Refund::STATUS_REQUESTED)->exists()) {
+            return 'Masih ada permintaan refund yang belum diproses untuk pesanan ini.';
+        }
+
+        $hasVerifiedPayment = $order->payments()
+            ->where('status', Payment::STATUS_VERIFIED)
+            ->where('type', '!=', Payment::TYPE_REFUND)
+            ->exists();
+
+        return $hasVerifiedPayment ? null : 'Pesanan belum memiliki pembayaran terverifikasi.';
     }
 
     private function log(Request $request, string $action, Order $order, Refund $refund): void

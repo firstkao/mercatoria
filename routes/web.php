@@ -86,7 +86,7 @@ Route::prefix('api/regions')->group(function () {
 */
 Route::middleware('guest')->group(function () {
     Route::get('/2fa/verify', [TwoFactorController::class, 'show'])->name('2fa.verify');
-    Route::post('/2fa/verify', [TwoFactorController::class, 'verify'])->name('2fa.verify.store');
+    Route::post('/2fa/verify', [TwoFactorController::class, 'verify'])->middleware('throttle:5,1')->name('2fa.verify.store');
 });
 
 /*

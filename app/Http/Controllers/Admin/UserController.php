@@ -49,7 +49,7 @@ class UserController extends Controller
             'email' => ['required', 'email', 'unique:users,email'],
             'password' => ['nullable', 'string', 'min:8'],
             'role' => ['nullable', 'in:customer'],
-            'tgl_lahir' => ['nullable', 'date'],
+            'tgl_lahir' => ['nullable', 'date', 'before:today', 'after:1900-01-01'],
             'no_hp' => ['required', 'regex:/^(?:\+?62|0)8[1-9][0-9]{6,11}$/'],
             'provinsi' => ['required', 'string', 'max:100'],
             'kota' => ['required', 'string', 'max:100'],
@@ -122,6 +122,10 @@ class UserController extends Controller
      */
     public function destroy(Request $request, User $user): RedirectResponse
     {
+        if ($user->is($request->user())) {
+            return back()->withErrors(['delete' => 'Anda tidak dapat menghapus akun Anda sendiri.']);
+        }
+
         if ($user->orders()->exists()) {
             return back()->withErrors(['delete' => 'User memiliki riwayat order dan tidak dapat dihapus.']);
         }
@@ -190,9 +194,13 @@ class UserController extends Controller
         $data = $request->validate([
             'name' => ['required', 'string', 'min:2', 'max:100'],
             'email' => ['required', 'email', 'unique:users,email,'.$user->id],
-            'role' => ['required', 'in:customer,admin'],
+            'role' => ['required', 'in:crush,customer,admin'],
             'password' => ['nullable', 'string', 'min:8'],
         ]);
+
+        if ($user->is($request->user()) && $data['role'] !== User::ROLE_ADMIN) {
+            return back()->withErrors(['role' => 'Anda tidak dapat menurunkan role akun Anda sendiri.'])->withInput();
+        }
 
         [$old, $new] = AdminLog::diff($user, ['name', 'email', 'role'], $data);
 

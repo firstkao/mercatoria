@@ -18,9 +18,9 @@ class CartService
             ->first();
 
         if ($cart) {
-            $cart->increment('qty', $qty);
+            $cart->update(['qty' => min(999, $cart->qty + $qty)]);
 
-            return $cart->fresh();
+            return $cart;
         }
 
         return Cart::create([

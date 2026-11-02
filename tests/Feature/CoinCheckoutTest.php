@@ -3,6 +3,8 @@
 use App\Models\Cart;
 use App\Models\Coin;
 use App\Models\CoinTransaction;
+use App\Models\Order;
+use App\Models\PaymentMethod;
 use App\Models\User;
 use App\Models\UserVoucher;
 
@@ -103,4 +105,36 @@ test('saldo koin pas untuk satu order saja — order kedua ditolak', function ()
     ]))->assertSessionHasErrors('coin_amount');
 
     expect(Coin::where('user_id', $user->id)->value('balance'))->toBe(0);
+});
+
+test('checkout menolak produk nonaktif di keranjang', function () {
+    $user = User::factory()->create();
+    $product = productFinal85();
+    $item = Cart::factory()->create(['user_id' => $user->id, 'product_id' => $product->id, 'qty' => 1]);
+    $product->update(['is_active' => false]);
+
+    $this->actingAs($user)->post('/checkout', checkoutPayload(['cart_item_ids' => [$item->id]]))
+        ->assertSessionHasErrors('cart_item_ids');
+
+    expect(Order::count())->toBe(0);
+});
+
+test('checkout menolak metode pembayaran yang dinonaktifkan admin', function () {
+    $user = User::factory()->create();
+    $item = Cart::factory()->create(['user_id' => $user->id, 'product_id' => productFinal85()->id, 'qty' => 1]);
+    $payload = checkoutPayload(['cart_item_ids' => [$item->id]]);
+    PaymentMethod::factory()->create(['code' => $payload['payment_method'], 'is_active' => false]);
+
+    $this->actingAs($user)->post('/checkout', $payload)->assertSessionHasErrors('payment_method');
+});
+
+test('qty keranjang tidak melebihi 999 saat produk ditambah berulang', function () {
+    $user = User::factory()->create();
+    $product = productFinal85();
+
+    foreach ([600, 600] as $qty) {
+        $this->actingAs($user)->post('/cart', ['product_id' => $product->id, 'qty' => $qty]);
+    }
+
+    expect(Cart::where('user_id', $user->id)->value('qty'))->toBe(999);
 });

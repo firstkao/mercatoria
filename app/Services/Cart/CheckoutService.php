@@ -8,6 +8,7 @@ use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\OrderItemSnapshot;
 use App\Models\OrderStatus;
+use App\Models\PaymentMethod;
 use App\Models\SplitBoxSlot;
 use App\Models\User;
 use App\Models\UserVoucher;
@@ -51,6 +52,18 @@ class CheckoutService
             if ($carts->count() !== count($cartItemIds)) {
                 throw ValidationException::withMessages([
                     'cart_item_ids' => 'Item keranjang tidak valid.',
+                ]);
+            }
+
+            if ($carts->contains(fn (Cart $cart) => ! $cart->product?->is_active)) {
+                throw ValidationException::withMessages([
+                    'cart_item_ids' => 'Ada produk di keranjang yang sudah tidak tersedia. Hapus dari keranjang lalu coba lagi.',
+                ]);
+            }
+
+            if (PaymentMethod::where('code', $data['payment_method'])->where('is_active', false)->exists()) {
+                throw ValidationException::withMessages([
+                    'payment_method' => 'Metode pembayaran tidak tersedia.',
                 ]);
             }
 

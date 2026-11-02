@@ -32,6 +32,7 @@ test('PRD 43: notifikasi hanya bisa ditandai dibaca oleh pemiliknya', function (
 
 test('PRD 34: refund partial tidak boleh melebihi pembayaran terverifikasi dikurangi refund sebelumnya', function () {
     [, $order] = placeTestOrder();
+    $order->forceFill(['status' => 'pembayaran_diterima'])->save();
     Payment::factory()->create(['order_id' => $order->id, 'type' => Payment::TYPE_FULL, 'amount' => 100000, 'status' => Payment::STATUS_VERIFIED]);
     $this->actingAs(User::factory()->admin()->create());
 
@@ -158,6 +159,7 @@ test('Inject user hanya boleh role customer, bukan admin', function () {
 
 test('Tolak bukti bayar wajib alasan', function () {
     [, $order] = placeTestOrder();
+    $order->forceFill(['status' => 'ditahan'])->save();
     $payment = Payment::factory()->create(['order_id' => $order->id]);
     $url = "/office/orders/{$order->no_order}/payments/{$payment->id}/reject";
     $this->actingAs(User::factory()->admin()->create());
@@ -213,4 +215,33 @@ test('PRD 18.4: Menunggu Denda tampil di Tagihan Menunggu dengan tombol bayar de
     $this->actingAs($user)->get('/dashboard')
         ->assertOk()
         ->assertSee('Unggah Bukti Denda', false);
+});
+
+test('refund full ditolak untuk order tanpa pembayaran terverifikasi atau berstatus tidak bisa direfund', function () {
+    [, $order] = placeTestOrder();
+    $this->actingAs(User::factory()->admin()->create());
+
+    $this->post("/office/orders/{$order->no_order}/refund", ['reason' => 'x'])->assertSessionHasErrors('reason');
+
+    $order->forceFill(['status' => 'pembayaran_diterima'])->save();
+    $this->post("/office/orders/{$order->no_order}/refund", ['reason' => 'x'])->assertSessionHasErrors('reason');
+
+    Payment::factory()->create(['order_id' => $order->id, 'type' => Payment::TYPE_FULL, 'amount' => 100000, 'status' => Payment::STATUS_VERIFIED]);
+    $this->post("/office/orders/{$order->no_order}/refund", ['reason' => 'x'])->assertSessionHasNoErrors();
+    $this->post("/office/orders/{$order->no_order}/refund", ['reason' => 'x'])->assertSessionHasErrors('reason');
+
+    expect(Refund::count())->toBe(1);
+});
+
+test('tolak bukti denda tidak error dan order tetap Menunggu Denda', function () {
+    [, $order] = placeTestOrder();
+    $order->forceFill(['status' => 'menunggu_denda'])->save();
+    $payment = Payment::factory()->create(['order_id' => $order->id, 'type' => Payment::TYPE_PENALTY, 'status' => Payment::STATUS_PENDING]);
+    $this->actingAs(User::factory()->admin()->create());
+
+    $this->post("/office/orders/{$order->no_order}/payments/{$payment->id}/reject", ['reason' => 'Buram'])
+        ->assertRedirect();
+
+    expect($payment->fresh()->status)->toBe(Payment::STATUS_REJECTED)
+        ->and($order->fresh()->status)->toBe('menunggu_denda');
 });

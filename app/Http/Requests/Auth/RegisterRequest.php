@@ -27,7 +27,7 @@ class RegisterRequest extends FormRequest
     {
         return [
             'name' => ['required', 'string', 'min:2', 'max:100'],
-            'tgl_lahir' => ['required', 'date'],
+            'tgl_lahir' => ['required', 'date', 'before:today', 'after:1900-01-01'],
             'no_hp' => ['required', 'string', 'regex:/^(?:\+?62|0)8[1-9][0-9]{6,11}$/'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
             'provinsi' => ['required', 'string', 'max:100'],

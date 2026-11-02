@@ -33,14 +33,20 @@ class ExpireUnclaimedOrders extends Command
             ->get();
 
         foreach ($orders as $order) {
+            try {
+                $statuses->changeStatus($order, OrderStatus::Hangus, 'system', 'Lewat 7 hari tanpa CO di marketplace');
+            } catch (\RuntimeException $e) {
+                $this->warn("Lewati {$order->no_order}: {$e->getMessage()}");
+
+                continue;
+            }
+
             // PRD 41.1: bell admin — order nearing expiry (7 hari lewat di Menunggu Pelunasan).
             app(AdminNotificationService::class)->notify(
                 'order_nearing_expiry',
                 'Order #'.$order->no_order.' lewat batas 7 hari di Menunggu Pelunasan',
                 '/office/orders/'.$order->no_order
             );
-
-            $statuses->changeStatus($order, OrderStatus::Hangus, 'system', 'Lewat 7 hari tanpa CO di marketplace');
         }
 
         $this->info("{$orders->count()} order berubah menjadi Hangus.");

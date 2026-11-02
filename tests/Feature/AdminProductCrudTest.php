@@ -175,3 +175,25 @@ test('admin dapat menandai satu notifikasi dibaca', function () {
 test('user terverifikasi yang membuka halaman verifikasi dialihkan, bukan error 500', function () {
     $this->actingAs(User::factory()->create())->get('/email/verify')->assertRedirect('/');
 });
+
+test('admin tidak dapat menghapus atau menurunkan role akunnya sendiri', function () {
+    $admin = User::factory()->admin()->create();
+
+    $this->actingAs($admin)->delete("/office/users/{$admin->id}")->assertSessionHasErrors('delete');
+    $this->actingAs($admin)->put("/office/users/{$admin->id}", [
+        'name' => $admin->name, 'email' => $admin->email, 'role' => 'customer',
+    ])->assertSessionHasErrors('role');
+
+    expect($admin->fresh()->role)->toBe('admin');
+});
+
+test('edit user crush mempertahankan role crush', function () {
+    $admin = User::factory()->admin()->create();
+    $crush = User::factory()->create(['role' => 'crush']);
+
+    $this->actingAs($admin)->put("/office/users/{$crush->id}", [
+        'name' => $crush->name, 'email' => $crush->email, 'role' => 'crush',
+    ])->assertRedirect();
+
+    expect($crush->fresh()->role)->toBe('crush');
+});

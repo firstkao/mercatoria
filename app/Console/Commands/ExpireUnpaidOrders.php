@@ -32,7 +32,12 @@ class ExpireUnpaidOrders extends Command
             ->get();
 
         foreach ($orders as $order) {
-            $statuses->changeStatus($order, OrderStatus::PembayaranGagal, 'system', 'Lewat 1x24 jam tanpa bukti bayar valid');
+            try {
+                $statuses->changeStatus($order, OrderStatus::PembayaranGagal, 'system', 'Lewat 1x24 jam tanpa bukti bayar valid');
+            } catch (\RuntimeException $e) {
+                // Status berubah di tengah jalan (mis. bukti diunggah) — lewati, jangan hentikan order lain.
+                $this->warn("Lewati {$order->no_order}: {$e->getMessage()}");
+            }
         }
 
         $this->info("{$orders->count()} order berubah menjadi Pembayaran Gagal.");

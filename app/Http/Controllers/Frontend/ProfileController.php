@@ -174,7 +174,7 @@ class ProfileController extends Controller
     public function storeComplete(Request $request): RedirectResponse
     {
         $data = $request->validate([
-            'tgl_lahir' => ['required', 'date'],
+            'tgl_lahir' => ['required', 'date', 'before:today', 'after:1900-01-01'],
         ]);
 
         // PRD 48: Tanggal Lahir locked, 1x set seumur hidup.

@@ -1,7 +1,10 @@
 <?php
 
+use App\Http\Controllers\TwoFactorController;
 use App\Models\User;
 use App\Notifications\AdminOtpNotification;
+use Illuminate\Routing\Middleware\ThrottleRequests;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Notification;
 
 test('admin harus verifikasi otp setelah password benar', function () {
@@ -73,7 +76,7 @@ test('halaman 2fa mengirim otpExpiresAt', function () {
 
     $response = $this->get('/2fa/verify')->assertOk();
 
-    $expiresAt = \Illuminate\Support\Carbon::parse($response->viewData('otpExpiresAt'));
+    $expiresAt = Carbon::parse($response->viewData('otpExpiresAt'));
     $sisaDetik = now()->diffInSeconds($expiresAt, false);
 
     expect($sisaDetik)->toBeGreaterThan(290)->toBeLessThanOrEqual(300);
@@ -88,5 +91,21 @@ test('countdown otp memakai otpExpiresAt di halaman', function () {
     $expiresAt = cache()->get('admin_otp_expires_at:'.$admin->id);
     $html = $this->get('/2fa/verify')->assertOk()->getContent();
 
-    expect($html)->toContain((string) \Illuminate\Support\Carbon::parse($expiresAt)->getTimestampMs());
+    expect($html)->toContain((string) Carbon::parse($expiresAt)->getTimestampMs());
+});
+
+test('OTP dihanguskan setelah 5 tebakan salah', function () {
+    $admin = User::factory()->admin()->create();
+    Notification::fake();
+    $code = TwoFactorController::issue($admin);
+    $this->withoutMiddleware(ThrottleRequests::class);
+    $this->withSession(['admin_2fa_id' => $admin->id]);
+
+    foreach (range(1, 5) as $i) {
+        $wrong = $code === '000000' ? '111111' : '000000';
+        $this->post('/2fa/verify', ['code' => $wrong])->assertSessionHasErrors('code');
+    }
+
+    $this->post('/2fa/verify', ['code' => $code])->assertSessionHasErrors('code');
+    $this->assertGuest();
 });

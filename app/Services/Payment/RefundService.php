@@ -39,6 +39,11 @@ class RefundService
 
         // ATOMIC (uang): koin/voucher + status refund + status order + notif — satu transaksi.
         return DB::transaction(function () use ($refund, $admin) {
+            // Re-cek dengan row lock: dua klik "selesai" serentak tidak boleh lolos dua kali.
+            if (Refund::query()->whereKey($refund->id)->lockForUpdate()->value('status') !== Refund::STATUS_REQUESTED) {
+                throw new \RuntimeException('Refund sudah diproses sebelumnya.');
+            }
+
             $order = $refund->order;
 
             // Koin/voucher dikembalikan SEBELUM status dana_dikembalikan —
