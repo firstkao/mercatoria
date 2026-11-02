@@ -85,3 +85,15 @@ nav[aria-label='Pagination'] span[aria-disabled='true'],
     opacity: 0.4;
     cursor: default;
 }
+
+/* Sembunyikan spinner naik/turun pada semua input number */
+input[type='number']::-webkit-outer-spin-button,
+input[type='number']::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+input[type='number'] {
+    -moz-appearance: textfield;
+    appearance: textfield;
+}

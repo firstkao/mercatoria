@@ -198,15 +198,20 @@
             var count = form.querySelectorAll('input[name="ids[]"]:checked').length;
 
             if (count === 0) {
-                alert('Pilih minimal 1 produk.');
+                AppModal.alert('Pilih minimal 1 produk.', { type: 'warning' });
                 return false;
             }
 
-            if (action === 'hapus') {
-                return confirm('Hapus PERMANEN ' + count + ' produk? Tidak bisa dibatalkan!');
-            }
+            var destructive = action === 'hapus';
+            var message = destructive
+                ? 'Hapus PERMANEN ' + count + ' produk? Tidak bisa dibatalkan!'
+                : 'Terapkan "' + action + '" ke ' + count + ' produk?';
 
-            return confirm('Terapkan "' + action + '" ke ' + count + ' produk?');
+            AppModal.confirm(message, { title: destructive ? 'Hapus Permanen' : 'Aksi Massal', danger: destructive }).then(function (ok) {
+                if (ok) { HTMLFormElement.prototype.submit.call(form); }
+            });
+
+            return false;
         }
     </script>
 @endsection

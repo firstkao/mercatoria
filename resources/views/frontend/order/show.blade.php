@@ -149,7 +149,7 @@
     @elseif ($canRequestRefund)
         <form method="POST" action="{{ route('orders.refund-request', $order->no_order) }}"
               class="mt-6 space-y-2 rounded-xl border border-rule bg-white p-4"
-              onsubmit="return confirm('Ajukan refund untuk pesanan ini?')">
+              data-confirm="Ajukan refund untuk pesanan ini?" data-confirm-title="Ajukan Refund" data-confirm-text="Ajukan">
             @csrf
             <label for="refund-reason" class="font-mono text-[10px] uppercase tracking-[0.14em] text-ink/55">Ajukan Refund</label>
             <textarea id="refund-reason" name="reason" rows="2" maxlength="1000" required placeholder="Alasan refund"

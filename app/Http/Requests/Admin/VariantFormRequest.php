@@ -32,8 +32,8 @@ class VariantFormRequest extends FormRequest
 
         return [
             'name' => ['required', 'string', 'max:150'],
-            'sku' => ['required', 'string', 'max:64', $sku],
-            'price_rmb' => ['nullable', 'numeric', 'min:0'],
+            'sku' => ['nullable', 'string', 'max:64', $sku],
+            'price_rmb' => ['required', 'numeric', 'min:0'],
             'weight_gram' => ['nullable', 'integer', 'min:1'],
             'availability' => ['required', 'in:tersedia,kosong'],
             'image' => ['nullable', 'file', 'mimes:jpg,jpeg,png,webp', 'max:6144'],

@@ -55,15 +55,14 @@ class ProductFormRequest extends FormRequest
                 'tags' => ['nullable', 'array'],
                 'tags.*' => ['integer', 'exists:tags,id'],
                 'variants' => ['nullable', 'array'],
-                'variants.*.name' => ['nullable', 'required_with:variants.*.sku', 'string', 'max:150'],
+                'variants.*.name' => ['nullable', 'required_with:variants.*.sku,variants.*.price_rmb,variants.*.weight_gram', 'string', 'max:150'],
                 'variants.*.sku' => [
                     'nullable',
-                    'required_with:variants.*.name',
                     'string',
                     'max:64',
                     Rule::unique('product_variants', 'sku'),
                 ],
-                'variants.*.price_rmb' => ['nullable', 'numeric', 'min:0'],
+                'variants.*.price_rmb' => ['nullable', 'required_with:variants.*.name,variants.*.sku,variants.*.weight_gram', 'numeric', 'min:0'],
                 'variants.*.weight_gram' => ['nullable', 'integer', 'min:1'],
                 'variants.*.availability' => ['nullable', 'in:tersedia,kosong'],
                 'variants.*.image' => ['nullable', 'file', 'mimes:jpg,jpeg,png,webp', 'max:6144'],
@@ -81,8 +80,8 @@ class ProductFormRequest extends FormRequest
 
             return [
                 'name' => ['required', 'string', 'max:150'],
-                'sku' => ['required', 'string', 'max:64', $sku],
-                'price_rmb' => ['nullable', 'numeric', 'min:0'],
+                'sku' => ['nullable', 'string', 'max:64', $sku],
+                'price_rmb' => ['required', 'numeric', 'min:0'],
                 'weight_gram' => ['nullable', 'integer', 'min:1'],
                 'availability' => ['required', 'in:tersedia,kosong'],
                 'image' => ['nullable', 'file', 'mimes:jpg,jpeg,png,webp', 'max:6144'],

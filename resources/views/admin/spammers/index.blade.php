@@ -43,7 +43,7 @@
                                 <form method="POST" action="{{ route('office.spammers.unblock', $spammer) }}" class="inline">
                                     @csrf
                                     <button class="text-sm font-medium text-link underline decoration-link/35 underline-offset-4"
-                                            onclick="return confirm('Unblock identitas ini?')">
+                                            data-confirm="Unblock identitas ini?" data-confirm-title="Unblock" data-confirm-text="Unblock">
                                         Unblock
                                     </button>
                                 </form>
@@ -54,8 +54,8 @@
                                         onclick="document.getElementById('fdel-{{ $spammer->id }}').showModal()">
                                     Forever Delete
                                 </button>
-                                <dialog id="fdel-{{ $spammer->id }}" class="rounded-xl border border-rule p-0">
-                                    <form method="POST" action="{{ route('office.users.forever-delete', $spammerUser) }}" class="p-5">
+                                <dialog id="fdel-{{ $spammer->id }}" class="m-auto w-[calc(100%-2rem)] max-w-md max-h-[90vh] overflow-y-auto rounded-2xl border border-rule p-0 shadow-2xl backdrop:bg-black/50">
+                                    <form method="POST" action="{{ route('office.users.forever-delete', $spammerUser) }}" class="p-6">
                                         @csrf
                                         <p class="text-sm font-semibold text-ink">Forever Delete &ldquo;{{ $spammerUser->name }}&rdquo;?</p>
                                         <p class="mt-1 text-xs text-ink/60">Tidak dapat dibatalkan. Ketik email persis untuk konfirmasi.</p>

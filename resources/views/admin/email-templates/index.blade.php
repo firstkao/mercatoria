@@ -35,7 +35,7 @@
                     <textarea name="body" rows="3" class="w-full rounded-lg border border-rule px-3 py-2 text-sm text-ink">{{ $template->body }}</textarea>
                     <div class="flex items-center justify-between">
                         <button class="rounded-lg border border-rule px-4 py-2 text-sm font-semibold text-ink transition-colors hover:border-ink">Simpan</button>
-                        <button type="submit" form="delete-template-{{ $template->id }}" class="text-xs text-danger hover:underline" onclick="return confirm('Hapus template ini?')">Hapus</button>
+                        <button type="submit" form="delete-template-{{ $template->id }}" class="text-xs text-danger hover:underline" data-confirm="Hapus template ini?" data-confirm-title="Hapus Template" data-confirm-text="Hapus" data-confirm-danger="1">Hapus</button>
                     </div>
                 </form>
                 <form id="delete-template-{{ $template->id }}" method="POST" action="{{ route('office.email-templates.destroy', $template) }}" class="hidden">

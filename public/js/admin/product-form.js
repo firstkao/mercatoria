@@ -161,7 +161,7 @@
         if (input.files && input.files[0]) {
             var sizeMB = input.files[0].size / 1024 / 1024;
             if (sizeMB > maxMB) {
-                alert('Ukuran file ' + sizeMB.toFixed(1) + ' MB melebihi batas ' + maxMB + ' MB.');
+                AppModal.alert('Ukuran file ' + sizeMB.toFixed(1) + ' MB melebihi batas ' + maxMB + ' MB.', { type: 'error', title: 'File Terlalu Besar' });
                 input.value = '';
                 return false;
             }
@@ -283,11 +283,16 @@
 
     window.deleteVariant = function () {
         if (!currentVariantId) return;
-        if (!confirm('Hapus varian ini permanen? Tindakan tidak bisa dibatalkan.')) return;
+        var variantId = currentVariantId;
+        AppModal.confirm('Hapus varian ini permanen? Tindakan tidak bisa dibatalkan.', { title: 'Hapus Varian', confirmText: 'Hapus', danger: true }).then(function (ok) {
+            if (ok) submitDeleteVariant(variantId);
+        });
+    };
 
+    function submitDeleteVariant(variantId) {
         var form = document.createElement('form');
         form.method = 'POST';
-        form.action = VARIANT_BASE_URL + '/' + currentVariantId;
+        form.action = VARIANT_BASE_URL + '/' + variantId;
 
         var csrf = document.createElement('input');
         csrf.type = 'hidden'; csrf.name = '_token'; csrf.value = CSRF_TOKEN;
@@ -299,7 +304,7 @@
 
         document.body.appendChild(form);
         form.submit();
-    };
+    }
 
     // ═══ BULK WEIGHT ═══
     window.openBulkWeight = function () {
@@ -335,7 +340,7 @@
     window.applyBulkWeight = function () {
         var val = parseInt(document.getElementById('bulk-weight-input').value);
         if (!val || val < 1) {
-            alert('Masukkan berat yang valid (minimal 1 gram).');
+            AppModal.alert('Masukkan berat yang valid (minimal 1 gram).', { type: 'error' });
             return;
         }
         var checked = Array.from(document.querySelectorAll('.variant-check:checked'));
@@ -355,8 +360,10 @@
             body: JSON.stringify({ weight_gram: val, ids: ids })
         })
         .then(function (r) {
-            if (!r.ok) throw new Error('Server error');
-            return r.json();
+            return r.json().catch(function () { return {}; }).then(function (j) {
+                if (!r.ok) throw new Error(j.message || 'Server error');
+                return j;
+            });
         })
         .then(function () {
             checked.forEach(function (c) {
@@ -374,7 +381,7 @@
             setTimeout(function () { closeModal('modal-bulk-success'); }, 2500);
         })
         .catch(function (err) {
-            alert('Gagal menyimpan: ' + err.message + '. Pastikan varian sudah ada di database.');
+            AppModal.alert('Gagal menyimpan: ' + err.message, { type: 'error', title: 'Gagal Menyimpan' });
         })
         .finally(function () {
             if (btn) {
@@ -387,20 +394,27 @@
     // ═══ BULK HARGA RMB ═══
     window.applyBulkPrice = function () {
         var checked = Array.from(document.querySelectorAll('.variant-check:checked'));
-        if (!checked.length) { alert('Pilih minimal 1 varian.'); return; }
-        var input = window.prompt('Harga RMB baru untuk ' + checked.length + ' varian terpilih:');
-        if (input === null) return;
-        var val = parseFloat(String(input).replace(',', '.'));
-        if (!(val > 0)) { alert('Masukkan harga RMB yang valid (lebih dari 0).'); return; }
+        if (!checked.length) { AppModal.alert('Pilih minimal 1 varian.', { type: 'warning' }); return; }
 
-        fetch(VARIANT_BASE_URL + '/bulk-price', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': CSRF_TOKEN, 'Accept': 'application/json' },
-            body: JSON.stringify({ price_rmb: val, ids: checked.map(function (c) { return parseInt(c.value); }) })
-        })
-        .then(function (r) { if (!r.ok) throw new Error('Server error'); return r.json(); })
-        .then(function () { window.location.reload(); })
-        .catch(function (err) { alert('Gagal menyimpan: ' + err.message); });
+        AppModal.prompt('Harga RMB baru untuk ' + checked.length + ' varian terpilih:', { title: 'Bulk Edit Harga RMB', placeholder: 'contoh: 120' }).then(function (input) {
+            if (input === null) return;
+            var val = parseFloat(String(input).replace(',', '.'));
+            if (!(val > 0)) { AppModal.alert('Masukkan harga RMB yang valid (lebih dari 0).', { type: 'error' }); return; }
+
+            fetch(VARIANT_BASE_URL + '/bulk-price', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': CSRF_TOKEN, 'Accept': 'application/json' },
+                body: JSON.stringify({ price_rmb: val, ids: checked.map(function (c) { return parseInt(c.value); }) })
+            })
+            .then(function (r) {
+                return r.json().catch(function () { return {}; }).then(function (j) {
+                    if (!r.ok) throw new Error(j.message || 'Server error');
+                    return j;
+                });
+            })
+            .then(function () { window.location.reload(); })
+            .catch(function (err) { AppModal.alert('Gagal menyimpan: ' + err.message, { type: 'error', title: 'Gagal Menyimpan' }); });
+        });
     };
 
     window.closeBulkSuccess = function () { closeModal('modal-bulk-success'); };

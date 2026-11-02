@@ -28,6 +28,20 @@ class ProductVariant extends Model
         ];
     }
 
+    /**
+     * SKU otomatis bila dikosongkan: {SKU produk}-V{n}, dijamin unik.
+     */
+    public static function generateSku(Product $product): string
+    {
+        $n = $product->variants()->count() + 1;
+
+        do {
+            $sku = mb_substr($product->sku, 0, 56).'-V'.$n++;
+        } while (static::where('sku', $sku)->exists());
+
+        return $sku;
+    }
+
     public function product(): BelongsTo
     {
         return $this->belongsTo(Product::class);

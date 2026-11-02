@@ -138,7 +138,7 @@ test('varian, bulk produk dan bulk berat divalidasi lewat form request khusus', 
     $admin = User::factory()->admin()->create();
     $product = Product::factory()->create();
 
-    $this->actingAs($admin)->post("/office/products/{$product->id}/variants", [])->assertSessionHasErrors(['name', 'sku', 'availability']);
+    $this->actingAs($admin)->post("/office/products/{$product->id}/variants", [])->assertSessionHasErrors(['name', 'price_rmb', 'availability']);
     $this->actingAs($admin)->post('/office/products/bulk', ['action' => 'hapus'])->assertSessionHasErrors('ids');
     $this->actingAs($admin)->post("/office/products/{$product->id}/variants/bulk-weight", ['weight_gram' => 0])->assertSessionHasErrors(['weight_gram', 'ids']);
 });
@@ -226,4 +226,62 @@ test('bulk edit harga RMB varian: hanya varian produk itu, validasi harga positi
 
     $this->actingAs($admin)->postJson($url, ['price_rmb' => 0, 'ids' => [$a->id]])->assertJsonValidationErrors('price_rmb');
     $this->actingAs(User::factory()->create())->postJson($url, ['price_rmb' => 5, 'ids' => [$a->id]])->assertForbidden();
+});
+
+test('varian: SKU boleh kosong dan di-generate otomatis, nama dan harga wajib', function () {
+    $admin = adminUser();
+    $product = Product::factory()->create(['sku' => 'PRD-1']);
+
+    $this->actingAs($admin)->post("/office/products/{$product->id}/variants", [
+        'name' => 'Size L', 'price_rmb' => 10, 'availability' => 'tersedia',
+    ])->assertSessionHasNoErrors();
+
+    expect($product->variants()->first()->sku)->toBe('PRD-1-V1');
+
+    $this->actingAs($admin)->post("/office/products/{$product->id}/variants", [
+        'sku' => 'X-1', 'price_rmb' => 10, 'availability' => 'tersedia',
+    ])->assertSessionHasErrors('name');
+
+    $this->actingAs($admin)->post("/office/products/{$product->id}/variants", [
+        'name' => 'Tanpa Harga', 'availability' => 'tersedia',
+    ])->assertSessionHasErrors('price_rmb');
+});
+
+test('varian inline saat buat produk: harga wajib, SKU kosong di-generate', function () {
+    $admin = adminUser();
+    $game = Game::factory()->create();
+    $payload = [
+        'game_id' => $game->id, 'name' => 'Inline', 'sku' => 'INL-1', 'slug' => 'inline',
+        'price_rmb' => 50, 'weight_gram' => 100, 'type' => 'variant', 'availability' => 'tersedia',
+    ];
+
+    $this->actingAs($admin)->post('/office/products', $payload + ['variants' => [['name' => 'A']]])
+        ->assertSessionHasErrors('variants.0.price_rmb');
+
+    $this->actingAs($admin)->post('/office/products', $payload + ['variants' => [['name' => 'A', 'price_rmb' => 5]]])
+        ->assertSessionHasNoErrors();
+
+    expect(Product::where('sku', 'INL-1')->first()->variants()->first()->sku)->toBe('INL-1-V1');
+});
+
+test('Buat Split Box: nama diberi suffix (Split Box) dan slug di-regenerate dari nama', function () {
+    $admin = adminUser();
+    $product = Product::factory()->create(['name' => 'Millennium T-Shirt', 'slug' => 'millennium-tshirt']);
+
+    $this->actingAs($admin)->post(route('office.products.split-clone', $product), [
+        'split_name' => 'Millennium T-Shirt', 'split_price_rmb' => 10,
+    ])->assertRedirect();
+
+    $copy = Product::where('is_split_box', true)->firstOrFail();
+    expect($copy->name)->toBe('Millennium T-Shirt (Split Box)')
+        ->and($copy->slug)->toBe('millennium-t-shirt-split-box');
+
+    // Nama diedit manual (suffix dihapus / diganti kapitalisasi) tetap dinormalisasi; slug dijamin unik.
+    $this->actingAs($admin)->post(route('office.products.split-clone', $product), [
+        'split_name' => 'Millennium T-Shirt (split box)', 'split_price_rmb' => 10,
+    ])->assertRedirect();
+
+    $second = Product::where('is_split_box', true)->latest('id')->firstOrFail();
+    expect($second->name)->toBe('Millennium T-Shirt (Split Box)')
+        ->and($second->slug)->toBe('millennium-t-shirt-split-box-2');
 });

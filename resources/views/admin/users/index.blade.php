@@ -214,8 +214,8 @@
     {{-- ═══ DIALOGS (Hard Delete / Forever Delete / Notify) ═══ --}}
     @foreach ($users as $user)
         @if (\App\Models\Spammer::blocksIdentity($user->email, $user->no_hp))
-            <dialog id="del-{{ $user->id }}" class="m-auto rounded-xl border border-rule p-0">
-                <form method="POST" action="{{ route('office.users.destroy', $user) }}" class="p-5">
+            <dialog id="del-{{ $user->id }}" class="m-auto w-[calc(100%-2rem)] max-w-md max-h-[90vh] overflow-y-auto rounded-2xl border border-rule p-0 shadow-2xl backdrop:bg-black/50">
+                <form method="POST" action="{{ route('office.users.destroy', $user) }}" class="p-6">
                     @csrf @method('DELETE')
                     <div class="flex items-center gap-3">
                         <div class="flex h-10 w-10 items-center justify-center rounded-full bg-red-50">
@@ -236,8 +236,8 @@
                 </form>
             </dialog>
 
-            <dialog id="fdel-{{ $user->id }}" class="m-auto rounded-xl border border-rule p-0">
-                <form method="POST" action="{{ route('office.users.forever-delete', $user) }}" class="p-5">
+            <dialog id="fdel-{{ $user->id }}" class="m-auto w-[calc(100%-2rem)] max-w-md max-h-[90vh] overflow-y-auto rounded-2xl border border-rule p-0 shadow-2xl backdrop:bg-black/50">
+                <form method="POST" action="{{ route('office.users.forever-delete', $user) }}" class="p-6">
                     @csrf
                     <div class="flex items-center gap-3">
                         <div class="flex h-10 w-10 items-center justify-center rounded-full bg-red-50">
@@ -260,8 +260,8 @@
         @endif
 
         @if (\Illuminate\Support\Facades\Route::has('office.users.notify'))
-            <dialog id="notify-{{ $user->id }}" class="m-auto rounded-xl border border-rule p-0">
-                <form method="POST" action="{{ route('office.users.notify', $user) }}" class="p-5">
+            <dialog id="notify-{{ $user->id }}" class="m-auto w-[calc(100%-2rem)] max-w-md max-h-[90vh] overflow-y-auto rounded-2xl border border-rule p-0 shadow-2xl backdrop:bg-black/50">
+                <form method="POST" action="{{ route('office.users.notify', $user) }}" class="p-6">
                     @csrf
                     <div class="flex items-center gap-3">
                         <div class="flex h-10 w-10 items-center justify-center rounded-full bg-blue-50">

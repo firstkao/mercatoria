@@ -67,7 +67,7 @@
                 }
             });
 
-            if (!pending.length) { alert('Tidak ada perubahan.'); return; }
+            if (!pending.length) { AppModal.alert('Tidak ada perubahan.', { type: 'info' }); return; }
 
             var btn = this;
             btn.disabled = true;
@@ -123,10 +123,11 @@
     if (bulkDeleteBtn) {
         bulkDeleteBtn.addEventListener('click', function () {
             var checked = Array.from(list.querySelectorAll('.dev-checkbox:checked'));
-            if (!checked.length) { alert('Pilih developer yang mau dihapus.'); return; }
-            if (!confirm('Hapus ' + checked.length + ' developer terpilih? Developer yang masih terpakai akan ditolak.')) return;
+            if (!checked.length) { AppModal.alert('Pilih developer yang mau dihapus.', { type: 'warning' }); return; }
 
             var btn = this;
+            AppModal.confirm('Hapus ' + checked.length + ' developer terpilih? Developer yang masih terpakai akan ditolak.', { title: 'Hapus Developer', confirmText: 'Hapus', danger: true }).then(function (ok) {
+            if (!ok) return;
             btn.disabled = true;
             btn.textContent = 'Menghapus...';
             var done = 0;
@@ -165,10 +166,11 @@
                             btn.disabled = false;
                             btn.textContent = 'Hapus Terpilih';
                             if (gagal > 0) {
-                                alert(gagal + ' developer tidak bisa dihapus (masih terpakai).');
+                                AppModal.alert(gagal + ' developer tidak bisa dihapus (masih terpakai).', { type: 'error' });
                             }
                         }
                     });
+            });
             });
         });
     }

@@ -90,9 +90,10 @@
                                 <span class="ml-1 text-xs text-gray-400">· closes {{ $batch->closes_at->format('d/m/Y H:i') }}</span>
                             @endif
                         </span>
-                        @if ($batch->status === 'open')
+                        @if (in_array($batch->status, ['open', 'full'], true))
                             <button wire:click="closeRefund({{ $batch->id }})"
-                                    wire:confirm="Tutup kloter & refund semua order terkunci?"
+                                    data-confirm="Tutup kloter & refund semua order terkunci?"
+                                    data-confirm-title="Tutup Kloter" data-confirm-text="Tutup &amp; Refund" data-confirm-danger="1"
                                     wire:loading.attr="disabled"
                                     class="text-xs text-red-600 hover:underline disabled:opacity-50">
                                 <span wire:loading.remove wire:target="closeRefund({{ $batch->id }})">Tutup Kloter &amp; Refund Semua</span>

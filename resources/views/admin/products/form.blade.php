@@ -729,18 +729,18 @@
                                     </div>
                                     <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
                                         <div>
-                                            <label class="block text-xs font-semibold text-ink/70">Nama Varian</label>
+                                            <label class="block text-xs font-semibold text-ink/70">Nama Varian <span class="text-danger">*</span></label>
                                             <input type="text" name="variants[0][name]" placeholder="cth: Size L"
                                                    class="mt-1.5 w-full rounded-lg border border-rule px-3.5 py-2.5 text-sm text-ink focus:border-ink focus:ring-1 focus:ring-ink/10">
                                         </div>
                                         <div>
-                                            <label class="block text-xs font-semibold text-ink/70">SKU</label>
-                                            <input type="text" name="variants[0][sku]" placeholder="SKU-001"
+                                            <label class="block text-xs font-semibold text-ink/70">SKU <span class="font-normal text-ink/40">(opsional)</span></label>
+                                            <input type="text" name="variants[0][sku]" placeholder="otomatis jika kosong"
                                                    class="mt-1.5 w-full rounded-lg border border-rule px-3.5 py-2.5 text-sm text-ink focus:border-ink focus:ring-1 focus:ring-ink/10">
                                         </div>
                                         <div>
-                                            <label class="block text-xs font-semibold text-ink/70">Harga RMB <span class="font-normal text-ink/40">(opsional)</span></label>
-                                            <input type="number" step="0.01" name="variants[0][price_rmb]" placeholder="ikut produk"
+                                            <label class="block text-xs font-semibold text-ink/70">Harga RMB <span class="text-danger">*</span></label>
+                                            <input type="number" step="0.01" min="0" name="variants[0][price_rmb]" placeholder="cth: 120"
                                                    class="mt-1.5 w-full rounded-lg border border-rule px-3.5 py-2.5 text-sm text-ink focus:border-ink focus:ring-1 focus:ring-ink/10">
                                         </div>
                                         <div>
@@ -1077,7 +1077,7 @@
                     </p>
                     <form method="POST" action="{{ route('office.products.duplicate', $product) }}"
                           class="mt-3"
-                          onsubmit="return confirm('Salin produk ini? Salinan akan disimpan sebagai Draft.')">
+                          data-confirm="Salin produk ini? Salinan akan disimpan sebagai Draft." data-confirm-title="Salin Produk" data-confirm-text="Salin">
                         @csrf
                         <button type="submit"
                                 class="flex w-full items-center justify-center gap-2 rounded-lg border border-blue-200 bg-blue-50/50 px-4 py-2.5 text-sm font-semibold text-blue-700 transition-colors hover:border-blue-400 hover:bg-blue-50">
@@ -1134,8 +1134,8 @@
 
 {{-- ═══ MODAL: Tambah Varian ═══ --}}
 @if ($product->exists)
-<div id="modal-add-variant" class="fixed inset-0 z-[100] hidden items-center justify-center bg-black/50 p-6">
-    <div class="w-full max-w-lg overflow-hidden rounded-2xl border border-rule bg-white shadow-2xl">
+<div id="modal-add-variant" class="fixed inset-0 z-[100] hidden items-center justify-center bg-black/50 p-4">
+    <div class="w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-2xl border border-rule bg-white shadow-2xl">
         <div class="flex items-center gap-4 border-b border-rule px-8 py-5">
             <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-emerald-50">
                 <i class="bi bi-plus-lg text-emerald-600" style="font-size:1.1rem;"></i>
@@ -1157,15 +1157,15 @@
                 </div>
                 <div class="grid grid-cols-2 gap-4">
                     <div>
-                        <label class="block text-sm font-semibold text-ink">SKU <span class="text-danger">*</span></label>
-                        <input type="text" name="sku" required
+                        <label class="block text-sm font-semibold text-ink">SKU <span class="font-normal text-ink/40">(opsional)</span></label>
+                        <input type="text" name="sku" placeholder="otomatis jika kosong"
                                class="mt-2 w-full rounded-lg border border-rule px-4 py-2.5 text-sm text-ink transition-colors focus:border-ink focus:ring-1 focus:ring-ink/10">
                     </div>
                     <div>
-                        <label class="block text-sm font-semibold text-ink">Harga RMB</label>
+                        <label class="block text-sm font-semibold text-ink">Harga RMB <span class="text-danger">*</span></label>
                         <div class="relative mt-2">
                             <span class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-sm text-ink/40">¥</span>
-                            <input type="number" step="0.01" name="price_rmb"
+                            <input type="number" step="0.01" min="0" name="price_rmb" required
                                    class="w-full rounded-lg border border-rule py-2.5 pl-8 pr-4 text-sm text-ink transition-colors focus:border-ink focus:ring-1 focus:ring-ink/10">
                         </div>
                     </div>
@@ -1209,8 +1209,8 @@
 
 {{-- ═══ MODAL: Hard Delete ═══ --}}
 @if ($product->exists)
-<div id="modal-delete" class="fixed inset-0 z-[100] hidden items-center justify-center bg-black/50 p-6">
-    <div class="w-full max-w-lg overflow-hidden rounded-2xl border border-rule bg-white shadow-2xl">
+<div id="modal-delete" class="fixed inset-0 z-[100] hidden items-center justify-center bg-black/50 p-4">
+    <div class="w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-2xl border border-rule bg-white shadow-2xl">
         <div class="flex items-center gap-4 border-b border-red-100 bg-red-50/50 px-8 py-6">
             <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-red-100">
                 <i class="bi bi-exclamation-triangle text-red-600" style="font-size:1.35rem;"></i>
@@ -1261,8 +1261,8 @@
 
 {{-- ═══ MODAL: Edit Varian ═══ --}}
 @if ($product->exists)
-<div id="modal-edit-variant" class="fixed inset-0 z-[100] hidden items-center justify-center bg-black/50 p-6">
-    <div class="w-full max-w-lg overflow-hidden rounded-2xl border border-rule bg-white shadow-2xl">
+<div id="modal-edit-variant" class="fixed inset-0 z-[100] hidden items-center justify-center bg-black/50 p-4">
+    <div class="w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-2xl border border-rule bg-white shadow-2xl">
         <div class="flex items-center gap-4 border-b border-rule px-8 py-5">
             <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-blue-50">
                 <i class="bi bi-pencil text-blue-600" style="font-size:1.1rem;"></i>
@@ -1277,21 +1277,21 @@
             @method('PUT')
             <div class="space-y-5 px-8 py-6">
                 <div>
-                    <label class="block text-sm font-semibold text-ink">Nama Varian</label>
+                    <label class="block text-sm font-semibold text-ink">Nama Varian <span class="text-danger">*</span></label>
                     <input type="text" name="name" id="ev-name" required
                            class="mt-2 w-full rounded-lg border border-rule px-4 py-2.5 text-sm text-ink transition-colors focus:border-ink focus:ring-1 focus:ring-ink/10">
                 </div>
                 <div class="grid grid-cols-2 gap-4">
                     <div>
-                        <label class="block text-sm font-semibold text-ink">SKU</label>
-                        <input type="text" name="sku" id="ev-sku" required
+                        <label class="block text-sm font-semibold text-ink">SKU <span class="font-normal text-ink/40">(opsional)</span></label>
+                        <input type="text" name="sku" id="ev-sku" placeholder="tetap jika kosong"
                                class="mt-2 w-full rounded-lg border border-rule px-4 py-2.5 text-sm text-ink transition-colors focus:border-ink focus:ring-1 focus:ring-ink/10">
                     </div>
                     <div>
-                        <label class="block text-sm font-semibold text-ink">Harga RMB</label>
+                        <label class="block text-sm font-semibold text-ink">Harga RMB <span class="text-danger">*</span></label>
                         <div class="relative mt-2">
                             <span class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-sm text-ink/40">¥</span>
-                            <input type="number" step="0.01" name="price_rmb" id="ev-price"
+                            <input type="number" step="0.01" min="0" name="price_rmb" id="ev-price" required
                                    class="w-full rounded-lg border border-rule py-2.5 pl-8 pr-4 text-sm text-ink transition-colors focus:border-ink focus:ring-1 focus:ring-ink/10">
                         </div>
                     </div>
@@ -1341,8 +1341,8 @@
 @endif
 
 {{-- ═══ MODAL: Bulk Edit Berat ═══ --}}
-<div id="modal-bulk-weight" class="fixed inset-0 z-[100] hidden items-center justify-center bg-black/50 p-6">
-    <div class="w-full max-w-[560px] overflow-hidden rounded-2xl border border-rule bg-white shadow-2xl">
+<div id="modal-bulk-weight" class="fixed inset-0 z-[100] hidden items-center justify-center bg-black/50 p-4">
+    <div class="w-full max-w-[560px] max-h-[90vh] overflow-y-auto rounded-2xl border border-rule bg-white shadow-2xl">
         <div class="flex items-center gap-4 border-b border-rule px-8 py-5">
             <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-amber-50">
                 <i class="bi bi-pencil-square text-amber-600" style="font-size:1.1rem;"></i>
@@ -1385,8 +1385,8 @@
 </div>
 
 {{-- MODAL: Bulk Success --}}
-<div id="modal-bulk-success" class="fixed inset-0 z-[100] hidden items-center justify-center bg-black/50 p-6">
-    <div class="w-full max-w-md overflow-hidden rounded-2xl border border-rule bg-white shadow-2xl">
+<div id="modal-bulk-success" class="fixed inset-0 z-[100] hidden items-center justify-center bg-black/50 p-4">
+    <div class="w-full max-w-md max-h-[90vh] overflow-y-auto rounded-2xl border border-rule bg-white shadow-2xl">
         <div class="flex items-center gap-4 border-b border-green-100 bg-green-50/50 px-8 py-5">
             <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-green-100">
                 <i class="bi bi-check-circle text-green-600" style="font-size:1.3rem;"></i>
@@ -1405,8 +1405,8 @@
 
 {{-- ═══ MODAL: Buat Split Box ═══ --}}
 @if ($product->exists && ! $product->is_split_box)
-<div id="modal-split-clone" class="fixed inset-0 z-[100] hidden items-center justify-center bg-black/50 p-6">
-    <div class="w-full max-w-lg overflow-hidden rounded-2xl border border-rule bg-white shadow-2xl">
+<div id="modal-split-clone" class="fixed inset-0 z-[100] hidden items-center justify-center bg-black/50 p-4">
+    <div class="w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-2xl border border-rule bg-white shadow-2xl">
         <div class="flex items-center gap-4 border-b border-rule px-8 py-6">
             <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-blue-50 to-indigo-100">
                 <i class="bi bi-grid-3x3-gap text-blue-600" style="font-size:1.35rem;"></i>
@@ -1486,12 +1486,12 @@
             +     '<button type="button" class="remove-btn" onclick="removeVariantRow(this)" title="Hapus baris">&times;</button>'
             +   '</div>'
             +   '<div class="grid grid-cols-1 gap-4 sm:grid-cols-2">'
-            +     '<div><label class="block text-xs font-semibold text-ink/70">Nama Varian</label>'
+            +     '<div><label class="block text-xs font-semibold text-ink/70">Nama Varian <span class="text-danger">*</span></label>'
             +       '<input type="text" name="variants[' + vIndex + '][name]" placeholder="cth: Size L" class="mt-1.5 w-full rounded-lg border border-rule px-3.5 py-2.5 text-sm text-ink focus:border-ink focus:ring-1 focus:ring-ink/10"></div>'
-            +     '<div><label class="block text-xs font-semibold text-ink/70">SKU</label>'
-            +       '<input type="text" name="variants[' + vIndex + '][sku]" placeholder="SKU-001" class="mt-1.5 w-full rounded-lg border border-rule px-3.5 py-2.5 text-sm text-ink focus:border-ink focus:ring-1 focus:ring-ink/10"></div>'
-            +     '<div><label class="block text-xs font-semibold text-ink/70">Harga RMB <span class="font-normal text-ink/40">(opsional)</span></label>'
-            +       '<input type="number" step="0.01" name="variants[' + vIndex + '][price_rmb]" placeholder="ikut produk" class="mt-1.5 w-full rounded-lg border border-rule px-3.5 py-2.5 text-sm text-ink focus:border-ink focus:ring-1 focus:ring-ink/10"></div>'
+            +     '<div><label class="block text-xs font-semibold text-ink/70">SKU <span class="font-normal text-ink/40">(opsional)</span></label>'
+            +       '<input type="text" name="variants[' + vIndex + '][sku]" placeholder="otomatis jika kosong" class="mt-1.5 w-full rounded-lg border border-rule px-3.5 py-2.5 text-sm text-ink focus:border-ink focus:ring-1 focus:ring-ink/10"></div>'
+            +     '<div><label class="block text-xs font-semibold text-ink/70">Harga RMB <span class="text-danger">*</span></label>'
+            +       '<input type="number" step="0.01" min="0" name="variants[' + vIndex + '][price_rmb]" placeholder="cth: 120" class="mt-1.5 w-full rounded-lg border border-rule px-3.5 py-2.5 text-sm text-ink focus:border-ink focus:ring-1 focus:ring-ink/10"></div>'
             +     '<div><label class="block text-xs font-semibold text-ink/70">Berat (gram) <span class="font-normal text-ink/40">(opsional)</span></label>'
             +       '<input type="number" name="variants[' + vIndex + '][weight_gram]" placeholder="ikut produk" class="mt-1.5 w-full rounded-lg border border-rule px-3.5 py-2.5 text-sm text-ink focus:border-ink focus:ring-1 focus:ring-ink/10"></div>'
             +     '<div><label class="block text-xs font-semibold text-ink/70">Ketersediaan</label>'

@@ -344,7 +344,7 @@
                 @endif
                 @if (in_array($order->status, ['hangus', 'menunggu_denda'], true))
                     <form method="POST" action="{{ route('office.orders.hangus-permanent', $order->no_order) }}" class="mt-2"
-                          onsubmit="return confirm('Tetapkan Hangus Permanen? Tidak dapat dibuka lagi.')">
+                          data-confirm="Tetapkan Hangus Permanen? Tidak dapat dibuka lagi." data-confirm-title="Hangus Permanen" data-confirm-danger="1">
                         @csrf
                         <button class="w-full rounded-lg border border-danger/40 py-2 text-sm font-semibold text-danger transition-colors hover:border-danger">
                             Hangus Permanen

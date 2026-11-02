@@ -100,7 +100,7 @@ class ProductController extends Controller
 
         // Auto type=variant kalau ada inline variants
         $variantRows = collect($request->input('variants', []))
-            ->filter(fn ($v) => filled(data_get($v, 'name')) || filled(data_get($v, 'sku')));
+            ->filter(fn ($v) => filled(data_get($v, 'name')) || filled(data_get($v, 'sku')) || filled(data_get($v, 'price_rmb')));
         if ($variantRows->isNotEmpty()) {
             $data['type'] = 'variant';
         }
@@ -133,20 +133,21 @@ class ProductController extends Controller
         $rows = collect($request->input('variants', []));
 
         foreach ($rows as $i => $v) {
-            if (blank(data_get($v, 'name')) && blank(data_get($v, 'sku'))) {
+            if (blank(data_get($v, 'name')) && blank(data_get($v, 'sku')) && blank(data_get($v, 'price_rmb'))) {
                 continue;
             }
 
             // [FIX #5] Validasi per-row sebelum insert
             $validated = validator($v, [
                 'name' => 'required|string|max:255',
-                'sku' => 'required|string|max:100|unique:product_variants,sku',
-                'price_rmb' => 'nullable|numeric|min:0',
-                'weight_gram' => 'nullable|integer|min:0',
+                'sku' => 'nullable|string|max:64|unique:product_variants,sku',
+                'price_rmb' => 'required|numeric|min:0',
+                'weight_gram' => 'nullable|integer|min:1',
                 'availability' => 'nullable|in:tersedia,kosong',
             ])->validate();
 
             $validated['availability'] = $validated['availability'] ?? 'tersedia';
+            $validated['sku'] = $validated['sku'] ?? ProductVariant::generateSku($product);
 
             if ($request->hasFile("variants.{$i}.image")) {
                 $validated['image_path'] = $this->storeImage(
@@ -216,8 +217,19 @@ class ProductController extends Controller
         ]);
 
         $copy = $this->duplicateProduct($product, $request->user(), withVariants: false);
+
+        // Nama selalu berakhiran " (Split Box)" dan slug selalu di-regenerate dari nama + "-split-box".
+        $baseName = trim(preg_replace('/\s*\(\s*split\s*box\s*\)\s*$/i', '', $data['split_name']));
+        $name = ($baseName !== '' ? $baseName : $product->name).' (Split Box)';
+        $baseSlug = Str::slug($baseName !== '' ? $baseName : $product->name).'-split-box';
+        $slug = $baseSlug;
+        for ($n = 2; Product::where('slug', $slug)->whereKeyNot($copy->id)->exists(); $n++) {
+            $slug = $baseSlug.'-'.$n;
+        }
+
         $copy->update([
-            'name' => $data['split_name'],
+            'name' => $name,
+            'slug' => $slug,
             'price_rmb' => $data['split_price_rmb'],
             'is_split_box' => true,
         ]);
@@ -426,6 +438,8 @@ class ProductController extends Controller
             return back()->withErrors(['price_rmb' => $error])->withInput();
         }
 
+        $data['sku'] = $data['sku'] ?? ProductVariant::generateSku($product);
+
         $variant = $product->variants()->create($data);
 
         AdminLog::record($request->user(), 'create', 'ProductVariant', $variant->id, null, $data, 'Tambah varian');
@@ -452,6 +466,8 @@ class ProductController extends Controller
         if ($error = $this->splitBoxUniformError($product, $data, $variant)) {
             return back()->withErrors(['price_rmb' => $error])->withInput();
         }
+
+        $data['sku'] = $data['sku'] ?? $variant->sku;
 
         $variant->update($data);
 

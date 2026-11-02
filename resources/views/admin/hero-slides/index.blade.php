@@ -59,7 +59,7 @@
                     <form method="POST" action="{{ route('office.hero-slides.destroy', $slide) }}" class="inline">
                         @csrf @method('DELETE')
                         <button class="rounded-lg border border-danger/40 px-3 py-1 text-xs font-semibold text-danger transition-colors hover:border-danger"
-                                onclick="return confirm('Hapus hero slide ini?')">
+                                data-confirm="Hapus hero slide ini?" data-confirm-title="Hapus Hero Slide" data-confirm-text="Hapus" data-confirm-danger="1">
                             Hapus
                         </button>
                     </form>

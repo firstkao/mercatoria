@@ -190,7 +190,7 @@
 
     {{-- Modal Edukasi Cara Belanja (PRD 7.21 / 15) — 1x seumur hidup --}}
     @if (method_exists($user, 'shouldSeeTour') && $user->shouldSeeTour())
-        <dialog id="tour-modal" class="rounded-xl border border-rule bg-white p-0" style="margin:auto;max-width:560px;width:calc(100% - 2rem);">
+        <dialog id="tour-modal" class="max-h-[90vh] overflow-y-auto rounded-2xl border border-rule bg-white p-0 shadow-2xl backdrop:bg-black/50" style="margin:auto;max-width:560px;width:calc(100% - 2rem);">
             <div class="p-6 sm:p-8">
                 <p class="flex items-center gap-2 font-display text-xl font-semibold text-ink">
                     <x-icons.sparkles width="20" height="20" class="text-accent" />

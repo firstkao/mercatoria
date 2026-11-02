@@ -34,7 +34,7 @@
                     </div>
                 </div>
 
-                <dialog id="cms-del-{{ $page->id }}" class="m-auto rounded-xl border border-rule p-0">
+                <dialog id="cms-del-{{ $page->id }}" class="m-auto w-[calc(100%-2rem)] max-w-md max-h-[90vh] overflow-y-auto rounded-2xl border border-rule p-0 shadow-2xl backdrop:bg-black/50">
                     <form method="POST" action="{{ route('office.pages.destroy', $page) }}" class="p-6">
                         @csrf @method('DELETE')
                         <p class="text-sm font-semibold text-ink">Hapus halaman &ldquo;{{ $page->title }}&rdquo;?</p>

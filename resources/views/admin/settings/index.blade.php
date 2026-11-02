@@ -542,8 +542,8 @@
 </form>
 
 {{-- ═══ MODAL: Kill Switch ═══ --}}
-<div id="modal-kill-switch" class="fixed inset-0 z-[100] hidden items-center justify-center bg-black/50 p-6">
-    <div class="w-full max-w-lg rounded-2xl border border-rule bg-white shadow-2xl">
+<div id="modal-kill-switch" class="fixed inset-0 z-[100] hidden items-center justify-center bg-black/50 p-4">
+    <div class="w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-2xl border border-rule bg-white shadow-2xl">
         <div class="flex items-center gap-4 border-b border-rule px-8 py-6">
             <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-red-100">
                 <i class="bi bi-exclamation-triangle text-[#E53935]" style="font-size:1.35rem;"></i>
@@ -579,8 +579,8 @@
 </div>
 
 {{-- ═══ MODAL: Kirim Email Test ═══ --}}
-<div id="modal-test-email" class="fixed inset-0 z-[100] hidden items-center justify-center bg-black/50 p-6">
-    <div class="w-full max-w-lg rounded-2xl border border-rule bg-white shadow-2xl">
+<div id="modal-test-email" class="fixed inset-0 z-[100] hidden items-center justify-center bg-black/50 p-4">
+    <div class="w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-2xl border border-rule bg-white shadow-2xl">
         <div class="flex items-center gap-4 border-b border-rule px-8 py-6">
             <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-blue-100">
                 <i class="bi bi-send-check text-blue-600" style="font-size:1.35rem;"></i>
@@ -616,8 +616,8 @@
 </div>
 
 {{-- ═══ MODAL: Info / Alert ═══ --}}
-<div id="modal-info" class="fixed inset-0 z-[100] hidden items-center justify-center bg-black/50 p-6">
-    <div class="w-full max-w-md rounded-2xl border border-rule bg-white shadow-2xl">
+<div id="modal-info" class="fixed inset-0 z-[100] hidden items-center justify-center bg-black/50 p-4">
+    <div class="w-full max-w-md max-h-[90vh] overflow-y-auto rounded-2xl border border-rule bg-white shadow-2xl">
         <div class="flex items-center gap-4 border-b border-rule px-8 py-6">
             <div id="modal-info-icon-wrap" class="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-blue-100">
                 <i id="modal-info-icon" class="bi bi-info-circle text-blue-600" style="font-size:1.35rem;"></i>

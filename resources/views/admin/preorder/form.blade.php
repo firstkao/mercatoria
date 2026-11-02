@@ -53,7 +53,7 @@
         </form>
     </div>
 
-    <dialog id="preview-dialog" class="m-auto max-w-4xl rounded-xl border border-rule p-0">
+    <dialog id="preview-dialog" class="m-auto w-[calc(100%-2rem)] max-w-4xl max-h-[90vh] overflow-y-auto rounded-2xl border border-rule p-0 shadow-2xl backdrop:bg-black/50">
         <div class="p-6">
             <p class="font-mono text-[11px] font-medium uppercase tracking-[0.16em] text-ink">Preview</p>
             <div id="preview-body" class="mt-4 max-h-[70vh] overflow-y-auto rounded-lg border border-rule bg-white p-6 text-sm leading-relaxed text-ink"></div>

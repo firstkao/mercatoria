@@ -4,9 +4,9 @@
             class="rounded-lg border border-rule px-3 py-1.5 text-xs font-semibold text-ink transition-colors hover:border-ink">
         <i class="bi bi-gift me-1"></i> Kirim Gift
     </button>
-    <div x-show="open" x-cloak class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" @keydown.escape.window="open = false">
+    <div x-show="open" x-cloak class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" @keydown.escape.window="open = false">
         <form method="POST" action="{{ route('office.users.gift', $user->id) }}" @click.outside="open = false"
-              class="w-full max-w-md space-y-3 rounded-xl bg-white p-5">
+              class="w-full max-w-md max-h-[90vh] space-y-3 overflow-y-auto rounded-2xl border border-rule bg-white p-6 shadow-2xl">
             @csrf
             <h3 class="text-sm font-semibold text-ink">Kirim Gift ke {{ $user->name }}</h3>
             <select name="type" x-model="type" class="w-full rounded-lg border border-rule px-3 py-2 text-sm">
