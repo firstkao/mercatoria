@@ -2,10 +2,6 @@
 <html lang="id">
 <head>
     <meta charset="utf-8">
-    <!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <x-seo-head :seo="$seo" :json-ld="$jsonLd" />
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -15,176 +11,47 @@
     <x-ga4 />
 </head>
 <body id="top" class="flex min-h-screen flex-col bg-white font-sans text-ink antialiased">
-    {{-- Top Promo Bar (DS 4.4.1 / PRD 40.1) --}}
-    <x-promo-bar />
-
-    {{-- 2. Header (Design Spec 4.4.1) --}}
-    <header class="border-b border-[#EAEAEA] bg-white">
-        <div class="mx-auto w-full px-6 lg:px-12">
-            <div class="hidden min-h-[72px] lg:grid lg:grid-cols-3 lg:items-center">
-                <nav class="flex items-center gap-5" aria-label="Menu utama">
-                    <a href="{{ route('home') }}" class="text-[13px] font-medium text-[#4FC3F7]">Beranda</a>
-
-                    {{-- Dropdown Game --}}
-                    <details class="group relative">
-                        <summary class="flex cursor-pointer list-none items-center gap-1 text-[13px] font-medium text-[#333] transition-colors hover:text-[#4FC3F7]">
-                            Game
-                            <span class="text-[10px] transition-transform group-open:rotate-180">&#9662;</span>
-                        </summary>
-                        <div class="absolute left-0 top-full z-20 mt-2 max-h-80 w-56 overflow-y-auto rounded-lg border border-[#EAEAEA] bg-white py-2 shadow-sm">
-                            @forelse ($footerGames as $g)
-                                <a href="{{ route('catalog.game', $g->slug) }}" class="block px-3.5 py-1.5 text-[12px] text-[#333] transition-colors hover:bg-[#F5F7FA] hover:text-[#4FC3F7]">{{ $g->name }}</a>
-                            @empty
-                                <span class="block px-3.5 py-1.5 text-[12px] text-[#999]">Belum ada game</span>
-                            @endforelse
-                        </div>
-                    </details>
-
-                    {{-- Dropdown Developer --}}
-                    <details class="group relative">
-                        <summary class="flex cursor-pointer list-none items-center gap-1 text-[13px] font-medium text-[#333] transition-colors hover:text-[#4FC3F7]">
-                            Developer
-                            <span class="text-[10px] transition-transform group-open:rotate-180">&#9662;</span>
-                        </summary>
-                        <div class="absolute left-0 top-full z-20 mt-2 max-h-80 w-56 overflow-y-auto rounded-lg border border-[#EAEAEA] bg-white py-2 shadow-sm">
-                            @forelse ($footerDevelopers as $dev)
-                                <a href="{{ route('catalog.developer', $dev->slug) }}" class="block px-3.5 py-1.5 text-[12px] text-[#333] transition-colors hover:bg-[#F5F7FA] hover:text-[#4FC3F7]">{{ $dev->name }}</a>
-                            @empty
-                                <span class="block px-3.5 py-1.5 text-[12px] text-[#999]">Belum ada developer</span>
-                            @endforelse
-                        </div>
-                    </details>
-
-                    <a href="#merch-baru" class="text-[13px] font-medium text-[#333] transition-colors hover:text-[#4FC3F7]">Pre-order Baru</a>
-                    <a href="{{ route('orders.index') }}" class="text-[13px] font-medium text-[#333] transition-colors hover:text-[#4FC3F7]">Konfirmasi Pembayaran</a>
-                </nav>
-
-                <a href="{{ route('home') }}" class="flex items-center justify-center no-underline">
-                    <img src="{{ asset('logo.png') }}" alt="Mercatoria" class="h-12 w-auto lg:h-16" width="1608" height="494">
-                </a>
-
-                <div class="flex items-center justify-end gap-3">
-                    <a href="{{ route('search') }}" class="text-[#333] transition-colors hover:text-[#4FC3F7]" aria-label="Cari">
-                        <x-icons.magnifying-glass width="18" height="18" />
-                    </a>
-                    <div class="flex items-center gap-2.5 text-[#333]">
-                        <a href="{{ setting('url_instagram', '#') }}" class="transition-colors hover:text-[#4FC3F7]" aria-label="Instagram"><x-icons.instagram width="16" height="16" /></a>
-                        <a href="{{ setting('url_facebook', '#') }}" class="transition-colors hover:text-[#4FC3F7]" aria-label="Facebook"><x-icons.facebook width="16" height="16" /></a>
-                        <a href="{{ setting('url_x', '#') }}" class="transition-colors hover:text-[#4FC3F7]" aria-label="X"><x-icons.twitter-x width="16" height="16" /></a>
-                        <a href="{{ setting('url_threads', '#') }}" class="transition-colors hover:text-[#4FC3F7]" aria-label="Threads"><x-icons.threads width="16" height="16" /></a>
-                        <a href="{{ setting('url_whatsapp', '#') }}" class="transition-colors hover:text-[#4FC3F7]" aria-label="WhatsApp"><x-icons.whatsapp width="16" height="16" /></a>
-                    </div>
-                    @auth
-                        <a href="{{ route('profile.coins') }}" class="text-[13px] font-semibold text-[#333] transition-colors hover:text-[#4FC3F7]">{{ format_rp($coinBalance ?? 0) }}</a>
-                        <a href="{{ route('cart.index') }}" class="relative text-[#333] transition-colors hover:text-[#4FC3F7]" aria-label="Keranjang">
-                            <x-icons.shopping-cart width="18" height="18" />
-                            @if (($cartCount ?? 0) > 0)
-                                <span class="absolute -right-2 -top-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-[#333] px-1 text-[9px] font-bold leading-none text-white">{{ $cartCount }}</span>
-                            @endif
-                        </a>
-                        <a href="{{ route('dashboard') }}" class="flex items-center gap-1.5 text-[#333] transition-colors hover:text-[#4FC3F7]"><x-icons.user width="18" height="18" /></a>
-                    @else
-                        <a href="{{ route('login') }}" class="flex items-center gap-1.5 text-[#333] transition-colors hover:text-[#4FC3F7]"><x-icons.user width="18" height="18" /></a>
-                    @endauth
-                </div>
-            </div>
-
-            {{-- Mobile --}}
-            <div class="flex min-h-[64px] items-center justify-between gap-3 lg:hidden">
-                <details class="relative">
-                    <summary class="flex h-10 w-10 cursor-pointer list-none items-center justify-center text-[#333]" aria-label="Menu">
-                        <x-icons.list width="22" height="22" />
-                    </summary>
-                    <div class="absolute left-0 top-full z-20 mt-2 w-64 rounded-lg border border-[#EAEAEA] bg-white py-2 shadow-sm">
-                        <a href="{{ route('home') }}" class="block px-4 py-2.5 text-[13px] font-medium text-[#4FC3F7]">Beranda</a>
-                        <a href="#game-grid" class="block px-4 py-2.5 text-[13px] text-[#333]">Game</a>
-                        <a href="#merch-baru" class="block px-4 py-2.5 text-[13px] text-[#333]">Pre-order Baru</a>
-                        <a href="{{ route('orders.index') }}" class="block px-4 py-2.5 text-[13px] text-[#333]">Konfirmasi Pembayaran</a>
-
-                        <div class="mt-1 border-t border-[#EAEAEA] pt-1">
-                            <p class="px-4 py-1.5 font-mono text-[10px] uppercase tracking-wider text-ink/45">Game</p>
-                            @foreach ($footerGames as $g)
-                                <a href="{{ route('catalog.game', $g->slug) }}" class="block px-4 py-2 text-[12px] text-[#333]">{{ $g->name }}</a>
-                            @endforeach
-                        </div>
-
-                        <div class="mt-1 border-t border-[#EAEAEA] pt-1">
-                            <p class="px-4 py-1.5 font-mono text-[10px] uppercase tracking-wider text-ink/45">Developer</p>
-                            @foreach ($footerDevelopers as $dev)
-                                <a href="{{ route('catalog.developer', $dev->slug) }}" class="block px-4 py-2 text-[12px] text-[#333]">{{ $dev->name }}</a>
-                            @endforeach
-                        </div>
-
-                        <div class="mt-1 border-t border-[#EAEAEA] pt-1">
-                            <a href="{{ route('login') }}" class="block px-4 py-2.5 text-[13px] font-medium text-[#333]">Masuk</a>
-                        </div>
-                    </div>
-                </details>
-
-                <a href="{{ route('home') }}" class="flex items-center no-underline">
-                    <img src="{{ asset('logo.png') }}" alt="Mercatoria" class="h-12 w-auto" width="1608" height="494">
-                </a>
-
-                <a href="{{ route('login') }}" class="flex h-10 w-10 items-center justify-center text-[#333]" aria-label="Masuk">
-                    <x-icons.user width="20" height="20" />
-                </a>
-            </div>
-        </div>
-    </header>
+    @include('frontend.partials._header')
 
     <main class="flex-1">
-        {{-- 3. Hero Carousel (PRD 40.2) --}}
+        {{-- Hero Carousel (PRD 40.2) — foto saja, tanpa teks overlay --}}
         <section id="hero" class="mx-auto max-w-[1200px] px-8 py-6">
-            @isset($heroSlides)
-                @if (count($heroSlides) > 0)
-                    <div class="relative overflow-hidden rounded-lg border border-rule" id="hero-carousel">
-                        <div class="relative aspect-[2/1] bg-ink" id="hero-track">
-                            @foreach ($heroSlides as $i => $slide)
-                                <a href="{{ data_get($slide, 'url') ?? '#' }}" class="absolute inset-0 {{ $i === 0 ? '' : 'hidden' }}" data-hero-slide="{{ $i }}">
-                                    @if (data_get($slide, 'image'))
-                                        <img src="{{ data_get($slide, 'image') }}" alt="" class="h-full w-full object-cover">
-                                    @endif
-                                </a>
-                            @endforeach
-                        </div>
-
-                        <button type="button" id="hero-prev" class="absolute left-3 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-white/70 text-ink transition-colors hover:bg-white" aria-label="Sebelumnya">
-                            <x-icons.chevron-up class="rotate-90" width="16" height="16" />
-                        </button>
-                        <button type="button" id="hero-next" class="absolute right-3 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-white/70 text-ink transition-colors hover:bg-white" aria-label="Berikutnya">
-                            <x-icons.chevron-up class="-rotate-90" width="16" height="16" />
-                        </button>
-
-                        <div class="absolute bottom-3 left-1/2 flex -translate-x-1/2 gap-2" id="hero-dots">
-                            @foreach ($heroSlides as $i => $slide)
-                                <button type="button" data-hero-dot="{{ $i }}" class="h-2 w-2 rounded-full {{ $i === 0 ? 'bg-white' : 'bg-white/45' }}" aria-label="Slide {{ $i + 1 }}"></button>
-                            @endforeach
-                        </div>
+            @if (count($heroSlides ?? []) > 0)
+                <div class="relative overflow-hidden rounded-lg border border-rule" id="hero-carousel">
+                    <div class="relative aspect-[13/8] bg-ink" id="hero-track">
+                        @foreach ($heroSlides as $i => $slide)
+                            <a href="{{ data_get($slide, 'url') ?? '#' }}" class="absolute inset-0 {{ $i === 0 ? '' : 'hidden' }}" data-hero-slide="{{ $i }}">
+                                @if (data_get($slide, 'image'))
+                                    <img src="{{ data_get($slide, 'image') }}" alt="" class="h-full w-full object-cover">
+                                @endif
+                            </a>
+                        @endforeach
                     </div>
-                @else
-                    <div class="rounded-lg border border-rule bg-[#F5F7FA] px-8 py-16 text-center">
-                        <p class="font-mono text-[10px] uppercase tracking-[0.22em] text-ink/45">Mercatoria</p>
-                        <h1 class="mt-2 font-display text-3xl font-semibold text-ink">Merch &amp; Collectibles untuk IP Favoritmu</h1>
-                        <p class="mt-2 text-sm text-ink/65">Harga bersih — sudah termasuk ongkir CN-ID &amp; bea.</p>
+
+                    <button type="button" id="hero-prev" class="absolute left-3 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-white/70 text-ink transition-colors hover:bg-white" aria-label="Sebelumnya">
+                        <x-icons.chevron-up class="rotate-90" width="16" height="16" />
+                    </button>
+                    <button type="button" id="hero-next" class="absolute right-3 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-white/70 text-ink transition-colors hover:bg-white" aria-label="Berikutnya">
+                        <x-icons.chevron-up class="-rotate-90" width="16" height="16" />
+                    </button>
+
+                    <div class="absolute bottom-3 left-1/2 flex -translate-x-1/2 gap-2" id="hero-dots">
+                        @foreach ($heroSlides as $i => $slide)
+                            <button type="button" data-hero-dot="{{ $i }}" class="h-2 w-2 rounded-full {{ $i === 0 ? 'bg-white' : 'bg-white/45' }}" aria-label="Slide {{ $i + 1 }}"></button>
+                        @endforeach
                     </div>
-                @endif
-            @else
-                <div class="rounded-lg border border-rule bg-[#F5F7FA] px-8 py-16 text-center">
-                    <p class="font-mono text-[10px] uppercase tracking-[0.22em] text-ink/45">Mercatoria</p>
-                    <h1 class="mt-2 font-display text-3xl font-semibold text-ink">Merch &amp; Collectibles untuk IP Favoritmu</h1>
-                    <p class="mt-2 text-sm text-ink/65">Harga bersih — sudah termasuk ongkir CN-ID &amp; bea.</p>
                 </div>
-            @endisset
+            @endif
             <div class="mt-3 h-px bg-rule"></div>
         </section>
 
-        {{-- 4. Jelajahi Game Favoritmu (PRD 40.4 / Design Spec 4.4.3) --}}
+        {{-- Jelajahi Game Favoritmu (PRD 40.4 / Design Spec 4.4.3) --}}
         <section id="game-grid" class="mx-auto max-w-[1200px] px-8 pb-12">
             <h2 class="text-center font-display text-[26px] font-semibold text-ink">Jelajahi Game Favoritmu</h2>
             <p class="mt-1 text-center text-[13px] text-ink/60">Temukan merchandise eksklusif dari game favoritmu dan lihat koleksi lengkapnya di setiap kategori!</p>
 
             <div class="mt-6 grid grid-cols-2 gap-4 md:grid-cols-4 lg:grid-cols-6">
-                @forelse ($games as $game)
+                @forelse (($games ?? collect()) as $game)
                     <a href="{{ route('catalog.game', $game->slug) }}" class="group relative block aspect-square overflow-hidden rounded-lg bg-paper">
                         @if ($game->logo_path)
                             <img src="{{ \Illuminate\Support\Facades\Storage::url($game->logo_path) }}" alt="{{ $game->name }}" class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]">
@@ -203,40 +70,12 @@
             </div>
         </section>
 
-        {{-- 5. Penawaran Terbaik (PRD 40.5 / DS 4.6.3) --}}
-        @if(($bestOffers ?? collect())->isNotEmpty())
-            <section id="penawaran-terbaik" class="mx-auto max-w-[1200px] px-8 pb-12">
-                <h2 class="text-center font-display text-[22px] font-semibold text-ink">Penawaran Terbaik</h2>
-                <div class="mt-6 grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-5">
-                    @foreach ($bestOffers as $product)
-                        <a href="{{ route('product.show', [$product->game->slug, $product->slug]) }}" class="group block">
-                            <div class="relative aspect-square overflow-hidden rounded-lg bg-paper">
-                                @if ($product->image_path)
-                                    <img src="{{ \App\Services\Image\ImageOptimizerService::url($product->image_path, 'thumb') }}" alt="{{ $product->name }}" class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]">
-                                @endif
-                                <span class="absolute left-0 top-2 -rotate-45 bg-[#E53935] px-3 py-0.5 text-[9.5px] font-bold uppercase text-white">DISKON</span>
-                            </div>
-                            <p class="mt-2 text-[11.5px] font-bold leading-snug text-ink">
-                                <span class="text-ink/60">[{{ $product->game->name }}]</span> {{ $product->name }}
-                            </p>
-                            @if ($product->hasActiveDiscount() && !empty($product->price_idr))
-                                <p class="mt-0.5 text-xs text-ink/45 line-through">{{ format_rp($product->price_idr + (float) $product->discount_amount) }}</p>
-                                <p class="text-[11.5px] font-bold text-[#29B6F6]">{{ format_rp($product->price_idr) }}</p>
-                            @elseif(!empty($product->price_idr))
-                                <p class="mt-0.5 text-[11.5px] font-bold text-[#29B6F6]">{{ format_rp($product->price_idr) }}</p>
-                            @endif
-                        </a>
-                    @endforeach
-                </div>
-            </section>
-        @endif
-
-        {{-- 6. MERCH BARU (PRD 40.6 / Design Spec 4.4.4) --}}
+        {{-- MERCH BARU (PRD 40.6 / Design Spec 4.4.4) --}}
         <section id="merch-baru" class="mx-auto max-w-[1200px] px-8 pb-14">
             <h2 class="text-center text-[18px] font-bold uppercase tracking-wide text-ink">MERCH BARU</h2>
 
             <div class="mt-5 grid grid-cols-2 gap-3.5 md:grid-cols-5 lg:grid-cols-7">
-                @forelse ($products as $product)
+                @forelse (($products ?? collect()) as $product)
                     <a href="{{ route('product.show', [$product->game->slug, $product->slug]) }}" class="group block">
                         <div class="relative aspect-square overflow-hidden rounded bg-paper">
                             @if ($product->image_path)
@@ -268,111 +107,7 @@
         </section>
     </main>
 
-    {{-- 7. Footer (Design Spec 4.4.5) --}}
-    <footer id="footer" class="bg-[#1E1E2D] text-white">
-        <div class="mx-auto max-w-[1200px] px-8 py-14">
-            <div class="grid gap-10 md:grid-cols-2 lg:grid-cols-4">
-                <div class="flex flex-col items-center">
-                    <a href="{{ route('home') }}" class="inline-flex flex-col items-center no-underline">
-                        <img src="{{ asset('logo.png') }}" alt="Mercatoria" class="h-12 w-auto lg:h-14" width="1608" height="494">
-                    </a>
-                    <div class="mt-6 flex items-center justify-center gap-4">
-                        <a href="{{ setting('url_instagram', '#') }}" class="text-[#B0B3C5] transition-colors hover:text-[#4FC3F7]" aria-label="Instagram"><x-icons.instagram width="18" height="18" /></a>
-                        <a href="{{ setting('url_facebook', '#') }}" class="text-[#B0B3C5] transition-colors hover:text-[#4FC3F7]" aria-label="Facebook"><x-icons.facebook width="18" height="18" /></a>
-                        <a href="{{ setting('url_x', '#') }}" class="text-[#B0B3C5] transition-colors hover:text-[#4FC3F7]" aria-label="X"><x-icons.twitter-x width="18" height="18" /></a>
-                        <a href="{{ setting('url_threads', '#') }}" class="text-[#B0B3C5] transition-colors hover:text-[#4FC3F7]" aria-label="Threads"><x-icons.threads width="18" height="18" /></a>
-                        <a href="{{ setting('url_whatsapp', '#') }}" class="text-[#B0B3C5] transition-colors hover:text-[#4FC3F7]" aria-label="WhatsApp"><x-icons.whatsapp width="18" height="18" /></a>
-                    </div>
-                    <div class="mt-6 flex flex-wrap items-center justify-center gap-3">
-                        <a href="{{ setting('url_toco', '#') }}" class="inline-flex items-center gap-1.5 rounded-[20px] border border-white/25 px-4 py-1.5 text-[11px] font-bold text-white transition-colors hover:border-white/50">TOCO <x-icons.arrow-right width="12" height="12" /></a>
-                        <a href="{{ setting('url_shopee', '#') }}" class="inline-flex items-center gap-1.5 rounded-[20px] border border-white/25 px-4 py-1.5 text-[11px] font-bold text-white transition-colors hover:border-white/50">SHOPEE <x-icons.arrow-right width="12" height="12" /></a>
-                    </div>
-                </div>
-
-                {{-- Footer Game --}}
-                <details class="group" open>
-                    <summary class="flex cursor-pointer list-none items-center justify-between text-[14px] font-bold text-white marker:hidden lg:pointer-events-none lg:cursor-default">
-                        Game
-                        <span class="text-[#B0B3C5] transition-transform group-open:rotate-180 lg:hidden"><x-icons.chevron-up width="14" height="14" /></span>
-                    </summary>
-                    <ul class="mt-3.5 text-[12px] leading-[1.8]">
-                        @forelse ($footerGames as $game)
-                            <li><a href="{{ route('catalog.game', $game->slug) }}" class="text-[#B0B3C5] transition-colors hover:text-[#4FC3F7]">{{ $game->name }}</a></li>
-                        @empty
-                            <li class="text-[#888]">Belum ada game</li>
-                        @endforelse
-                    </ul>
-                </details>
-
-                <div class="space-y-8">
-                    {{-- Footer Developer --}}
-                    <details class="group" open>
-                        <summary class="flex cursor-pointer list-none items-center justify-between text-[14px] font-bold text-white marker:hidden lg:pointer-events-none lg:cursor-default">
-                            Developer
-                            <span class="text-[#B0B3C5] transition-transform group-open:rotate-180 lg:hidden"><x-icons.chevron-up width="14" height="14" /></span>
-                        </summary>
-                        <ul class="mt-3.5 text-[12px] leading-[1.8]">
-                            @forelse ($footerDevelopers as $dev)
-                                <li><a href="{{ route('catalog.developer', $dev->slug) }}" class="text-[#B0B3C5] transition-colors hover:text-[#4FC3F7]">{{ $dev->name }}</a></li>
-                            @empty
-                                <li class="text-[#888]">Belum ada developer</li>
-                            @endforelse
-                        </ul>
-                    </details>
-
-                    {{-- Footer Jelajahi --}}
-    <details class="group" open>
-        <summary class="flex cursor-pointer list-none items-center justify-between text-[14px] font-bold text-white marker:hidden lg:pointer-events-none lg:cursor-default">
-            Jelajahi
-            <span class="text-[#B0B3C5] transition-transform group-open:rotate-180 lg:hidden"><x-icons.chevron-up width="14" height="14" /></span>
-        </summary>
-        <ul class="mt-3.5 text-[12px] leading-[1.8]">
-            <li><a href="{{ route('page.blacklist') }}" class="text-[#B0B3C5] transition-colors hover:text-[#4FC3F7]">Blacklist</a></li>
-            <li><a href="{{ route('page.cara-belanja') }}" class="text-[#B0B3C5] transition-colors hover:text-[#4FC3F7]">Cara Belanja</a></li>
-            <li><a href="{{ route('page.kebijakan-privasi') }}" class="text-[#B0B3C5] transition-colors hover:text-[#4FC3F7]">Kebijakan Privasi</a></li>
-            <li><a href="{{ route('page.reseller') }}" class="text-[#B0B3C5] transition-colors hover:text-[#4FC3F7]">Reseller</a></li>
-            <li><a href="{{ route('page.faq') }}" class="text-[#B0B3C5] transition-colors hover:text-[#4FC3F7]">Tanya Jawab Umum</a></li>
-            <li><a href="{{ route('page.tentang-kami') }}" class="text-[#B0B3C5] transition-colors hover:text-[#4FC3F7]">Tentang Kami</a></li>
-        </ul>
-    </details>
-</div>
-
-                {{-- Footer Produk Terpopuler --}}
-                <details class="group" open>
-                    <summary class="flex cursor-pointer list-none items-center justify-between text-[14px] font-bold text-white marker:hidden lg:pointer-events-none lg:cursor-default">
-                        Produk Terpopuler
-                        <span class="text-[#B0B3C5] transition-transform group-open:rotate-180 lg:hidden"><x-icons.chevron-up width="14" height="14" /></span>
-                    </summary>
-                    <ul class="mt-3.5 space-y-2 text-[12px]">
-                        @isset($footerTopProducts)
-                            @foreach ($footerTopProducts as $product)
-                                <li class="flex items-center gap-2.5 border-b border-white/10 pb-2">
-                                    @if (data_get($product, 'image'))
-                                        <img src="{{ data_get($product, 'image') }}" alt="" class="h-12 w-12 shrink-0 rounded object-cover">
-                                    @endif
-                                    <div class="min-w-0">
-                                        <a href="{{ data_get($product, 'url') ?? '#' }}" class="block truncate text-[#B0B3C5] transition-colors hover:text-[#4FC3F7]">
-                                            {{ data_get($product, 'name') }}
-                                        </a>
-                                        @if (data_get($product, 'price') !== null)
-                                            <span class="text-white">{{ format_rp(data_get($product, 'price')) }}</span>
-                                        @endif
-                                    </div>
-                                </li>
-                            @endforeach
-                        @endisset
-                    </ul>
-                </details>
-            </div>
-        </div>
-
-        <div class="border-t border-white/[0.08]">
-            <div class="mx-auto flex max-w-[1200px] flex-wrap items-center justify-between gap-3 px-4 py-[18px] text-[11px] text-[#888]">
-                <p>&copy; 2022 MERCATORIA</p>
-                <p>Powered by MERCATORIA</p>
-            </div>
-        </div>
-    </footer>
+    @include('frontend.partials._footer')
 
     <script>
         (function () {
