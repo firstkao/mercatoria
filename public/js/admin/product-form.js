@@ -10,7 +10,7 @@
 
     function rp(n) { return 'Rp ' + Math.round(n).toLocaleString('id-ID'); }
 
-    // ═══ [2] AUTO-SLUG dari Nama Produk ═══
+    // ═══ AUTO-SLUG dari Nama Produk ═══
     var slugManual = false;
     var nameInput = document.getElementById('input-name');
     var slugInput = document.getElementById('input-slug');
@@ -65,8 +65,13 @@
         var activeStore = (sidebarStore && sidebarStore.value) ? sidebarStore : tabStore;
         var storeOpt = activeStore && activeStore.selectedOptions && activeStore.selectedOptions[0];
         var storeName = (storeOpt && storeOpt.text.trim()) || 'Default (Game)';
-        var ongkirPct = parseFloat(storeOpt && storeOpt.dataset.ongkir) || 7;
-        var minRmb = parseFloat(storeOpt && storeOpt.dataset.min) || 0;
+
+        // [FIX #2] Handle 0% ongkir — jangan fallback ke 7
+        var rawOngkir = parseFloat(storeOpt && storeOpt.dataset.ongkir);
+        var ongkirPct = isNaN(rawOngkir) ? 7 : rawOngkir;
+
+        var rawMin = parseFloat(storeOpt && storeOpt.dataset.min);
+        var minRmb = isNaN(rawMin) ? 0 : rawMin;
 
         var hargaProduk = priceRmb * rate;
         var ongkirLokalRmb = (priceRmb * ongkirPct) / 100;
@@ -124,17 +129,18 @@
     if (priceInput) priceInput.addEventListener('input', recalc);
     if (weightInput) weightInput.addEventListener('input', recalc);
     if (discountInput) discountInput.addEventListener('input', recalc);
+
     if (sidebarStore) sidebarStore.addEventListener('change', function () {
         if (tabStore) tabStore.value = sidebarStore.value;
         recalc();
     });
+
+    // [FIX #1] Hapus sync ke game_id_sidebar — store ≠ game
     if (tabStore) tabStore.addEventListener('change', function () {
         if (sidebarStore) sidebarStore.value = tabStore.value;
-        document.querySelectorAll('input[name="game_id_sidebar"]').forEach(function (r) {
-            r.checked = (r.value === tabStore.value);
-        });
         recalc();
     });
+
     recalc();
 
     // ── Variant checkbox ──
@@ -233,7 +239,7 @@
     window.openDeleteModal = function () { openModal('modal-delete'); };
     window.closeDeleteModal = function () { closeModal('modal-delete'); };
 
-    // ═══ [3] ADD VARIANT MODAL ═══
+    // ═══ ADD VARIANT MODAL ═══
     window.openAddVariantModal = function () { openModal('modal-add-variant'); };
     window.closeAddVariantModal = function () { closeModal('modal-add-variant'); };
 
@@ -309,7 +315,10 @@
     window.updateBulkPreview = function () {
         var val = document.getElementById('bulk-weight-input').value;
         var checked = Array.from(document.querySelectorAll('.variant-check:checked'));
-        if (!val) { document.getElementById('bulk-preview-text').textContent = 'Masukkan berat untuk preview...'; return; }
+        if (!val) {
+            document.getElementById('bulk-preview-text').textContent = 'Masukkan berat untuk preview...';
+            return;
+        }
         var text = checked.length + ' varian akan diubah ke: ' + val + ' gram<br><br>';
         checked.forEach(function (c) {
             var w = c.dataset.weight || '\u2014';
@@ -320,8 +329,12 @@
 
     window.applyBulkWeight = function () {
         var val = parseInt(document.getElementById('bulk-weight-input').value);
-        if (!val) return;
+        if (!val || val < 1) {
+            alert('Masukkan berat yang valid (minimal 1 gram).');
+            return;
+        }
         var checked = Array.from(document.querySelectorAll('.variant-check:checked'));
+        if (!checked.length) return;
         var ids = checked.map(function (c) { return parseInt(c.value); });
 
         var btn = document.getElementById('btn-apply-bulk');
@@ -344,10 +357,14 @@
             checked.forEach(function (c) {
                 c.dataset.weight = val;
                 var row = c.closest('tr');
-                if (row) { var cells = row.querySelectorAll('td'); if (cells[4]) cells[4].textContent = val + 'g'; }
+                if (row) {
+                    var cells = row.querySelectorAll('td');
+                    if (cells[4]) cells[4].textContent = val + 'g';
+                }
             });
             closeModal('modal-bulk-weight');
-            document.getElementById('bulk-success-msg').textContent = checked.length + ' varian berhasil diubah ke berat ' + val + ' gram. Sudah tersimpan.';
+            document.getElementById('bulk-success-msg').textContent =
+                checked.length + ' varian berhasil diubah ke berat ' + val + ' gram. Sudah tersimpan.';
             openModal('modal-bulk-success');
             setTimeout(function () { closeModal('modal-bulk-success'); }, 2500);
         })
@@ -355,7 +372,11 @@
             alert('Gagal menyimpan: ' + err.message + '. Pastikan varian sudah ada di database.');
         })
         .finally(function () {
-            if (btn) { btn.disabled = false; btn.innerHTML = '<i class="bi bi-check-lg me-1.5" style="font-size:0.85rem;"></i> Apply ke <span id="bulk-apply-count">' + checked.length + '</span> Varian'; }
+            if (btn) {
+                btn.disabled = false;
+                // [FIX #3] Tanpa ID duplikat — pakai text biasa
+                btn.innerHTML = '<i class="bi bi-check-lg me-1.5" style="font-size:0.85rem;"></i> Apply ke ' + checked.length + ' Varian';
+            }
         });
     };
     window.closeBulkSuccess = function () { closeModal('modal-bulk-success'); };
@@ -370,7 +391,7 @@
             closeModal('modal-add-variant');
         }
     });
-    ['modal-delete','modal-bulk-weight','modal-bulk-success','modal-edit-variant','modal-add-variant'].forEach(function (id) {
+    ['modal-delete', 'modal-bulk-weight', 'modal-bulk-success', 'modal-edit-variant', 'modal-add-variant'].forEach(function (id) {
         var el = document.getElementById(id);
         if (el) el.addEventListener('click', function (e) { if (e.target === el) closeModal(id); });
     });
