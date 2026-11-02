@@ -53,7 +53,9 @@
     var weightInput = document.getElementById('input-weight-gram');
     var sidebarStore = document.getElementById('sidebar-store-id');
     var tabStore = document.getElementById('input-store-id');
-    var discountInput = document.querySelector('[name="discount_amount_rmb"]');
+
+    // [FIX #1] Pakai id — sinkron dengan blade
+    var discountInput = document.getElementById('input-discount');
 
     function recalc() {
         var priceRmb = parseFloat(priceInput && priceInput.value) || 0;
@@ -66,7 +68,7 @@
         var storeOpt = activeStore && activeStore.selectedOptions && activeStore.selectedOptions[0];
         var storeName = (storeOpt && storeOpt.text.trim()) || 'Default (Game)';
 
-        // [FIX #2] Handle 0% ongkir — jangan fallback ke 7
+        // Handle 0% ongkir
         var rawOngkir = parseFloat(storeOpt && storeOpt.dataset.ongkir);
         var ongkirPct = isNaN(rawOngkir) ? 7 : rawOngkir;
 
@@ -135,7 +137,6 @@
         recalc();
     });
 
-    // [FIX #1] Hapus sync ke game_id_sidebar — store ≠ game
     if (tabStore) tabStore.addEventListener('change', function () {
         if (sidebarStore) sidebarStore.value = tabStore.value;
         recalc();
@@ -242,6 +243,10 @@
     // ═══ ADD VARIANT MODAL ═══
     window.openAddVariantModal = function () { openModal('modal-add-variant'); };
     window.closeAddVariantModal = function () { closeModal('modal-add-variant'); };
+
+    // ═══ [FIX #2] SPLIT BOX MODAL ═══
+    window.openSplitCloneModal = function () { openModal('modal-split-clone'); };
+    window.closeSplitCloneModal = function () { closeModal('modal-split-clone'); };
 
     // ═══ EDIT VARIANT ═══
     var currentVariantId = null;
@@ -374,8 +379,8 @@
         .finally(function () {
             if (btn) {
                 btn.disabled = false;
-                // [FIX #3] Tanpa ID duplikat — pakai text biasa
-                btn.innerHTML = '<i class="bi bi-check-lg me-1.5" style="font-size:0.85rem;"></i> Apply ke ' + checked.length + ' Varian';
+                // [FIX #3] Restore button HTML — PERTAHANKAN span bulk-apply-count
+                btn.innerHTML = '<i class="bi bi-check-lg me-1.5" style="font-size:0.85rem;"></i> Apply ke <span id="bulk-apply-count">' + checked.length + '</span> Varian';
             }
         });
     };
@@ -389,9 +394,10 @@
             closeModal('modal-bulk-success');
             closeModal('modal-edit-variant');
             closeModal('modal-add-variant');
+            closeModal('modal-split-clone');
         }
     });
-    ['modal-delete', 'modal-bulk-weight', 'modal-bulk-success', 'modal-edit-variant', 'modal-add-variant'].forEach(function (id) {
+    ['modal-delete', 'modal-bulk-weight', 'modal-bulk-success', 'modal-edit-variant', 'modal-add-variant', 'modal-split-clone'].forEach(function (id) {
         var el = document.getElementById(id);
         if (el) el.addEventListener('click', function (e) { if (e.target === el) closeModal(id); });
     });
