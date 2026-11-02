@@ -197,3 +197,18 @@ test('edit user crush mempertahankan role crush', function () {
 
     expect($crush->fresh()->role)->toBe('crush');
 });
+
+test('admin dapat mengunduh packing list PDF tanpa alamat; customer tidak bisa', function () {
+    [$buyer, $order] = placeTestOrder();
+    $order->update(['customer_note' => 'Bubble wrap ekstra']);
+
+    $this->actingAs($buyer)->get("/office/orders/{$order->no_order}/packing-list")->assertForbidden();
+
+    $response = $this->actingAs(User::factory()->admin()->create())->get("/office/orders/{$order->no_order}/packing-list");
+    $response->assertOk()->assertHeader('Content-Type', 'application/pdf');
+    expect(substr($response->getContent(), 0, 4))->toBe('%PDF');
+
+    $html = view('admin.orders.packing-list', ['order' => $order->load(['items.snapshot', 'user'])])->render();
+    expect($html)->toContain('Bubble wrap ekstra')->and($html)->not->toContain($buyer->alamat);
+    $this->assertDatabaseHas('admin_logs', ['action' => 'download_packing_list']);
+});

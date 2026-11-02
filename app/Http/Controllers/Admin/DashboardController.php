@@ -24,7 +24,10 @@ class DashboardController extends Controller
         return view('admin.dashboard', [
             'totalOrders' => Order::count(),
             'todayOrders' => Order::where('created_at', '>=', $today)->count(),
+            // Pendapatan bersih: tanpa pembayaran dari order hangus / refund.
             'monthRevenue' => Payment::where('status', Payment::STATUS_VERIFIED)
+                ->where('type', '!=', Payment::TYPE_REFUND)
+                ->whereHas('order', fn ($q) => $q->whereNotIn('status', ['pembayaran_gagal', 'hangus', 'hangus_permanen', 'dana_dikembalikan']))
                 ->where('created_at', '>=', $month)
                 ->sum('amount'),
             'newUsers' => User::where('role', '!=', User::ROLE_ADMIN)

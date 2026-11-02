@@ -153,6 +153,23 @@ class OrderController extends Controller
     }
 
     /**
+     * PRD 18.8: Packing List PDF (admin only, tanpa alamat, baca dari snapshot).
+     */
+    public function packingList(Request $request, Order $order): Response
+    {
+        $order->load(['items.snapshot', 'user']);
+
+        $pdf = Pdf::loadView('admin.orders.packing-list', ['order' => $order])->setPaper('a4');
+
+        AdminLog::record($request->user(), 'download_packing_list', 'Order', $order->id, null, null, 'Download Packing List');
+
+        return response($pdf->output(), 200, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'attachment; filename="packing-'.$order->no_order.'.pdf"',
+        ]);
+    }
+
+    /**
      * PRD 18.7/22.6: Download Invoice PDF (baca dari snapshot).
      */
     public function invoice(Order $order): Response

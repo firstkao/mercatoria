@@ -208,6 +208,7 @@ Route::middleware(['auth', 'admin'])->prefix('office')->name('office.')->group(f
     Route::post('/orders/bulk-status', [AdminOrderController::class, 'bulkStatus'])->name('orders.bulk-status');
     Route::get('/orders/{order:no_order}', [AdminOrderController::class, 'show'])->name('orders.show');
     Route::get('/orders/{order:no_order}/invoice', [AdminOrderController::class, 'invoice'])->name('orders.invoice');
+    Route::get('/orders/{order:no_order}/packing-list', [AdminOrderController::class, 'packingList'])->name('orders.packing-list');
     Route::patch('/orders/{order:no_order}/status', [OrderStatusController::class, 'update'])->name('orders.status');
     Route::post('/orders/{order:no_order}/note-to-customer', [AdminOrderController::class, 'noteToCustomer'])->name('orders.note-to-customer');
     Route::post('/orders/{order:no_order}/settlements', [AdminOrderController::class, 'storeSettlement'])->name('orders.settlements');

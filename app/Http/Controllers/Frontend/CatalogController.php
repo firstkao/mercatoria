@@ -28,10 +28,11 @@ class CatalogController extends Controller
 
     public function developer(Request $request, Developer $developer): View
     {
-        // [FIX #2] Filter langsung via developer_id di produk, bukan lewat pivot game↔developer.
+        // Produk milik developer ini, atau produk dari game yang dikerjakan developer ini (pivot game↔developer).
         $products = Product::query()
             ->where('is_active', true)
-            ->where('developer_id', $developer->id)
+            ->where(fn ($q) => $q->where('developer_id', $developer->id)
+                ->orWhereHas('game.developers', fn ($gq) => $gq->where('developers.id', $developer->id)))
             ->with(['game', 'developer', 'tags', 'variants'])
             ->when($request->sort === 'termurah', fn ($q) => $q->orderBy('price_rmb'))
             ->when($request->sort === 'termahal', fn ($q) => $q->orderByDesc('price_rmb'))

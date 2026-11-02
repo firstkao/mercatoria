@@ -70,7 +70,8 @@ class ReportController extends Controller
 
     /**
      * PRD 22.3: data grafik penjualan 30 hari terakhir (revenue per hari).
-     * SUM(total) order per hari (created_at), kecuali pembayaran_gagal.
+     * SUM(total) order per hari (created_at), hanya uang yang benar-benar diterima:
+     * kecuali pembayaran_gagal, hangus, hangus_permanen, dana_dikembalikan (refund).
      * Zero-filled 30 elemen — visualisasi menyusul dari UI.
      */
     public function salesChart(): JsonResponse
@@ -79,7 +80,7 @@ class ReportController extends Controller
 
         $rows = Order::query()
             ->where('created_at', '>=', $start)
-            ->where('status', '!=', 'pembayaran_gagal')
+            ->whereNotIn('status', ['menunggu_pembayaran', 'pembayaran_gagal', 'hangus', 'hangus_permanen', 'dana_dikembalikan'])
             ->groupByRaw('DATE(created_at)')
             ->selectRaw('DATE(created_at) as date, SUM(total) as revenue')
             ->pluck('revenue', 'date');

@@ -36,6 +36,8 @@
                 @error('email')<p class="mt-1.5 text-sm text-danger">{{ $message }}</p>@enderror
             </div>
 
+            <x-turnstile />
+
             <button type="submit"
                     class="w-full rounded-lg bg-black py-3.5 text-sm font-semibold tracking-[0.12em] text-white transition-colors hover:bg-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-white">
                 KIRIM LINK RESET

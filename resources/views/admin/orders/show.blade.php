@@ -20,10 +20,16 @@
                 <span class="font-mono text-[10px] uppercase tracking-[0.12em] text-ink/50">{{ strtoupper($order->scheme) }} · {{ strtoupper($order->payment_method) }} · {{ ucfirst($order->platform) }}</span>
             </div>
         </div>
-        <a href="{{ route('orders.invoice', $order->no_order) }}" target="_blank"
-           class="rounded-lg border border-rule px-4 py-2 text-sm font-semibold text-ink transition-colors hover:border-ink">
-            Invoice PDF
-        </a>
+        <div class="flex flex-wrap gap-2">
+            <a href="{{ route('orders.invoice', $order->no_order) }}" target="_blank"
+               class="rounded-lg border border-rule px-4 py-2 text-sm font-semibold text-ink transition-colors hover:border-ink">
+                Invoice PDF
+            </a>
+            <a href="{{ route('office.orders.packing-list', $order) }}"
+               class="rounded-lg border border-rule px-4 py-2 text-sm font-semibold text-ink transition-colors hover:border-ink">
+                Packing List PDF
+            </a>
+        </div>
     </div>
 
     <div class="mt-4 grid grid-cols-1 gap-4 xl:grid-cols-[1fr_340px]">

@@ -38,8 +38,9 @@ class ProductSearchService
                             ->orWhere('product_variants.sku', 'LIKE', $like);
                     })
                     ->orWhereHas('game', fn (Builder $gq) => $gq->where('games.name', 'LIKE', $like))
-                    // [FIX #1] Search product's own developer, bukan game's developers
-                    ->orWhereHas('developer', fn (Builder $dq) => $dq->where('developers.name', 'LIKE', $like));
+                    // Developer milik produk ATAU salah satu developer game-nya (game bisa punya >1 developer).
+                    ->orWhereHas('developer', fn (Builder $dq) => $dq->where('developers.name', 'LIKE', $like))
+                    ->orWhereHas('game.developers', fn (Builder $dq) => $dq->where('developers.name', 'LIKE', $like));
             });
 
             // Kecocokan judul produk diurutkan di atas kecocokan lainnya.
@@ -61,7 +62,10 @@ class ProductSearchService
 
         if (! empty($filters['developer_id'])) {
             // [FIX] Filter developer — sebelumnya tidak ada
-            $query->where('products.developer_id', $filters['developer_id']);
+            $query->where(function (Builder $dq) use ($filters) {
+                $dq->where('products.developer_id', $filters['developer_id'])
+                    ->orWhereHas('game.developers', fn (Builder $gq) => $gq->where('developers.id', $filters['developer_id']));
+            });
         }
 
         if (! empty($filters['merch_category_id'])) {

@@ -130,6 +130,8 @@ class ProfileController extends Controller
             $data['kecamatan_id'] ?? null
         );
 
+        $emailChanged = $data['email'] !== $user->email;
+
         // tgl_lahir & kode undangan terkunci permanen (PRD 7.6).
         $user->update([
             'name' => $data['name'],
@@ -146,6 +148,14 @@ class ProfileController extends Controller
         ]);
 
         ActivityLog::record('edit_profile', 'Ubah profil', ['fields' => array_keys($data)]);
+
+        // Email baru wajib diverifikasi ulang.
+        if ($emailChanged) {
+            $user->forceFill(['email_verified_at' => null])->save();
+            $user->sendEmailVerificationNotification();
+
+            return redirect()->route('profile.edit')->with('status', 'Profil diperbarui. Email baru perlu diverifikasi — cek inbox Anda.');
+        }
 
         return redirect()->route('profile.edit')->with('status', 'Profil diperbarui.');
     }
