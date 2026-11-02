@@ -7,7 +7,7 @@
         <p class="font-mono text-[10px] uppercase tracking-[0.22em] text-ink/45">Akun</p>
         <h1 class="mt-2 font-display text-[1.75rem] leading-tight font-semibold text-ink sm:text-3xl">Lupa Kata Sandi?</h1>
         <p class="mt-2 text-sm text-ink/65">
-            Masukkan email yang terdaftar, dan kami akan mengirimkan tautan untuk mengatur ulang kata sandimu.
+            Masukkan email yang terdaftar dan sistem akan mengirimkan tautan untuk mengatur ulang kata sandimu.
         </p>
 
         <div class="mt-6 h-px bg-rule"></div>
