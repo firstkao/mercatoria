@@ -58,11 +58,3 @@ test('settings key url eksternal tersedia', function () {
         expect(Setting::where('key', $key)->exists())->toBeTrue($key.' belum ada');
     }
 });
-
-test('settings key promo bar tersedia', function () {
-    $this->seed(SettingsSeeder::class);
-
-    expect(Setting::where('key', 'promo_bar_text')->exists())->toBeTrue()
-        ->and(Setting::where('key', 'promo_bar_link')->exists())->toBeTrue()
-        ->and(setting('promo_bar_active'))->toBe('1');
-});

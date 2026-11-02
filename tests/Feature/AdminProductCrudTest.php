@@ -143,24 +143,12 @@ test('varian, bulk produk dan bulk berat divalidasi lewat form request khusus', 
     $this->actingAs($admin)->post("/office/products/{$product->id}/variants/bulk-weight", ['weight_gram' => 0])->assertSessionHasErrors(['weight_gram', 'ids']);
 });
 
-test('halaman marketing admin menyimpan promo bar dan tampil di storefront, link javascript ditolak', function () {
+test('halaman marketing admin tetap tampil tanpa pengaturan promo bar', function () {
     $admin = User::factory()->admin()->create();
 
-    $this->actingAs($admin)->get('/office/marketing')->assertOk();
-
-    $this->actingAs($admin)->post('/office/marketing', [
-        'promo_bar_text' => 'Diskon Akhir Tahun',
-        'promo_bar_link' => 'javascript:alert(1)',
-        'promo_bar_active' => 1,
-    ])->assertSessionHasErrors('promo_bar_link');
-
-    $this->actingAs($admin)->post('/office/marketing', [
-        'promo_bar_text' => 'Diskon Akhir Tahun',
-        'promo_bar_link' => '/katalog',
-        'promo_bar_active' => 1,
-    ])->assertRedirect('/office/marketing');
-
-    $this->get('/')->assertSee('Diskon Akhir Tahun')->assertSee('href="/katalog"', false);
+    $this->actingAs($admin)->get('/office/marketing')->assertOk()
+        ->assertDontSee('promo_bar_text')
+        ->assertDontSee('Teks Promo Bar');
 });
 
 test('admin dapat menandai satu notifikasi dibaca', function () {
