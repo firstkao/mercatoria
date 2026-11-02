@@ -11,13 +11,7 @@
 </head>
 <body id="top" class="flex min-h-screen flex-col font-sans text-ink antialiased">
 {{-- Top Promo Bar (DS 4.4.1 / PRD 40.1) --}}
-       @if (setting('promo_bar_active', '1') !== '0')
-        <div id="promo-bar" class="relative bg-[#F2EFE8] px-10 py-2 text-center border-b border-[#D8D2C4]">
-            <p class="text-[13px] text-ink">
-                Gunakan kode promo <strong class="font-semibold text-danger">NEWWEB</strong> dan nikmati potongan harga sebesar <strong class="font-semibold italic">Rp 25.000</strong> dengan minimal pembelanjaan <strong class="font-semibold italic">Rp 150.000</strong>.
-            </p>
-        </div>
-    @endif
+    <x-promo-bar />
 
     {{-- Main Navbar guest (Design Spec 4.4.1 + 4.6.2) --}}
     <header class="border-b border-[#EAEAEA] bg-white">

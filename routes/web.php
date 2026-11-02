@@ -266,6 +266,8 @@ Route::middleware(['auth', 'admin'])->prefix('office')->name('office.')->group(f
         ->name('settings.test-email');
     Route::get('/seo', [AdminSettingsController::class, 'seo'])->name('seo.index');
     Route::post('/seo', [AdminSettingsController::class, 'updateSeo'])->name('seo.update');
+    Route::get('/marketing', [AdminSettingsController::class, 'marketing'])->name('marketing.index');
+    Route::post('/marketing', [AdminSettingsController::class, 'updateMarketing'])->name('marketing.update');
 
     // ── CMS Pages ──
     Route::get('/pages', [AdminPageController::class, 'index'])->name('pages.index');
@@ -285,16 +287,12 @@ Route::middleware(['auth', 'admin'])->prefix('office')->name('office.')->group(f
     // ── Hero Slides ──
     Route::get('/hero-slides', [AdminHeroSlideController::class, 'index'])->name('hero-slides.index');
     Route::post('/hero-slides', [AdminHeroSlideController::class, 'store'])->name('hero-slides.store');
-    Route::post('/hero-slides/bulk', [AdminHeroSlideController::class, 'bulk'])->name('hero-slides.bulk');
-    Route::post('/hero-slides/bulk-delete', [AdminHeroSlideController::class, 'bulkDelete'])->name('hero-slides.bulk-delete');
     Route::put('/hero-slides/{heroSlide}', [AdminHeroSlideController::class, 'update'])->name('hero-slides.update');
     Route::delete('/hero-slides/{heroSlide}', [AdminHeroSlideController::class, 'destroy'])->name('hero-slides.destroy');
 
     // ── Vouchers ──
     Route::get('/vouchers', [AdminVoucherController::class, 'index'])->name('vouchers.index');
     Route::post('/vouchers', [AdminVoucherController::class, 'store'])->name('vouchers.store');
-    Route::post('/vouchers/bulk', [AdminVoucherController::class, 'bulk'])->name('vouchers.bulk');
-    Route::post('/vouchers/bulk-delete', [AdminVoucherController::class, 'bulkDelete'])->name('vouchers.bulk-delete');
     Route::put('/vouchers/{voucher}', [AdminVoucherController::class, 'update'])->name('vouchers.update');
     Route::delete('/vouchers/{voucher}', [AdminVoucherController::class, 'destroy'])->name('vouchers.destroy');
     Route::post('/vouchers/{voucher}/issue', [AdminVoucherController::class, 'issue'])->name('vouchers.issue');

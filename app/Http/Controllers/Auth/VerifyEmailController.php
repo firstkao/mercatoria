@@ -11,7 +11,7 @@ use Illuminate\View\View;
 
 class VerifyEmailController extends Controller
 {
-    public function notice(Request $request): View
+    public function notice(Request $request): View|RedirectResponse
     {
         if ($request->user()->hasVerifiedEmail()) {
             return redirect('/');
@@ -30,13 +30,6 @@ class VerifyEmailController extends Controller
 
         if ($user->hasVerifiedEmail()) {
             return redirect('/');
-        }
-
-        if ($user->created_at->lt(now()->subHours(24))) {
-            return redirect('/email/verify')->with(
-                'error',
-                'Link verifikasi sudah kedaluwarsa. Silakan minta link verifikasi baru.'
-            );
         }
 
         // PRD 7.4: "Setelah verifikasi -> role = Crush" (naik ke Customer hanya lewat order terverifikasi).

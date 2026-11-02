@@ -35,22 +35,17 @@ test('link verifikasi dengan hash salah ditolak', function () {
     expect($user->fresh()->email_verified_at)->toBeNull();
 });
 
-test('link verifikasi hanya berlaku 24 jam sejak pendaftaran', function () {
-    $user = User::factory()->unverified()->create([
-        'created_at' => now()->subHours(25),
-    ]);
+test('link verifikasi kedaluwarsa 24 jam sejak dikirim, link baru tetap berlaku untuk akun lama', function () {
+    $user = User::factory()->unverified()->create(['created_at' => now()->subDays(5)]);
+    $hash = sha1($user->email);
 
-    $url = URL::temporarySignedRoute(
-        'verification.verify',
-        now()->addMinutes(30),
-        ['id' => $user->id, 'hash' => sha1($user->email)]
-    );
+    $expired = URL::temporarySignedRoute('verification.verify', now()->subMinute(), ['id' => $user->id, 'hash' => $hash]);
+    $this->get($expired)->assertForbidden();
 
-    $this->from('/email/verify')->get($url)
-        ->assertRedirect('/email/verify');
+    $fresh = URL::temporarySignedRoute('verification.verify', now()->addHours(24), ['id' => $user->id, 'hash' => $hash]);
+    $this->get($fresh)->assertRedirect();
 
-    expect($user->fresh()->email_verified_at)->toBeNull()
-        ->and(session('error'))->toContain('kedaluwarsa');
+    expect($user->fresh()->email_verified_at)->not->toBeNull();
 });
 
 test('user yang belum verifikasi dapat meminta ulang email verifikasi', function () {

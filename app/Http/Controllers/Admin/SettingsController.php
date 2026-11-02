@@ -133,7 +133,7 @@ class SettingsController extends Controller
     {
         $data = $request->validate([
             'promo_bar_text' => ['nullable', 'string', 'max:500'],
-            'promo_bar_link' => ['nullable', 'string', 'max:255'],
+            'promo_bar_link' => ['nullable', 'string', 'max:255', 'regex:~^(https?://|/)~i'],
             'promo_bar_active' => ['nullable', 'boolean'],
         ]);
 
