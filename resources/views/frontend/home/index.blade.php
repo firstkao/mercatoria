@@ -47,8 +47,8 @@
 
         {{-- Jelajahi Game Favoritmu (PRD 40.4 / Design Spec 4.4.3) --}}
         <section id="game-grid" class="mx-auto max-w-[1200px] px-8 pb-12">
-            <h2 class="text-center font-display text-[26px] font-semibold text-ink">Jelajahi Game Favoritmu</h2>
-            <p class="mt-1 text-center text-[13px] text-ink/60">Temukan merchandise eksklusif dari game favoritmu dan lihat koleksi lengkapnya di setiap kategori!</p>
+            <h2 class="text-center font-display text-[50px] font-semibold text-ink">Jelajahi Game Favoritmu</h2>
+            <p class="mt-2 text-center text-[16px] text-ink/60">Temukan merchandise eksklusif dari game favoritmu dan lihat koleksi lengkapnya di setiap kategori!</p>
 
             <div class="mt-6 grid grid-cols-2 gap-4 md:grid-cols-4 lg:grid-cols-6">
                 @forelse (($games ?? collect()) as $game)
@@ -61,7 +61,7 @@
                             </div>
                         @endif
                         <div class="absolute bottom-2 left-1/2 w-[82%] -translate-x-1/2 rounded bg-white/92 px-2 py-1.5 text-center">
-                            <p class="text-[10.5px] font-bold uppercase leading-tight text-ink">{{ $game->name }}</p>
+                            <p class="text-[13px] font-bold uppercase leading-tight text-ink">{{ $game->name }}</p>
                         </div>
                     </a>
                 @empty
@@ -72,7 +72,7 @@
 
         {{-- MERCH BARU (PRD 40.6 / Design Spec 4.4.4) --}}
         <section id="merch-baru" class="mx-auto max-w-[1200px] px-8 pb-14">
-            <h2 class="text-center text-[18px] font-bold uppercase tracking-wide text-ink">MERCH BARU</h2>
+            <h2 class="text-center text-[28px] font-bold uppercase tracking-wide text-ink">MERCH BARU</h2>
 
             <div class="mt-5 grid grid-cols-2 gap-3.5 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-7">
                 @forelse (($products ?? collect()) as $product)
@@ -87,16 +87,15 @@
                                 <span class="absolute left-2 top-2 rounded bg-[#E53935] px-2 py-[3px] text-[9px] font-bold uppercase text-white">LIMITED</span>
                             @endif
                         </div>
-                        <p class="mt-1.5 text-[11.5px] font-bold text-ink">[{{ strtoupper($product->game->name) }}]</p>
-                        <p class="text-[11.5px] text-ink">{{ $product->name }}</p>
+                        <p class="mt-1.5 text-[15px] font-bold text-ink">{{ $product->name }}</p>
                         @if (!empty($product->price_min) && !empty($product->price_max))
-                            <p class="mt-0.5 text-[11.5px]">
-                                <span class="text-ink/45 line-through">{{ format_rp($product->price_min) }}</span>
+                            <p class="mt-0.5 text-[15px]">
+                                <span class="text-[13px] text-ink/45 line-through">{{ format_rp($product->price_min) }}</span>
                                 <span class="text-ink/45"> – </span>
                                 <strong class="text-ink">{{ format_rp($product->price_max) }}</strong>
                             </p>
                         @elseif (!empty($product->price_idr))
-                            <p class="mt-0.5 text-[11.5px] font-bold text-ink">{{ format_rp($product->price_idr) }}</p>
+                            <p class="mt-0.5 text-[15px] font-bold text-ink">{{ format_rp($product->price_idr) }}</p>
                         @endif
                     </a>
                 @empty
