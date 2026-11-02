@@ -20,7 +20,8 @@ class ProductSearchService
         $query = Product::query()
             ->where('is_active', true)
             ->with([
-                'game',
+                'game.defaultStore',
+                'store',
                 'developer',       // [FIX] eager load developer (sebelumnya tidak)
                 'tags',
                 'merchCategory',

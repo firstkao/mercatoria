@@ -23,18 +23,33 @@ class UserController extends Controller
     {
         $q = (string) $request->query('q', '');
 
+        $users = User::query()
+            ->when($q !== '', function ($query) use ($q) {
+                $like = '%'.$q.'%';
+                $query->where(fn ($sub) => $sub->where('name', 'like', $like)
+                    ->orWhere('email', 'like', $like)
+                    ->orWhere('no_hp', 'like', $like));
+            })
+            ->orderByDesc('id')
+            ->paginate(30)
+            ->withQueryString();
+
+        $blocked = Spammer::query()
+            ->where('status', Spammer::STATUS_BLOCKED)
+            ->where(fn ($query) => $query->whereIn('email', $users->pluck('email'))
+                ->orWhereIn('no_hp', $users->pluck('no_hp')->filter()))
+            ->get(['email', 'no_hp']);
+
+        $blockedUserIds = $users
+            ->filter(fn (User $user) => $blocked->contains(fn (Spammer $spammer) => $spammer->email === $user->email
+                || ($user->no_hp !== null && $spammer->no_hp === $user->no_hp)))
+            ->pluck('id')
+            ->all();
+
         return view('admin.users.index', [
-            'users' => User::query()
-                ->when($q !== '', function ($query) use ($q) {
-                    $like = '%'.$q.'%';
-                    $query->where(fn ($sub) => $sub->where('name', 'like', $like)
-                        ->orWhere('email', 'like', $like)
-                        ->orWhere('no_hp', 'like', $like));
-                })
-                ->orderByDesc('id')
-                ->paginate(30)
-                ->withQueryString(),
+            'users' => $users,
             'q' => $q,
+            'blockedUserIds' => $blockedUserIds,
         ]);
     }
 

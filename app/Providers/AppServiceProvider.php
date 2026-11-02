@@ -11,6 +11,8 @@ use App\Services\Admin\AdminNotificationService;
 use App\Services\Order\ShippingCalculatorService;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\View;
@@ -47,69 +49,58 @@ class AppServiceProvider extends ServiceProvider
             $cartCount = 0;
 
             if ($user) {
-                $shipping = app(ShippingCalculatorService::class);
+                [$cartTotal, $cartCount] = $this->perRequest('nav_cart', function () use ($user): array {
+                    $shipping = app(ShippingCalculatorService::class);
+                    $total = 0;
+                    $count = 0;
 
-                foreach (Cart::with(['product.game.defaultStore', 'product.store', 'variant'])->where('user_id', $user->id)->get() as $item) {
-                    $pricing = $shipping->calculateItemShipping($item->product, $item->variant);
-                    $cartTotal += $pricing['final_price_bersih'] * $item->qty;
-                    $cartCount += $item->qty;
-                }
+                    foreach (Cart::with(['product.game.defaultStore', 'product.store', 'variant'])->where('user_id', $user->id)->get() as $item) {
+                        $pricing = $shipping->calculateItemShipping($item->product, $item->variant);
+                        $total += $pricing['final_price_bersih'] * $item->qty;
+                        $count += $item->qty;
+                    }
+
+                    return [$total, $count];
+                });
             }
 
-            $view->with(
-                'navGames',
-                Game::where('is_active', true)->orderBy('name')->get(['id', 'name', 'slug'])
-            )->with(
-                'navDevelopers',
-                Developer::where('is_active', true)->orderBy('name')->get(['id', 'name', 'slug'])
-            )->with(
-                'bellNotifications',
-                $user
-                    ? UserNotification::where('user_id', $user->id)->orderByDesc('id')->limit(10)->get()
-                    : collect()
-            )->with(
-                'bellUnreadCount',
-                $user
-                    ? (int) UserNotification::where('user_id', $user->id)->where('is_read', false)->count()
-                    : 0
-            )->with(
-                'cartTotal',
-                $cartTotal
-            )->with(
-                'cartCount',
-                $cartCount
-            );
+            $view->with('navGames', $this->activeGames())
+                ->with('navDevelopers', $this->activeDevelopers())
+                ->with('bellNotifications', $user
+                    ? $this->perRequest('nav_bell', fn () => UserNotification::where('user_id', $user->id)->orderByDesc('id')->limit(10)->get())
+                    : collect())
+                ->with('bellUnreadCount', $user
+                    ? $this->perRequest('nav_unread', fn () => (int) UserNotification::where('user_id', $user->id)->where('is_read', false)->count())
+                    : 0)
+                ->with('cartTotal', $cartTotal)
+                ->with('cartCount', $cartCount);
         });
 
         // Footer "Produk Terpopuler" (Design Spec 4.4.5) — {image, url, name, price}.
         View::composer(['layouts.app', 'layouts.guest', 'frontend.home.index'], function ($view): void {
-            $shipping = app(ShippingCalculatorService::class);
+            $view->with('footerTopProducts', $this->perRequest('footer_top_products', function (): Collection {
+                $shipping = app(ShippingCalculatorService::class);
 
-            $view->with('footerTopProducts', Product::where('is_active', true)
-                ->with(['game.defaultStore', 'store'])
-                ->orderByDesc('sold_count')
-                ->orderByDesc('id')
-                ->limit(5)
-                ->get()
-                ->map(fn (Product $product) => [
-                    'image' => $product->image_path ? Storage::url($product->image_path) : null,
-                    'url' => $product->game ? '/'.$product->game->slug.'/'.$product->slug : null,
-                    'name' => $product->name,
-                    'price' => $shipping->calculateItemShipping($product)['final_price_bersih'],
-                ])
-                ->values()
-            );
+                return Product::where('is_active', true)
+                    ->with(['game.defaultStore', 'store'])
+                    ->orderByDesc('sold_count')
+                    ->orderByDesc('id')
+                    ->limit(5)
+                    ->get()
+                    ->map(fn (Product $product) => [
+                        'image' => $product->image_path ? Storage::url($product->image_path) : null,
+                        'url' => $product->game ? '/'.$product->game->slug.'/'.$product->slug : null,
+                        'name' => $product->name,
+                        'price' => $shipping->calculateItemShipping($product)['final_price_bersih'],
+                    ])
+                    ->values();
+            }));
         });
 
         // Footer "Game" & "Developer" (pola $navGames) untuk layout yang memakai footer.
         View::composer(['layouts.app', 'layouts.guest', 'frontend.home.index'], function ($view): void {
-            $view->with(
-                'footerGames',
-                Game::where('is_active', true)->orderBy('name')->get(['id', 'name', 'slug'])
-            )->with(
-                'footerDevelopers',
-                Developer::where('is_active', true)->orderBy('name')->get(['id', 'name', 'slug'])
-            );
+            $view->with('footerGames', $this->activeGames())
+                ->with('footerDevelopers', $this->activeDevelopers());
         });
 
         // Bell notifikasi admin (PRD 41.1) — 10 terbaru + unread count untuk topbar.
@@ -121,5 +112,37 @@ class AppServiceProvider extends ServiceProvider
                 // PRD 24.5: indikator topbar kill-switch email customer (PR UI).
                 ->with('customerEmailsPaused', (bool) setting('pause_customer_emails', false));
         });
+    }
+
+    /**
+     * Composer menempel di beberapa view (layout + halaman); hitung sekali per request.
+     */
+    private function perRequest(string $key, callable $resolve): mixed
+    {
+        $attributes = request()->attributes;
+
+        if (! $attributes->has($key)) {
+            $attributes->set($key, $resolve());
+        }
+
+        return $attributes->get($key);
+    }
+
+    private function activeGames(): Collection
+    {
+        return $this->perRequest('nav_games', fn () => Cache::remember(
+            Game::NAV_CACHE_KEY,
+            3600,
+            fn () => Game::where('is_active', true)->orderBy('name')->get(['id', 'name', 'slug'])
+        ));
+    }
+
+    private function activeDevelopers(): Collection
+    {
+        return $this->perRequest('nav_developers', fn () => Cache::remember(
+            Developer::NAV_CACHE_KEY,
+            3600,
+            fn () => Developer::where('is_active', true)->orderBy('name')->get(['id', 'name', 'slug'])
+        ));
     }
 }

@@ -159,7 +159,7 @@
                                             <i class="bi bi-bell" style="font-size:0.65rem;"></i> Notif
                                         </button>
                                     @endif
-                                    @if (\App\Models\Spammer::blocksIdentity($user->email, $user->no_hp))
+                                    @if (in_array($user->id, $blockedUserIds, true))
                                         <button type="button"
                                                 class="inline-flex items-center gap-1 rounded-md border border-danger/30 px-2 py-1 text-[10px] text-danger transition-colors hover:border-danger hover:bg-red-50"
                                                 onclick="document.getElementById('del-{{ $user->id }}').showModal()">
@@ -213,7 +213,7 @@
 
     {{-- ═══ DIALOGS (Hard Delete / Forever Delete / Notify) ═══ --}}
     @foreach ($users as $user)
-        @if (\App\Models\Spammer::blocksIdentity($user->email, $user->no_hp))
+        @if (in_array($user->id, $blockedUserIds, true))
             <dialog id="del-{{ $user->id }}" class="m-auto w-[calc(100%-2rem)] max-w-md max-h-[90vh] overflow-y-auto rounded-2xl border border-rule p-0 shadow-2xl backdrop:bg-black/50">
                 <form method="POST" action="{{ route('office.users.destroy', $user) }}" class="p-6">
                     @csrf @method('DELETE')
