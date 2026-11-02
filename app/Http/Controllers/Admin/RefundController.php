@@ -91,7 +91,11 @@ class RefundController extends Controller
             return back()->withErrors(['refund' => 'Refund sudah diproses sebelumnya.']);
         }
 
-        $this->refunds->complete($refund, $request->user());
+        try {
+            $this->refunds->complete($refund, $request->user());
+        } catch (\RuntimeException $e) {
+            return back()->withErrors(['status' => $e->getMessage()]);
+        }
         $this->log($request, 'refund_complete', $refund->order, $refund);
 
         return redirect()->route('office.orders.show', $refund->order)->with('status', 'Refund selesai dikerjakan.');
