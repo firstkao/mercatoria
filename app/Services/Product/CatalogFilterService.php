@@ -29,7 +29,7 @@ class CatalogFilterService
         $max = $this->amount($request->query('max_price'));
         if ($min !== null || $max !== null) {
             // Harga final dihitung di PHP (bobot, ongkir & diskon aktif), bukan kolom SQL.
-            $ids = (clone $query)->get()
+            $ids = (clone $query)->with(['game.defaultStore', 'store', 'variants'])->get()
                 ->filter(function ($product) use ($min, $max) {
                     $price = $this->shipping->calculateItemShipping($product)['final_price_bersih'];
 

@@ -49,7 +49,7 @@ class AppServiceProvider extends ServiceProvider
             if ($user) {
                 $shipping = app(ShippingCalculatorService::class);
 
-                foreach (Cart::with(['product', 'variant'])->where('user_id', $user->id)->get() as $item) {
+                foreach (Cart::with(['product.game.defaultStore', 'product.store', 'variant'])->where('user_id', $user->id)->get() as $item) {
                     $pricing = $shipping->calculateItemShipping($item->product, $item->variant);
                     $cartTotal += $pricing['final_price_bersih'] * $item->qty;
                     $cartCount += $item->qty;
@@ -86,7 +86,7 @@ class AppServiceProvider extends ServiceProvider
             $shipping = app(ShippingCalculatorService::class);
 
             $view->with('footerTopProducts', Product::where('is_active', true)
-                ->with('game')
+                ->with(['game.defaultStore', 'store'])
                 ->orderByDesc('sold_count')
                 ->orderByDesc('id')
                 ->limit(5)

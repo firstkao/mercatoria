@@ -25,7 +25,7 @@ class HomeController extends Controller
     {
         $games = Game::where('is_active', true)->orderBy('name')->get();
         $products = Product::where('is_active', true)
-            ->with(['game', 'tags'])
+            ->with(['game.defaultStore', 'store', 'tags'])
             ->orderByDesc('id')
             ->limit(14)
             ->get();
@@ -36,7 +36,7 @@ class HomeController extends Controller
             ->whereNotNull('discount_amount')
             ->orderByDesc('discount_amount')
             ->limit((int) setting('best_offers_count', 5))
-            ->with(['game', 'tags'])
+            ->with(['game.defaultStore', 'store', 'tags'])
             ->get();
 
         // PRD 47.11: customer cuma lihat harga final (final_price_bersih).

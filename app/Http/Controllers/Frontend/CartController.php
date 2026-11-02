@@ -20,7 +20,7 @@ class CartController extends Controller
 
     public function index(Request $request): View
     {
-        $items = Cart::with(['product.game', 'variant'])
+        $items = Cart::with(['product.game.defaultStore', 'product.store', 'variant'])
             ->where('user_id', $request->user()->id)
             ->latest()
             ->get()

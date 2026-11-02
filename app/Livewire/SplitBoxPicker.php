@@ -22,7 +22,7 @@ class SplitBoxPicker extends Component
 
     public function mount(Product $product): void
     {
-        $this->product = $product->load(['splitBox.slots.batchSlots.batch']);
+        $this->product = $product->load(['splitBox.slots.variant', 'splitBox.slots.batchSlots.batch']);
 
         foreach ($this->product->splitBox?->slots ?? [] as $slot) {
             $this->selected[$slot->id] = 0;
@@ -107,7 +107,7 @@ class SplitBoxPicker extends Component
 
     public function render()
     {
-        $this->product->load(['splitBox.slots.batchSlots.batch']);
+        $this->product->load(['splitBox.slots.variant', 'splitBox.slots.batchSlots.batch']);
 
         $hotCount = 0;
         $pairNeeded = 0;

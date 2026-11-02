@@ -2,6 +2,7 @@
 
 namespace App\Livewire;
 
+use App\Models\OrderItem;
 use App\Models\Product;
 use App\Models\SplitBoxBatch;
 use App\Models\SplitBoxBatchSlot;
@@ -42,8 +43,18 @@ class SplitBoxManager extends Component
             ->whereHas('splitBox', fn ($q) => $q->where('product_id', $this->product->id))
             ->firstOrFail();
 
+        $newRole = in_array($role, ['normal', 'hot_1', 'hot_2'], true) ? $role : 'normal';
+
+        if ($newRole !== $slot->split_role && OrderItem::where('split_box_slot_id', $slot->id)->exists()) {
+            $this->statusMessage = 'Role slot tidak bisa diubah karena sudah ada penjualan.';
+            $this->statusIsError = true;
+            $this->fillSlotForm();
+
+            return;
+        }
+
         $slot->update([
-            'split_role' => in_array($role, ['normal', 'hot_1', 'hot_2'], true) ? $role : 'normal',
+            'split_role' => $newRole,
             'qty_per_box' => max(1, $qtyPerBox),
         ]);
 
@@ -93,7 +104,7 @@ class SplitBoxManager extends Component
         }
 
         // Cek limit max_auto_batches
-        $totalBatches = $splitBox->batches()->count();
+        $totalBatches = $splitBox->batches()->whereIn('status', ['open', 'full'])->count();
 
         if ($totalBatches >= $splitBox->max_auto_batches) {
             $this->statusMessage = "Sudah mencapai batas maksimal kloter ({$splitBox->max_auto_batches}).";

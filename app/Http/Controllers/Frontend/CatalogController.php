@@ -35,7 +35,7 @@ class CatalogController extends Controller
             ->where('is_active', true)
             ->where(fn ($q) => $q->where('developer_id', $developer->id)
                 ->orWhereHas('game.developers', fn ($gq) => $gq->where('developers.id', $developer->id)))
-            ->with(['game', 'developer', 'tags', 'variants'])
+            ->with(['game.defaultStore', 'developer', 'tags', 'variants', 'store'])
             ->orderByDesc('products.id')
             ->tap(fn ($q) => app(CatalogFilterService::class)->apply($q, $request))
             ->paginate((int) setting('catalog_per_page', 30))
@@ -54,7 +54,7 @@ class CatalogController extends Controller
             ->where('is_active', true)
             ->where('game_id', $game->id)
             ->when($category, fn ($q) => $q->where('merch_category_id', $category->id))
-            ->with(['game', 'developer', 'tags', 'variants'])
+            ->with(['game.defaultStore', 'developer', 'tags', 'variants', 'store'])
             ->orderByDesc('products.id')
             ->tap(fn ($q) => app(CatalogFilterService::class)->apply($q, $request))
             ->paginate((int) setting('catalog_per_page', 30))
@@ -93,7 +93,7 @@ class CatalogController extends Controller
                 ->whereNotNull('discount_amount')
                 ->orderByDesc('discount_amount')
                 ->limit((int) setting('best_offers_count', 5))
-                ->with(['game', 'tags'])
+                ->with(['game.defaultStore', 'store', 'tags'])
                 ->get(),
             'tags' => Tag::orderBy('name')->get(),
             'shipping' => $this->shipping,

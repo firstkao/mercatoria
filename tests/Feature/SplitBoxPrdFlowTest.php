@@ -247,3 +247,36 @@ test('dua item dalam satu order pada slot yang sama tidak boleh melebihi stok kl
     expect(app(SplitBoxService::class)->lockSlotsForOrder($order->fresh()))->toBeFalse();
     expect($fx['batch']->batchSlots()->sum('qty_taken'))->toBe(0);
 });
+
+test('role slot tidak bisa diubah setelah ada penjualan, qty tetap boleh', function () {
+    $fx = splitBoxFixture();
+    $admin = User::factory()->admin()->create();
+    placeSplitBoxOrder($fx['user'], $fx['product'], [$fx['normalA']]);
+    OrderItem::query()->update(['split_box_slot_id' => $fx['normalA']->id]);
+
+    Livewire::actingAs($admin)->test(SplitBoxManager::class, ['product' => $fx['product']])
+        ->call('saveSlot', $fx['normalA']->id, 'hot_1', 3)
+        ->assertSet('statusIsError', true)
+        ->assertSet('statusMessage', 'Role slot tidak bisa diubah karena sudah ada penjualan.');
+
+    expect($fx['normalA']->fresh()->split_role)->toBe('normal');
+
+    Livewire::actingAs($admin)->test(SplitBoxManager::class, ['product' => $fx['product']])
+        ->call('saveSlot', $fx['normalA']->id, 'normal', 3)
+        ->assertSet('statusIsError', false);
+
+    expect($fx['normalA']->fresh()->qty_per_box)->toBe(3);
+});
+
+test('max auto batches hanya menghitung kloter open dan full', function () {
+    $fx = splitBoxFixture(stockPerSlot: 1);
+    $fx['splitBox']->update(['max_auto_batches' => 2]);
+    SplitBoxBatch::create([
+        'split_box_id' => $fx['splitBox']->id, 'batch_no' => 99, 'status' => SplitBoxBatch::STATUS_CLOSED, 'is_auto_opened' => false,
+    ]);
+
+    [, $order] = placeSplitBoxOrder($fx['user'], $fx['product'], [$fx['hot'], $fx['normalA']]);
+    app(SplitBoxService::class)->lockSlotsForOrder($order);
+
+    expect(SplitBoxBatch::where('split_box_id', $fx['splitBox']->id)->where('status', 'open')->count())->toBeGreaterThanOrEqual(1);
+});

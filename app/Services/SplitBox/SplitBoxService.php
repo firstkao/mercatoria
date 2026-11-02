@@ -319,7 +319,7 @@ class SplitBoxService
         }
 
         // Cek limit max_auto_batches
-        $totalBatches = $splitBox->batches()->count();
+        $totalBatches = $splitBox->batches()->whereIn('status', ['open', 'full'])->count();
 
         if ($totalBatches >= $splitBox->max_auto_batches) {
             return;
