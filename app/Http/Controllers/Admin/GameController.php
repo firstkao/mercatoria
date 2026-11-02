@@ -6,10 +6,12 @@ use App\Http\Controllers\Controller;
 use App\Models\AdminLog;
 use App\Models\Developer;
 use App\Models\Game;
+use App\Models\Page;
 use App\Models\Store;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
@@ -65,7 +67,7 @@ class GameController extends Controller
     {
         $data = $request->validate([
             'name' => ['required', 'string', 'max:100'],
-            'slug' => ['nullable', 'string', 'max:120', 'unique:games,slug,'.$game->id],
+            'slug' => ['nullable', 'string', 'max:120', 'unique:games,slug,'.$game->id, Rule::unique('pages', 'slug')],
             'default_store_id' => ['nullable', 'exists:stores,id'],
             'is_active' => ['nullable', 'boolean'],
             'logo' => ['nullable', 'file', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
@@ -204,7 +206,10 @@ class GameController extends Controller
         $original = $slug;
         $counter = 2;
 
-        while (Game::where('slug', $slug)->when($ignoreId, fn ($q) => $q->where('id', '!=', $ignoreId))->exists()) {
+        while (
+            Game::where('slug', $slug)->when($ignoreId, fn ($q) => $q->where('id', '!=', $ignoreId))->exists()
+            || Page::where('slug', $slug)->exists()
+        ) {
             $slug = $original.'-'.$counter;
             $counter++;
         }
