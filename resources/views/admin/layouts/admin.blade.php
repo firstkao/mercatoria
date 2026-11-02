@@ -172,8 +172,7 @@
 
                     ['__SECTION__','','Lainnya'],
                     ['office.seo.index','bi-globe','SEO','office.seo'],
-                    ['office.marketing.index','bi-megaphone','Marketing','office.marketing'],
-                    ['office.reports.index','bi-bar-chart','Laporan','office.reports'],
+                                        ['office.reports.index','bi-bar-chart','Laporan','office.reports'],
                     ['office.payment-methods.index','bi-wallet2','Metode Bayar','office.payment-methods'],
                     ['office.settings.index','bi-gear','Settings','office.settings'],
                 ]; @endphp

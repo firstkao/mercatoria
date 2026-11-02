@@ -64,17 +64,16 @@
                                 <span class="absolute left-2 top-2 rounded bg-[#E53935] px-2 py-[3px] text-[9px] font-bold uppercase text-white">LIMITED</span>
                             @endif
                         </div>
-                        <p class="mt-1.5 text-[11.5px] leading-[1.35] text-ink">
-                            <strong>[{{ strtoupper($product->game->name) }}]</strong> {{ $product->name }}
-                        </p>
+                        <p class="mt-1.5 text-[11.5px] font-bold text-ink">[{{ strtoupper($product->game->name) }}]</p>
+                        <p class="text-[11.5px] text-ink">{{ $product->name }}</p>
                         @if (!empty($product->price_min) && !empty($product->price_max))
                             <p class="mt-0.5 text-[11.5px]">
                                 <span class="text-ink/45 line-through">{{ format_rp($product->price_min) }}</span>
                                 <span class="text-ink/45"> – </span>
-                                <strong class="text-[#0299E7]">{{ format_rp($product->price_max) }}</strong>
+                                <strong class="text-ink">{{ format_rp($product->price_max) }}</strong>
                             </p>
                         @elseif (!empty($product->price_idr))
-                            <p class="mt-0.5 text-[11.5px] font-bold text-[#0299E7]">{{ format_rp($product->price_idr) }}</p>
+                            <p class="mt-0.5 text-[11.5px] font-bold text-ink">{{ format_rp($product->price_idr) }}</p>
                         @endif
                     </a>
                 @endforeach

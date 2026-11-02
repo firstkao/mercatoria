@@ -39,8 +39,9 @@ test('total keranjang hanya milik user pemilik', function () {
     $produk = productFinal255();
     Cart::factory()->create(['user_id' => $lain->id, 'product_id' => $produk->id, 'qty' => 1]);
 
-    // Dorong produk itu keluar dari footer "Produk Terpopuler" (top 5 sold_count)
-    Product::factory()->count(5)->create(['sold_count' => 10, 'is_active' => true]);
+    // Dorong produk itu keluar dari footer "Produk Terpopuler" (top 5 sold_count).
+    // Harga filler dikunci supaya tidak kebetulan sama dengan Rp255.000 (flaky).
+    Product::factory()->count(5)->create(['sold_count' => 10, 'is_active' => true, 'price_rmb' => 10, 'weight_gram' => 0]);
 
     $html = $this->actingAs($user)->get('/cart')->assertOk()->getContent();
 
