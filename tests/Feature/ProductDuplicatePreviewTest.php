@@ -13,7 +13,7 @@ test('duplicate produk menyalin field dan varian sebagai draft', function () {
 
     $this->actingAs($admin)->post("/office/products/{$product->id}/duplicate")->assertRedirect();
 
-    $copy = Product::where('name', $product->name)->where('id', '!=', $product->id)->firstOrFail();
+    $copy = Product::where('name', $product->name.' (Salinan)')->where('id', '!=', $product->id)->firstOrFail();
 
     expect($copy->is_active)->toBeFalse()
         ->and($copy->sku)->not->toBe($product->sku)

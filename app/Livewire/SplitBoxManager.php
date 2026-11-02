@@ -4,12 +4,6 @@ namespace App\Livewire;
 
 use App\Models\Product;
 use App\Models\SplitBoxBatch;
-use App\Models\Split<?php
-
-namespace App\Livewire;
-
-use App\Models\Product;
-use App\Models\SplitBoxBatch;
 use App\Models\SplitBoxBatchSlot;
 use App\Models\SplitBoxSlot;
 use App\Services\SplitBox\SplitBoxService;
@@ -21,6 +15,8 @@ class SplitBoxManager extends Component
     public Product $product;
 
     public string $statusMessage = '';
+
+    public bool $statusIsError = false;
 
     public function mount(Product $product): void
     {
@@ -40,6 +36,8 @@ class SplitBoxManager extends Component
         ]);
 
         $this->statusMessage = 'Slot diperbarui.';
+
+        $this->statusIsError = false;
         $this->refreshData();
     }
 
@@ -49,11 +47,15 @@ class SplitBoxManager extends Component
 
         if (! $splitBox) {
             $this->statusMessage = 'Produk ini bukan split box.';
+            $this->statusIsError = true;
+
             return;
         }
 
         if ($splitBox->slots->isEmpty()) {
             $this->statusMessage = 'Tambahkan slot terlebih dahulu.';
+            $this->statusIsError = true;
+
             return;
         }
 
@@ -70,6 +72,8 @@ class SplitBoxManager extends Component
 
             if ($hasStock) {
                 $this->statusMessage = 'Masih ada kloter terbuka dengan stok tersedia.';
+                $this->statusIsError = true;
+
                 return;
             }
         }
@@ -79,6 +83,8 @@ class SplitBoxManager extends Component
 
         if ($totalBatches >= $splitBox->max_auto_batches) {
             $this->statusMessage = "Sudah mencapai batas maksimal kloter ({$splitBox->max_auto_batches}).";
+            $this->statusIsError = true;
+
             return;
         }
 
@@ -101,6 +107,8 @@ class SplitBoxManager extends Component
         });
 
         $this->statusMessage = "Kloter #{$batch->batch_no} dibuka.";
+
+        $this->statusIsError = false;
         $this->refreshData();
     }
 
@@ -113,12 +121,16 @@ class SplitBoxManager extends Component
 
         if ($batch->status !== SplitBoxBatch::STATUS_OPEN) {
             $this->statusMessage = 'Kloter ini sudah ditutup.';
+            $this->statusIsError = true;
+
             return;
         }
 
         $count = $splitBox->closeBatchAndRefund($batch, auth()->user());
 
-        $this->statusMessage = "Kloter ditutup. {$count} order di-refund.";
+        $this->statusMessage = "Kloter ditutup. {$count} permintaan refund dibuat (transfer manual).";
+
+        $this->statusIsError = false;
         $this->refreshData();
     }
 

@@ -1,10 +1,12 @@
 <?php
 
+use App\Livewire\SplitBoxManager;
 use App\Models\SplitBoxBatch;
 use App\Models\User;
 use App\Models\UserNotification;
 use App\Services\SplitBox\SplitBoxService;
 use Illuminate\Http\UploadedFile;
+use Livewire\Livewire;
 
 test('auto open kloter saat stok habis', function () {
     $fx = splitBoxFixture(stockPerSlot: 1);
@@ -67,4 +69,19 @@ test('tutup kloter dan refund semua mengembalikan status order', function () {
 
     expect($orderA->fresh()->status)->toBe('dana_dikembalikan')
         ->and($fx['batch']->fresh()->status)->toBe('closed');
+});
+
+test('komponen SplitBoxManager dapat dirender dan menutup kloter sebagai permintaan refund', function () {
+    $admin = User::factory()->admin()->create();
+    $fx = splitBoxFixture(stockPerSlot: 1);
+
+    $batch = SplitBoxBatch::where('split_box_id', $fx['splitBox']->id)->firstOrFail();
+
+    Livewire::actingAs($admin)
+        ->test(SplitBoxManager::class, ['product' => $fx['product']])
+        ->assertOk()
+        ->call('closeRefund', $batch->id)
+        ->assertSet('statusMessage', fn ($message) => str_contains($message, 'Kloter ditutup'));
+
+    expect($batch->fresh()->status)->not->toBe(SplitBoxBatch::STATUS_OPEN);
 });

@@ -28,7 +28,6 @@ class ProductFactory extends Factory
             'type' => Product::TYPE_SINGLE,
             'image_path' => null,
             'description_image_path' => null,
-            'description' => fake()->sentence(),
             'discount_amount' => null,
             'discount_start' => null,
             'discount_end' => null,

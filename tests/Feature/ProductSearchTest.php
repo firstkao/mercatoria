@@ -57,6 +57,7 @@ test('cari dari nama game dan developer', function () {
     $product = Product::factory()->create([
         'name' => 'Merchandise Biasa',
         'game_id' => $game->id,
+        'developer_id' => $developer->id,
     ]);
 
     expect(searchService()->search('Endfield')->total())->toBe(1)

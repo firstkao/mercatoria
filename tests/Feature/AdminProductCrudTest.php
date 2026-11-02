@@ -113,3 +113,31 @@ test('field produk wajib divalidasi', function () {
         'price_rmb' => -5,
     ])->assertSessionHasErrors(['name', 'sku', 'price_rmb']);
 });
+
+test('buat split box menyalin produk tanpa varian dengan is_split_box aktif', function () {
+    $admin = User::factory()->admin()->create();
+    $product = Product::factory()->create(['name' => 'Figure Asli', 'price_rmb' => 100, 'is_active' => true]);
+    ProductVariant::factory()->create(['product_id' => $product->id]);
+
+    $this->actingAs($admin)->post("/office/products/{$product->id}/split-clone", [
+        'split_name' => 'Figure Asli (Split Box)',
+        'split_price_rmb' => 25,
+    ])->assertRedirect();
+
+    $copy = Product::where('name', 'Figure Asli (Split Box)')->firstOrFail();
+
+    expect($copy->is_split_box)->toBeTrue()
+        ->and($copy->is_active)->toBeFalse()
+        ->and((float) $copy->price_rmb)->toBe(25.0)
+        ->and($copy->variants()->count())->toBe(0)
+        ->and($product->fresh()->is_split_box)->toBeFalse();
+});
+
+test('varian, bulk produk dan bulk berat divalidasi lewat form request khusus', function () {
+    $admin = User::factory()->admin()->create();
+    $product = Product::factory()->create();
+
+    $this->actingAs($admin)->post("/office/products/{$product->id}/variants", [])->assertSessionHasErrors(['name', 'sku', 'availability']);
+    $this->actingAs($admin)->post('/office/products/bulk', ['action' => 'hapus'])->assertSessionHasErrors('ids');
+    $this->actingAs($admin)->post("/office/products/{$product->id}/variants/bulk-weight", ['weight_gram' => 0])->assertSessionHasErrors(['weight_gram', 'ids']);
+});

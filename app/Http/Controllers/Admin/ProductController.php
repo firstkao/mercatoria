@@ -23,7 +23,6 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Str;
-use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
 class ProductController extends Controller
@@ -139,10 +138,10 @@ class ProductController extends Controller
 
             // [FIX #5] Validasi per-row sebelum insert
             $validated = validator($v, [
-                'name'         => 'required|string|max:255',
-                'sku'          => 'required|string|max:100|unique:product_variants,sku',
-                'price_rmb'    => 'nullable|numeric|min:0',
-                'weight_gram'  => 'nullable|integer|min:0',
+                'name' => 'required|string|max:255',
+                'sku' => 'required|string|max:100|unique:product_variants,sku',
+                'price_rmb' => 'nullable|numeric|min:0',
+                'weight_gram' => 'nullable|integer|min:0',
                 'availability' => 'nullable|in:tersedia,kosong',
             ])->validate();
 
@@ -205,9 +204,31 @@ class ProductController extends Controller
     }
 
     /**
+     * Modal "Buat Split Box": salinan produk (tanpa varian) dengan is_split_box aktif.
+     * Varian dipecah manual oleh admin; produk asli tidak berubah.
+     */
+    public function splitClone(Request $request, Product $product): RedirectResponse
+    {
+        $data = $request->validate([
+            'split_name' => ['required', 'string', 'max:150'],
+            'split_price_rmb' => ['required', 'numeric', 'min:0'],
+        ]);
+
+        $copy = $this->duplicateProduct($product, $request->user(), withVariants: false);
+        $copy->update([
+            'name' => $data['split_name'],
+            'price_rmb' => $data['split_price_rmb'],
+            'is_split_box' => true,
+        ]);
+
+        return redirect()->route('office.products.edit', $copy)
+            ->with('status', 'Produk split box dibuat sebagai draft. Pecah varian secara manual.');
+    }
+
+    /**
      * [FIX #2] Shared duplicate logic — copy file gambar + tags.
      */
-    private function duplicateProduct(Product $product, $user): Product
+    private function duplicateProduct(Product $product, $user, bool $withVariants = true): Product
     {
         $copy = $product->replicate(['sold_count']);
         $copy->name = $product->name.' (Salinan)';
@@ -228,7 +249,7 @@ class ProductController extends Controller
         $copy->save();
 
         // [FIX #2] Copy varian + foto varian
-        foreach ($product->variants as $variant) {
+        foreach ($withVariants ? $product->variants : [] as $variant) {
             $variantCopy = $variant->replicate();
             $variantCopy->sku = $variant->sku.'-COPY-'.Str::random(4);
             $variantCopy->product_id = $copy->id;
@@ -316,9 +337,9 @@ class ProductController extends Controller
         }
 
         $verb = match ($data['action']) {
-            'hapus'       => 'dihapus permanen',
-            'salin'       => 'disalin',
-            'aktifkan'    => 'diaktifkan',
+            'hapus' => 'dihapus permanen',
+            'salin' => 'disalin',
+            'aktifkan' => 'diaktifkan',
             'nonaktifkan' => 'dinonaktifkan',
         };
 

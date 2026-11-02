@@ -13,6 +13,7 @@ function productUploadPayload(array $overrides = []): array
         'name' => 'Produk Gambar',
         'sku' => 'IMG-'.uniqid(),
         'price_rmb' => 58,
+        'weight_gram' => 100,
         'type' => 'single',
         'availability' => 'tersedia',
         'is_active' => 1,

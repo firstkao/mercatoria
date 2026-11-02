@@ -17,6 +17,7 @@ function uatProductPayload(array $o = []): array
         'name' => 'Figure "Rem" & Ram',
         'sku' => 'UAT-001',
         'price_rmb' => 100,
+        'weight_gram' => 100,
         'type' => 'single',
         'availability' => 'tersedia',
     ], $o);

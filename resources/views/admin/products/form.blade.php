@@ -1,8 +1,5 @@
 @extends('admin.layouts.admin')
 
-@section('title', $product->exists ? 'Edit
-@extends('admin.layouts.admin')
-
 @section('title', $product->exists ? 'Edit Produk' : 'Tambah Produk')
 
 @section('content')
