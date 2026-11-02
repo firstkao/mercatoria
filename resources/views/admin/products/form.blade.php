@@ -1,5 +1,8 @@
 @extends('admin.layouts.admin')
 
+@section('title', $product->exists ? 'Edit
+@extends('admin.layouts.admin')
+
 @section('title', $product->exists ? 'Edit Produk' : 'Tambah Produk')
 
 @section('content')
@@ -427,10 +430,11 @@
                                 </div>
                                 @error('price_rmb')<p class="mt-1.5 text-xs text-danger">{{ $message }}</p>@enderror
                             </div>
+                            {{-- [FIX #4] Berat — tambah required + min --}}
                             <div>
                                 <label class="block text-sm font-semibold text-ink">Berat (gram) <span class="text-danger">*</span></label>
                                 <div class="relative mt-2">
-                                    <input type="number" name="weight_gram" id="input-weight-gram"
+                                    <input type="number" name="weight_gram" id="input-weight-gram" required min="1"
                                            value="{{ old('weight_gram', $product->weight_gram) }}"
                                            class="w-full rounded-lg border border-rule py-2.5 pl-4 pr-10 text-sm text-ink transition-colors focus:border-ink focus:ring-1 focus:ring-ink/10">
                                     <span class="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-xs text-ink/40">gram</span>
@@ -980,16 +984,17 @@
                     @error('image')<p class="mt-1.5 text-xs text-danger">{{ $message }}</p>@enderror
                 </div>
 
-                {{-- DISKON --}}
+                {{-- [FIX #3] DISKON — currency: RMB --}}
                 <div class="sidebar-section">
                     <div class="sidebar-label">
                         <i class="bi bi-percent"></i> Diskon Produk
                     </div>
                     <div class="mt-2.5">
-                        <label class="block text-xs font-medium text-ink/60">Nominal (Rp)</label>
+                        <label class="block text-xs font-medium text-ink/60">Nominal (RMB)</label>
                         <div class="relative mt-1">
-                            <span class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-xs text-ink/40">Rp</span>
-                            <input type="number" step="0.01" min="0" name="discount_amount"
+                            <span class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-xs text-ink/40">¥</span>
+                            {{-- [FIX #1] id="input-discount" — sinkron dengan JS --}}
+                            <input type="number" step="0.01" min="0" name="discount_amount" id="input-discount"
                                    value="{{ old('discount_amount', $product->discount_amount) }}"
                                    class="w-full rounded-lg border border-rule py-2 pl-9 pr-3 text-sm text-ink transition-colors focus:border-ink focus:ring-1 focus:ring-ink/10">
                         </div>
@@ -1009,7 +1014,7 @@
                                    class="mt-1 w-full rounded-lg border border-rule px-2.5 py-2 text-xs text-ink">
                         </div>
                     </div>
-                    <p class="mt-2 text-[10px] text-ink/35">Diskon wajib ≤ harga jual dalam Rupiah.</p>
+                    <p class="mt-2 text-[10px] text-ink/35">Diskon dalam RMB. Wajib ≤ harga jual.</p>
                 </div>
 
                 {{-- SPLIT BOX --}}
@@ -1058,6 +1063,29 @@
                         </p>
                     @endif
                 </div>
+
+                {{-- SALIN PRODUK --}}
+                @if ($product->exists)
+                <div class="sidebar-section">
+                    <div class="sidebar-label">
+                        <i class="bi bi-copy"></i> Salin Produk
+                    </div>
+                    <p class="mt-2.5 text-xs leading-relaxed text-ink/55">
+                        Duplikat produk ini beserta semua varian, foto, dan tag. Salinan disimpan sebagai draft.
+                    </p>
+                    <form method="POST" action="{{ route('office.products.duplicate', $product) }}"
+                          class="mt-3"
+                          onsubmit="return confirm('Salin produk ini? Salinan akan disimpan sebagai Draft.')">
+                        @csrf
+                        <button type="submit"
+                                class="flex w-full items-center justify-center gap-2 rounded-lg border border-blue-200 bg-blue-50/50 px-4 py-2.5 text-sm font-semibold text-blue-700 transition-colors hover:border-blue-400 hover:bg-blue-50">
+                            <i class="bi bi-copy" style="font-size:0.9rem;"></i>
+                            Salin Produk Ini
+                        </button>
+                    </form>
+                    <p class="mt-2 text-center text-[10px] text-ink/35">Salinan otomatis jadi Draft</p>
+                </div>
+                @endif
 
                 {{-- HAPUS PRODUK --}}
                 @if ($product->exists)
@@ -1327,7 +1355,7 @@
 
             <div class="mt-5">
                 <label class="block text-sm font-semibold text-ink">Berat Baru (gram)</label>
-                <input type="number" id="bulk-weight-input" placeholder="250"
+                <input type="number" id="bulk-weight-input" placeholder="250" min="1"
                        class="mt-2 w-full rounded-lg border border-rule px-4 py-2.5 text-sm text-ink transition-colors focus:border-ink focus:ring-1 focus:ring-ink/10"
                        oninput="updateBulkPreview()">
             </div>
