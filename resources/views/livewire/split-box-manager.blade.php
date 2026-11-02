@@ -75,6 +75,7 @@
                                 @if ($batch->status === 'open') text-emerald-600
                                 @elseif ($batch->status === 'full') text-blue-600
                                 @elseif ($batch->status === 'closed') text-gray-500
+                                @elseif ($batch->status === 'cancelled') text-red-600
                                 @else text-red-500 @endif
                             ">{{ $batch->status }}</span>
                             @if ($batch->is_auto_opened)

@@ -68,7 +68,7 @@ test('tutup kloter dan refund semua mengembalikan status order', function () {
     $this->actingAs($admin)->post("/office/split-box-batches/{$fx['batch']->id}/close-refund");
 
     expect($orderA->fresh()->status)->toBe('dana_dikembalikan')
-        ->and($fx['batch']->fresh()->status)->toBe('closed');
+        ->and($fx['batch']->fresh()->status)->toBe('cancelled');
 });
 
 test('komponen SplitBoxManager dapat dirender dan menutup kloter sebagai permintaan refund', function () {

@@ -4,6 +4,7 @@ use App\Livewire\SplitBoxPicker;
 use App\Models\Cart;
 use App\Models\Order;
 use App\Models\OrderItem;
+use App\Models\ProductVariant;
 use App\Models\SplitBoxBatch;
 use App\Models\SplitBoxBatchSlot;
 use App\Models\User;
@@ -129,4 +130,32 @@ test('variant split box harus harga dan berat seragam', function () {
     $this->actingAs($admin)->put("/office/products/{$fx['product']->id}/variants/{$variant->id}", [
         'name' => $variant->name, 'sku' => $variant->sku, 'price_rmb' => 99, 'weight_gram' => 50, 'availability' => $variant->availability ?? 'ready',
     ])->assertSessionHasErrors('price_rmb');
+});
+
+test('bulk edit harga/berat produk Split Box harus mencakup semua varian', function () {
+    $fx = splitBoxFixture();
+    $admin = User::factory()->admin()->create();
+    $product = $fx['product'];
+    $product->update(['is_split_box' => true]);
+    $a = ProductVariant::factory()->create(['product_id' => $product->id]);
+    $b = ProductVariant::factory()->create(['product_id' => $product->id]);
+    $ids = $product->variants()->pluck('id')->all();
+
+    $this->actingAs($admin)->postJson(route('office.products.variants.bulk-price', $product), ['ids' => [$a->id], 'price_rmb' => 10])
+        ->assertStatus(422);
+    $this->actingAs($admin)->postJson(route('office.products.variants.bulk-weight', $product), ['ids' => [$a->id], 'weight_gram' => 10])
+        ->assertStatus(422);
+    $this->actingAs($admin)->postJson(route('office.products.variants.bulk-price', $product), ['ids' => $ids, 'price_rmb' => 10])
+        ->assertOk();
+
+    expect($product->variants()->pluck('price_rmb')->map(fn ($p) => (float) $p)->unique()->all())->toBe([10.0]);
+});
+
+test('kloter tanpa order ditutup sebagai closed', function () {
+    $fx = splitBoxFixture();
+    $admin = User::factory()->admin()->create();
+
+    app(SplitBoxService::class)->closeBatchAndRefund($fx['batch'], $admin);
+
+    expect($fx['batch']->fresh()->status)->toBe(SplitBoxBatch::STATUS_CLOSED);
 });

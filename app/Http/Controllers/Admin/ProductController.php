@@ -355,6 +355,10 @@ class ProductController extends Controller
     {
         $data = $request->validated();
 
+        if ($error = $this->splitBoxBulkError($product, $data['ids'], ['weight_gram' => $data['weight_gram']])) {
+            return $this->bulkErrorResponse($request, $product, $error);
+        }
+
         $updated = ProductVariant::whereIn('id', $data['ids'])
             ->where('product_id', $product->id)
             ->update(['weight_gram' => $data['weight_gram']]);
@@ -381,6 +385,10 @@ class ProductController extends Controller
     public function bulkPrice(BulkPriceRequest $request, Product $product): JsonResponse|RedirectResponse
     {
         $data = $request->validated();
+
+        if ($error = $this->splitBoxBulkError($product, $data['ids'], ['price_rmb' => $data['price_rmb']])) {
+            return $this->bulkErrorResponse($request, $product, $error);
+        }
 
         $updated = ProductVariant::whereIn('id', $data['ids'])
             ->where('product_id', $product->id)
@@ -473,6 +481,35 @@ class ProductController extends Controller
         }
 
         return null;
+    }
+
+    /**
+     * PRD 49.5: bulk edit pada produk Split Box harus mencakup SEMUA varian agar harga/berat tetap seragam.
+     *
+     * @param  array<int, int>  $ids
+     * @param  array<string, mixed>  $changes
+     */
+    private function splitBoxBulkError(Product $product, array $ids, array $changes): ?string
+    {
+        if (! $product->is_split_box) {
+            return null;
+        }
+
+        $allIds = $product->variants()->pluck('id')->all();
+        if (array_diff($allIds, array_map('intval', $ids)) !== []) {
+            return 'Produk Split Box: harga dan berat harus sama untuk seluruh karakter, pilih semua varian.';
+        }
+
+        return null;
+    }
+
+    private function bulkErrorResponse(Request $request, Product $product, string $error): JsonResponse|RedirectResponse
+    {
+        if ($request->expectsJson() || $request->ajax()) {
+            return response()->json(['success' => false, 'message' => $error], 422);
+        }
+
+        return redirect()->route('office.products.edit', $product)->withErrors(['bulk' => $error]);
     }
 
     public function destroyVariant(Request $request, Product $product, ProductVariant $variant): RedirectResponse

@@ -176,15 +176,19 @@ class SplitBoxService
     {
         return DB::transaction(function () use ($batch, $admin) {
             // Guard: jangan double-close
-            if ($batch->status !== SplitBoxBatch::STATUS_OPEN) {
+            if (! in_array($batch->status, [SplitBoxBatch::STATUS_OPEN, SplitBoxBatch::STATUS_FULL], true)) {
                 return 0;
             }
-
-            $batch->update(['status' => SplitBoxBatch::STATUS_CLOSED, 'closed_at' => now()]);
 
             $orderIds = OrderItem::whereIn('split_box_batch_slot_id',
                 SplitBoxBatchSlot::where('batch_id', $batch->id)->pluck('id')
             )->pluck('order_id')->unique();
+
+            // Kloter tanpa order = closed; kloter gagal (ada order yang di-refund) = cancelled.
+            $batch->update([
+                'status' => $orderIds->isEmpty() ? SplitBoxBatch::STATUS_CLOSED : SplitBoxBatch::STATUS_CANCELLED,
+                'closed_at' => now(),
+            ]);
 
             $orders = Order::whereIn('id', $orderIds)->lockForUpdate()->get();
 
