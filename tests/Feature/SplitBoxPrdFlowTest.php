@@ -4,6 +4,7 @@ use App\Livewire\SplitBoxPicker;
 use App\Models\Cart;
 use App\Models\Order;
 use App\Models\OrderItem;
+use App\Models\Product;
 use App\Models\ProductVariant;
 use App\Models\SplitBoxBatch;
 use App\Models\SplitBoxBatchSlot;
@@ -158,4 +159,32 @@ test('kloter tanpa order ditutup sebagai closed', function () {
     app(SplitBoxService::class)->closeBatchAndRefund($fx['batch'], $admin);
 
     expect($fx['batch']->fresh()->status)->toBe(SplitBoxBatch::STATUS_CLOSED);
+});
+
+test('update produk Split Box menolak harga/berat varian yang tidak seragam', function () {
+    $fx = splitBoxFixture();
+    $admin = User::factory()->admin()->create();
+    $product = $fx['product'];
+    $product->variants()->first()->update(['price_rmb' => 99]);
+
+    $this->actingAs($admin)->put(route('office.products.update', $product), [
+        'game_id' => $product->game_id, 'store_id' => $product->store_id, 'name' => $product->name,
+        'sku' => $product->sku, 'slug' => $product->slug, 'price_rmb' => 58, 'weight_gram' => 50,
+        'type' => 'variant', 'availability' => 'tersedia', 'is_split_box' => 1,
+    ])->assertSessionHasErrors('price_rmb');
+});
+
+test('duplikat produk Split Box menyalin SplitBox dan slot ke varian salinan', function () {
+    $fx = splitBoxFixture();
+    $admin = User::factory()->admin()->create();
+
+    $this->actingAs($admin)->post(route('office.products.duplicate', $fx['product']))->assertRedirect();
+
+    $copy = Product::where('id', '!=', $fx['product']->id)->where('is_split_box', true)->firstOrFail();
+    $slots = $copy->splitBox->slots;
+
+    expect($slots)->toHaveCount(3)
+        ->and($slots->pluck('split_role')->sort()->values()->all())->toBe(['hot_1', 'normal', 'normal'])
+        ->and($slots->every(fn ($s) => $s->variant->product_id === $copy->id))->toBeTrue()
+        ->and($copy->splitBox->batches)->toHaveCount(0);
 });

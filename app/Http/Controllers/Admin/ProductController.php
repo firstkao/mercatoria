@@ -164,6 +164,10 @@ class ProductController extends Controller
         $data = $request->validated();
         unset($data['variants'], $data['tags']);
         $data['is_active'] = $request->boolean('is_active');
+        if ($error = $this->splitBoxProductUniformError($product, $data)) {
+            return back()->withErrors(['price_rmb' => $error])->withInput();
+        }
+
         $data = $this->processUploads($request, $data, $product);
         [$old, $new] = AdminLog::diff($product, array_keys($data), $data);
 
@@ -277,12 +281,43 @@ class ProductController extends Controller
         // [FIX #2] Copy tags
         $copy->tags()->sync($product->tags->pluck('id')->all());
 
+        if ($withVariants) {
+            $this->duplicateSplitBox($product, $copy);
+        }
+
         AdminLog::record($user, 'create', 'Product', $copy->id, null, [
             'duplicate_of' => $product->id,
             'sku' => $copy->sku,
         ], 'Duplikat produk (draft)');
 
         return $copy;
+    }
+
+    /**
+     * Salin konfigurasi SplitBox + slot (dipetakan ke varian salinan). Kloter/order tidak disalin; admin membuka kloter baru.
+     */
+    private function duplicateSplitBox(Product $product, Product $copy): void
+    {
+        $source = $product->splitBox()->with('slots')->first();
+
+        if (! $product->is_split_box || ! $source) {
+            return;
+        }
+
+        $newVariants = $copy->variants()->get()->keyBy(fn ($v) => preg_replace('/-COPY-[A-Za-z0-9]{4}$/', '', $v->sku));
+        $splitBox = $copy->splitBox()->create($source->only(['max_auto_batches', 'auto_open_batch']));
+
+        foreach ($source->slots as $slot) {
+            $variant = $newVariants->get($slot->variant?->sku);
+            if ($variant) {
+                $splitBox->slots()->create([
+                    'variant_id' => $variant->id,
+                    'split_role' => $slot->split_role,
+                    'qty_per_box' => $slot->qty_per_box,
+                    'sort_order' => $slot->sort_order,
+                ]);
+            }
+        }
     }
 
     /**
@@ -494,6 +529,31 @@ class ProductController extends Controller
                 || (int) $other->weight_gram !== (int) ($data['weight_gram'] ?? $other->weight_gram)) {
                 return 'Seluruh karakter Split Box harus memakai price_rmb dan weight_gram yang sama.';
             }
+        }
+
+        return null;
+    }
+
+    /**
+     * PRD 49.5: pada update produk Split Box, harga/berat efektif (varian, fallback produk) semua varian harus sama.
+     *
+     * @param  array<string, mixed>  $data
+     */
+    private function splitBoxProductUniformError(Product $product, array $data): ?string
+    {
+        if (! ($data['is_split_box'] ?? $product->is_split_box)) {
+            return null;
+        }
+
+        $price = $data['price_rmb'] ?? $product->price_rmb;
+        $weight = $data['weight_gram'] ?? $product->weight_gram;
+        $variants = $product->variants()->get();
+
+        $prices = $variants->map(fn ($v) => (float) ($v->price_rmb ?? $price))->unique();
+        $weights = $variants->map(fn ($v) => (int) ($v->weight_gram ?? $weight))->unique();
+
+        if ($prices->count() > 1 || $weights->count() > 1) {
+            return 'Seluruh karakter Split Box harus memakai price_rmb dan weight_gram yang sama.';
         }
 
         return null;
