@@ -21,7 +21,7 @@ class MerchCategoryController extends Controller
         $autoCreated = 0;
 
         $categories = MerchCategory::all();
-        $products = Product::all(); // TODO: filter merch aja kalau perlu
+        $products = Product::query()->where('is_active', true)->select('id', 'name')->get();
 
         foreach ($products as $product) {
             // Cek apakah produk sudah cocok dengan kategori manapun

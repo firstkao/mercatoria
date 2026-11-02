@@ -119,6 +119,7 @@ class ProductController extends Controller
 
         // [FIX] Create inline variants with validation
         $this->processInlineVariants($request, $product);
+        $this->syncSplitBox($product);
 
         AdminLog::record($request->user(), 'create', 'Product', $product->id, null, $product->only(array_keys($data)), 'Tambah produk');
 
@@ -173,6 +174,7 @@ class ProductController extends Controller
 
         $product->update($data);
         $product->tags()->sync($request->input('tags', []));
+        $this->syncSplitBox($product);
 
         // PRD 14: auto-group kategori merch by keyword (override manual menang).
         if (! $product->merch_category_id) {
@@ -237,6 +239,7 @@ class ProductController extends Controller
             'price_rmb' => $data['split_price_rmb'],
             'is_split_box' => true,
         ]);
+        $this->syncSplitBox($copy);
 
         return redirect()->route('office.products.edit', $copy)
             ->with('status', 'Produk split box dibuat sebagai draft. Pecah varian secara manual.');
@@ -291,6 +294,32 @@ class ProductController extends Controller
         ], 'Duplikat produk (draft)');
 
         return $copy;
+    }
+
+    /**
+     * Produk Split Box wajib punya record SplitBox dan satu slot (default Normal) per varian,
+     * agar admin bisa mengatur role/qty dan membuka kloter dari tab Split Box.
+     */
+    private function syncSplitBox(Product $product): void
+    {
+        $product->refresh();
+
+        if (! $product->is_split_box) {
+            return;
+        }
+
+        $splitBox = $product->splitBox()->firstOrCreate([]);
+        $existing = $splitBox->slots()->pluck('variant_id');
+        $order = (int) $splitBox->slots()->max('sort_order');
+
+        foreach ($product->variants()->whereNotIn('id', $existing)->orderBy('id')->get() as $variant) {
+            $splitBox->slots()->create([
+                'variant_id' => $variant->id,
+                'split_role' => 'normal',
+                'qty_per_box' => 1,
+                'sort_order' => ++$order,
+            ]);
+        }
     }
 
     /**
@@ -476,6 +505,7 @@ class ProductController extends Controller
         $data['sku'] = $data['sku'] ?? ProductVariant::generateSku($product);
 
         $variant = $product->variants()->create($data);
+        $this->syncSplitBox($product);
 
         AdminLog::record($request->user(), 'create', 'ProductVariant', $variant->id, null, $data, 'Tambah varian');
 

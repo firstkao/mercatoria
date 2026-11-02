@@ -18,13 +18,25 @@ class SplitBoxManager extends Component
 
     public bool $statusIsError = false;
 
+    /** @var array<int, string> role per slot id (form state) */
+    public array $slotRoles = [];
+
+    /** @var array<int, int> qty_per_box per slot id (form state) */
+    public array $slotQtys = [];
+
     public function mount(Product $product): void
     {
         $this->product = $product->load('splitBox.slots.variant', 'splitBox.batches.batchSlots');
+        $this->fillSlotForm();
     }
 
-    public function saveSlot(int $slotId, string $role, int $qtyPerBox): void
+    public function saveSlot(int $slotId, ?string $role = null, ?int $qtyPerBox = null): void
     {
+        $this->authorizeAdmin();
+
+        $role ??= $this->slotRoles[$slotId] ?? 'normal';
+        $qtyPerBox ??= (int) ($this->slotQtys[$slotId] ?? 1);
+
         // Pastikan slot milik produk ini
         $slot = SplitBoxSlot::where('id', $slotId)
             ->whereHas('splitBox', fn ($q) => $q->where('product_id', $this->product->id))
@@ -43,6 +55,8 @@ class SplitBoxManager extends Component
 
     public function openBatch(): void
     {
+        $this->authorizeAdmin();
+
         $splitBox = $this->product->splitBox;
 
         if (! $splitBox) {
@@ -118,6 +132,8 @@ class SplitBoxManager extends Component
      */
     public function setClosesAt(int $batchId, ?string $closesAt): void
     {
+        $this->authorizeAdmin();
+
         $batch = SplitBoxBatch::where('id', $batchId)
             ->whereHas('splitBox', fn ($q) => $q->where('product_id', $this->product->id))
             ->firstOrFail();
@@ -131,12 +147,14 @@ class SplitBoxManager extends Component
 
     public function closeRefund(int $batchId, SplitBoxService $splitBox): void
     {
+        $this->authorizeAdmin();
+
         // Pastikan batch milik produk ini
         $batch = SplitBoxBatch::where('id', $batchId)
             ->whereHas('splitBox', fn ($q) => $q->where('product_id', $this->product->id))
             ->firstOrFail();
 
-        if ($batch->status !== SplitBoxBatch::STATUS_OPEN) {
+        if (! in_array($batch->status, [SplitBoxBatch::STATUS_OPEN, SplitBoxBatch::STATUS_FULL], true)) {
             $this->statusMessage = 'Kloter ini sudah ditutup.';
             $this->statusIsError = true;
 
@@ -160,5 +178,18 @@ class SplitBoxManager extends Component
     {
         $this->product = $this->product->fresh()
             ->load('splitBox.slots.variant', 'splitBox.batches.batchSlots');
+        $this->fillSlotForm();
+    }
+
+    private function fillSlotForm(): void
+    {
+        $slots = $this->product->splitBox?->slots ?? collect();
+        $this->slotRoles = $slots->pluck('split_role', 'id')->all();
+        $this->slotQtys = $slots->pluck('qty_per_box', 'id')->all();
+    }
+
+    private function authorizeAdmin(): void
+    {
+        abort_unless(auth()->user()?->isAdmin(), 403);
     }
 }

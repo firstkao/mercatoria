@@ -104,15 +104,18 @@ class SplitBoxService
             }
 
             $allocations = [];
+            $reserved = [];
 
             // Tahap 1: alokasi semua slot (all-or-nothing)
             foreach ($items as $item) {
-                $allocation = $this->allocateFifo($item->split_box_slot_id, $item->qty);
+                $allocation = $this->allocateFifo($item->split_box_slot_id, $item->qty, $reserved);
 
                 if ($allocation === null) {
                     // Semua atau tidak sama sekali
                     return false;
                 }
+
+                $reserved[$allocation[0]->id] = ($reserved[$allocation[0]->id] ?? 0) + $item->qty;
 
                 $allocations[] = [$item, $allocation];
             }
@@ -224,9 +227,10 @@ class SplitBoxService
      * Alokasi FIFO (Skema): kloter terbuka dengan batch_no terkecil yang masih cukup stok.
      * Satu item dialokasikan utuh ke satu kloter; pair boleh lintas kloter (PRD 49.10).
      *
+     * @param  array<int, int>  $reserved  qty yang sudah dialokasikan item lain dalam order yang sama, per batch_slot id
      * @return array{0: SplitBoxBatchSlot, 1: int}|null [batch_slot, batch_no]
      */
-    private function allocateFifo(int $slotId, int $qty): ?array
+    private function allocateFifo(int $slotId, int $qty, array $reserved = []): ?array
     {
         $candidates = SplitBoxBatchSlot::query()
             ->where('slot_id', $slotId)
@@ -237,7 +241,7 @@ class SplitBoxService
             ->sortBy(fn (SplitBoxBatchSlot $batchSlot) => $batchSlot->batch->batch_no);
 
         foreach ($candidates as $batchSlot) {
-            if ($batchSlot->availableQty() >= $qty) {
+            if ($batchSlot->availableQty() - ($reserved[$batchSlot->id] ?? 0) >= $qty) {
                 return [$batchSlot, $batchSlot->batch->batch_no];
             }
         }

@@ -1,5 +1,6 @@
 <?php
 
+use App\Livewire\SplitBoxManager;
 use App\Livewire\SplitBoxPicker;
 use App\Models\Cart;
 use App\Models\Order;
@@ -187,4 +188,62 @@ test('duplikat produk Split Box menyalin SplitBox dan slot ke varian salinan', f
         ->and($slots->pluck('split_role')->sort()->values()->all())->toBe(['hot_1', 'normal', 'normal'])
         ->and($slots->every(fn ($s) => $s->variant->product_id === $copy->id))->toBeTrue()
         ->and($copy->splitBox->batches)->toHaveCount(0);
+});
+
+test('produk Split Box otomatis punya SplitBox dan slot per varian', function () {
+    $admin = User::factory()->admin()->create();
+    $product = Product::factory()->create(['price_rmb' => 10, 'weight_gram' => 10, 'is_split_box' => false]);
+
+    $this->actingAs($admin)->put(route('office.products.update', $product), [
+        'game_id' => $product->game_id, 'store_id' => $product->store_id, 'name' => $product->name,
+        'sku' => $product->sku, 'slug' => $product->slug, 'price_rmb' => 10, 'weight_gram' => 10,
+        'type' => 'variant', 'availability' => 'tersedia', 'is_split_box' => 1,
+    ])->assertSessionHasNoErrors();
+
+    expect($product->fresh()->splitBox)->not->toBeNull();
+
+    $this->actingAs($admin)->post(route('office.products.variants.store', $product), [
+        'name' => 'Karakter A', 'price_rmb' => 10, 'weight_gram' => 10, 'availability' => 'tersedia',
+    ])->assertSessionHasNoErrors();
+
+    $slots = $product->fresh()->splitBox->slots;
+    expect($slots)->toHaveCount(1)->and($slots->first()->split_role)->toBe('normal');
+});
+
+test('SplitBoxManager menyimpan role/qty slot dari form dan hanya untuk admin', function () {
+    $fx = splitBoxFixture();
+    $admin = User::factory()->admin()->create();
+
+    Livewire::actingAs($admin)->test(SplitBoxManager::class, ['product' => $fx['product']])
+        ->set("slotRoles.{$fx['normalA']->id}", 'hot_2')
+        ->set("slotQtys.{$fx['normalA']->id}", 4)
+        ->call('saveSlot', $fx['normalA']->id)
+        ->assertSet('statusIsError', false);
+
+    expect($fx['normalA']->fresh()->split_role)->toBe('hot_2')->and($fx['normalA']->fresh()->qty_per_box)->toBe(4);
+
+    Livewire::actingAs($fx['user'])->test(SplitBoxManager::class, ['product' => $fx['product']])
+        ->call('saveSlot', $fx['normalA']->id, 'normal', 1)
+        ->assertForbidden();
+});
+
+test('kloter full tetap bisa ditutup oleh admin', function () {
+    $fx = splitBoxFixture();
+    $admin = User::factory()->admin()->create();
+    $fx['batch']->update(['status' => SplitBoxBatch::STATUS_FULL]);
+
+    $this->actingAs($admin)->post("/office/split-box-batches/{$fx['batch']->id}/close-refund")->assertRedirect();
+
+    expect($fx['batch']->fresh()->status)->toBe(SplitBoxBatch::STATUS_CLOSED);
+});
+
+test('dua item dalam satu order pada slot yang sama tidak boleh melebihi stok kloter', function () {
+    $fx = splitBoxFixture(stockPerSlot: 1);
+    [, $order] = placeSplitBoxOrder($fx['user'], $fx['product'], [$fx['hot'], $fx['normalA']]);
+    $item = $order->items()->where('split_box_slot_id', $fx['normalA']->id)->first();
+    $order->items()->create($item->replicate(['id', 'split_box_batch_slot_id'])->getAttributes());
+    $fx['splitBox']->update(['auto_open_batch' => false]);
+
+    expect(app(SplitBoxService::class)->lockSlotsForOrder($order->fresh()))->toBeFalse();
+    expect($fx['batch']->batchSlots()->sum('qty_taken'))->toBe(0);
 });
