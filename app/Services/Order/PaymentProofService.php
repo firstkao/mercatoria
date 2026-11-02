@@ -41,6 +41,10 @@ class PaymentProofService
             ]);
         }
 
+        if (! $isPenalty) {
+            app(SplitBoxService::class)->assertOrderPairsValid($order);
+        }
+
         $paymentType = match (true) {
             $isPenalty => Payment::TYPE_PENALTY,
             $order->scheme === 'fp' => Payment::TYPE_FULL,

@@ -107,6 +107,15 @@ class OrderStatusService
             $this->forfeiture->forfeitUnpaidCheckoutDiscounts($order);
         }
 
+        if ($toValue === OrderStatus::PembayaranGagal->value && $order->cancel_reason === Order::CANCEL_SLOT_SOLD) {
+            app(UserNotificationService::class)->notify(
+                $order->user,
+                'split_slot_sold',
+                'Order '.$order->no_order.' batal otomatis karena slot sudah diambil user lain.',
+                '/orders/'.$order->no_order
+            );
+        }
+
         // PRD 49.6: slot dilepas saat reject / gagal / refund — TIDAK saat Hangus.
         if (in_array($toValue, [
             OrderStatus::MenungguPembayaran->value,

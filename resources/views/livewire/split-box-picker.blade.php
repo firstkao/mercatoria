@@ -15,12 +15,14 @@
                      wire:key="slot-card-{{ $slot['id'] }}">
                     <div class="flex items-center justify-between">
                         <p class="text-sm font-medium">{{ $slot['name'] }}</p>
-                        @if ($slot['role'] === 'hot_1')
-                            <span class="rounded bg-orange-100 px-1.5 py-0.5 text-[10px] text-orange-700">Wajib Pair +1</span>
+                        @if ($slot['available'] <= 0)
+                            <span class="rounded bg-gray-100 px-1.5 py-0.5 text-[10px] text-gray-600"><i class="bi bi-lock"></i> Habis</span>
+                        @elseif ($slot['role'] === 'hot_1')
+                            <span class="rounded bg-orange-100 px-1.5 py-0.5 text-[10px] text-orange-700"><i class="bi bi-fire"></i> Wajib Pair +1</span>
                         @elseif ($slot['role'] === 'hot_2')
-                            <span class="rounded bg-red-100 px-1.5 py-0.5 text-[10px] text-red-700">Wajib Pair +2</span>
+                            <span class="rounded bg-red-100 px-1.5 py-0.5 text-[10px] text-red-700"><i class="bi bi-fire-double"></i> Wajib Pair +2</span>
                         @else
-                            <span class="rounded bg-emerald-100 px-1.5 py-0.5 text-[10px] text-emerald-700">Normal</span>
+                            <span class="rounded bg-emerald-100 px-1.5 py-0.5 text-[10px] text-emerald-700"><i class="bi bi-handshake"></i> Normal / Pairable</span>
                         @endif
                     </div>
                     <p class="mt-1 text-xs text-gray-400">Sisa: {{ $slot['available'] }}</p>
@@ -53,10 +55,19 @@
     @endif
 
     @php($totalSelected = collect($selected)->sum())
+    @if ($hotCount > 0)
+        <p class="mt-3 rounded px-3 py-2 text-sm {{ $pairMissing > 0 ? 'bg-amber-50 text-amber-800' : 'bg-green-50 text-green-800' }}">
+            @if ($pairMissing > 0)
+                Kamu memilih {{ $hotCount }} Hot Item. Pilih {{ $pairMissing }} karakter Normal lagi untuk lanjut.
+            @else
+                Syarat pair terpenuhi.
+            @endif
+        </p>
+    @endif
     <button type="button" wire:click="addToCart"
             wire:loading.attr="disabled"
             class="mt-4 w-full rounded-lg bg-black py-2.5 text-sm font-semibold text-white transition-colors hover:bg-gray-800 disabled:opacity-40 disabled:cursor-not-allowed"
-            @if ($totalSelected <= 0) disabled @endif>
+            @if ($totalSelected <= 0 || $pairMissing > 0) disabled @endif>
         <span wire:loading.remove wire:target="addToCart">
             TAMBAH PAKET SPLIT BOX KE KERANJANG
             @if ($totalSelected > 0)

@@ -6,6 +6,14 @@
     <p class="font-mono text-[10px] uppercase tracking-[0.22em] text-ink/45">Belanja</p>
     <h1 class="mt-2 font-display text-[1.75rem] leading-tight font-semibold text-ink sm:text-3xl">Keranjang</h1>
 
+    @if (! empty($purgedNotice))
+        <div class="mt-4 rounded-lg border border-danger/30 bg-white px-4 py-3 text-sm text-danger">{{ $purgedNotice }}</div>
+    @endif
+
+    @error('qty')
+        <div class="mt-4 rounded-lg border border-danger/30 bg-white px-4 py-3 text-sm text-danger">{{ $message }}</div>
+    @enderror
+
     @if ($items->isEmpty())
         <div class="mt-6 rounded-xl border border-rule bg-white p-10 text-center text-sm text-ink/50">
             Keranjang kamu masih kosong.
@@ -39,7 +47,9 @@
                             <tr class="border-b border-rule/50">
                                 <td class="px-4 py-3">
                                     <input type="checkbox" name="items[]" value="{{ $item->id }}" checked
-                                           form="checkout-form" class="rounded border-rule">
+                                           form="checkout-form" class="rounded border-rule"
+                                           @if ($item->bundle_group_id) data-bundle="{{ $item->bundle_group_id }}"
+                                           onchange="document.querySelectorAll('input[data-bundle=&quot;{{ $item->bundle_group_id }}&quot;]').forEach(c=>c.checked=this.checked)" @endif>
                                 </td>
                                 <td class="px-4 py-3">
                                     <p class="font-medium text-ink">{{ $item->product->name }}</p>
@@ -53,13 +63,17 @@
                                 </td>
                                 <td class="px-4 py-3 text-ink/80">{{ format_rp($pricing['final_price_bersih']) }}</td>
                                 <td class="px-4 py-3">
-                                    <input type="number" name="qty" value="{{ $item->qty }}" min="1" max="999"
-                                           form="qty-form-{{ $item->id }}"
-                                           class="w-16 rounded border border-rule px-2 py-1 text-sm text-ink">
-                                    <button type="submit" form="qty-form-{{ $item->id }}"
-                                            class="ml-1 rounded border border-rule px-2 py-1 text-xs text-ink/70 transition-colors hover:border-ink">
-                                        Simpan
-                                    </button>
+                                    @if ($item->bundle_group_id)
+                                        <span class="text-sm text-ink">{{ $item->qty }}</span>
+                                    @else
+                                        <input type="number" name="qty" value="{{ $item->qty }}" min="1" max="999"
+                                               form="qty-form-{{ $item->id }}"
+                                               class="w-16 rounded border border-rule px-2 py-1 text-sm text-ink">
+                                        <button type="submit" form="qty-form-{{ $item->id }}"
+                                                class="ml-1 rounded border border-rule px-2 py-1 text-xs text-ink/70 transition-colors hover:border-ink">
+                                            Simpan
+                                        </button>
+                                    @endif
                                 </td>
                                 <td class="px-4 py-3 font-medium text-ink">
                                     {{ format_rp($pricing['final_price_bersih'] * $item->qty) }}

@@ -73,13 +73,19 @@
                             Kloter #{{ $batch->batch_no }} —
                             <span class="
                                 @if ($batch->status === 'open') text-emerald-600
+                                @elseif ($batch->status === 'full') text-blue-600
                                 @elseif ($batch->status === 'closed') text-gray-500
                                 @else text-red-500 @endif
                             ">{{ $batch->status }}</span>
                             @if ($batch->is_auto_opened)
                                 <span class="ml-1 rounded bg-gray-100 px-1.5 py-0.5 text-[10px] text-gray-500">auto</span>
                             @endif
-                            @if ($batch->closes_at)
+                            @if ($batch->status === 'open')
+                                <input type="datetime-local" value="{{ $batch->closes_at?->format('Y-m-d\TH:i') }}"
+                                       wire:change="setClosesAt({{ $batch->id }}, $event.target.value)"
+                                       title="closes_at (opsional)"
+                                       class="ml-2 rounded border border-gray-200 px-1.5 py-0.5 text-xs text-gray-600">
+                            @elseif ($batch->closes_at)
                                 <span class="ml-1 text-xs text-gray-400">· closes {{ $batch->closes_at->format('d/m/Y H:i') }}</span>
                             @endif
                         </span>
@@ -88,7 +94,7 @@
                                     wire:confirm="Tutup kloter & refund semua order terkunci?"
                                     wire:loading.attr="disabled"
                                     class="text-xs text-red-600 hover:underline disabled:opacity-50">
-                                <span wire:loading.remove wire:target="closeRefund({{ $batch->id }})">Tutup &amp; Refund</span>
+                                <span wire:loading.remove wire:target="closeRefund({{ $batch->id }})">Tutup Kloter &amp; Refund Semua</span>
                                 <span wire:loading wire:target="closeRefund({{ $batch->id }})">...</span>
                             </button>
                         @endif

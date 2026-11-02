@@ -28,9 +28,15 @@ class CheckoutController extends Controller
     {
         $selectedIds = collect($request->query('items', []))->map(fn ($id) => (int) $id)->all();
 
+        $bundleIds = Cart::where('user_id', $request->user()->id)
+            ->whereIn('id', $selectedIds)
+            ->whereNotNull('bundle_group_id')
+            ->pluck('bundle_group_id');
+
+        // PRD 49.9: item satu bundle dicentang bersama.
         $items = Cart::with(['product.game', 'variant'])
             ->where('user_id', $request->user()->id)
-            ->whereIn('id', $selectedIds)
+            ->where(fn ($q) => $q->whereIn('id', $selectedIds)->orWhereIn('bundle_group_id', $bundleIds))
             ->get();
 
         abort_if($items->isEmpty(), 404);

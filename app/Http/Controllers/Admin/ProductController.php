@@ -414,6 +414,10 @@ class ProductController extends Controller
         }
         unset($data['image']);
 
+        if ($error = $this->splitBoxUniformError($product, $data)) {
+            return back()->withErrors(['price_rmb' => $error])->withInput();
+        }
+
         $variant = $product->variants()->create($data);
 
         AdminLog::record($request->user(), 'create', 'ProductVariant', $variant->id, null, $data, 'Tambah varian');
@@ -437,11 +441,38 @@ class ProductController extends Controller
         }
         unset($data['image']);
 
+        if ($error = $this->splitBoxUniformError($product, $data, $variant)) {
+            return back()->withErrors(['price_rmb' => $error])->withInput();
+        }
+
         $variant->update($data);
 
         AdminLog::record($request->user(), 'update', 'ProductVariant', $variant->id, $old, $data, 'Edit varian');
 
         return redirect()->route('office.products.edit', $product)->with('status', 'Varian diperbarui.');
+    }
+
+    /**
+     * PRD 49.5: seluruh karakter Split Box memakai price_rmb & weight_gram yang sama.
+     *
+     * @param  array<string, mixed>  $data
+     */
+    private function splitBoxUniformError(Product $product, array $data, ?ProductVariant $ignore = null): ?string
+    {
+        if (! $product->is_split_box) {
+            return null;
+        }
+
+        $others = $product->variants()->when($ignore, fn ($q) => $q->whereKeyNot($ignore->id))->get();
+
+        foreach ($others as $other) {
+            if ((float) $other->price_rmb !== (float) ($data['price_rmb'] ?? $other->price_rmb)
+                || (int) $other->weight_gram !== (int) ($data['weight_gram'] ?? $other->weight_gram)) {
+                return 'Seluruh karakter Split Box harus memakai price_rmb dan weight_gram yang sama.';
+            }
+        }
+
+        return null;
     }
 
     public function destroyVariant(Request $request, Product $product, ProductVariant $variant): RedirectResponse

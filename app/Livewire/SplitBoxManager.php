@@ -113,6 +113,22 @@ class SplitBoxManager extends Component
         $this->refreshData();
     }
 
+    /**
+     * PRD 49.4: closes_at opsional per kloter (kosong = tanpa batas).
+     */
+    public function setClosesAt(int $batchId, ?string $closesAt): void
+    {
+        $batch = SplitBoxBatch::where('id', $batchId)
+            ->whereHas('splitBox', fn ($q) => $q->where('product_id', $this->product->id))
+            ->firstOrFail();
+
+        $batch->update(['closes_at' => filled($closesAt) ? $closesAt : null]);
+
+        $this->statusMessage = 'Batas tutup kloter diperbarui.';
+        $this->statusIsError = false;
+        $this->refreshData();
+    }
+
     public function closeRefund(int $batchId, SplitBoxService $splitBox): void
     {
         // Pastikan batch milik produk ini

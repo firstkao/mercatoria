@@ -191,6 +191,16 @@ class CheckoutService
         $splitBoxService = app(SplitBoxService::class);
 
         foreach ($bundles as $bundleId => $bundleCarts) {
+            $bundleSize = Cart::where('user_id', $bundleCarts->first()->user_id)
+                ->where('bundle_group_id', $bundleId)
+                ->count();
+
+            if ($bundleSize !== $bundleCarts->count()) {
+                throw ValidationException::withMessages([
+                    'cart_item_ids' => 'Item paket Split Box harus di-checkout bersama.',
+                ]);
+            }
+
             $lines = [];
 
             foreach ($bundleCarts as $cart) {

@@ -16,9 +16,12 @@ use App\Services\Order\OrderStatusService;
 use App\Services\Payment\RefundService;
 use App\Services\User\UserNotificationService;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 
 class SplitBoxService
 {
+    public const CART_PURGED_MESSAGE = 'Maaf, slot karakter di keranjangmu telah terjual ke pembeli lain.';
+
     /**
      * Validasi pair kumulatif (PRD 49.2): jumlah Normal ≥ total kebutuhan pair seluruh Hot.
      * Hot tidak bisa menjadi pasangan Hot (hanya Normal yang dihitung).
@@ -41,6 +44,26 @@ class SplitBoxService
         }
 
         return $normalCount >= $pairNeeded;
+    }
+
+    /**
+     * PRD 49.9: validasi pair dijalankan ulang saat upload bukti (per bundle_group_id).
+     *
+     * @throws ValidationException
+     */
+    public function assertOrderPairsValid(Order $order): void
+    {
+        $items = $order->items()->whereNotNull('split_box_slot_id')->with('splitBoxSlot')->get();
+
+        foreach ($items->groupBy('bundle_group_id') as $bundleItems) {
+            $lines = $bundleItems->map(fn (OrderItem $item) => ['slot' => $item->splitBoxSlot, 'qty' => $item->qty])->all();
+
+            if (! $this->validatePair($lines)) {
+                throw ValidationException::withMessages([
+                    'proof' => 'Syarat pair Split Box belum terpenuhi (Hot butuh pasangan Normal).',
+                ]);
+            }
+        }
     }
 
     /**
@@ -100,6 +123,7 @@ class SplitBoxService
 
                 $batchSlot->increment('qty_taken', $item->qty);
                 $item->update(['split_box_batch_slot_id' => $batchSlot->id]);
+                $this->markBatchFullIfSoldOut($batchSlot->batch);
 
                 $item->snapshot?->update([
                     'split_role' => $item->splitBoxSlot?->split_role,
@@ -108,7 +132,7 @@ class SplitBoxService
 
                 $this->autoOpenBatch($batchSlot->slot->splitBox);
                 $this->cancelUnsatisfiablePendingOrders($batchSlot->slot, $order);
-                $this->purgeUnfulfillableCarts($batchSlot->slot);
+                $this->purgeUnfulfillableCarts($batchSlot->slot, $order->user_id);
             }
 
             return true;
@@ -132,6 +156,10 @@ class SplitBoxService
 
                 if ($batchSlot && $batchSlot->qty_taken > 0) {
                     $batchSlot->decrement('qty_taken', min($item->qty, $batchSlot->qty_taken));
+
+                    if ($batchSlot->batch?->status === SplitBoxBatch::STATUS_FULL) {
+                        $batchSlot->batch->update(['status' => SplitBoxBatch::STATUS_OPEN]);
+                    }
                 }
 
                 $item->update(['split_box_batch_slot_id' => null]);
@@ -165,6 +193,12 @@ class SplitBoxService
 
             foreach ($orders as $order) {
                 $refunds->requestFull($order, 'Slot split box tidak terpenuhi', $admin);
+                app(UserNotificationService::class)->notify(
+                    $order->user,
+                    'split_batch_cancelled',
+                    'Kloter Split Box dibatalkan, refund sedang diproses Admin.',
+                    '/orders/'.$order->no_order
+                );
                 $count++;
             }
 
@@ -208,6 +242,50 @@ class SplitBoxService
     }
 
     /**
+     * PRD 49.3: kloter berstatus full bila seluruh slot-nya terisi.
+     */
+    private function markBatchFullIfSoldOut(?SplitBoxBatch $batch): void
+    {
+        if (! $batch || $batch->status !== SplitBoxBatch::STATUS_OPEN) {
+            return;
+        }
+
+        $hasStock = SplitBoxBatchSlot::where('batch_id', $batch->id)->whereColumn('qty_taken', '<', 'qty_total')->exists();
+
+        if (! $hasStock) {
+            $batch->update(['status' => SplitBoxBatch::STATUS_FULL]);
+        }
+    }
+
+    /**
+     * PRD 49.10: deadlock = stok Normal tersisa < kebutuhan pair minimum karakter Hot yang masih tersisa.
+     */
+    private function isPairDeadlock(SplitBox $splitBox, $openBatchIds): bool
+    {
+        $minPair = null;
+        $normalLeft = 0;
+
+        foreach ($splitBox->slots()->get() as $slot) {
+            $left = (int) SplitBoxBatchSlot::where('slot_id', $slot->id)
+                ->whereIn('batch_id', $openBatchIds)
+                ->get()
+                ->sum(fn ($bs) => $bs->availableQty());
+
+            if ($left <= 0) {
+                continue;
+            }
+
+            if ($slot->isHot()) {
+                $minPair = min($minPair ?? PHP_INT_MAX, $slot->pairRequirement());
+            } else {
+                $normalLeft += $left;
+            }
+        }
+
+        return $minPair !== null && $normalLeft < $minPair;
+    }
+
+    /**
      * Auto-open kloter N+1 (PRD 49.10) bila stok habis / deadlock pair.
      */
     private function autoOpenBatch(SplitBox $splitBox): void
@@ -227,7 +305,7 @@ class SplitBoxService
                 ->whereColumn('qty_taken', '<', 'qty_total')
                 ->exists();
 
-            if ($hasStock) {
+            if ($hasStock && ! $this->isPairDeadlock($splitBox, $openBatchIds)) {
                 return;
             }
         }
@@ -325,11 +403,12 @@ class SplitBoxService
     /**
      * PRD 49.8: hapus bundle di cart user lain yang tidak lagi terpenuhi.
      */
-    private function purgeUnfulfillableCarts(SplitBoxSlot $slot): void
+    private function purgeUnfulfillableCarts(SplitBoxSlot $slot, int $exceptUserId): void
     {
         $remaining = $this->remainingStock($slot->id);
 
         $bundles = Cart::where('variant_id', $slot->variant_id)
+            ->where('user_id', '!=', $exceptUserId)
             ->whereNotNull('bundle_group_id')
             ->distinct()
             ->pluck('bundle_group_id');
@@ -340,7 +419,16 @@ class SplitBoxService
             $needed = $carts->sum(fn ($c) => $c->variant_id === $slot->variant_id ? $c->qty : 0);
 
             if ($needed > $remaining) {
+                $user = $carts->first()->user;
                 Cart::where('bundle_group_id', $bundleId)->delete();
+
+                // PRD 49.8 + notifikasi #30: bell + toast di /cart.
+                app(UserNotificationService::class)->notify(
+                    $user,
+                    'split_cart_purged',
+                    self::CART_PURGED_MESSAGE,
+                    '/cart'
+                );
             }
         }
     }

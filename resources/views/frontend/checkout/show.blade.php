@@ -39,6 +39,13 @@
     <form id="checkout-form" method="POST" action="{{ route('checkout.store') }}" class="mt-6 space-y-6">
         @csrf
 
+        @if ($items->contains(fn ($i) => $i->bundle_group_id))
+            <div class="rounded-xl border border-amber-300 bg-amber-50 p-4 text-sm text-amber-900">
+                <i class="bi bi-exclamation-triangle me-1"></i>
+                Slot Split Box baru terkunci setelah bukti bayar diupload; slot bisa diambil orang lain sebelum itu.
+            </div>
+        @endif
+
         {{-- Alamat Pengiriman (DS 8.2) --}}
         <div class="rounded-xl border border-rule bg-white p-4">
             <h2 class="font-mono text-[11px] font-medium uppercase tracking-[0.16em] text-ink">Alamat Pengiriman</h2>
