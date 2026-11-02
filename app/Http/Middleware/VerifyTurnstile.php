@@ -13,7 +13,7 @@ class VerifyTurnstile
 
     public function handle(Request $request, Closure $next): Response
     {
-        if (! $this->turnstile->verify((string) $request->input('cf-turnstile-response'), $request->ip())) {
+        if (! $this->turnstile->verify((string) $request->input('cf-turnstile-response'), get_real_ip($request))) {
             return back()
                 ->withErrors(['cf-turnstile-response' => 'Verifikasi anti-bot gagal. Silakan coba lagi.'])
                 ->withInput($request->only('email'));
