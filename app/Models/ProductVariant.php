@@ -2,10 +2,6 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Builder<?php
-
-namespace App\Models;
-
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -56,15 +52,15 @@ class Product extends Model
     protected function casts(): array
     {
         return [
-            'price_rmb'        => 'decimal:2',
-            'weight_gram'      => 'integer',
-            'discount_amount'  => 'decimal:2',
-            'discount_start'   => 'date',
-            'discount_end'     => 'date',
-            'is_active'        => 'boolean',
-            'sold_count'       => 'integer',
-            'is_split_box'     => 'boolean',
-            'parent_id'        => 'integer',
+            'price_rmb'       => 'decimal:2',
+            'weight_gram'     => 'integer',
+            'discount_amount' => 'decimal:2',
+            'discount_start'  => 'date',
+            'discount_end'    => 'date',
+            'is_active'       => 'boolean',
+            'sold_count'      => 'integer',
+            'is_split_box'    => 'boolean',
+            'parent_id'       => 'integer',
         ];
     }
 
@@ -92,14 +88,20 @@ class Product extends Model
         return $this->belongsTo(MerchCategory::class);
     }
 
+    /**
+     * Tags assigned to this product.
+     */
     public function tags(): BelongsToMany
     {
-        return $this->belongsToMany(Tag::class);
+        return $this->belongsToMany(Tag::class)->withTimestamps();
     }
 
+    /**
+     * Variants — newest first (baru di atas).
+     */
     public function variants(): HasMany
     {
-        return $this->hasMany(ProductVariant::class);
+        return $this->hasMany(ProductVariant::class)->orderBy('id', 'desc');
     }
 
     public function splitBox(): HasOne
