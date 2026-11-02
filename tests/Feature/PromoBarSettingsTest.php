@@ -8,7 +8,8 @@ test('settings promo bar punya text, discount, dan min_purchase', function () {
     $this->seed(SettingsSeeder::class);
 
     expect(Setting::where('key', 'promo_bar_text')->value('value'))
-        ->toContain('promo NEWWEB')
+        ->toContain('NEWWEB')
+        ->toContain('<strong>')
         ->and(Setting::where('key', 'promo_bar_discount')->value('value'))->toBe('25000')
         ->and(Setting::where('key', 'promo_bar_min_purchase')->value('value'))->toBe('150000');
 });
