@@ -1,9 +1,11 @@
 <?php
 
 use App\Livewire\SplitBoxManager;
+use App\Models\Refund;
 use App\Models\SplitBoxBatch;
 use App\Models\User;
 use App\Models\UserNotification;
+use App\Services\Payment\RefundService;
 use App\Services\SplitBox\SplitBoxService;
 use Illuminate\Http\UploadedFile;
 use Livewire\Livewire;
@@ -67,8 +69,16 @@ test('tutup kloter dan refund semua mengembalikan status order', function () {
 
     $this->actingAs($admin)->post("/office/split-box-batches/{$fx['batch']->id}/close-refund");
 
-    expect($orderA->fresh()->status)->toBe('dana_dikembalikan')
-        ->and($fx['batch']->fresh()->status)->toBe('cancelled');
+    // PRD 49.11: tutup kloter membuat PERMINTAAN refund (transfer manual admin).
+    $refund = Refund::where('order_id', $orderA->id)->firstOrFail();
+
+    expect($fx['batch']->fresh()->status)->toBe('cancelled')
+        ->and($refund->status)->toBe(Refund::STATUS_REQUESTED);
+
+    // Setelah admin menyelesaikan refund -> status order menjadi dana_dikembalikan.
+    app(RefundService::class)->complete($refund, $admin);
+
+    expect($orderA->fresh()->status)->toBe('dana_dikembalikan');
 });
 
 test('komponen SplitBoxManager dapat dirender dan menutup kloter sebagai permintaan refund', function () {
