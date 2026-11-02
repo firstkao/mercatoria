@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\AuthLog;
 use App\Models\User;
 use App\Notifications\AdminOtpNotification;
 use Illuminate\Http\RedirectResponse;
@@ -50,6 +51,9 @@ class TwoFactorController extends Controller
 
         Auth::login($user);
         $request->session()->regenerate();
+
+        $user->forceFill(['last_login' => now()])->save();
+        AuthLog::record(AuthLog::ACTION_LOGIN_SUCCESS, $user->email, $user->id, '2FA OTP terverifikasi');
 
         return redirect('/office');
     }

@@ -33,12 +33,13 @@ class VerifyEmailController extends Controller
         }
 
         // PRD 7.4: "Setelah verifikasi -> role = Crush" (naik ke Customer hanya lewat order terverifikasi).
+        // Role yang sudah lebih tinggi (customer yang verifikasi ulang setelah ganti email) tidak diturunkan.
         $user->forceFill([
             'email_verified_at' => now(),
-            'role' => $user->isAdmin() ? $user->role : User::ROLE_CRUSH,
+            'role' => $user->role ?: User::ROLE_CRUSH,
         ])->save();
 
-        if (! $user->isAdmin()) {
+        if ($user->role === User::ROLE_CRUSH) {
             Crush::firstOrCreate(['user_id' => $user->id]);
         }
 

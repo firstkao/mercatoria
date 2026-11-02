@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\URL;
 
 test('user terverifikasi mendapat row crush', function () {
-    $user = User::factory()->unverified()->create();
+    $user = User::factory()->unverified()->create(['role' => User::ROLE_CRUSH]);
 
     $url = URL::temporarySignedRoute(
         'verification.verify',
@@ -66,4 +66,13 @@ test('halaman notice verifikasi tampil untuk user belum verifikasi', function ()
     $this->actingAs($user)
         ->get('/email/verify')
         ->assertOk();
+});
+
+test('customer yang verifikasi ulang setelah ganti email tidak diturunkan ke crush', function () {
+    $user = User::factory()->unverified()->create(['role' => User::ROLE_CUSTOMER]);
+
+    $url = URL::temporarySignedRoute('verification.verify', now()->addMinutes(30), ['id' => $user->id, 'hash' => sha1($user->email)]);
+    $this->actingAs($user)->get($url);
+
+    expect($user->fresh()->role)->toBe(User::ROLE_CUSTOMER);
 });

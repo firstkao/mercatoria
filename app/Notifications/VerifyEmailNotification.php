@@ -50,7 +50,7 @@ class VerifyEmailNotification extends BaseVerifyEmail
     {
         return URL::temporarySignedRoute(
             'verification.verify',
-            Carbon::now()->addHours(24),
+            Carbon::now()->addHours(max(1, (int) setting('email_verification_hours', 24))),
             [
                 'id' => $notifiable->getKey(),
                 'hash' => sha1($notifiable->getEmailForVerification()),

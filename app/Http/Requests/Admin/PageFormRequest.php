@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Admin;
 
+use App\Rules\PublicSlug;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -20,6 +21,7 @@ class PageFormRequest extends FormRequest
                 'required',
                 'string',
                 'max:170',
+                new PublicSlug,
                 Rule::unique('pages', 'slug')->ignore($this->route('page')),
                 Rule::unique('preorder_pages', 'slug'),
                 Rule::unique('games', 'slug'),

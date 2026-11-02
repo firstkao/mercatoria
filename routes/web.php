@@ -376,7 +376,7 @@ Route::middleware('auth')->group(function () {
 |--------------------------------------------------------------------------
 */
 Route::middleware('auth')->group(function () {
-    Route::get('/search', [SearchController::class, 'index'])->name('search');
+    Route::get('/search', [SearchController::class, 'index'])->middleware('throttle:30,1')->name('search');
 
     Route::get('/developer/{developer:slug}', [CatalogController::class, 'developer'])
         ->name('catalog.developer');

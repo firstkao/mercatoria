@@ -76,10 +76,11 @@ class RefundService
 
             $order = $refund->order;
 
-            // Koin/voucher dikembalikan SEBELUM status dana_dikembalikan —
-            // jalur terpisah dari DiscountForfeitureService (forfeit tetap berlaku untuk
-            // pembayaran_gagal/hangus, tidak tersentuh di sini).
-            $this->returnDiscounts($order);
+            // PRD 9.3/34: hanya Full Refund yang mengembalikan koin/voucher; Partial Refund → hangus.
+            // Dikembalikan SEBELUM status dana_dikembalikan (jalur terpisah dari DiscountForfeitureService).
+            if ($refund->type === Refund::TYPE_FULL) {
+                $this->returnDiscounts($order);
+            }
 
             $refund->update([
                 'status' => Refund::STATUS_COMPLETED,
@@ -113,16 +114,22 @@ class RefundService
 
         $order = $refund->order;
 
-        $refund->update([
-            'status' => Refund::STATUS_REJECTED,
-            'rejection_reason' => $reason,
-            'handled_by' => $admin->id,
-        ]);
+        DB::transaction(function () use ($refund, $reason, $admin): void {
+            if (Refund::query()->whereKey($refund->id)->lockForUpdate()->value('status') !== Refund::STATUS_REQUESTED) {
+                throw new \RuntimeException('Refund sudah diproses sebelumnya.');
+            }
+
+            $refund->update([
+                'status' => Refund::STATUS_REJECTED,
+                'rejection_reason' => $reason,
+                'handled_by' => $admin->id,
+            ]);
+        });
 
         $this->notifications->notify(
             $order->user,
             'refund_rejected',
-            'Pengembalian dana pesanan #'.$order->no_order.' ditolak. Alasan: '.$reason,
+            'Refund pesanan #'.$order->no_order.' ditolak. Alasan: '.$reason,
             '/orders/'.$order->no_order
         );
 
@@ -189,7 +196,7 @@ class RefundService
         $this->notifications->notify(
             $order->user,
             'refund_requested',
-            'Pengembalian dana pesanan #'.$order->no_order.' sedang diproses.',
+            'Refund pesanan #'.$order->no_order.' sedang diproses.',
             '/orders/'.$order->no_order
         );
 
@@ -228,7 +235,7 @@ class RefundService
 
     private function completedMessage(Order $order): string
     {
-        $message = 'Pengembalian dana pesanan #'.$order->no_order.' selesai. Dana sudah ditransfer.';
+        $message = 'Refund pesanan #'.$order->no_order.' selesai. Dana sudah ditransfer.';
 
         $parts = [];
         if ($order->coin_spent > 0) {

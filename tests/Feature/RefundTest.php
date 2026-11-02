@@ -34,7 +34,7 @@ test('requestFull membuat refund requested dan notif', function () {
         ->and($refund->requested_by)->toBe($admin->id);
 
     $notif = UserNotification::where('user_id', $user->id)->where('type', 'refund_requested')->firstOrFail();
-    expect($notif->title)->toContain('Pengembalian dana pesanan #'.$order->no_order)
+    expect($notif->title)->toContain('Refund pesanan #'.$order->no_order)
         ->toContain('sedang diproses');
 });
 
@@ -258,4 +258,22 @@ test('refund request customer: alasan wajib, order orang lain 403, belum bayar d
     [$buyer, $unpaid] = placeTestOrder();
     $this->actingAs($buyer)->post(route('orders.refund-request', $unpaid->no_order), ['reason' => 'x'])->assertSessionHasErrors('reason');
     expect(Refund::where('order_id', $unpaid->id)->count())->toBe(0);
+});
+
+test('partial refund TIDAK mengembalikan koin (PRD 9.3), full refund mengembalikan', function () {
+    $admin = User::factory()->admin()->create();
+
+    [, $partialOrder] = refundReady(placeTestOrder());
+    $partialOrder->update(['coin_spent' => 500]);
+    $partial = app(RefundService::class)->requestPartial($partialOrder, 1000, 'sebagian kosong', $admin);
+    app(RefundService::class)->complete($partial, $admin);
+
+    expect(CoinTransaction::where('order_id', $partialOrder->id)->where('type', CoinTransaction::TYPE_REFUND_RETURNED)->exists())->toBeFalse();
+
+    [, $fullOrder] = refundReady(placeTestOrder());
+    $fullOrder->update(['coin_spent' => 500]);
+    $full = app(RefundService::class)->requestFull($fullOrder, 'semua kosong', $admin);
+    app(RefundService::class)->complete($full, $admin);
+
+    expect(CoinTransaction::where('order_id', $fullOrder->id)->where('type', CoinTransaction::TYPE_REFUND_RETURNED)->exists())->toBeTrue();
 });

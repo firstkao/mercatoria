@@ -424,7 +424,7 @@ class SettingsController extends Controller
                 // Pembagi / batas / jumlah baris: 0 menyebabkan DivisionByZero atau paginasi rusak.
                 $key === 'price_rounding' => ['required', 'integer', 'min:1'],
                 $key === 'catalog_per_page' => ['required', 'integer', 'min:1', 'max:100'],
-                in_array($key, ['late_penalty_pay_hours', 'late_penalty_pickup_days', 'log_retention_days', 'auto_delete_crush_days', 'login_rate_limit_per_minute']) => ['required', 'integer', 'min:1'],
+                in_array($key, ['late_penalty_pay_hours', 'late_penalty_pickup_days', 'log_retention_days', 'auto_delete_crush_days', 'login_rate_limit_per_minute', 'email_verification_hours']) => ['required', 'integer', 'min:1'],
                 in_array($key, ['best_offers_count', 'related_products_count']) => ['required', 'integer', 'min:0', 'max:50'],
                 in_array($key, ['late_penalty_per_day', 'late_penalty_max_days', 'coin_birthday_bonus', 'voucher_birthday_nominal', 'voucher_birthday_min_belanja', 'tier_gold_threshold', 'tier_platinum_threshold', 'promo_bar_discount', 'promo_bar_min_purchase']) => ['required', 'integer', 'min:0'],
 
