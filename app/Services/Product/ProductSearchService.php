@@ -20,13 +20,15 @@ class ProductSearchService
             ->where('is_active', true)
             ->with([
                 'game',
+                'developer',       // [FIX] eager load developer (sebelumnya tidak)
                 'tags',
                 'merchCategory',
                 'variants' => fn ($vq) => $vq->orderBy('id', 'desc'),
             ]);
 
         if ($q !== '') {
-            $like = '%'.$q.'%';
+            // [FIX #2] Escape LIKE wildcards (% _ \)
+            $like = '%'.addcslashes($q, '%_\\').'%';
 
             $query->where(function (Builder $sub) use ($like) {
                 $sub->where('products.name', 'LIKE', $like)
@@ -36,24 +38,30 @@ class ProductSearchService
                             ->orWhere('product_variants.sku', 'LIKE', $like);
                     })
                     ->orWhereHas('game', fn (Builder $gq) => $gq->where('games.name', 'LIKE', $like))
-                    ->orWhereHas('game.developers', fn (Builder $dq) => $dq->where('developers.name', 'LIKE', $like));
+                    // [FIX #1] Search product's own developer, bukan game's developers
+                    ->orWhereHas('developer', fn (Builder $dq) => $dq->where('developers.name', 'LIKE', $like));
             });
 
-            // Kecocokan judul produk diurutkan di atas kecocokan nama varian.
+            // Kecocokan judul produk diurutkan di atas kecocokan lainnya.
             $query->orderByRaw(
                 'CASE WHEN products.name LIKE ? THEN 0 ELSE 1 END ASC',
                 [$like]
             );
 
-            // [FIX #1] Tambahan secondary sort — hasil yang sama-sama match diurutkan stabil.
+            // Secondary sort — hasil yang sama-sama match diurutkan stabil.
             $query->orderByDesc('products.id');
         } else {
-            // [FIX #1] Default sort saat tanpa keyword.
+            // Default sort saat tanpa keyword.
             $query->orderByDesc('products.id');
         }
 
         if (! empty($filters['game_id'])) {
             $query->where('products.game_id', $filters['game_id']);
+        }
+
+        if (! empty($filters['developer_id'])) {
+            // [FIX] Filter developer — sebelumnya tidak ada
+            $query->where('products.developer_id', $filters['developer_id']);
         }
 
         if (! empty($filters['merch_category_id'])) {
