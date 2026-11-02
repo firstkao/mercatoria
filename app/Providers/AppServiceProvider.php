@@ -130,19 +130,33 @@ class AppServiceProvider extends ServiceProvider
 
     private function activeGames(): Collection
     {
-        return self::perRequest('nav_games', fn () => Cache::remember(
-            Game::NAV_CACHE_KEY,
-            3600,
-            fn () => Game::where('is_active', true)->orderBy('name')->get(['id', 'name', 'slug'])
-        ));
+        return self::perRequest('nav_games', function (): Collection {
+            // Simpan atribut polos (bukan object model) agar payload cache tidak rusak
+            // jadi __PHP_Incomplete_Class bila class pindah/berubah nama antar deploy.
+            $rows = Cache::get(Game::NAV_CACHE_KEY);
+
+            if (! is_array($rows)) {
+                Cache::forget(Game::NAV_CACHE_KEY);
+                $rows = Game::where('is_active', true)->orderBy('name')->get(['id', 'name', 'slug'])->map->getAttributes()->all();
+                Cache::put(Game::NAV_CACHE_KEY, $rows, 3600);
+            }
+
+            return Game::hydrate($rows);
+        });
     }
 
     private function activeDevelopers(): Collection
     {
-        return self::perRequest('nav_developers', fn () => Cache::remember(
-            Developer::NAV_CACHE_KEY,
-            3600,
-            fn () => Developer::where('is_active', true)->orderBy('name')->get(['id', 'name', 'slug'])
-        ));
+        return self::perRequest('nav_developers', function (): Collection {
+            $rows = Cache::get(Developer::NAV_CACHE_KEY);
+
+            if (! is_array($rows)) {
+                Cache::forget(Developer::NAV_CACHE_KEY);
+                $rows = Developer::where('is_active', true)->orderBy('name')->get(['id', 'name', 'slug'])->map->getAttributes()->all();
+                Cache::put(Developer::NAV_CACHE_KEY, $rows, 3600);
+            }
+
+            return Developer::hydrate($rows);
+        });
     }
 }

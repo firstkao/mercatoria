@@ -29,11 +29,19 @@ trait CachesNavList
      */
     public static function navList(): Collection
     {
-        return AppServiceProvider::perRequest(static::NAV_CACHE_KEY, fn () => Cache::remember(
-            static::NAV_CACHE_KEY,
-            3600,
-            fn () => static::navQuery()->get()
-        ));
+        return AppServiceProvider::perRequest(static::NAV_CACHE_KEY, function (): Collection {
+            // Simpan atribut polos (bukan object model): payload serialize model rusak
+            // jadi __PHP_Incomplete_Class bila class pindah/berubah nama antar deploy.
+            $rows = Cache::get(static::NAV_CACHE_KEY);
+
+            if (! is_array($rows)) {
+                Cache::forget(static::NAV_CACHE_KEY);
+                $rows = static::navQuery()->get()->map(fn ($model) => $model->getAttributes())->all();
+                Cache::put(static::NAV_CACHE_KEY, $rows, 3600);
+            }
+
+            return static::hydrate($rows)->values();
+        });
     }
 
     abstract protected static function navQuery(): Builder;
