@@ -3,6 +3,7 @@
 namespace App\Services\Order;
 
 use App\Events\OrderStatusChanged;
+use App\Exceptions\InvalidOrderTransitionException;
 use App\Models\CoinTransaction;
 use App\Models\Crush;
 use App\Models\Customer;
@@ -50,11 +51,11 @@ class OrderStatusService
             $from = OrderStatus::tryFrom($order->status);
 
             if (! $from) {
-                throw new \RuntimeException("Status order tidak dikenal: {$order->status}");
+                throw new InvalidOrderTransitionException("Status order tidak dikenal: {$order->status}");
             }
 
             if (! $from->canTransitionTo($toValue)) {
-                throw new \RuntimeException("Transisi status tidak sah: {$order->status} → {$toValue}");
+                throw new InvalidOrderTransitionException("Transisi status tidak sah: {$order->status} → {$toValue}");
             }
 
             $order->status = $toValue;

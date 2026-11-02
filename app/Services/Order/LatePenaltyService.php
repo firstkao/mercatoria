@@ -6,6 +6,7 @@ use App\Models\Order;
 use App\Models\OrderStatus;
 use App\Models\User;
 use App\Services\User\UserTierService;
+use Illuminate\Support\Facades\DB;
 
 class LatePenaltyService
 {
@@ -44,20 +45,22 @@ class LatePenaltyService
         $days = $this->days($order);
         $amount = $nominal ?? $perDay * $days;
 
-        $order->update([
-            'penalty_amount' => $amount,
-            'penalty_per_day' => $perDay,
-            'penalty_days' => $days,
-            'penalty_unlocked_at' => now(),
-            'penalty_deadline_at' => now()->addHours((int) setting('late_penalty_pay_hours', 24)),
-        ]);
+        return DB::transaction(function () use ($order, $amount, $perDay, $days): Order {
+            $order->update([
+                'penalty_amount' => $amount,
+                'penalty_per_day' => $perDay,
+                'penalty_days' => $days,
+                'penalty_unlocked_at' => now(),
+                'penalty_deadline_at' => now()->addHours((int) setting('late_penalty_pay_hours', 24)),
+            ]);
 
-        return app(OrderStatusService::class)->changeStatus(
-            $order,
-            OrderStatus::MenungguDenda,
-            'admin',
-            "Buka Kunci via Denda sebesar {$amount}"
-        );
+            return app(OrderStatusService::class)->changeStatus(
+                $order,
+                OrderStatus::MenungguDenda,
+                'admin',
+                "Buka Kunci via Denda sebesar {$amount}"
+            );
+        });
     }
 
     /**
@@ -66,18 +69,20 @@ class LatePenaltyService
      */
     public function markPaid(Order $order): Order
     {
-        $order->update(['penalty_paid_at' => now()]);
+        return DB::transaction(function () use ($order): Order {
+            $order->update(['penalty_paid_at' => now()]);
 
-        $order = app(OrderStatusService::class)->changeStatus(
-            $order,
-            OrderStatus::MenungguPelunasanPengambilan,
-            'admin',
-            'Denda lunas — tebus Hangus'
-        );
+            $order = app(OrderStatusService::class)->changeStatus(
+                $order,
+                OrderStatus::MenungguPelunasanPengambilan,
+                'admin',
+                'Denda lunas — tebus Hangus'
+            );
 
-        app(UserTierService::class)->restoreForPaidPenalty($order);
+            app(UserTierService::class)->restoreForPaidPenalty($order);
 
-        return $order;
+            return $order;
+        });
     }
 
     /**
@@ -131,13 +136,15 @@ class LatePenaltyService
     public function markHangusPermanen(Order $order, User $admin): Order
     {
         // Skema DB 18: timestamp penetapan Hangus Permanen.
-        $order->update(['hangus_permanent_at' => now()]);
+        return DB::transaction(function () use ($order): Order {
+            $order->update(['hangus_permanent_at' => now()]);
 
-        return app(OrderStatusService::class)->changeStatus(
-            $order,
-            OrderStatus::HangusPermanen,
-            'admin',
-            'Hangus Permanen'
-        );
+            return app(OrderStatusService::class)->changeStatus(
+                $order,
+                OrderStatus::HangusPermanen,
+                'admin',
+                'Hangus Permanen'
+            );
+        });
     }
 }

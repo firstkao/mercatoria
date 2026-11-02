@@ -1,5 +1,6 @@
 <?php
 
+use App\Exceptions\InvalidOrderTransitionException;
 use App\Http\Middleware\DetectBotCrawler;
 use App\Http\Middleware\EnforceIpBlacklist;
 use App\Http\Middleware\EnsureCheckoutReady;
@@ -67,4 +68,13 @@ return Application::configure(basePath: dirname(__DIR__))
         $exceptions->shouldRenderJsonWhen(
             fn (Request $request) => $request->is('api/*') || $request->expectsJson(),
         );
+
+        // Transisi status order tidak sah = kesalahan input admin, bukan 500.
+        $exceptions->render(function (InvalidOrderTransitionException $e, Request $request) {
+            if ($request->expectsJson()) {
+                return response()->json(['message' => $e->getMessage()], 422);
+            }
+
+            return back()->withErrors(['status' => $e->getMessage()]);
+        });
     })->create();
