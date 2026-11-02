@@ -3,7 +3,6 @@
 namespace App\Providers;
 
 use App\Models\Cart;
-use App\Models\Coin;
 use App\Models\Developer;
 use App\Models\Game;
 use App\Models\Product;
@@ -43,7 +42,7 @@ class AppServiceProvider extends ServiceProvider
         });
 
         // Navbar dropdown Game / Developer → route katalog (PRD 7.2) + bell (PRD 43.2) + keranjang.
-        View::composer(['layouts.app', 'layouts.guest', 'frontend.home.index', 'frontend.profile.show'], function ($view): void {
+        View::composer(['layouts.app', 'layouts.guest', 'frontend.home.index', 'frontend.home.bot', 'frontend.profile.show', 'frontend.partials._navbar'], function ($view): void {
             $user = auth()->user();
 
             $cartTotal = 0;
@@ -74,14 +73,11 @@ class AppServiceProvider extends ServiceProvider
                     ? self::perRequest('nav_unread', fn () => (int) UserNotification::where('user_id', $user->id)->where('is_read', false)->count())
                     : 0)
                 ->with('cartTotal', $cartTotal)
-                ->with('cartCount', $cartCount)
-                ->with('coinBalance', $user
-                    ? self::perRequest('nav_coin', fn () => (int) Coin::where('user_id', $user->id)->value('balance'))
-                    : 0);
+                ->with('cartCount', $cartCount);
         });
 
         // Footer "Produk Terpopuler" (Design Spec 4.4.5) — {image, url, name, price}.
-        View::composer(['layouts.app', 'layouts.guest', 'frontend.home.index'], function ($view): void {
+        View::composer(['layouts.app', 'layouts.guest', 'frontend.home.index', 'frontend.home.bot', 'frontend.partials._footer'], function ($view): void {
             $view->with('footerTopProducts', self::perRequest('footer_top_products', function (): Collection {
                 $shipping = app(ShippingCalculatorService::class);
 
@@ -102,7 +98,7 @@ class AppServiceProvider extends ServiceProvider
         });
 
         // Footer "Game" & "Developer" (pola $navGames) untuk layout yang memakai footer.
-        View::composer(['layouts.app', 'layouts.guest', 'frontend.home.index'], function ($view): void {
+        View::composer(['layouts.app', 'layouts.guest', 'frontend.home.index', 'frontend.home.bot', 'frontend.partials._footer'], function ($view): void {
             $view->with('footerGames', $this->activeGames())
                 ->with('footerDevelopers', $this->activeDevelopers());
         });

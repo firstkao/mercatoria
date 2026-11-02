@@ -8,6 +8,7 @@ use App\Models\HeroSlide;
 use App\Models\Product;
 use App\Services\Order\ShippingCalculatorService;
 use App\Services\Seo\SeoMetaService;
+use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\View\View;
 
@@ -21,7 +22,7 @@ class HomeController extends Controller
     /**
      * Landing (PRD 40): Top Promo Bar · Hero · Jelajahi Game · Merch Baru · Footer.
      */
-    public function index(): View
+    public function index(Request $request): View
     {
         $games = Game::where('is_active', true)->orderBy('name')->get();
         $products = Product::where('is_active', true)
@@ -73,7 +74,12 @@ class HomeController extends Controller
             ])
             ->values();
 
-        return view('frontend.home.index', [
+        // PRD 8.8: crawler dapat varian ringan (tanpa JS interaktif) dengan konten SEO utuh.
+        $view = $request->attributes->get('is_bot')
+            ? 'frontend.home.bot'
+            : 'frontend.home.index';
+
+        return view($view, [
             'games' => $games,
             'products' => $products,
             'bestOffers' => $bestOffers,
