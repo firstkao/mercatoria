@@ -119,7 +119,7 @@ class SettingsSeeder extends Seeder
         ['key' => 'url_whatsapp', 'value' => '#', 'type' => 'string', 'group' => 'social', 'description' => 'Link WhatsApp.'],
 
         // Promo bar (PRD 40.1)
-        ['key' => 'promo_bar_text', 'value' => 'Gunakan kode promo NEWWEB dan nikmati potongan harga untuk belanja pertamamu.', 'type' => 'string', 'group' => 'marketing', 'description' => 'Teks promo bar di atas halaman.'],
+        ['key' => 'promo_bar_text', 'value' => 'Gunakan kode promo <strong><em><span class="text-[#D97706]">NEWWEB</span></em></strong> dan nikmati potongan harga untuk belanja pertamamu.', 'type' => 'string', 'group' => 'marketing', 'description' => 'Teks promo bar di atas halaman (HTML).'],
         ['key' => 'promo_bar_discount', 'value' => '25000', 'type' => 'string', 'group' => 'marketing', 'description' => 'Nominal potongan promo bar (Rupiah).'],
         ['key' => 'promo_bar_min_purchase', 'value' => '150000', 'type' => 'string', 'group' => 'marketing', 'description' => 'Minimum belanja promo bar (Rupiah).'],
         ['key' => 'promo_bar_link', 'value' => '', 'type' => 'string', 'group' => 'marketing', 'description' => 'Link tujuan promo bar (opsional).'],
