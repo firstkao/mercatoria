@@ -9,6 +9,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rules\Password as PasswordRule;
 use Illuminate\View\View;
@@ -35,6 +36,9 @@ class ResetPasswordController extends Controller
                     'password' => Hash::make($password),
                     'remember_token' => Str::random(10),
                 ])->save();
+
+                // Password baru: lockout login gagal (PRD 7.5) ikut di-reset.
+                RateLimiter::clear('login-lock:'.Str::lower($user->email));
 
                 event(new PasswordReset($user));
             }
