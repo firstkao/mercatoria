@@ -89,11 +89,6 @@ class SettingsController extends Controller
         'product_bulk_delete_enabled',
         'product_delete_confirm_enabled',
         'profit_percent',
-        'promo_bar_active',
-        'promo_bar_discount',
-        'promo_bar_link',
-        'promo_bar_min_purchase',
-        'promo_bar_text',
         'qris_threshold',
         'rate_rmb_idr',
         'recently_viewed_count',
@@ -251,29 +246,15 @@ class SettingsController extends Controller
     }
 
     /**
-     * PRD 22.2/40.1: halaman pengaturan marketing (promo bar).
+     * PRD 22.2/40.1: halaman pengaturan marketing.
      */
     public function marketing(): View
     {
-        return view('admin.marketing.index', [
-            'promo_bar_text' => (string) setting('promo_bar_text', ''),
-            'promo_bar_link' => (string) setting('promo_bar_link', ''),
-            'promo_bar_active' => (string) setting('promo_bar_active', '1'),
-        ]);
+        return view('admin.marketing.index');
     }
 
     public function updateMarketing(Request $request): RedirectResponse
     {
-        $data = $request->validate([
-            'promo_bar_text' => ['nullable', 'string', 'max:500'],
-            'promo_bar_link' => ['nullable', 'string', 'max:255', 'regex:~^(https?://|/)~i'],
-            'promo_bar_active' => ['nullable', 'boolean'],
-        ]);
-
-        $this->saveSetting($request, 'promo_bar_text', (string) ($data['promo_bar_text'] ?? ''), 'marketing');
-        $this->saveSetting($request, 'promo_bar_link', (string) ($data['promo_bar_link'] ?? ''), 'marketing');
-        $this->saveSetting($request, 'promo_bar_active', $request->boolean('promo_bar_active') ? '1' : '0', 'marketing');
-
         return redirect()->route('office.marketing.index')->with('status', 'Pengaturan marketing disimpan.');
     }
 
@@ -360,11 +341,6 @@ class SettingsController extends Controller
 
             // ── SEO ──
             ['key' => 'ga4_measurement_id',          'group' => 'seo',      'type' => 'string', 'value' => '',          'description' => 'Google Analytics 4 Measurement ID'],
-
-            // ── Marketing ──
-            ['key' => 'promo_bar_text',              'group' => 'marketing', 'type' => 'string', 'value' => '',          'description' => 'Teks promo bar'],
-            ['key' => 'promo_bar_link',              'group' => 'marketing', 'type' => 'string', 'value' => '',          'description' => 'Link promo bar'],
-            ['key' => 'promo_bar_active',            'group' => 'marketing', 'type' => 'bool',   'value' => '1',         'description' => 'Status promo bar'],
         ];
 
         foreach ($defaults as $d) {
@@ -426,7 +402,7 @@ class SettingsController extends Controller
                 $key === 'catalog_per_page' => ['required', 'integer', 'min:1', 'max:100'],
                 in_array($key, ['late_penalty_pay_hours', 'late_penalty_pickup_days', 'log_retention_days', 'auto_delete_crush_days', 'login_rate_limit_per_minute', 'email_verification_hours']) => ['required', 'integer', 'min:1'],
                 in_array($key, ['best_offers_count', 'related_products_count']) => ['required', 'integer', 'min:0', 'max:50'],
-                in_array($key, ['late_penalty_per_day', 'late_penalty_max_days', 'coin_birthday_bonus', 'voucher_birthday_nominal', 'voucher_birthday_min_belanja', 'tier_gold_threshold', 'tier_platinum_threshold', 'promo_bar_discount', 'promo_bar_min_purchase']) => ['required', 'integer', 'min:0'],
+                in_array($key, ['late_penalty_per_day', 'late_penalty_max_days', 'coin_birthday_bonus', 'voucher_birthday_nominal', 'voucher_birthday_min_belanja', 'tier_gold_threshold', 'tier_platinum_threshold']) => ['required', 'integer', 'min:0'],
 
                 // Numeric / price fields (tanpa overlap)
                 in_array($key, $numericKeys) => ['required', 'numeric', 'min:0'],
@@ -459,7 +435,6 @@ class SettingsController extends Controller
         if (in_array($key, [
             'pause_customer_emails', 'notif_admin_bukti_bayar',
             'anti_download_enabled', 'auto_watermark_enabled', 'heavy_watermark',
-            'promo_bar_active',
         ])) {
             return 'bool';
         }
