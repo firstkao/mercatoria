@@ -13,7 +13,7 @@
                     {{ $promoText }}
                 @endif
             @else
-                Gunakan kode promo <strong class="font-semibold text-danger">NEWWEB</strong> dan nikmati potongan harga sebesar <strong class="font-semibold italic">{{ format_rp((float) setting('promo_bar_discount', 25000)) }}</strong> dengan minimal pembelanjaan <strong class="font-semibold italic">{{ format_rp((float) setting('promo_bar_min_purchase', 150000)) }}</strong>.
+                Gunakan kode promo <strong class="font-semibold text-danger">NEWWEB</strong> dan nikmati potongan harga sebesar <strong class="font-semibold italic">Rp {{ number_format((float) setting('promo_bar_discount', 25000)) }}</strong> dengan minimal pembelian <strong class="font-semibold italic">Rp {{ number_format((float) setting('promo_bar_min_purchase', 150000)) }}</strong>.
             @endif
         </p>
     </div>

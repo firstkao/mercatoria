@@ -20,7 +20,7 @@
 
     {{-- 2. Header (Design Spec 4.4.1) --}}
     <header class="border-b border-[#EAEAEA] bg-white">
-        <div class="mx-auto max-w-[1200px] px-4">
+        <div class="mx-auto w-full px-6 lg:px-12">
             <div class="hidden min-h-[72px] lg:grid lg:grid-cols-3 lg:items-center">
                 <nav class="flex items-center gap-5" aria-label="Menu utama">
                     <a href="{{ route('home') }}" class="text-[13px] font-medium text-[#4FC3F7]">Beranda</a>
@@ -56,6 +56,7 @@
                     </details>
 
                     <a href="#merch-baru" class="text-[13px] font-medium text-[#333] transition-colors hover:text-[#4FC3F7]">Pre-order Baru</a>
+                    <a href="{{ route('orders.index') }}" class="text-[13px] font-medium text-[#333] transition-colors hover:text-[#4FC3F7]">Konfirmasi Pembayaran</a>
                 </nav>
 
                 <a href="{{ route('home') }}" class="flex items-center justify-center no-underline">
@@ -74,7 +75,13 @@
                         <a href="{{ setting('url_whatsapp', '#') }}" class="transition-colors hover:text-[#4FC3F7]" aria-label="WhatsApp"><x-icons.whatsapp width="16" height="16" /></a>
                     </div>
                     @auth
-                        <a href="{{ route('cart.index') }}" class="text-[#333] transition-colors hover:text-[#4FC3F7]" aria-label="Keranjang"><x-icons.shopping-cart width="18" height="18" /></a>
+                        <a href="{{ route('profile.coins') }}" class="text-[13px] font-semibold text-[#333] transition-colors hover:text-[#4FC3F7]">{{ format_rp($coinBalance ?? 0) }}</a>
+                        <a href="{{ route('cart.index') }}" class="relative text-[#333] transition-colors hover:text-[#4FC3F7]" aria-label="Keranjang">
+                            <x-icons.shopping-cart width="18" height="18" />
+                            @if (($cartCount ?? 0) > 0)
+                                <span class="absolute -right-2 -top-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-[#333] px-1 text-[9px] font-bold leading-none text-white">{{ $cartCount }}</span>
+                            @endif
+                        </a>
                         <a href="{{ route('dashboard') }}" class="flex items-center gap-1.5 text-[#333] transition-colors hover:text-[#4FC3F7]"><x-icons.user width="18" height="18" /></a>
                     @else
                         <a href="{{ route('login') }}" class="flex items-center gap-1.5 text-[#333] transition-colors hover:text-[#4FC3F7]"><x-icons.user width="18" height="18" /></a>
@@ -92,6 +99,7 @@
                         <a href="{{ route('home') }}" class="block px-4 py-2.5 text-[13px] font-medium text-[#4FC3F7]">Beranda</a>
                         <a href="#game-grid" class="block px-4 py-2.5 text-[13px] text-[#333]">Game</a>
                         <a href="#merch-baru" class="block px-4 py-2.5 text-[13px] text-[#333]">Pre-order Baru</a>
+                        <a href="{{ route('orders.index') }}" class="block px-4 py-2.5 text-[13px] text-[#333]">Konfirmasi Pembayaran</a>
 
                         <div class="mt-1 border-t border-[#EAEAEA] pt-1">
                             <p class="px-4 py-1.5 font-mono text-[10px] uppercase tracking-wider text-ink/45">Game</p>
@@ -126,7 +134,7 @@
 
     <main class="flex-1">
         {{-- 3. Hero Carousel (PRD 40.2) --}}
-        <section id="hero" class="mx-auto max-w-[1200px] px-4 py-6">
+        <section id="hero" class="mx-auto max-w-[1200px] px-8 py-6">
             @isset($heroSlides)
                 @if (count($heroSlides) > 0)
                     <div class="relative overflow-hidden rounded-lg border border-rule" id="hero-carousel">
@@ -171,9 +179,9 @@
         </section>
 
         {{-- 4. Jelajahi Game Favoritmu (PRD 40.4 / Design Spec 4.4.3) --}}
-        <section id="game-grid" class="mx-auto max-w-[1200px] px-4 pb-12">
+        <section id="game-grid" class="mx-auto max-w-[1200px] px-8 pb-12">
             <h2 class="text-center font-display text-[26px] font-semibold text-ink">Jelajahi Game Favoritmu</h2>
-            <p class="mt-1 text-center text-[13px] text-ink/60">Temukan merchandise eksklusif dari game favoritmu dan lihat koleksi lengkapnya di setiap kategori</p>
+            <p class="mt-1 text-center text-[13px] text-ink/60">Temukan merchandise eksklusif dari game favoritmu dan lihat koleksi lengkapnya di setiap kategori!</p>
 
             <div class="mt-6 grid grid-cols-2 gap-4 md:grid-cols-4 lg:grid-cols-6">
                 @forelse ($games as $game)
@@ -197,7 +205,7 @@
 
         {{-- 5. Penawaran Terbaik (PRD 40.5 / DS 4.6.3) --}}
         @if(($bestOffers ?? collect())->isNotEmpty())
-            <section id="penawaran-terbaik" class="mx-auto max-w-[1200px] px-4 pb-12">
+            <section id="penawaran-terbaik" class="mx-auto max-w-[1200px] px-8 pb-12">
                 <h2 class="text-center font-display text-[22px] font-semibold text-ink">Penawaran Terbaik</h2>
                 <div class="mt-6 grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-5">
                     @foreach ($bestOffers as $product)
@@ -224,7 +232,7 @@
         @endif
 
         {{-- 6. MERCH BARU (PRD 40.6 / Design Spec 4.4.4) --}}
-        <section id="merch-baru" class="mx-auto max-w-[1200px] px-4 pb-14">
+        <section id="merch-baru" class="mx-auto max-w-[1200px] px-8 pb-14">
             <h2 class="text-center text-[18px] font-bold uppercase tracking-wide text-ink">MERCH BARU</h2>
 
             <div class="mt-5 grid grid-cols-2 gap-3.5 md:grid-cols-5 lg:grid-cols-7">
@@ -235,16 +243,22 @@
                                 <img src="{{ \App\Services\Image\ImageOptimizerService::url($product->image_path, 'thumb') }}" alt="{{ $product->name }}" class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]">
                             @endif
                             @if ($product->tags->contains('slug', 'presale'))
-                                <span class="absolute left-0 top-2 -rotate-45 bg-[#29B6F6] px-3 py-0.5 text-[9.5px] font-bold uppercase text-white">PRESALE</span>
+                                <span class="absolute left-2 top-2 rounded-sm bg-[#3986C6] px-2 py-[3px] text-[9px] font-bold uppercase tracking-wide text-white">PRESALE</span>
                             @elseif ($product->tags->contains('slug', 'limited'))
-                                <span class="absolute left-0 top-2 -rotate-45 bg-[#E53935] px-3 py-0.5 text-[9.5px] font-bold uppercase text-white">LIMITED</span>
+                                <span class="absolute left-2 top-2 rounded-sm bg-[#E53935] px-2 py-[3px] text-[9px] font-bold uppercase tracking-wide text-white">LIMITED</span>
                             @endif
                         </div>
                         <p class="mt-1.5 text-[11.5px] font-bold leading-[1.35] text-ink">
                             <span class="text-ink/55">[{{ $product->game->name }}]</span> {{ $product->name }}
                         </p>
-                        @if (!empty($product->price_idr))
-                            <p class="mt-0.5 text-[11.5px] font-bold text-[#29B6F6]">{{ format_rp($product->price_idr) }}</p>
+                        @if (!empty($product->price_min) && !empty($product->price_max))
+                            <p class="mt-0.5 text-[11.5px] leading-none">
+                                <span class="text-[10px] text-ink/45">{{ format_rp($product->price_min) }}</span>
+                                <span class="text-ink/45"> – </span>
+                                <strong class="text-[#3986C6]">{{ format_rp($product->price_max) }}</strong>
+                            </p>
+                        @elseif (!empty($product->price_idr))
+                            <p class="mt-0.5 text-[11.5px] font-bold text-[#3986C6]">{{ format_rp($product->price_idr) }}</p>
                         @endif
                     </a>
                 @empty
@@ -256,7 +270,7 @@
 
     {{-- 7. Footer (Design Spec 4.4.5) --}}
     <footer id="footer" class="bg-[#1E1E2D] text-white">
-        <div class="mx-auto max-w-[1200px] px-4 py-14">
+        <div class="mx-auto max-w-[1200px] px-8 py-14">
             <div class="grid gap-10 md:grid-cols-2 lg:grid-cols-4">
                 <div class="flex flex-col items-center">
                     <a href="{{ route('home') }}" class="inline-flex flex-col items-center no-underline">
@@ -313,11 +327,12 @@
             <span class="text-[#B0B3C5] transition-transform group-open:rotate-180 lg:hidden"><x-icons.chevron-up width="14" height="14" /></span>
         </summary>
         <ul class="mt-3.5 text-[12px] leading-[1.8]">
-            <li><a href="{{ route('page.tentang-kami') }}" class="text-[#B0B3C5] transition-colors hover:text-[#4FC3F7]">Tentang Kami</a></li>
-            <li><a href="{{ route('page.faq') }}" class="text-[#B0B3C5] transition-colors hover:text-[#4FC3F7]">Tanya Jawab Umum</a></li>
+            <li><a href="{{ route('page.blacklist') }}" class="text-[#B0B3C5] transition-colors hover:text-[#4FC3F7]">Blacklist</a></li>
             <li><a href="{{ route('page.cara-belanja') }}" class="text-[#B0B3C5] transition-colors hover:text-[#4FC3F7]">Cara Belanja</a></li>
-            <li><a href="{{ route('page.tnc') }}" class="text-[#B0B3C5] transition-colors hover:text-[#4FC3F7]">Syarat &amp; Ketentuan</a></li>
             <li><a href="{{ route('page.kebijakan-privasi') }}" class="text-[#B0B3C5] transition-colors hover:text-[#4FC3F7]">Kebijakan Privasi</a></li>
+            <li><a href="{{ route('page.reseller') }}" class="text-[#B0B3C5] transition-colors hover:text-[#4FC3F7]">Reseller</a></li>
+            <li><a href="{{ route('page.faq') }}" class="text-[#B0B3C5] transition-colors hover:text-[#4FC3F7]">Tanya Jawab Umum</a></li>
+            <li><a href="{{ route('page.tentang-kami') }}" class="text-[#B0B3C5] transition-colors hover:text-[#4FC3F7]">Tentang Kami</a></li>
         </ul>
     </details>
 </div>
@@ -353,7 +368,7 @@
 
         <div class="border-t border-white/[0.08]">
             <div class="mx-auto flex max-w-[1200px] flex-wrap items-center justify-between gap-3 px-4 py-[18px] text-[11px] text-[#888]">
-                <p>&copy; {{ now()->year }} MERCATORIA</p>
+                <p>&copy; 2022 MERCATORIA</p>
                 <p>Powered by MERCATORIA</p>
             </div>
         </div>
