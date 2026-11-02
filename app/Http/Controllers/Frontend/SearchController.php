@@ -49,8 +49,8 @@ class SearchController extends Controller
             'results' => $results,
             'matchedVariants' => $matchedVariants,
             'games' => Game::where('is_active', true)->orderBy('name')->get(['id', 'name']),
-            'categories' => MerchCategory::orderBy('priority')->get(),
-            'tags' => Tag::orderBy('name')->get(),
+            'categories' => MerchCategory::navList(),
+            'tags' => Tag::navList(),
             'filters' => $filters,
             'shipping' => $this->shipping,
         ]);

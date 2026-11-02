@@ -90,6 +90,13 @@
                 <span class="text-xs text-ink/45" id="mc-selected-info">0 terpilih</span>
             </div>
             <div class="flex items-center gap-2">
+                <form method="POST" action="{{ route('office.merch-categories.auto-generate') }}">
+                    @csrf
+                    <button type="submit"
+                            class="rounded-lg border border-rule px-3.5 py-2 text-xs font-semibold text-ink/70 transition-colors hover:border-ink hover:text-ink">
+                        <i class="bi bi-magic me-1" style="font-size:0.85rem;"></i> Auto-generate dari produk
+                    </button>
+                </form>
                 <button type="button" id="mc-bulk-save"
                         class="rounded-lg bg-black px-3.5 py-2 text-xs font-semibold text-white transition-colors hover:bg-ink disabled:opacity-40">
                     <i class="bi bi-check-lg me-1" style="font-size:0.85rem;"></i> Simpan Perubahan

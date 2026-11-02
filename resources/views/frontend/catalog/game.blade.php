@@ -98,7 +98,7 @@
                                 <a href="/{{ $offer->game->slug }}/{{ $offer->slug }}" class="flex items-center gap-2 text-sm transition-colors hover:text-ink">
                                     <span class="h-10 w-10 shrink-0 overflow-hidden rounded bg-paper">
                                         @if ($offer->image_path)
-                                            <img src="{{ Storage::url($offer->image_path) }}" alt="" class="h-full w-full object-cover">
+                                            <img src="{{ \App\Services\Image\ImageOptimizerService::url($offer->image_path, 'thumb') }}" alt="" class="h-full w-full object-cover">
                                         @endif
                                     </span>
                                     <span class="line-clamp-2 text-xs text-ink/75">{{ $offer->name }}</span>

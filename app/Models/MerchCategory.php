@@ -2,13 +2,18 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\CachesNavList;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
 
 class MerchCategory extends Model
 {
+    use CachesNavList;
     use HasFactory;
+
+    public const NAV_CACHE_KEY = 'nav_merch_categories';
 
     protected $fillable = [
         'name',
@@ -33,7 +38,7 @@ class MerchCategory extends Model
     {
         $haystack = Str::lower($name.' '.$slug);
 
-        foreach (static::orderBy('priority')->orderBy('id')->get() as $category) {
+        foreach (static::navList() as $category) {
             foreach ((array) $category->keywords as $keyword) {
                 $keyword = Str::lower(trim((string) $keyword));
 
@@ -44,5 +49,10 @@ class MerchCategory extends Model
         }
 
         return null;
+    }
+
+    protected static function navQuery(): Builder
+    {
+        return static::orderBy('priority')->orderBy('id');
     }
 }

@@ -15,6 +15,115 @@ use Illuminate\View\View;
 
 class SettingsController extends Controller
 {
+    /**
+     * Whitelist key yang boleh diubah lewat halaman Settings.
+     *
+     * @var list<string>
+     */
+    private const VALID_KEYS = [
+        'admin_notify_payment_upload',
+        'anti_download_enabled',
+        'auto_cancel_dp_days',
+        'auto_delete_crush_days',
+        'auto_delete_payment_proof',
+        'auto_watermark_enabled',
+        'bell_auto_delete_read',
+        'bell_dropdown_limit',
+        'bell_enabled',
+        'bell_per_page',
+        'bell_polling_seconds',
+        'bell_retention_days',
+        'bell_toast_enabled',
+        'best_offers_count',
+        'bot_whitelist_ai',
+        'bot_whitelist_search',
+        'bot_whitelist_social',
+        'cart_reminder_minutes',
+        'catalog_per_page',
+        'coin_birthday_bonus',
+        'coin_expiry_days',
+        'coin_max_discount_percent',
+        'coin_order_percent',
+        'coin_referral_referee',
+        'coin_referral_referrer',
+        'coin_share',
+        'customer_note_max_chars',
+        'default_weight_gram',
+        'display_timezone',
+        'dp_minimum_percent',
+        'email_cs',
+        'email_notification',
+        'email_security',
+        'email_stop_reason',
+        'email_verification_hours',
+        'fee_qris_percent',
+        'fee_shopee_dp',
+        'fee_shopee_fp',
+        'fee_toco_dp',
+        'fee_toco_fp',
+        'forever_delete_enabled',
+        'ga4_measurement_id',
+        'heavy_watermark',
+        'image_protection_enabled',
+        'image_watermark_enabled',
+        'image_watermark_opacity',
+        'inject_spammer_max_attempt',
+        'invoice_prefix',
+        'late_penalty_max_days',
+        'late_penalty_pay_hours',
+        'late_penalty_per_day',
+        'late_penalty_pickup_days',
+        'log_retention_days',
+        'login_lockout_minutes',
+        'login_rate_limit_per_minute',
+        'max_auto_batches',
+        'max_register_without_purchase',
+        'note_to_customer_max_chars',
+        'note_to_customer_send_email',
+        'notif_admin_bukti_bayar',
+        'ongkir_btm_jkt_per_kg',
+        'ongkir_cn_btm_per_kg',
+        'pause_customer_emails',
+        'payment_deadline_days',
+        'price_rounding',
+        'product_bulk_delete_enabled',
+        'product_delete_confirm_enabled',
+        'profit_percent',
+        'promo_bar_active',
+        'promo_bar_discount',
+        'promo_bar_link',
+        'promo_bar_min_purchase',
+        'promo_bar_text',
+        'qris_threshold',
+        'rate_rmb_idr',
+        'recently_viewed_count',
+        'related_products_count',
+        'share_restrict_id_only',
+        'snapshot_image_path_prefix',
+        'snapshot_image_retention',
+        'state_notify_h7_enabled',
+        'state_threshold_ex_days',
+        'state_threshold_ons_days',
+        'tier_gold_threshold',
+        'tier_platinum_threshold',
+        'tier_silver_threshold',
+        'tier_trigger_status',
+        'unblock_grace_days',
+        'url_facebook',
+        'url_instagram',
+        'url_shopee',
+        'url_threads',
+        'url_toco',
+        'url_whatsapp',
+        'url_x',
+        'view_limit',
+        'voucher_birthday_min_belanja',
+        'voucher_birthday_nominal',
+        'watermark_opacity',
+        'watermark_pattern',
+        'watermark_text',
+    ];
+
     public function index(): View
     {
         $this->ensureDefaultSettings();
@@ -42,6 +151,13 @@ class SettingsController extends Controller
             } elseif ($input[$ck] !== '1') {
                 $input[$ck] = '0';
             }
+        }
+
+        $unknownKeys = array_diff(array_keys($input), self::VALID_KEYS);
+        if ($unknownKeys !== []) {
+            throw ValidationException::withMessages(
+                collect($unknownKeys)->mapWithKeys(fn ($key) => ["settings.{$key}" => 'Pengaturan tidak dikenal.'])->all()
+            );
         }
 
         // Validasi

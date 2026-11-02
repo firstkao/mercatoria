@@ -49,7 +49,7 @@ class AppServiceProvider extends ServiceProvider
             $cartCount = 0;
 
             if ($user) {
-                [$cartTotal, $cartCount] = $this->perRequest('nav_cart', function () use ($user): array {
+                [$cartTotal, $cartCount] = self::perRequest('nav_cart', function () use ($user): array {
                     $shipping = app(ShippingCalculatorService::class);
                     $total = 0;
                     $count = 0;
@@ -67,10 +67,10 @@ class AppServiceProvider extends ServiceProvider
             $view->with('navGames', $this->activeGames())
                 ->with('navDevelopers', $this->activeDevelopers())
                 ->with('bellNotifications', $user
-                    ? $this->perRequest('nav_bell', fn () => UserNotification::where('user_id', $user->id)->orderByDesc('id')->limit(10)->get())
+                    ? self::perRequest('nav_bell', fn () => UserNotification::where('user_id', $user->id)->orderByDesc('id')->limit(10)->get())
                     : collect())
                 ->with('bellUnreadCount', $user
-                    ? $this->perRequest('nav_unread', fn () => (int) UserNotification::where('user_id', $user->id)->where('is_read', false)->count())
+                    ? self::perRequest('nav_unread', fn () => (int) UserNotification::where('user_id', $user->id)->where('is_read', false)->count())
                     : 0)
                 ->with('cartTotal', $cartTotal)
                 ->with('cartCount', $cartCount);
@@ -78,7 +78,7 @@ class AppServiceProvider extends ServiceProvider
 
         // Footer "Produk Terpopuler" (Design Spec 4.4.5) — {image, url, name, price}.
         View::composer(['layouts.app', 'layouts.guest', 'frontend.home.index'], function ($view): void {
-            $view->with('footerTopProducts', $this->perRequest('footer_top_products', function (): Collection {
+            $view->with('footerTopProducts', self::perRequest('footer_top_products', function (): Collection {
                 $shipping = app(ShippingCalculatorService::class);
 
                 return Product::where('is_active', true)
@@ -117,7 +117,7 @@ class AppServiceProvider extends ServiceProvider
     /**
      * Composer menempel di beberapa view (layout + halaman); hitung sekali per request.
      */
-    private function perRequest(string $key, callable $resolve): mixed
+    public static function perRequest(string $key, callable $resolve): mixed
     {
         $attributes = request()->attributes;
 
@@ -130,7 +130,7 @@ class AppServiceProvider extends ServiceProvider
 
     private function activeGames(): Collection
     {
-        return $this->perRequest('nav_games', fn () => Cache::remember(
+        return self::perRequest('nav_games', fn () => Cache::remember(
             Game::NAV_CACHE_KEY,
             3600,
             fn () => Game::where('is_active', true)->orderBy('name')->get(['id', 'name', 'slug'])
@@ -139,7 +139,7 @@ class AppServiceProvider extends ServiceProvider
 
     private function activeDevelopers(): Collection
     {
-        return $this->perRequest('nav_developers', fn () => Cache::remember(
+        return self::perRequest('nav_developers', fn () => Cache::remember(
             Developer::NAV_CACHE_KEY,
             3600,
             fn () => Developer::where('is_active', true)->orderBy('name')->get(['id', 'name', 'slug'])

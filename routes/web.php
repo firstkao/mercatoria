@@ -193,6 +193,7 @@ Route::middleware(['auth', 'admin'])->prefix('office')->name('office.')->group(f
 
     Route::get('/merch-categories', [AdminMerchCategoryController::class, 'index'])->name('merch-categories.index');
     Route::post('/merch-categories', [AdminMerchCategoryController::class, 'store'])->name('merch-categories.store');
+    Route::post('/merch-categories/auto-generate', [AdminMerchCategoryController::class, 'autoGenerate'])->name('merch-categories.auto-generate');
     Route::post('/merch-categories/bulk', [AdminMerchCategoryController::class, 'bulk'])->name('merch-categories.bulk');
     Route::post('/merch-categories/bulk-delete', [AdminMerchCategoryController::class, 'bulkDelete'])->name('merch-categories.bulk-delete');
     Route::put('/merch-categories/{merch_category}', [AdminMerchCategoryController::class, 'update'])->name('merch-categories.update');

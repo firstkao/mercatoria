@@ -17,6 +17,7 @@ use App\Models\Product;
 use App\Models\ProductVariant;
 use App\Models\Store;
 use App\Models\Tag;
+use App\Services\Image\ImageOptimizerService;
 use App\Services\Image\ImageWatermarkService;
 use App\Services\Order\ShippingCalculatorService;
 use Illuminate\Http\JsonResponse;
@@ -30,6 +31,7 @@ class ProductController extends Controller
 {
     public function __construct(
         private ImageWatermarkService $watermark,
+        private ImageOptimizerService $optimizer,
         private ShippingCalculatorService $shipping,
     ) {}
 
@@ -65,8 +67,8 @@ class ProductController extends Controller
             'product' => new Product,
             'games' => Game::orderBy('name')->get(),
             'stores' => Store::orderBy('name')->get(),
-            'categories' => MerchCategory::orderBy('priority')->get(),
-            'tags' => Tag::orderBy('name')->get(),
+            'categories' => MerchCategory::navList(),
+            'tags' => Tag::navList(),
             'developers' => Developer::orderBy('name')->get(),
         ]);
     }
@@ -77,8 +79,8 @@ class ProductController extends Controller
             'product' => $product->load('variants', 'tags', 'developer'),
             'games' => Game::orderBy('name')->get(),
             'stores' => Store::orderBy('name')->get(),
-            'categories' => MerchCategory::orderBy('priority')->get(),
-            'tags' => Tag::orderBy('name')->get(),
+            'categories' => MerchCategory::navList(),
+            'tags' => Tag::navList(),
             'developers' => Developer::orderBy('name')->get(),
         ]);
     }
@@ -628,6 +630,7 @@ class ProductController extends Controller
         if ($variant->image_path && str_starts_with($variant->image_path, 'products/')) {
             @unlink(storage_path('app/private/'.$variant->image_path));
             @unlink(storage_path('app/private/originals/'.$variant->image_path));
+            $this->optimizer->deleteVariants($variant->image_path);
         }
 
         $variant->delete();
@@ -665,6 +668,7 @@ class ProductController extends Controller
             if (str_starts_with($path, 'products/')) {
                 @unlink(storage_path('app/private/'.$path));
                 @unlink(storage_path('app/private/originals/'.$path));
+                $this->optimizer->deleteVariants($path);
             }
         }
     }
@@ -690,6 +694,8 @@ class ProductController extends Controller
             @copy($srcOrig, storage_path('app/private/originals/'.$newPath));
         }
 
+        $this->optimizer->copyVariants($path, $newPath);
+
         return $newPath;
     }
 
@@ -713,6 +719,7 @@ class ProductController extends Controller
             if (str_starts_with($product->description_image_path, 'products/')) {
                 @unlink(storage_path('app/private/'.$product->description_image_path));
                 @unlink(storage_path('app/private/originals/'.$product->description_image_path));
+                $this->optimizer->deleteVariants($product->description_image_path);
             }
             $data['description_image_path'] = null;
         }
@@ -738,6 +745,13 @@ class ProductController extends Controller
         if ($oldPath && $oldPath !== $target && str_starts_with($oldPath, 'products/')) {
             @unlink(storage_path('app/private/'.$oldPath));
             @unlink(storage_path('app/private/originals/'.$oldPath));
+            $this->optimizer->deleteVariants($oldPath);
+        }
+
+        try {
+            $this->optimizer->generate(storage_path('app/private/'.$target));
+        } catch (\Throwable $e) {
+            report($e);
         }
 
         return $target;

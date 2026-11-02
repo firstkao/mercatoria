@@ -88,14 +88,14 @@ class CatalogController extends Controller
             'developer' => $developer,
             'activeCategory' => $activeCategory,
             'games' => Game::where('is_active', true)->orderBy('name')->get(['id', 'name', 'slug']),
-            'categories' => MerchCategory::orderBy('priority')->get(),
+            'categories' => MerchCategory::navList(),
             'bestOffers' => Product::where('is_active', true)
                 ->whereNotNull('discount_amount')
                 ->orderByDesc('discount_amount')
                 ->limit((int) setting('best_offers_count', 5))
                 ->with(['game.defaultStore', 'store', 'tags'])
                 ->get(),
-            'tags' => Tag::orderBy('name')->get(),
+            'tags' => Tag::navList(),
             'shipping' => $this->shipping,
         ]);
     }

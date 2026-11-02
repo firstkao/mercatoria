@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\AdminLog;
 use App\Models\MerchCategory;
 use App\Models\Product;
+use App\Services\Product\MerchCategoryService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -17,70 +18,17 @@ class MerchCategoryController extends Controller
 {
     public function index(): View
     {
-        // ═══ AUTO-GENERATE: scan produk yang belum masuk kategori ═══
-        $autoCreated = 0;
-
-        $categories = MerchCategory::all();
-        $products = Product::query()->where('is_active', true)->select('id', 'name')->get();
-
-        foreach ($products as $product) {
-            // Cek apakah produk sudah cocok dengan kategori manapun
-            $matched = false;
-            foreach ($categories as $cat) {
-                foreach ($cat->keywords ?? [] as $kw) {
-                    if ($kw && stripos($product->name, $kw) !== false) {
-                        $matched = true;
-                        break 2;
-                    }
-                }
-            }
-
-            if ($matched) {
-                continue;
-            }
-
-            // Extract kata bermakna dari nama produk
-            $words = array_values(array_filter(
-                preg_split('/[\s\-_,.\/\(\)]+/', $product->name),
-                fn ($w) => strlen($w) >= 3 && ! is_numeric($w)
-            ));
-
-            if (empty($words)) {
-                continue;
-            }
-
-            // Nama kategori = kata pertama yang bermakna
-            $name = ucfirst(strtolower($words[0]));
-
-            // Kalau kategori sudah ada → gabungin keywords
-            $existing = $categories->firstWhere('name', $name);
-            if ($existing) {
-                $merged = array_unique(array_merge($existing->keywords ?? [], $words));
-                $existing->update(['keywords' => array_values($merged)]);
-            } else {
-                // Slug collision handle
-                $baseSlug = Str::slug($name);
-                $slug = $baseSlug;
-                $i = 2;
-                while (MerchCategory::where('slug', $slug)->exists()) {
-                    $slug = $baseSlug.'-'.$i++;
-                }
-
-                $newCat = MerchCategory::create([
-                    'name' => $name,
-                    'slug' => $slug,
-                    'priority' => (MerchCategory::max('priority') ?? 0) + 1,
-                    'keywords' => $words,
-                ]);
-                $categories->push($newCat);
-                $autoCreated++;
-            }
-        }
-
         return view('admin.merch-categories.index', [
             'categories' => MerchCategory::orderBy('priority')->get(),
-            'autoCreated' => $autoCreated,
         ]);
+    }
+
+    public function autoGenerate(Request $request, MerchCategoryService $service): RedirectResponse
+    {
+        $created = $service->autoGenerateFromProducts();
+        AdminLog::record($request->user(), 'create', 'MerchCategory', null, null, ['auto_created' => $created], 'Auto-generate kategori merch');
+
+        return redirect()->route('office.merch-categories.index')->with('status', "{$created} kategori baru dibuat otomatis.");
     }
 
     public function store(Request $request): RedirectResponse

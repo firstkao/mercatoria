@@ -17,7 +17,7 @@
         <div>
             <div class="overflow-hidden rounded-xl border border-rule bg-white">
                 @if (($variant?->image_path) ?? $product->image_path)
-                    <img id="product-main-img" src="{{ Storage::url($variant?->image_path ?? $product->image_path) }}"
+                    <img id="product-main-img" src="{{ \App\Services\Image\ImageOptimizerService::url($variant?->image_path ?? $product->image_path, 'compressed') }}"
                          alt="{{ $product->name }}" class="aspect-square w-full object-cover cursor-zoom-in"
                          onclick="document.getElementById('product-lightbox').showModal()">
                 @else
@@ -41,7 +41,7 @@
 
             @if ($product->description_image_path)
                 <div class="mt-4 overflow-hidden rounded-xl border border-rule bg-white">
-                    <img src="{{ Storage::url($product->description_image_path) }}" alt="Deskripsi {{ $product->name }}" class="w-full">
+                    <img src="{{ \App\Services\Image\ImageOptimizerService::url($product->description_image_path, 'compressed') }}" alt="Deskripsi {{ $product->name }}" class="w-full">
                 </div>
             @endif
         </div>

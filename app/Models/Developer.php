@@ -16,7 +16,10 @@ class Developer extends Model
 
     protected static function booted(): void
     {
-        $flush = fn () => Cache::forget(self::NAV_CACHE_KEY);
+        $flush = function (): void {
+            Cache::forget(self::NAV_CACHE_KEY);
+            request()->attributes->remove('nav_developers');
+        };
         static::saved($flush);
         static::deleted($flush);
     }

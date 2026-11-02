@@ -22,6 +22,7 @@ Schedule::command('sitemap:generate')->dailyAt('06:00')->timezone('Asia/Jakarta'
 Schedule::command('user:birthday-bonus')->dailyAt('07:00')->timezone('Asia/Jakarta');
 Schedule::command('coin:expire')->dailyAt('08:10')->timezone('Asia/Jakarta');
 Schedule::command('coin:expiry-notify')->dailyAt('08:00')->timezone('Asia/Jakarta');
+Schedule::command('merch:auto-categories')->dailyAt('02:15')->timezone('Asia/Jakarta');
 Schedule::command('splitbox:check-batches')->dailyAt('08:30')->timezone('Asia/Jakarta');
 
 // Timeout order (PRD 37.3/39.10) — wajib jalan agar status & forfeit koin/voucher aktif.

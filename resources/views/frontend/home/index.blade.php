@@ -204,7 +204,7 @@
                         <a href="{{ route('product.show', [$product->game->slug, $product->slug]) }}" class="group block">
                             <div class="relative aspect-square overflow-hidden rounded-lg bg-paper">
                                 @if ($product->image_path)
-                                    <img src="{{ \Illuminate\Support\Facades\Storage::url($product->image_path) }}" alt="{{ $product->name }}" class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]">
+                                    <img src="{{ \App\Services\Image\ImageOptimizerService::url($product->image_path, 'thumb') }}" alt="{{ $product->name }}" class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]">
                                 @endif
                                 <span class="absolute left-0 top-2 -rotate-45 bg-[#E53935] px-3 py-0.5 text-[9.5px] font-bold uppercase text-white">DISKON</span>
                             </div>
@@ -232,7 +232,7 @@
                     <a href="{{ route('product.show', [$product->game->slug, $product->slug]) }}" class="group block">
                         <div class="relative aspect-square overflow-hidden rounded bg-paper">
                             @if ($product->image_path)
-                                <img src="{{ \Illuminate\Support\Facades\Storage::url($product->image_path) }}" alt="{{ $product->name }}" class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]">
+                                <img src="{{ \App\Services\Image\ImageOptimizerService::url($product->image_path, 'thumb') }}" alt="{{ $product->name }}" class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]">
                             @endif
                             @if ($product->tags->contains('slug', 'presale'))
                                 <span class="absolute left-0 top-2 -rotate-45 bg-[#29B6F6] px-3 py-0.5 text-[9.5px] font-bold uppercase text-white">PRESALE</span>
