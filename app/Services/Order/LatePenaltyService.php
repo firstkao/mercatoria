@@ -15,15 +15,23 @@ class LatePenaltyService
      */
     public function calculate(Order $order): int
     {
-        $perDay = (int) setting('late_penalty_per_day', 1000);
+        return $this->perDay() * $this->days($order);
+    }
 
+    public function perDay(): int
+    {
+        return (int) setting('late_penalty_per_day', 1000);
+    }
+
+    public function days(Order $order): int
+    {
         // Dibulatkan ke atas per hari (sebagian hari = 1 hari penuh), minimal 1 hari (PRD 51.1).
         // Sisa < 60 detik dibuang agar delta mikrodetik/waktu proses tidak menambah hari.
         $seconds = $order->hangus_at ? (int) $order->hangus_at->diffInSeconds(now()) : 0;
         $seconds -= $seconds % 60;
         $days = intdiv($seconds, 86400) + (($seconds % 86400) !== 0 ? 1 : 0);
 
-        return $perDay * max(1, $days);
+        return max(1, $days);
     }
 
     /**
@@ -32,10 +40,14 @@ class LatePenaltyService
      */
     public function unlockViaPenalty(Order $order, User $admin, ?int $nominal = null): Order
     {
-        $amount = $nominal ?? $this->calculate($order);
+        $perDay = $this->perDay();
+        $days = $this->days($order);
+        $amount = $nominal ?? $perDay * $days;
 
         $order->update([
             'penalty_amount' => $amount,
+            'penalty_per_day' => $perDay,
+            'penalty_days' => $days,
             'penalty_unlocked_at' => now(),
             'penalty_deadline_at' => now()->addHours((int) setting('late_penalty_pay_hours', 24)),
         ]);

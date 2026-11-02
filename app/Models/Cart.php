@@ -14,6 +14,7 @@ class Cart extends Model
         'user_id',
         'product_id',
         'variant_id',
+        'split_box_slot_id',
         'qty',
         'bundle_group_id',
     ];

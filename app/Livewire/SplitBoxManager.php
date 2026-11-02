@@ -93,6 +93,7 @@ class SplitBoxManager extends Component
                 'split_box_id' => $splitBox->id,
                 'batch_no' => ($splitBox->batches()->max('batch_no') ?? 0) + 1,
                 'status' => SplitBoxBatch::STATUS_OPEN,
+                'opened_at' => now(),
             ]);
 
             foreach ($splitBox->slots as $slot) {

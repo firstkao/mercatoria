@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\SplitRole;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -48,9 +49,14 @@ class SplitBoxSlot extends Model
         return $this->hasMany(SplitBoxBatchSlot::class, 'slot_id');
     }
 
+    public function role(): SplitRole
+    {
+        return SplitRole::tryFrom((string) $this->split_role) ?? SplitRole::Normal;
+    }
+
     public function isHot(): bool
     {
-        return $this->split_role !== self::ROLE_NORMAL;
+        return $this->role()->isHot();
     }
 
     /**
@@ -58,10 +64,6 @@ class SplitBoxSlot extends Model
      */
     public function pairRequirement(): int
     {
-        return match ($this->split_role) {
-            self::ROLE_HOT_1 => 1,
-            self::ROLE_HOT_2 => 2,
-            default => 0,
-        };
+        return $this->role()->pairRequirement();
     }
 }

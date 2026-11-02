@@ -86,6 +86,7 @@ class SplitBoxPicker extends Component
                 'user_id' => auth()->id(),
                 'product_id' => $this->product->id,
                 'variant_id' => $line['slot']->variant_id,
+                'split_box_slot_id' => $line['slot']->id,
                 'bundle_group_id' => $bundleId,
                 'qty' => $line['qty'],
             ]);
@@ -122,8 +123,9 @@ class SplitBoxPicker extends Component
             return 0;
         }
 
-        return $slot->batchSlots
+        // Satu item dialokasikan utuh ke satu kloter (FIFO), jadi batas per baris = stok kloter terbesar.
+        return (int) $slot->batchSlots
             ->filter(fn ($bs) => $bs->batch->status === SplitBoxBatch::STATUS_OPEN)
-            ->sum(fn ($bs) => $bs->availableQty());
+            ->max(fn ($bs) => $bs->availableQty());
     }
 }

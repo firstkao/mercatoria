@@ -152,7 +152,7 @@ class SplitBoxService
                 return 0;
             }
 
-            $batch->update(['status' => SplitBoxBatch::STATUS_CLOSED]);
+            $batch->update(['status' => SplitBoxBatch::STATUS_CLOSED, 'closed_at' => now()]);
 
             $orderIds = OrderItem::whereIn('split_box_batch_slot_id',
                 SplitBoxBatchSlot::where('batch_id', $batch->id)->pluck('id')
@@ -183,7 +183,8 @@ class SplitBoxService
     }
 
     /**
-     * Alokasi FIFO: cari batch slot terbuka dengan stok cukup, urut dari batch_id terkecil.
+     * Alokasi FIFO (Skema): kloter terbuka dengan batch_no terkecil yang masih cukup stok.
+     * Satu item dialokasikan utuh ke satu kloter; pair boleh lintas kloter (PRD 49.10).
      *
      * @return array{0: SplitBoxBatchSlot, 1: int}|null [batch_slot, batch_no]
      */
@@ -192,9 +193,10 @@ class SplitBoxService
         $candidates = SplitBoxBatchSlot::query()
             ->where('slot_id', $slotId)
             ->whereHas('batch', fn ($q) => $q->where('status', SplitBoxBatch::STATUS_OPEN))
-            ->orderBy('batch_id')
+            ->with('batch')
             ->lockForUpdate()
-            ->get();
+            ->get()
+            ->sortBy(fn (SplitBoxBatchSlot $batchSlot) => $batchSlot->batch->batch_no);
 
         foreach ($candidates as $batchSlot) {
             if ($batchSlot->availableQty() >= $qty) {
@@ -250,6 +252,7 @@ class SplitBoxService
             'batch_no' => ($splitBox->batches()->max('batch_no') ?? 0) + 1,
             'status' => SplitBoxBatch::STATUS_OPEN,
             'is_auto_opened' => true,
+            'opened_at' => now(),
         ]);
 
         // Bulk insert slots untuk kloter baru

@@ -25,6 +25,8 @@ class SplitBoxBatch extends Model
         'status',
         'closes_at',
         'is_auto_opened',
+        'opened_at',
+        'closed_at',
     ];
 
     protected function casts(): array
@@ -33,6 +35,8 @@ class SplitBoxBatch extends Model
             'batch_no' => 'integer',
             'is_auto_opened' => 'boolean',
             'closes_at' => 'datetime',
+            'opened_at' => 'datetime',
+            'closed_at' => 'datetime',
         ];
     }
 
