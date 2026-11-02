@@ -43,7 +43,7 @@ class CheckoutService
     {
         return DB::transaction(function () use ($user, $cartItemIds, $data) {
             $carts = Cart::query()
-                ->with(['product', 'variant'])
+                ->with(['product.game.defaultStore', 'product.store', 'variant'])
                 ->where('user_id', $user->id)
                 ->whereIn('id', $cartItemIds)
                 ->lockForUpdate()
@@ -72,7 +72,12 @@ class CheckoutService
                 'pricing' => $this->shipping->calculateItemShipping($cart->product, $cart->variant),
             ]);
 
-            $this->validateSplitBoxPairs($carts);
+            $slotsByVariant = SplitBoxSlot::whereIn('variant_id', $carts->pluck('variant_id')->filter()->unique())
+                ->get()
+                ->unique('variant_id')
+                ->keyBy('variant_id');
+
+            $this->validateSplitBoxPairs($carts, $slotsByVariant);
 
             $subtotal = (float) $lines->sum(fn ($line) => $line['pricing']['final_price_bersih'] * $line['cart']->qty);
 
@@ -112,9 +117,7 @@ class CheckoutService
 
             foreach ($lines as $line) {
                 $cart = $line['cart'];
-                $splitSlot = $cart->variant_id
-                    ? SplitBoxSlot::where('variant_id', $cart->variant_id)->first()
-                    : null;
+                $splitSlot = $cart->variant_id ? $slotsByVariant->get($cart->variant_id) : null;
 
                 $item = OrderItem::create([
                     'order_id' => $order->id,
@@ -184,7 +187,7 @@ class CheckoutService
      *
      * @param  Collection<int, Cart>  $carts
      */
-    private function validateSplitBoxPairs($carts): void
+    private function validateSplitBoxPairs($carts, $slotsByVariant): void
     {
         $bundles = $carts->filter(fn (Cart $cart) => $cart->bundle_group_id)->groupBy('bundle_group_id');
 
@@ -204,7 +207,7 @@ class CheckoutService
             $lines = [];
 
             foreach ($bundleCarts as $cart) {
-                $slot = SplitBoxSlot::where('variant_id', $cart->variant_id)->first();
+                $slot = $slotsByVariant->get($cart->variant_id);
 
                 if ($slot) {
                     $lines[] = ['slot' => $slot, 'qty' => $cart->qty];

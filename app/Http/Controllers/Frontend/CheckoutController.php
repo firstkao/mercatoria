@@ -34,7 +34,7 @@ class CheckoutController extends Controller
             ->pluck('bundle_group_id');
 
         // PRD 49.9: item satu bundle dicentang bersama.
-        $items = Cart::with(['product.game', 'variant'])
+        $items = Cart::with(['product.game.defaultStore', 'product.store', 'variant'])
             ->where('user_id', $request->user()->id)
             ->where(fn ($q) => $q->whereIn('id', $selectedIds)->orWhereIn('bundle_group_id', $bundleIds))
             ->get();
@@ -61,7 +61,7 @@ class CheckoutController extends Controller
      */
     public function summary(CheckoutRequest $request): JsonResponse
     {
-        $items = Cart::with(['product', 'variant'])
+        $items = Cart::with(['product.game.defaultStore', 'product.store', 'variant'])
             ->where('user_id', $request->user()->id)
             ->whereIn('id', $request->input('cart_item_ids'))
             ->get();

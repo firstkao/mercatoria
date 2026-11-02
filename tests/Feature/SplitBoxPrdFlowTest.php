@@ -268,15 +268,28 @@ test('role slot tidak bisa diubah setelah ada penjualan, qty tetap boleh', funct
     expect($fx['normalA']->fresh()->qty_per_box)->toBe(3);
 });
 
-test('max auto batches hanya menghitung kloter open dan full', function () {
+test('max auto batches tidak menghitung kloter closed, tetap membuka kloter baru', function () {
     $fx = splitBoxFixture(stockPerSlot: 1);
     $fx['splitBox']->update(['max_auto_batches' => 2]);
-    SplitBoxBatch::create([
-        'split_box_id' => $fx['splitBox']->id, 'batch_no' => 99, 'status' => SplitBoxBatch::STATUS_CLOSED, 'is_auto_opened' => false,
-    ]);
+    foreach ([2, 3] as $no) {
+        SplitBoxBatch::create(['split_box_id' => $fx['splitBox']->id, 'batch_no' => $no, 'status' => SplitBoxBatch::STATUS_CLOSED]);
+    }
 
-    [, $order] = placeSplitBoxOrder($fx['user'], $fx['product'], [$fx['hot'], $fx['normalA']]);
-    app(SplitBoxService::class)->lockSlotsForOrder($order);
+    [, $order] = placeSplitBoxOrder($fx['user'], $fx['product'], [$fx['hot'], $fx['normalA'], $fx['normalB']]);
+    expect(app(SplitBoxService::class)->lockSlotsForOrder($order))->toBeTrue();
 
-    expect(SplitBoxBatch::where('split_box_id', $fx['splitBox']->id)->where('status', 'open')->count())->toBeGreaterThanOrEqual(1);
+    $batches = SplitBoxBatch::where('split_box_id', $fx['splitBox']->id)->get();
+    expect($batches)->toHaveCount(4)
+        ->and($batches->where('status', SplitBoxBatch::STATUS_OPEN)->where('is_auto_opened', true))->toHaveCount(1);
+});
+
+test('max auto batches: dua kloter open/full mencapai batas, tidak membuka kloter baru', function () {
+    $fx = splitBoxFixture(stockPerSlot: 1);
+    $fx['splitBox']->update(['max_auto_batches' => 2]);
+    SplitBoxBatch::create(['split_box_id' => $fx['splitBox']->id, 'batch_no' => 2, 'status' => SplitBoxBatch::STATUS_FULL]);
+
+    [, $order] = placeSplitBoxOrder($fx['user'], $fx['product'], [$fx['hot'], $fx['normalA'], $fx['normalB']]);
+    expect(app(SplitBoxService::class)->lockSlotsForOrder($order))->toBeTrue();
+
+    expect(SplitBoxBatch::where('split_box_id', $fx['splitBox']->id)->count())->toBe(2);
 });

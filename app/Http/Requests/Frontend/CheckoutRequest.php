@@ -2,7 +2,9 @@
 
 namespace App\Http\Requests\Frontend;
 
+use App\Models\Cart;
 use App\Models\Order;
+use Closure;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Validator;
@@ -20,8 +22,14 @@ class CheckoutRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'cart_item_ids' => ['required', 'array', 'min:1'],
-            'cart_item_ids.*' => ['integer', 'exists:carts,id'],
+            'cart_item_ids' => ['required', 'array', 'min:1', function (string $attribute, mixed $value, Closure $fail): void {
+                $ids = array_unique(array_filter((array) $value, 'is_numeric'));
+
+                if (Cart::whereIn('id', $ids)->count() !== count($ids)) {
+                    $fail(__('validation.exists', ['attribute' => $attribute]));
+                }
+            }],
+            'cart_item_ids.*' => ['integer'],
             'platform' => ['required', 'in:toco,shopee'],
             'scheme' => ['required', 'in:fp,dp'],
             'payment_method' => ['required', 'in:bca,qris,shopeepay'],
