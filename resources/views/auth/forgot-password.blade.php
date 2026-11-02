@@ -26,7 +26,6 @@
 
             <div>
                 <label for="email" class="block font-mono text-[10px] font-medium uppercase tracking-[0.16em] text-ink/70">
-                    <span class="text-ink/40">01</span>
                     Email
                     <span class="text-danger">*</span>
                 </label>

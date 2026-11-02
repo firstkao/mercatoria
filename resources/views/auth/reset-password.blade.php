@@ -15,7 +15,6 @@
 
             <div>
                 <label for="email" class="block font-mono text-[10px] font-medium uppercase tracking-[0.16em] text-ink/70">
-                    <span class="text-ink/40">01</span>
                     Email
                     <span class="text-danger">*</span>
                 </label>
@@ -26,7 +25,6 @@
 
             <div>
                 <label for="password" class="block font-mono text-[10px] font-medium uppercase tracking-[0.16em] text-ink/70">
-                    <span class="text-ink/40">02</span>
                     Kata Sandi Baru
                     <span class="text-danger">*</span>
                     <span class="font-sans text-[11px] font-normal tracking-normal normal-case text-ink/45">(Min 8 karakter)</span>
@@ -38,7 +36,6 @@
 
             <div>
                 <label for="password_confirmation" class="block font-mono text-[10px] font-medium uppercase tracking-[0.16em] text-ink/70">
-                    <span class="text-ink/40">03</span>
                     Ulangi Kata Sandi Baru
                     <span class="text-danger">*</span>
                 </label>
