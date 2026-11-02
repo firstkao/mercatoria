@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Lengkapi Profil — Mercatoria')
+@section('title', 'Lengkapi Profil — MERCATORIA')
 
 @section('content')
     <p class="font-mono text-[10px] uppercase tracking-[0.22em] text-ink/45">Akun</p>

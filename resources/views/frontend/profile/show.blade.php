@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Dashboard Pelanggan — Mercatoria')
+@section('title', 'Dashboard Pelanggan — MERCATORIA')
 
 @section('content')
     {{-- Header Dashboard (PRD 7.16 / Design Spec 10.1) --}}

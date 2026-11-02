@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Hasil Pencarian — Mercatoria')
+@section('title', 'Hasil Pencarian — MERCATORIA')
 
 @section('content')
     <div class="mx-auto max-w-[1200px]">

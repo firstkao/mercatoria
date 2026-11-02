@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Pesanan '.$order->no_order.' — Mercatoria')
+@section('title', 'Pesanan '.$order->no_order.' — MERCATORIA')
 
 @section('content')
     <p class="font-mono text-[10px] uppercase tracking-[0.22em] text-ink/45">Pesanan</p>

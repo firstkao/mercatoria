@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Checkout — Mercatoria')
+@section('title', 'Checkout — MERCATORIA')
 
 @section('content')
     @php

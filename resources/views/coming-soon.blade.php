@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Menyusul — Mercatoria')
+@section('title', 'Menyusul — MERCATORIA')
 
 @section('content')
     <div class="mx-auto max-w-xl rounded-xl border border-rule bg-white p-10 text-center">

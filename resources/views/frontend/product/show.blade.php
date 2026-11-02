@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', $product->name.' — Mercatoria')
+@section('title', $product->name.' — MERCATORIA')
 
 @section('content')
     {{-- Banner Sisa Kuota View (PRD 7.19) --}}

@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>{{ $seo['title'] ?? trim($__env->yieldContent('title', 'Mercatoria')) }}</title>
+    <title>{{ $seo['title'] ?? trim($__env->yieldContent('title', 'MERCATORIA')) }}</title>
     @if (isset($seo))
         <meta name="description" content="{{ $seo['description'] }}">
         <link rel="canonical" href="{{ $seo['url'] }}">
