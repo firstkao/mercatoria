@@ -6,8 +6,10 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Frontend\UploadPaymentRequest;
 use App\Models\ActivityLog;
 use App\Models\Order;
+use App\Models\Refund;
 use App\Services\Order\OrderStatusService;
 use App\Services\Order\PaymentProofService;
+use App\Services\Payment\RefundService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -33,7 +35,13 @@ class OrderController extends Controller
 
         $order->load(['items.snapshot', 'userVoucher', 'payments', 'statusLogs']);
 
-        return view('frontend.order.show', ['order' => $order]);
+        $refunds = app(RefundService::class);
+
+        return view('frontend.order.show', [
+            'order' => $order,
+            'canRequestRefund' => $order->user_id === $request->user()->id && $refunds->blockedReason($order) === null,
+            'refundPending' => $order->refunds()->where('status', Refund::STATUS_REQUESTED)->exists(),
+        ]);
     }
 
     public function storePayment(UploadPaymentRequest $request, Order $order, PaymentProofService $proofs): RedirectResponse
@@ -46,6 +54,23 @@ class OrderController extends Controller
 
         return redirect()->route('orders.show', $order->no_order)
             ->with('status', 'Bukti bayar terkirim. Menunggu verifikasi admin.');
+    }
+
+    public function requestRefund(Request $request, Order $order, RefundService $refunds): RedirectResponse
+    {
+        abort_unless($order->user_id === $request->user()->id, 403);
+
+        $data = $request->validate(['reason' => ['required', 'string', 'max:1000']]);
+
+        if ($error = $refunds->blockedReason($order)) {
+            return back()->withErrors(['reason' => $error]);
+        }
+
+        $refunds->requestByCustomer($order, $data['reason'], $request->user());
+        ActivityLog::record('request_refund', 'Request refund', ['no_order' => $order->no_order]);
+
+        return redirect()->route('orders.show', $order->no_order)
+            ->with('status', 'Permintaan refund terkirim. Admin akan memprosesnya.');
     }
 
     public function invoice(Request $request, Order $order)

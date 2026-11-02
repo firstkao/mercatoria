@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\AdminNotification;
 use App\Models\User;
 use App\Services\Payment\RefundService;
 use Illuminate\Support\Facades\View;
@@ -31,7 +32,7 @@ test('daftar refund tampil dengan filter status', function () {
 
     // Kolom bell admin di layout bisa memuat judul notif berisi no_order —
     // bersihkan agar asersi filter hanya menilai tabel daftar refund.
-    \App\Models\AdminNotification::query()->delete();
+    AdminNotification::query()->delete();
 
     $filtered = $this->actingAs($admin)->get('/office/refunds?status=completed')->assertOk()->getContent();
     expect($filtered)->toContain($orderB->no_order)

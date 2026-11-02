@@ -225,3 +225,37 @@ test('endpoint refund admin mencatat admin_logs dan non-admin ditolak 403', func
     $this->actingAs($customer)->post("/office/refunds/{$partial->id}/complete")->assertForbidden();
     $this->actingAs($customer)->post("/office/refunds/{$partial->id}/reject", ['rejection_reason' => 'x'])->assertForbidden();
 });
+
+function paidRefundOrder(): array
+{
+    [$user, $order] = refundReady(placeTestOrder());
+    Payment::factory()->create(['order_id' => $order->id, 'status' => Payment::STATUS_VERIFIED, 'type' => Payment::TYPE_FULL]);
+
+    return [$user, $order];
+}
+
+test('customer dapat mengajukan refund sendiri, admin diberi bell, tidak bisa dobel', function () {
+    [$user, $order] = paidRefundOrder();
+
+    $this->actingAs($user)->post(route('orders.refund-request', $order->no_order), ['reason' => 'Barang kosong'])
+        ->assertRedirect(route('orders.show', $order->no_order))->assertSessionHas('status');
+
+    $refund = Refund::where('order_id', $order->id)->firstOrFail();
+    expect($refund->status)->toBe('requested')->and($refund->requested_by)->toBe($user->id);
+    $this->assertDatabaseHas('admin_notifications', ['type' => 'refund_request']);
+    $this->assertDatabaseHas('user_notifications', ['user_id' => $user->id, 'type' => 'refund_requested']);
+
+    $this->actingAs($user)->post(route('orders.refund-request', $order->no_order), ['reason' => 'Lagi'])->assertSessionHasErrors('reason');
+    expect(Refund::where('order_id', $order->id)->count())->toBe(1);
+    $this->actingAs($user)->get(route('orders.show', $order->no_order))->assertSee('Permintaan refund sedang diproses admin');
+});
+
+test('refund request customer: alasan wajib, order orang lain 403, belum bayar ditolak', function () {
+    [$user, $order] = paidRefundOrder();
+    $this->actingAs($user)->post(route('orders.refund-request', $order->no_order), [])->assertSessionHasErrors('reason');
+    $this->actingAs(User::factory()->create())->post(route('orders.refund-request', $order->no_order), ['reason' => 'x'])->assertForbidden();
+
+    [$buyer, $unpaid] = placeTestOrder();
+    $this->actingAs($buyer)->post(route('orders.refund-request', $unpaid->no_order), ['reason' => 'x'])->assertSessionHasErrors('reason');
+    expect(Refund::where('order_id', $unpaid->id)->count())->toBe(0);
+});

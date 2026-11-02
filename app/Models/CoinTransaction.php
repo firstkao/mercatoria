@@ -34,6 +34,8 @@ class CoinTransaction extends Model
 
     public const TYPE_EXPIRED = 'expired';
 
+    public const TYPE_ADMIN_GIFT = 'admin_gift';
+
     protected $fillable = [
         'user_id',
         'order_id',

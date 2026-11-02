@@ -155,8 +155,8 @@ class SplitBoxService
             $batch->update(['status' => SplitBoxBatch::STATUS_CLOSED]);
 
             $orderIds = OrderItem::whereIn('split_box_batch_slot_id',
-                    SplitBoxBatchSlot::where('batch_id', $batch->id)->pluck('id')
-                )->pluck('order_id')->unique();
+                SplitBoxBatchSlot::where('batch_id', $batch->id)->pluck('id')
+            )->pluck('order_id')->unique();
 
             $orders = Order::whereIn('id', $orderIds)->lockForUpdate()->get();
 
@@ -275,7 +275,7 @@ class SplitBoxService
                 $admin,
                 'split_box_opened',
                 "Box sudah dibuka — Kloter #{$batch->batch_no} (produk {$splitBox->product_id})",
-                '/office/products/' . $splitBox->product_id . '/edit'
+                '/office/products/'.$splitBox->product_id.'/edit'
             );
         }
     }
@@ -302,6 +302,7 @@ class SplitBoxService
         foreach ($candidateItems as $item) {
             if ($remaining >= $item->qty) {
                 $remaining -= $item->qty;
+
                 continue;
             }
 

@@ -1,16 +1,18 @@
 <?php
 
+use App\Models\Product;
 use App\Models\User;
+use Illuminate\Http\UploadedFile;
 
 test('hard delete produk ikut menghapus file gambar asli dan watermark', function () {
     $admin = User::factory()->admin()->create();
 
     $this->actingAs($admin)->post('/office/products', productUploadPayload([
-        'image' => \Illuminate\Http\UploadedFile::fake()->image('hapus.jpg'),
-        'description_image' => \Illuminate\Http\UploadedFile::fake()->image('hapus-desc.jpg'),
+        'image' => UploadedFile::fake()->image('hapus.jpg'),
+        'description_image' => UploadedFile::fake()->image('hapus-desc.jpg'),
     ]))->assertRedirect();
 
-    $product = \App\Models\Product::where('sku', 'like', 'IMG-%')->latest('id')->firstOrFail();
+    $product = Product::where('sku', 'like', 'IMG-%')->latest('id')->firstOrFail();
     $stored = storage_path('app/private/'.$product->image_path);
     $master = storage_path('app/private/originals/'.$product->image_path);
     $storedDesc = storage_path('app/private/'.$product->description_image_path);

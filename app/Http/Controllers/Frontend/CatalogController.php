@@ -7,7 +7,9 @@ use App\Models\Developer;
 use App\Models\Game;
 use App\Models\MerchCategory;
 use App\Models\Product;
+use App\Models\Tag;
 use App\Services\Order\ShippingCalculatorService;
+use App\Services\Product\CatalogFilterService;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -34,9 +36,8 @@ class CatalogController extends Controller
             ->where(fn ($q) => $q->where('developer_id', $developer->id)
                 ->orWhereHas('game.developers', fn ($gq) => $gq->where('developers.id', $developer->id)))
             ->with(['game', 'developer', 'tags', 'variants'])
-            ->when($request->sort === 'termurah', fn ($q) => $q->orderBy('price_rmb'))
-            ->when($request->sort === 'termahal', fn ($q) => $q->orderByDesc('price_rmb'))
-            ->when($request->sort !== 'termurah' && $request->sort !== 'termahal', fn ($q) => $q->orderByDesc('id'))
+            ->orderByDesc('products.id')
+            ->tap(fn ($q) => app(CatalogFilterService::class)->apply($q, $request))
             ->paginate((int) setting('catalog_per_page', 30))
             ->withQueryString();
         $this->attachPriceIdr($products);
@@ -54,9 +55,8 @@ class CatalogController extends Controller
             ->where('game_id', $game->id)
             ->when($category, fn ($q) => $q->where('merch_category_id', $category->id))
             ->with(['game', 'developer', 'tags', 'variants'])
-            ->when($request->sort === 'termurah', fn ($q) => $q->orderBy('price_rmb'))
-            ->when($request->sort === 'termahal', fn ($q) => $q->orderByDesc('price_rmb'))
-            ->when($request->sort !== 'termurah' && $request->sort !== 'termahal', fn ($q) => $q->orderByDesc('id'))
+            ->orderByDesc('products.id')
+            ->tap(fn ($q) => app(CatalogFilterService::class)->apply($q, $request))
             ->paginate((int) setting('catalog_per_page', 30))
             ->withQueryString();
         $this->attachPriceIdr($products);
@@ -95,6 +95,7 @@ class CatalogController extends Controller
                 ->limit((int) setting('best_offers_count', 5))
                 ->with(['game', 'tags'])
                 ->get(),
+            'tags' => Tag::orderBy('name')->get(),
             'shipping' => $this->shipping,
         ]);
     }

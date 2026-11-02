@@ -52,15 +52,15 @@ class Product extends Model
     protected function casts(): array
     {
         return [
-            'price_rmb'        => 'decimal:2',
-            'weight_gram'      => 'integer',
-            'discount_amount'  => 'decimal:2',
-            'discount_start'   => 'date',
-            'discount_end'     => 'date',
-            'is_active'        => 'boolean',
-            'sold_count'       => 'integer',
-            'is_split_box'     => 'boolean',
-            'parent_id'        => 'integer',
+            'price_rmb' => 'decimal:2',
+            'weight_gram' => 'integer',
+            'discount_amount' => 'decimal:2',
+            'discount_start' => 'date',
+            'discount_end' => 'date',
+            'is_active' => 'boolean',
+            'sold_count' => 'integer',
+            'is_split_box' => 'boolean',
+            'parent_id' => 'integer',
         ];
     }
 

@@ -18,7 +18,7 @@ return new class extends Migration
             $table->string('availability', 16)->default('tersedia');
             $table->string('image_path')->nullable();
             $table->timestamps();
-        
+
             $table->index('name', 'pv_name_idx');
             $table->index(['product_id', 'availability'], 'pv_product_avail_idx');
         });

@@ -19,8 +19,8 @@ class LogController extends Controller
             $search = $request->input('search');
             $query->where(function ($q) use ($search) {
                 $q->where('description', 'like', "%{$search}%")
-                  ->orWhere('action', 'like', "%{$search}%")
-                  ->orWhere('ip_address', 'like', "%{$search}%");
+                    ->orWhere('action', 'like', "%{$search}%")
+                    ->orWhere('ip_address', 'like', "%{$search}%");
             });
         }
 
@@ -31,7 +31,7 @@ class LogController extends Controller
         if ($request->filled('date')) {
             $date = match ($request->input('date')) {
                 'today' => now()->startOfDay(),
-                'week'  => now()->subDays(7),
+                'week' => now()->subDays(7),
                 'month' => now()->subDays(30),
                 default => null,
             };
@@ -83,8 +83,8 @@ class LogController extends Controller
 
         $query = match ($tab) {
             'activity-logs' => ActivityLog::with('user')->orderByDesc('id'),
-            'auth-logs'     => AuthLog::orderByDesc('id'),
-            default         => AdminLog::with('admin')->orderByDesc('id'),
+            'auth-logs' => AuthLog::orderByDesc('id'),
+            default => AdminLog::with('admin')->orderByDesc('id'),
         };
 
         $this->applyFilters($query, $request);

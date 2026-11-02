@@ -5,6 +5,7 @@ use App\Models\EmailTemplate;
 use App\Models\User;
 use App\Notifications\CartReminderNotification;
 use App\Services\Mail\EmailTemplateService;
+use Illuminate\Support\Facades\Mail;
 
 test('admin dapat kelola email template', function () {
     $admin = User::factory()->admin()->create();
@@ -91,4 +92,19 @@ test('template nonaktif tidak meng-override notifikasi', function () {
     $mail = (new CartReminderNotification(2))->toMail($user);
 
     expect($mail->subject)->toContain('Pengingat Keranjang');
+});
+
+test('admin dapat preview template (data contoh, ter-escape) dan test send ke emailnya sendiri', function () {
+    Mail::fake();
+    $admin = User::factory()->admin()->create();
+    $template = EmailTemplate::create(['code' => 'x_test', 'subject' => 'Halo {{nama_user}}', 'body' => '<script>alert(1)</script> {{no_order}}', 'is_active' => false]);
+
+    $this->actingAs($admin)->get(route('office.email-templates.preview', $template))
+        ->assertOk()->assertSee('Halo Nama Customer')->assertSee('MER-XXXX-0001')
+        ->assertDontSee('<script>alert(1)</script>', false);
+
+    $this->actingAs($admin)->post(route('office.email-templates.test-send', $template))->assertSessionHas('status');
+    $this->assertDatabaseHas('admin_logs', ['action' => 'test_send']);
+
+    $this->actingAs(User::factory()->create())->get(route('office.email-templates.preview', $template))->assertForbidden();
 });

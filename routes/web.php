@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\CustomerRankController as AdminCustomerRankController;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Admin\DeveloperController as AdminDeveloperController;
 use App\Http\Controllers\Admin\EmailTemplateController as AdminEmailTemplateController;
@@ -165,6 +166,7 @@ Route::middleware(['auth', 'admin'])->prefix('office')->name('office.')->group(f
     Route::post('/products/{product}/variants', [AdminProductController::class, 'storeVariant'])->name('products.variants.store');
     Route::put('/products/{product}/variants/{variant}', [AdminProductController::class, 'updateVariant'])->name('products.variants.update');
     Route::delete('/products/{product}/variants/{variant}', [AdminProductController::class, 'destroyVariant'])->name('products.variants.destroy');
+    Route::post('/products/{product}/variants/bulk-price', [AdminProductController::class, 'bulkPrice'])->name('products.variants.bulk-price');
     Route::post('/products/{product}/variants/bulk-weight', [AdminProductController::class, 'bulkWeight'])->name('products.variants.bulk-weight');
 
     // ── Katalog pendukung ──
@@ -240,6 +242,8 @@ Route::middleware(['auth', 'admin'])->prefix('office')->name('office.')->group(f
     // ── Email Templates ──
     Route::get('/email-templates', [AdminEmailTemplateController::class, 'index'])->name('email-templates.index');
     Route::post('/email-templates', [AdminEmailTemplateController::class, 'store'])->name('email-templates.store');
+    Route::get('/email-templates/{emailTemplate}/preview', [AdminEmailTemplateController::class, 'preview'])->name('email-templates.preview');
+    Route::post('/email-templates/{emailTemplate}/test-send', [AdminEmailTemplateController::class, 'testSend'])->name('email-templates.test-send');
     Route::put('/email-templates/{emailTemplate}', [AdminEmailTemplateController::class, 'update'])->name('email-templates.update');
     Route::delete('/email-templates/{emailTemplate}', [AdminEmailTemplateController::class, 'destroy'])->name('email-templates.destroy');
 
@@ -250,6 +254,9 @@ Route::middleware(['auth', 'admin'])->prefix('office')->name('office.')->group(f
 
     // ── Pengguna ──
     Route::get('/users', [AdminUserController::class, 'index'])->name('users.index');
+    Route::get('/customers/rank', [AdminCustomerRankController::class, 'index'])->name('customers.rank');
+    Route::get('/customers/rank/export', [AdminCustomerRankController::class, 'export'])->name('customers.rank.export');
+    Route::post('/users/{user}/gift', [AdminCustomerRankController::class, 'gift'])->name('users.gift');
     Route::get('/users/create', [AdminUserController::class, 'create'])->name('users.create');
     Route::post('/users', [AdminUserController::class, 'store'])->name('users.store');
     Route::get('/users/{user}/edit', [AdminUserController::class, 'edit'])->name('users.edit');
@@ -334,6 +341,7 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');
     Route::get('/orders/{order:no_order}', [OrderController::class, 'show'])->name('orders.show');
+    Route::post('/orders/{order:no_order}/refund-request', [OrderController::class, 'requestRefund'])->name('orders.refund-request');
     Route::post('/orders/{order:no_order}/payments', [OrderController::class, 'storePayment'])
         ->middleware('checkout.ready')
         ->name('orders.payments.store');

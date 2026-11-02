@@ -5,6 +5,7 @@ namespace App\Services\Payment;
 use App\Models\CoinTransaction;
 use App\Models\Order;
 use App\Models\OrderStatus;
+use App\Models\Payment;
 use App\Models\Refund;
 use App\Models\User;
 use App\Models\UserVoucher;
@@ -20,6 +21,35 @@ class RefundService
         private CoinWalletService $coins,
         private UserNotificationService $notifications,
     ) {}
+
+    /**
+     * Alasan refund tidak bisa diajukan (null = boleh). Dipakai admin & customer.
+     */
+    public function blockedReason(Order $order): ?string
+    {
+        if (! OrderStatus::tryFrom($order->status)?->canTransitionTo(OrderStatus::DanaDikembalikan->value)) {
+            return 'Status pesanan saat ini tidak dapat direfund.';
+        }
+
+        if ($order->refunds()->where('status', Refund::STATUS_REQUESTED)->exists()) {
+            return 'Masih ada permintaan refund yang belum diproses untuk pesanan ini.';
+        }
+
+        $hasVerifiedPayment = $order->payments()
+            ->where('status', Payment::STATUS_VERIFIED)
+            ->where('type', '!=', Payment::TYPE_REFUND)
+            ->exists();
+
+        return $hasVerifiedPayment ? null : 'Pesanan belum memiliki pembayaran terverifikasi.';
+    }
+
+    /**
+     * PRD 22.4: customer meminta refund full; admin memproses lewat /office/refunds.
+     */
+    public function requestByCustomer(Order $order, string $reason, User $customer): Refund
+    {
+        return $this->request($order, Refund::TYPE_FULL, (float) $order->tagihan_web, $reason, $customer);
+    }
 
     public function requestFull(Order $order, string $reason, User $admin): Refund
     {

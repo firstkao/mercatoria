@@ -3,6 +3,7 @@
 namespace Database\Factories;
 
 use App\Models\CoinTransaction;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -13,7 +14,7 @@ class CoinTransactionFactory extends Factory
     public function definition(): array
     {
         return [
-            'user_id' => \App\Models\User::factory(),
+            'user_id' => User::factory(),
             'order_id' => null,
             'type' => CoinTransaction::TYPE_EARNED_SHARE,
             'amount' => 5,

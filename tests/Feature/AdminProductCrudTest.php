@@ -212,3 +212,18 @@ test('admin dapat mengunduh packing list PDF tanpa alamat; customer tidak bisa',
     expect($html)->toContain('Bubble wrap ekstra')->and($html)->not->toContain($buyer->alamat);
     $this->assertDatabaseHas('admin_logs', ['action' => 'download_packing_list']);
 });
+
+test('bulk edit harga RMB varian: hanya varian produk itu, validasi harga positif', function () {
+    $admin = User::factory()->admin()->create();
+    $product = Product::factory()->create();
+    $a = ProductVariant::factory()->create(['product_id' => $product->id, 'price_rmb' => 10]);
+    $other = ProductVariant::factory()->create(['price_rmb' => 10]);
+    $url = route('office.products.variants.bulk-price', $product);
+
+    $this->actingAs($admin)->postJson($url, ['price_rmb' => 55.5, 'ids' => [$a->id, $other->id]])
+        ->assertOk()->assertJson(['updated' => 1]);
+    expect((float) $a->fresh()->price_rmb)->toBe(55.5)->and((float) $other->fresh()->price_rmb)->toBe(10.0);
+
+    $this->actingAs($admin)->postJson($url, ['price_rmb' => 0, 'ids' => [$a->id]])->assertJsonValidationErrors('price_rmb');
+    $this->actingAs(User::factory()->create())->postJson($url, ['price_rmb' => 5, 'ids' => [$a->id]])->assertForbidden();
+});

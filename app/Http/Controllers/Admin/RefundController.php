@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\AdminLog;
 use App\Models\Order;
-use App\Models\OrderStatus;
 use App\Models\Payment;
 use App\Models\Refund;
 use App\Services\Payment\RefundService;
@@ -116,20 +115,7 @@ class RefundController extends Controller
 
     private function refundBlockedReason(Order $order): ?string
     {
-        if (! OrderStatus::tryFrom($order->status)?->canTransitionTo(OrderStatus::DanaDikembalikan->value)) {
-            return 'Status pesanan saat ini tidak dapat direfund.';
-        }
-
-        if ($order->refunds()->where('status', Refund::STATUS_REQUESTED)->exists()) {
-            return 'Masih ada permintaan refund yang belum diproses untuk pesanan ini.';
-        }
-
-        $hasVerifiedPayment = $order->payments()
-            ->where('status', Payment::STATUS_VERIFIED)
-            ->where('type', '!=', Payment::TYPE_REFUND)
-            ->exists();
-
-        return $hasVerifiedPayment ? null : 'Pesanan belum memiliki pembayaran terverifikasi.';
+        return $this->refunds->blockedReason($order);
     }
 
     private function log(Request $request, string $action, Order $order, Refund $refund): void

@@ -35,15 +35,19 @@ class MerchCategoryController extends Controller
                 }
             }
 
-            if ($matched) continue;
+            if ($matched) {
+                continue;
+            }
 
             // Extract kata bermakna dari nama produk
             $words = array_values(array_filter(
                 preg_split('/[\s\-_,.\/\(\)]+/', $product->name),
-                fn($w) => strlen($w) >= 3 && !is_numeric($w)
+                fn ($w) => strlen($w) >= 3 && ! is_numeric($w)
             ));
 
-            if (empty($words)) continue;
+            if (empty($words)) {
+                continue;
+            }
 
             // Nama kategori = kata pertama yang bermakna
             $name = ucfirst(strtolower($words[0]));
@@ -63,8 +67,8 @@ class MerchCategoryController extends Controller
                 }
 
                 $newCat = MerchCategory::create([
-                    'name'     => $name,
-                    'slug'     => $slug,
+                    'name' => $name,
+                    'slug' => $slug,
                     'priority' => (MerchCategory::max('priority') ?? 0) + 1,
                     'keywords' => $words,
                 ]);
@@ -74,7 +78,7 @@ class MerchCategoryController extends Controller
         }
 
         return view('admin.merch-categories.index', [
-            'categories'  => MerchCategory::orderBy('priority')->get(),
+            'categories' => MerchCategory::orderBy('priority')->get(),
             'autoCreated' => $autoCreated,
         ]);
     }

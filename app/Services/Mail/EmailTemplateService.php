@@ -40,6 +40,32 @@ class EmailTemplateService
     }
 
     /**
+     * Preview/test send (PRD 24.3): render template apa pun (termasuk nonaktif) dengan data contoh.
+     *
+     * @return array{subject: string, body: string}
+     */
+    public function renderSample(EmailTemplate $template): array
+    {
+        $variables = [
+            'nama_user' => 'Nama Customer',
+            'email' => 'customer@example.com',
+            'no_hp' => '6281234567890',
+            'no_order' => 'MER-XXXX-0001',
+            'total' => 'Rp 285.000',
+            'status' => 'Sedang Diproses',
+            'state' => 'MVP',
+            'link' => url('/'),
+            'tanggal' => now()->format('d/m/Y'),
+            'nama_toko' => (string) config('app.name'),
+        ];
+
+        return [
+            'subject' => $this->replace($template->subject, $variables),
+            'body' => $this->replace($template->body, $variables),
+        ];
+    }
+
+    /**
      * PRD 24: saat notifikasi dikirim, cek email_templates dulu — template aktif meng-override default.
      *
      * @param  array<string, mixed>  $variables

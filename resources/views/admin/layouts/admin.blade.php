@@ -160,6 +160,7 @@
 
                     ['__SECTION__','','Pengguna'],
                     ['office.users.index','bi-people','Users','office.users'],
+                    ['office.customers.rank','bi-trophy','Rank Pelanggan','office.customers'],
                     ['office.spammers.index','bi-shield-exclamation','Spammers','office.spammers'],
 
                     ['__SECTION__','','Konten'],

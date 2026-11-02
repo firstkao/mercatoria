@@ -35,12 +35,19 @@
                     <textarea name="body" rows="3" class="w-full rounded-lg border border-rule px-3 py-2 text-sm text-ink">{{ $template->body }}</textarea>
                     <div class="flex items-center justify-between">
                         <button class="rounded-lg border border-rule px-4 py-2 text-sm font-semibold text-ink transition-colors hover:border-ink">Simpan</button>
-                        <form method="POST" action="{{ route('office.email-templates.destroy', $template) }}" class="inline">
-                            @csrf @method('DELETE')
-                            <button class="text-xs text-danger hover:underline" onclick="return confirm('Hapus template ini?')">Hapus</button>
-                        </form>
+                        <button type="submit" form="delete-template-{{ $template->id }}" class="text-xs text-danger hover:underline" onclick="return confirm('Hapus template ini?')">Hapus</button>
                     </div>
                 </form>
+                <form id="delete-template-{{ $template->id }}" method="POST" action="{{ route('office.email-templates.destroy', $template) }}" class="hidden">
+                    @csrf @method('DELETE')
+                </form>
+                <div class="mt-2 flex items-center gap-3 border-t border-rule pt-2">
+                    <a href="{{ route('office.email-templates.preview', $template) }}" target="_blank" class="text-xs font-semibold text-ink hover:underline">Preview</a>
+                    <form method="POST" action="{{ route('office.email-templates.test-send', $template) }}" class="inline">
+                        @csrf
+                        <button class="text-xs font-semibold text-ink hover:underline">Kirim Test ke Email Saya</button>
+                    </form>
+                </div>
             </div>
         @empty
             <div class="rounded-xl border border-rule bg-white p-8 text-center text-sm text-ink/45">Belum ada template email.</div>

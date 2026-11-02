@@ -170,6 +170,10 @@
         </div>
     </form>
 
+    @if ($user->exists && $user->role === \App\Models\User::ROLE_CUSTOMER && isset($vouchers))
+        <div class="mt-4">@include('admin.customers._gift-modal', ['user' => $user, 'vouchers' => $vouchers])</div>
+    @endif
+
     {{-- ═══ REFERRAL INFO ═══ --}}
     @isset($visit)
         @if (data_get($visit, 'source') || data_get($visit, 'landing_page'))

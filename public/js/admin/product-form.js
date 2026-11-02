@@ -384,6 +384,25 @@
             }
         });
     };
+    // ═══ BULK HARGA RMB ═══
+    window.applyBulkPrice = function () {
+        var checked = Array.from(document.querySelectorAll('.variant-check:checked'));
+        if (!checked.length) { alert('Pilih minimal 1 varian.'); return; }
+        var input = window.prompt('Harga RMB baru untuk ' + checked.length + ' varian terpilih:');
+        if (input === null) return;
+        var val = parseFloat(String(input).replace(',', '.'));
+        if (!(val > 0)) { alert('Masukkan harga RMB yang valid (lebih dari 0).'); return; }
+
+        fetch(VARIANT_BASE_URL + '/bulk-price', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': CSRF_TOKEN, 'Accept': 'application/json' },
+            body: JSON.stringify({ price_rmb: val, ids: checked.map(function (c) { return parseInt(c.value); }) })
+        })
+        .then(function (r) { if (!r.ok) throw new Error('Server error'); return r.json(); })
+        .then(function () { window.location.reload(); })
+        .catch(function (err) { alert('Gagal menyimpan: ' + err.message); });
+    };
+
     window.closeBulkSuccess = function () { closeModal('modal-bulk-success'); };
 
     // ── Escape + backdrop ──

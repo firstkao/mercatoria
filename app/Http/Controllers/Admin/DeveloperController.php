@@ -29,8 +29,8 @@ class DeveloperController extends Controller
         ]);
 
         $data['slug'] = filled($data['slug'] ?? null)
-    		? Str::slug($data['slug'])
-    		: $this->uniqueSlug($data['name']);
+            ? Str::slug($data['slug'])
+            : $this->uniqueSlug($data['name']);
         $data['logo_path'] = null;
 
         // Simpan logo kalau ada
@@ -160,6 +160,7 @@ class DeveloperController extends Controller
                     $d->games_count > 0 ? "{$d->games_count} game" : null,
                     $d->products_count > 0 ? "{$d->products_count} produk" : null,
                 ]);
+
                 return "{$d->name} (".implode(' & ', $parts).')';
             })->implode(', ');
 

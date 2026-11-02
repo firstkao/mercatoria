@@ -63,7 +63,7 @@ class PaymentMethodController extends Controller
         // Cek masih dipakai di orders
         if ($paymentMethod->orders()->exists()) {
             return response()->json([
-                'message' => 'Metode "' . $paymentMethod->name . '" masih dipakai di order.',
+                'message' => 'Metode "'.$paymentMethod->name.'" masih dipakai di order.',
             ], 422);
         }
 

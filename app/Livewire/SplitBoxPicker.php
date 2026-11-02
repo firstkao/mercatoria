@@ -44,6 +44,7 @@ class SplitBoxPicker extends Component
     {
         if (! $this->product->splitBox) {
             $this->message = 'Produk ini bukan split box.';
+
             return;
         }
 
@@ -58,6 +59,7 @@ class SplitBoxPicker extends Component
 
                 if ($qty > $available) {
                     $this->message = "Slot \"{$slot->variant?->name}\" tersisa {$available}. Kurangi jumlahnya.";
+
                     return;
                 }
 
@@ -67,11 +69,13 @@ class SplitBoxPicker extends Component
 
         if ($lines === []) {
             $this->message = 'Pilih minimal 1 karakter.';
+
             return;
         }
 
         if (! $splitBox->validatePair($lines)) {
             $this->message = 'Kamu memilih karakter Hot. Pilih cukup karakter Normal untuk memenuhi syarat pair.';
+
             return;
         }
 

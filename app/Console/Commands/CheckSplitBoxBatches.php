@@ -61,16 +61,16 @@ class CheckSplitBoxBatches extends Command
 
         // ═══ Summary ═══
         if ($overdue->isNotEmpty()) {
-            $overdue->each(fn ($batch) =>
-                $this->warn("Kloter #{$batch->batch_no} (split_box {$batch->split_box_id}) lewat closes_at")
+            $overdue->each(fn ($batch) => $this->warn("Kloter #{$batch->batch_no} (split_box {$batch->split_box_id}) lewat closes_at")
             );
             $this->info("{$overdue->count()} kloter perlu perhatian admin.");
         } else {
-            $this->info("Semua kloter dalam kondisi baik.");
+            $this->info('Semua kloter dalam kondisi baik.');
         }
 
         if ($errors > 0) {
             $this->warn("{$errors} split box gagal diproses — cek log.");
+
             return self::FAILURE;
         }
 

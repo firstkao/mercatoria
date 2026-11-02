@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\BulkPriceRequest;
 use App\Http\Requests\Admin\BulkProductRequest;
 use App\Http\Requests\Admin\BulkWeightRequest;
 use App\Http\Requests\Admin\ProductFormRequest;
@@ -369,6 +370,29 @@ class ProductController extends Controller
                 'updated' => $updated,
                 'message' => "{$updated} varian diperbarui.",
             ]);
+        }
+
+        return redirect()->route('office.products.edit', $product)->with('status', "{$updated} varian diperbarui.");
+    }
+
+    /**
+     * Bulk edit harga RMB varian (Backlog EPIC-04-26) — pola sama dengan bulkWeight.
+     */
+    public function bulkPrice(BulkPriceRequest $request, Product $product): JsonResponse|RedirectResponse
+    {
+        $data = $request->validated();
+
+        $updated = ProductVariant::whereIn('id', $data['ids'])
+            ->where('product_id', $product->id)
+            ->update(['price_rmb' => $data['price_rmb']]);
+
+        AdminLog::record($request->user(), 'update', 'Product', $product->id, null, [
+            'price_rmb' => $data['price_rmb'],
+            'varian' => $data['ids'],
+        ], "Bulk edit harga RMB {$updated} varian");
+
+        if ($request->expectsJson() || $request->ajax()) {
+            return response()->json(['success' => true, 'updated' => $updated, 'message' => "{$updated} varian diperbarui."]);
         }
 
         return redirect()->route('office.products.edit', $product)->with('status', "{$updated} varian diperbarui.");

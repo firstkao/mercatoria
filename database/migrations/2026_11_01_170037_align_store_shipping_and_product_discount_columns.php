@@ -50,7 +50,7 @@ return new class extends Migration
             });
         }
 
-        if (Schema::hasColumn('products', 'discount_amount') && !Schema::hasColumn('products', 'discount_amount_rmb')) {
+        if (Schema::hasColumn('products', 'discount_amount') && ! Schema::hasColumn('products', 'discount_amount_rmb')) {
             Schema::table('products', function (Blueprint $table): void {
                 $table->renameColumn('discount_amount', 'discount_amount_rmb');
             });
@@ -61,7 +61,7 @@ return new class extends Migration
                 $table->decimal('ongkir_rmb', 5, 2)->default(7)->change();
             });
 
-            if (!Schema::hasColumn('stores', 'ongkir_lokal_cn_percent')) {
+            if (! Schema::hasColumn('stores', 'ongkir_lokal_cn_percent')) {
                 Schema::table('stores', function (Blueprint $table): void {
                     $table->renameColumn('ongkir_rmb', 'ongkir_lokal_cn_percent');
                 });

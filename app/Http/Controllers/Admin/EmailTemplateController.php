@@ -5,8 +5,11 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\AdminLog;
 use App\Models\EmailTemplate;
+use App\Services\Mail\EmailTemplateService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\View\View;
 
 class EmailTemplateController extends Controller
@@ -16,6 +19,28 @@ class EmailTemplateController extends Controller
         return view('admin.email-templates.index', [
             'templates' => EmailTemplate::orderBy('code')->get(),
         ]);
+    }
+
+    public function preview(EmailTemplate $emailTemplate, EmailTemplateService $templates): Response
+    {
+        $sample = $templates->renderSample($emailTemplate);
+
+        return response(
+            '<!DOCTYPE html><html><head><meta charset="utf-8"><title>Preview</title></head><body style="font-family:sans-serif;max-width:640px;margin:2rem auto">'
+            .'<p style="color:#666;font-size:12px">Preview dengan data contoh</p>'
+            .'<h2>'.e($sample['subject']).'</h2><div>'.nl2br(e($sample['body'])).'</div></body></html>'
+        );
+    }
+
+    public function testSend(Request $request, EmailTemplate $emailTemplate, EmailTemplateService $templates): RedirectResponse
+    {
+        $sample = $templates->renderSample($emailTemplate);
+        $admin = $request->user();
+
+        Mail::raw($sample['body'], fn ($message) => $message->to($admin->email)->subject('[TEST] '.$sample['subject']));
+        AdminLog::record($admin, 'test_send', 'EmailTemplate', $emailTemplate->id, null, ['to' => $admin->email], 'Test send template email');
+
+        return back()->with('status', 'Email test dikirim ke '.$admin->email.'.');
     }
 
     public function store(Request $request): RedirectResponse

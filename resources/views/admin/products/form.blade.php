@@ -636,6 +636,11 @@
                                         <i class="bi bi-pencil-square" style="font-size:0.8rem;"></i>
                                         Bulk Edit Berat
                                     </button>
+                                    <button type="button" onclick="applyBulkPrice()"
+                                            class="btn-secondary flex items-center gap-1.5 !py-1.5 !text-xs">
+                                        <i class="bi bi-currency-exchange" style="font-size:0.8rem;"></i>
+                                        Bulk Edit Harga
+                                    </button>
                                     <span class="text-xs text-ink/45" id="variant-selected-count">0 varian terpilih</span>
                                 </div>
 

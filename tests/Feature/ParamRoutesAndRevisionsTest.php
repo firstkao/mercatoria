@@ -6,6 +6,7 @@ use App\Models\Order;
 use App\Models\Page;
 use App\Models\PreorderPage;
 use App\Models\Product;
+use App\Models\Setting;
 use App\Models\User;
 use App\Notifications\VerifyEmailNotification;
 use App\Services\Product\ProductSearchService;
@@ -118,12 +119,12 @@ test('grafik penjualan dan pendapatan dashboard hanya uang bersih (tanpa hangus/
 test('GA4 hanya dirender di layout publik bila Measurement ID valid terisi', function () {
     $this->get('/login')->assertDontSee('googletagmanager.com', false);
 
-    \App\Models\Setting::updateOrCreate(['key' => 'ga4_measurement_id'], ['value' => 'G-ABCD123456']);
+    Setting::updateOrCreate(['key' => 'ga4_measurement_id'], ['value' => 'G-ABCD123456']);
     Cache::forget('app_settings_all');
 
     $this->get('/login')->assertSee('googletagmanager.com/gtag/js?id=G-ABCD123456', false);
 
-    \App\Models\Setting::updateOrCreate(['key' => 'ga4_measurement_id'], ['value' => '"><script>alert(1)</script>']);
+    Setting::updateOrCreate(['key' => 'ga4_measurement_id'], ['value' => '"><script>alert(1)</script>']);
     Cache::forget('app_settings_all');
     $this->get('/login')->assertDontSee('alert(1)', false);
 });

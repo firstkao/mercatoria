@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\Cart;
+use App\Models\Product;
 use App\Models\User;
 
 test('navbar menampilkan total harga keranjang', function () {
@@ -39,7 +40,7 @@ test('total keranjang hanya milik user pemilik', function () {
     Cart::factory()->create(['user_id' => $lain->id, 'product_id' => $produk->id, 'qty' => 1]);
 
     // Dorong produk itu keluar dari footer "Produk Terpopuler" (top 5 sold_count)
-    \App\Models\Product::factory()->count(5)->create(['sold_count' => 10, 'is_active' => true]);
+    Product::factory()->count(5)->create(['sold_count' => 10, 'is_active' => true]);
 
     $html = $this->actingAs($user)->get('/cart')->assertOk()->getContent();
 

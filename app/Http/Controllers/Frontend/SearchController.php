@@ -28,7 +28,7 @@ class SearchController extends Controller
             'tag' => $request->query('tag'),
         ];
 
-        $results = $this->search->search($q, array_filter($filters), (int) setting('catalog_per_page', 30));
+        $results = $this->search->search($q, array_filter($filters), (int) setting('catalog_per_page', 30), $request);
 
         // Varian yang cocok keyword (untuk badge "Varian tersedia" — PRD 13.13).
         $matchedVariants = collect($results->items())

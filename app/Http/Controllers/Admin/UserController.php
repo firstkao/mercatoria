@@ -7,6 +7,7 @@ use App\Models\AdminLog;
 use App\Models\Spammer;
 use App\Models\User;
 use App\Models\VisitorTracking;
+use App\Models\Voucher;
 use App\Services\User\UserNotificationService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -171,6 +172,7 @@ class UserController extends Controller
         return view('admin.users.form', [
             'user' => $user,
             'visit' => $this->visitSourceFor($user),
+            'vouchers' => Voucher::query()->where('is_active', true)->orderBy('name')->get(['id', 'name', 'code']),
         ]);
     }
 

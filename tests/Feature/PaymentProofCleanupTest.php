@@ -1,8 +1,9 @@
 <?php
 
+use App\Models\Order;
 use App\Models\Payment;
 
-function proofFileFixture(\App\Models\Order $order, string $basename): string
+function proofFileFixture(Order $order, string $basename): string
 {
     $path = 'payment-proofs/'.$basename;
     $dir = storage_path('app/private/payment-proofs');

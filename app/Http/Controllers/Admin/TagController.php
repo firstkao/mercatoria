@@ -41,8 +41,8 @@ class TagController extends Controller
     public function update(Request $request, Tag $tag): RedirectResponse
     {
         $data = $request->validate([
-            'name' => ['required', 'string', 'max:50', 'unique:tags,name,' . $tag->id],
-            'slug' => ['nullable', 'string', 'max:60', 'unique:tags,slug,' . $tag->id],
+            'name' => ['required', 'string', 'max:50', 'unique:tags,name,'.$tag->id],
+            'slug' => ['nullable', 'string', 'max:60', 'unique:tags,slug,'.$tag->id],
         ]);
 
         if (empty($data['slug'])) {
@@ -62,7 +62,7 @@ class TagController extends Controller
     {
         // Cek masih dipake di product_tag
         if ($tag->products()->exists()) {
-            return redirect()->route('office.tags.index')->with('error', 'Tag "' . $tag->name . '" masih terpakai di produk.');
+            return redirect()->route('office.tags.index')->with('error', 'Tag "'.$tag->name.'" masih terpakai di produk.');
         }
 
         AdminLog::record($request->user(), 'delete', 'Tag', $tag->id, $tag->only(['name', 'slug']), null, 'Hapus tag');

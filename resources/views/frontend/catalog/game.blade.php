@@ -118,15 +118,33 @@
                     dari {{ $products->total() }} hasil
                 </p>
 
-                <form method="GET" class="flex items-center gap-2 text-sm">
+                <form method="GET" class="flex flex-wrap items-center gap-2 text-sm">
+                    <select name="tag" onchange="this.form.submit()" class="rounded-lg border border-rule bg-white px-3 py-1.5 text-sm text-ink">
+                        <option value="">Semua Tag</option>
+                        @foreach ($tags as $t)
+                            <option value="{{ $t->slug }}" @selected(request('tag') === $t->slug)>{{ $t->name }}</option>
+                        @endforeach
+                    </select>
+                    <select name="availability" onchange="this.form.submit()" class="rounded-lg border border-rule bg-white px-3 py-1.5 text-sm text-ink">
+                        <option value="">Ketersediaan</option>
+                        <option value="tersedia" @selected(request('availability') === 'tersedia')>Tersedia</option>
+                        <option value="kosong" @selected(request('availability') === 'kosong')>Kosong</option>
+                    </select>
+                    <input type="number" name="min_price" min="0" value="{{ request('min_price') }}" placeholder="Harga min"
+                           class="w-28 rounded-lg border border-rule bg-white px-3 py-1.5 text-sm text-ink">
+                    <input type="number" name="max_price" min="0" value="{{ request('max_price') }}" placeholder="Harga maks"
+                           class="w-28 rounded-lg border border-rule bg-white px-3 py-1.5 text-sm text-ink">
                     <label for="sort" class="font-mono text-[10px] uppercase tracking-[0.14em] text-ink/55">Urutkan</label>
                     <select name="sort" id="sort" onchange="this.form.submit()"
                             class="rounded-lg border border-rule bg-white px-3 py-1.5 text-sm text-ink focus:border-ink focus:outline-none focus:ring-2 focus:ring-accent/45">
                         <option value="">Relevansi</option>
                         <option value="termurah" @selected(request('sort') === 'termurah')>Termurah</option>
                         <option value="termahal" @selected(request('sort') === 'termahal')>Termahal</option>
+                        <option value="terpopuler" @selected(request('sort') === 'terpopuler')>Terpopuler</option>
                         <option value="terbaru" @selected(request('sort') === 'terbaru')>Terbaru</option>
+                        <option value="abjad" @selected(request('sort') === 'abjad')>Abjad (A-Z)</option>
                     </select>
+                    <button type="submit" class="rounded-lg bg-black px-3 py-1.5 text-sm font-semibold text-white">Terapkan</button>
                 </form>
             </div>
 

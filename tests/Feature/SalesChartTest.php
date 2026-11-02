@@ -7,6 +7,8 @@ test('endpoint grafik penjualan mengembalikan array 30 elemen', function () {
 
     $admin = User::factory()->admin()->create();
     [, $order] = placeTestOrder(); // hari ini
+    placeTestOrder(); // belum dibayar: bukan uang diterima, tidak dihitung
+    $order->forceFill(['status' => 'sedang_diproses'])->save();
 
     $json = $this->actingAs($admin)->getJson('/office/reports/sales-chart')->assertOk()->json();
 
