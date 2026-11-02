@@ -79,10 +79,15 @@ class EmailTemplateController extends Controller
      */
     private function validateTemplate(Request $request, ?EmailTemplate $template = null): array
     {
-        return $request->validate([
+        $data = $request->validate([
             'code' => ['required', 'string', 'max:64', $template ? 'unique:email_templates,code,'.$template->id : 'unique:email_templates,code'],
             'subject' => ['required', 'string', 'max:255'],
             'body' => ['required', 'string'],
         ]);
+
+        // XSS: sanitasi konten HTML email saat simpan.
+        $data['body'] = clean_html($data['body']);
+
+        return $data;
     }
 }

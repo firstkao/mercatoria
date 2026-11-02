@@ -32,6 +32,9 @@ class PageController extends Controller
     public function store(PageFormRequest $request): RedirectResponse
     {
         $data = $request->validated();
+        if (isset($data['content'])) {
+            $data['content'] = clean_html($data['content']);
+        }
 
         $page = Page::create($data);
         AdminLog::record($request->user(), 'create', 'Page', $page->id, null, $data, 'Tambah halaman CMS');
@@ -42,6 +45,9 @@ class PageController extends Controller
     public function update(PageFormRequest $request, Page $page): RedirectResponse
     {
         $data = $request->validated();
+        if (isset($data['content'])) {
+            $data['content'] = clean_html($data['content']);
+        }
 
         [$old, $new] = AdminLog::diff($page, ['title', 'slug', 'content', 'meta_description', 'status'], $data);
         $page->update($data);

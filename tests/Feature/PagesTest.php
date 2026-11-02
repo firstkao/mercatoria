@@ -23,7 +23,7 @@ test('admin dapat membuat dan mengubah halaman cms', function () {
         'status' => 'publish',
     ])->assertRedirect();
 
-    expect($page->fresh()->content)->toBe('Teks baru.');
+    expect($page->fresh()->content)->toBe('<p>Teks baru.</p>');
 });
 
 test('konten cms panjang berformat html tersimpan utuh tanpa strip tags', function () {
@@ -40,8 +40,28 @@ test('konten cms panjang berformat html tersimpan utuh tanpa strip tags', functi
         'status' => 'publish',
     ])->assertRedirect();
 
+    $stored = (string) Page::where('slug', 'panduan-panjang')->firstOrFail()->content;
+
     expect(strlen($content))->toBeGreaterThan(10000)
-        ->and(Page::where('slug', 'panduan-panjang')->firstOrFail()->content)->toBe($content);
+        ->and($stored)->toContain('<strong>tebal</strong>')
+        ->and($stored)->toContain('href="/tnc"');
+});
+
+test('konten cms di-sanitasi: tag script dan javascript dibuang', function () {
+    $admin = User::factory()->admin()->create();
+
+    $this->actingAs($admin)->post('/office/pages', [
+        'title' => 'Uji XSS',
+        'slug' => 'uji-xss',
+        'content' => '<p>aman</p><script>alert(1)</script><a href="javascript:alert(1)">klik</a>',
+        'status' => 'publish',
+    ])->assertRedirect();
+
+    $content = (string) Page::where('slug', 'uji-xss')->firstOrFail()->content;
+
+    expect($content)->not->toContain('<script')
+        ->and($content)->not->toContain('javascript:')
+        ->and($content)->toContain('<p>aman</p>');
 });
 
 test('halaman cms aktif tampil di halaman publik', function () {

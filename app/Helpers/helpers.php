@@ -5,6 +5,7 @@ use App\Models\Setting;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
+use Mews\Purifier\Facades\Purifier;
 
 if (! function_exists('setting')) {
     /**
@@ -41,6 +42,16 @@ if (! function_exists('format_rp')) {
     function format_rp(float|int|string $amount): string
     {
         return 'Rp'.number_format((float) $amount, 0, ',', '.');
+    }
+}
+
+if (! function_exists('clean_html')) {
+    /**
+     * Sanitasi HTML konten admin (CMS/preorder/email) — hilangkan script & atribut berbahaya (XSS).
+     */
+    function clean_html(?string $html): string
+    {
+        return (string) Purifier::clean((string) $html);
     }
 }
 

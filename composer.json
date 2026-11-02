@@ -15,6 +15,7 @@
         "laravel/framework": "^13.17",
         "laravel/tinker": "^3.0",
         "livewire/livewire": "^3.5",
+        "mews/purifier": "^3.4",
         "spatie/laravel-activitylog": "^4.8",
         "spatie/laravel-honeypot": "^4.4",
         "spatie/laravel-sitemap": "^7.3",

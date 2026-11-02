@@ -17,7 +17,8 @@ test('admin dapat membuat dan mengubah halaman preorder', function () {
 
     $page = PreorderPage::where('slug', 'preorder-baru')->firstOrFail();
 
-    expect($page->content)->toBe($content)
+    // Konten disimpan sebagai hasil sanitasi (XSS) — tag berbahaya hilang, format dipertahankan.
+    expect($page->content)->toBe(clean_html($content))
         ->and($page->status)->toBe('draft');
 
     $this->actingAs($admin)->put("/office/preorder/{$page->id}", [

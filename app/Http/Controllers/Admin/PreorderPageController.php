@@ -31,6 +31,10 @@ class PreorderPageController extends Controller
     public function store(PreorderPageFormRequest $request): RedirectResponse
     {
         $data = $request->validated();
+        if (isset($data['content'])) {
+            $data['content'] = clean_html($data['content']);
+        }
+
         $page = PreorderPage::create($data);
         AdminLog::record($request->user(), 'create', 'PreorderPage', $page->id, null, $data, 'Tambah halaman preorder');
 
@@ -40,6 +44,10 @@ class PreorderPageController extends Controller
     public function update(PreorderPageFormRequest $request, PreorderPage $preorderPage): RedirectResponse
     {
         $data = $request->validated();
+        if (isset($data['content'])) {
+            $data['content'] = clean_html($data['content']);
+        }
+
         [$old, $new] = AdminLog::diff($preorderPage, ['title', 'slug', 'content', 'meta_description', 'status'], $data);
         $preorderPage->update($data);
         AdminLog::record($request->user(), 'update', 'PreorderPage', $preorderPage->id, $old, $new, 'Ubah halaman preorder');
