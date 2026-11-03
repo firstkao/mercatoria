@@ -16,7 +16,7 @@ class SeoMetaService
      */
     public function meta(string $title, ?string $description = null, ?string $image = null): array
     {
-        $description ??= 'Mercatoria — merch & collectibles store untuk IP favoritmu.';
+        $description ??= 'MERCATORIA.';
         $image ??= url('/logo.png');
         $url = url()->current();
 

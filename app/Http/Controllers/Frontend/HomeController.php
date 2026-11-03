@@ -84,7 +84,7 @@ class HomeController extends Controller
             'products' => $products,
             'bestOffers' => $bestOffers,
             'heroSlides' => $heroSlides,
-            'seo' => $this->seo->meta('Mercatoria — Merch & Collectibles Store'),
+            'seo' => $this->seo->meta('MERCATORIA'),
             'jsonLd' => $this->seo->jsonLd(),
         ]);
     }

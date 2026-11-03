@@ -13,9 +13,6 @@
                     <tr>
                         <td align="center" style="padding:24px 28px 16px;border-bottom:1px solid #D8D2C4;">
                             <img src="{{ asset('logo.png') }}" alt="Mercatoria" width="180" style="display:block;height:auto;max-width:180px;">
-                            <p style="margin:10px 0 0;font-family:Arial,Helvetica,sans-serif;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#141B22;opacity:0.55;">
-                                Merch &amp; Collectibles Store
-                            </p>
                         </td>
                     </tr>
                     <tr>
