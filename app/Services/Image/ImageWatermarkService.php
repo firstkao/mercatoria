@@ -16,22 +16,22 @@ class ImageWatermarkService
 
         // Simpan master asli ke folder privat (PRD 8.10).
         $originalDir = storage_path('app/private/originals/'.dirname($target));
-        if (! is_dir($originalDir)) {
-            mkdir($originalDir, 0755, true);
-        }
-        copy($sourcePath, storage_path('app/private/originals/'.$target));
-
-        $manager = ImageManager::gd();
+        $this->ensureDir($originalDir);
+        $this->writeCopy($sourcePath, storage_path('app/private/originals/'.$target));
 
         if (! (bool) setting('image_watermark_enabled', true)) {
             $destDir = storage_path('app/private/'.dirname($target));
-            if (! is_dir($destDir)) {
-                mkdir($destDir, 0755, true);
-            }
-            copy($sourcePath, storage_path('app/private/'.$target));
+            $this->ensureDir($destDir);
+            $this->writeCopy($sourcePath, storage_path('app/private/'.$target));
 
             return $target;
         }
+
+        if (! extension_loaded('gd')) {
+            throw new \RuntimeException('GD not installed - ekstensi GD PHP tidak aktif, gambar tidak bisa diproses.');
+        }
+
+        $manager = ImageManager::gd();
 
         $image = $manager->read($sourcePath);
         $image->text(
@@ -48,12 +48,24 @@ class ImageWatermarkService
         );
 
         $destDir = storage_path('app/private/'.dirname($target));
-        if (! is_dir($destDir)) {
-            mkdir($destDir, 0755, true);
-        }
+        $this->ensureDir($destDir);
 
         $image->save(storage_path('app/private/'.$target));
 
         return $target;
+    }
+
+    private function ensureDir(string $dir): void
+    {
+        if (! is_dir($dir) && ! @mkdir($dir, 0755, true) && ! is_dir($dir)) {
+            throw new \RuntimeException("permission denied - tidak bisa membuat folder {$dir}.");
+        }
+    }
+
+    private function writeCopy(string $source, string $dest): void
+    {
+        if (! @copy($source, $dest)) {
+            throw new \RuntimeException("permission denied - tidak bisa menulis file {$dest}.");
+        }
     }
 }

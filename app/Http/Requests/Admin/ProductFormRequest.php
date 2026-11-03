@@ -4,8 +4,10 @@ namespace App\Http\Requests\Admin;
 
 use App\Models\Product;
 use App\Models\ProductVariant;
+use App\Services\Image\UploadError;
 use App\Services\Order\ShippingCalculatorService;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Validator;
 
@@ -110,6 +112,31 @@ class ProductFormRequest extends FormRequest
         throw new \RuntimeException(
             "ProductFormRequest: no rules for action '{$action}'. Check controller method name."
         );
+    }
+
+    /**
+     * Gagal level PHP (valid() = false) selalu di-report Laravel generik
+     * "The image failed to upload." — ganti dengan alasan spesifik per file.
+     */
+    public function messages(): array
+    {
+        $messages = [];
+
+        foreach (['image', 'description_image'] as $field) {
+            $file = $this->file($field);
+            if ($file instanceof UploadedFile && ! $file->isValid()) {
+                $messages[$field.'.uploaded'] = 'Upload gagal: '.UploadError::describe($file);
+            }
+        }
+
+        foreach (array_keys($this->file('variants') ?? []) as $i) {
+            $file = $this->file("variants.{$i}.image");
+            if ($file instanceof UploadedFile && ! $file->isValid()) {
+                $messages["variants.{$i}.image.uploaded"] = 'Upload gagal: '.UploadError::describe($file);
+            }
+        }
+
+        return $messages;
     }
 
     public function after(): array

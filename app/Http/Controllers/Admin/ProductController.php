@@ -19,12 +19,14 @@ use App\Models\Store;
 use App\Models\Tag;
 use App\Services\Image\ImageOptimizerService;
 use App\Services\Image\ImageWatermarkService;
+use App\Services\Image\UploadError;
 use App\Services\Order\ShippingCalculatorService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
 class ProductController extends Controller
@@ -154,7 +156,7 @@ class ProductController extends Controller
 
             if ($request->hasFile("variants.{$i}.image")) {
                 $validated['image_path'] = $this->storeImage(
-                    $request->file("variants.{$i}.image"), 'var', null
+                    $request->file("variants.{$i}.image"), 'var', null, "variants.{$i}.image"
                 );
             }
 
@@ -496,7 +498,7 @@ class ProductController extends Controller
         $data = $request->validated();
 
         if ($request->hasFile('image')) {
-            $data['image_path'] = $this->storeImage($request->file('image'), 'var', null);
+            $data['image_path'] = $this->storeImage($request->file('image'), 'var', null, 'image');
         }
         unset($data['image']);
 
@@ -526,7 +528,7 @@ class ProductController extends Controller
         $old = $variant->only(['name', 'sku', 'price_rmb', 'weight_gram', 'availability']);
 
         if ($request->hasFile('image')) {
-            $data['image_path'] = $this->storeImage($request->file('image'), 'var', $variant->image_path);
+            $data['image_path'] = $this->storeImage($request->file('image'), 'var', $variant->image_path, 'image');
         }
         unset($data['image']);
 
@@ -706,13 +708,13 @@ class ProductController extends Controller
     {
         // ── Foto utama ──
         if ($request->hasFile('image')) {
-            $data['image_path'] = $this->storeImage($request->file('image'), 'img', $product?->image_path);
+            $data['image_path'] = $this->storeImage($request->file('image'), 'img', $product?->image_path, 'image');
         }
 
         // ── Gambar deskripsi ──
         if ($request->hasFile('description_image')) {
             $data['description_image_path'] = $this->storeImage(
-                $request->file('description_image'), 'desc', $product?->description_image_path
+                $request->file('description_image'), 'desc', $product?->description_image_path, 'description_image'
             );
         } elseif ($request->boolean('remove_description_image') && $product?->description_image_path) {
             // User klik "Hapus" tanpa upload baru → hapus file existing.
@@ -733,13 +735,28 @@ class ProductController extends Controller
     /**
      * Simpan via ImageWatermarkService (master → private/originals, versi tayang ter-watermark).
      */
-    private function storeImage(UploadedFile $file, string $prefix, ?string $oldPath): string
+    private function storeImage(UploadedFile $file, string $prefix, ?string $oldPath, string $field = 'image'): string
     {
+        if (! $file->isValid()) {
+            throw ValidationException::withMessages([
+                $field => 'Upload gagal: '.UploadError::describe($file),
+            ]);
+        }
+
         $ext = strtolower($file->getClientOriginalExtension() ?: 'jpg');
-        $target = $this->watermark->watermark(
-            $file->getRealPath(),
-            'products/'.sprintf('%s-%s.%s', $prefix, Str::random(20), $ext)
-        );
+
+        try {
+            $target = $this->watermark->watermark(
+                $file->getRealPath(),
+                'products/'.sprintf('%s-%s.%s', $prefix, Str::random(20), $ext)
+            );
+        } catch (\Throwable $e) {
+            report($e);
+
+            throw ValidationException::withMessages([
+                $field => 'Upload gagal: '.UploadError::describeProcessing($e),
+            ]);
+        }
 
         // PRD 13.6: auto-delete foto lama saat override (snapshot order tidak tersentuh).
         if ($oldPath && $oldPath !== $target && str_starts_with($oldPath, 'products/')) {

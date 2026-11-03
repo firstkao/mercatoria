@@ -107,3 +107,33 @@ test('image_path manual tetap kompatibel', function () {
 
     expect($product->image_path)->toBe('products/manual-lama.png');
 });
+
+test('gagal level PHP menampilkan alasan spesifik, bukan failed to upload generik', function () {
+    $admin = User::factory()->admin()->create();
+
+    $file = new UploadedFile('', 'besar.jpg', 'image/jpeg', UPLOAD_ERR_INI_SIZE, true);
+
+    $this->actingAs($admin)->post('/office/products', productUploadPayload([
+        'image' => $file,
+    ]))->assertSessionHasErrors('image');
+
+    expect(session('errors')->first('image'))
+        ->toContain('Upload gagal:')
+        ->toContain('file too large')
+        ->not->toContain('failed to upload');
+});
+
+test('gagal level PHP pada description_image menampilkan alasan spesifik', function () {
+    $admin = User::factory()->admin()->create();
+
+    $file = new UploadedFile('', 'deskripsi.jpg', 'image/jpeg', UPLOAD_ERR_CANT_WRITE, true);
+
+    $this->actingAs($admin)->post('/office/products', productUploadPayload([
+        'description_image' => $file,
+    ]))->assertSessionHasErrors('description_image');
+
+    expect(session('errors')->first('description_image'))
+        ->toContain('Upload gagal:')
+        ->toContain('permission denied')
+        ->not->toContain('failed to upload');
+});

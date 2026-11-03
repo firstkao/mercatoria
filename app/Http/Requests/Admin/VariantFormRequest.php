@@ -3,8 +3,10 @@
 namespace App\Http\Requests\Admin;
 
 use App\Models\ProductVariant;
+use App\Services\Image\UploadError;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Validation\Rule;
 
 class VariantFormRequest extends FormRequest
@@ -38,5 +40,20 @@ class VariantFormRequest extends FormRequest
             'availability' => ['required', 'in:tersedia,kosong'],
             'image' => ['nullable', 'file', 'mimes:jpg,jpeg,png,webp', 'max:6144'],
         ];
+    }
+
+    /**
+     * Gagal level PHP (isValid() = false) selalu di-report Laravel generik
+     * "The image failed to upload." — ganti dengan alasan spesifik.
+     */
+    public function messages(): array
+    {
+        $file = $this->file('image');
+
+        if ($file instanceof UploadedFile && ! $file->isValid()) {
+            return ['image.uploaded' => 'Upload gagal: '.UploadError::describe($file)];
+        }
+
+        return [];
     }
 }
