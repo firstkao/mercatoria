@@ -17,6 +17,7 @@ use App\Models\Voucher;
 use App\Services\Cart\CheckoutService;
 use App\Services\Order\OrderStatusService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Str;
 use Tests\TestCase;
 
@@ -85,6 +86,51 @@ function productFinal85(): Product
         'weight_gram' => 0,
         'store_id' => null,
     ]);
+}
+
+/**
+ * UploadedFile gambar noise deterministik — konten "ramat" seperti screenshot/foto
+ * asli sehingga hasil kompresi nyata (bukan blok warna solid yang selalu menciut).
+ */
+function noisyUploadedImage(string $name, int $width, int $height): UploadedFile
+{
+    $isPng = str_ends_with(strtolower($name), '.png');
+    $im = imagecreatetruecolor($width, $height);
+
+    if ($isPng) {
+        imagealphablending($im, false);
+        imagesavealpha($im, true);
+    }
+
+    $palette = [];
+    for ($i = 0; $i < 4096; $i++) {
+        $palette[$i] = $isPng
+            ? imagecolorallocatealpha($im, ($i * 17) % 256, ($i * 29) % 256, ($i * 43) % 256, $i % 128)
+            : imagecolorallocate($im, ($i * 17) % 256, ($i * 29) % 256, ($i * 43) % 256);
+    }
+
+    for ($y = 0; $y < $height; $y++) {
+        for ($x = 0; $x < $width; $x++) {
+            $k = ($x * 137 + $y * 251 + intdiv($x * $y, 7)) & 4095;
+            imagesetpixel($im, $x, $y, $palette[$k]);
+        }
+    }
+
+    $target = tempnam(sys_get_temp_dir(), 'noisy').'.'.$name;
+    if ($isPng) {
+        imagepng($im, $target);
+    } else {
+        imagejpeg($im, $target, 95);
+    }
+    imagedestroy($im);
+
+    return new UploadedFile(
+        $target,
+        $name,
+        $isPng ? 'image/png' : 'image/jpeg',
+        null,
+        true
+    );
 }
 
 /**

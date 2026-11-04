@@ -72,6 +72,13 @@ foreach (['tentang-kami', 'faq', 'cara-belanja', 'tnc', 'kebijakan-privasi', 'bl
 Route::get('/protected-images/{filename}', [ProtectedImageController::class, 'show'])
     ->name('protected-images.show');
 
+// File tayang dari storage privat (products/games/developers/hero-slides).
+// URL /storage/* dibangkitkan Storage::url() untuk disk local; master originals/
+// dan payment-proofs tetap tidak tayang (lihat ProtectedImageController::showFile).
+Route::get('/storage/{path}', [ProtectedImageController::class, 'showFile'])
+    ->where('path', '.+\.(?:jpe?g|png|webp|gif|avif|svg)$')
+    ->name('storage.file');
+
 // Dropdown berantai alamat (PRD 7.3)
 Route::prefix('api/regions')->group(function () {
     Route::get('/provinces', [RegionController::class, 'provinces'])->name('api.regions.provinces');

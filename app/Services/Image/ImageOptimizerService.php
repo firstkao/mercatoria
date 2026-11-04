@@ -4,6 +4,7 @@ namespace App\Services\Image;
 
 use Illuminate\Support\Facades\Storage;
 use Intervention\Image\ImageManager;
+use Intervention\Image\Interfaces\ImageInterface;
 
 class ImageOptimizerService
 {
@@ -19,7 +20,7 @@ class ImageOptimizerService
 
     /**
      * Buat versi -compressed (maks 1200px, kualitas 80) dan -thumb (300x300 cover)
-     * di folder yang sama dengan file sumber. File sumber tidak diubah.
+     * di folder yang sama dengan file sumber. File sumber tidak dihapus/diubah.
      *
      * @return array{compressed: string, thumb: string} path absolut hasil
      */
@@ -29,16 +30,20 @@ class ImageOptimizerService
         $manager = ImageManager::gd();
 
         $compressedPath = self::variantPath($absoluteSource, self::COMPRESSED);
-        $manager->read($absoluteSource)
-            ->scaleDown(width: self::MAX_WIDTH)
-            ->encodeByExtension($extension, quality: self::QUALITY)
-            ->save($compressedPath);
+        $this->writeCompressed(
+            $manager->read($absoluteSource)->scaleDown(width: self::MAX_WIDTH),
+            $extension,
+            $compressedPath,
+            $absoluteSource
+        );
 
         $thumbPath = self::variantPath($absoluteSource, self::THUMB);
-        $manager->read($absoluteSource)
-            ->cover(self::THUMB_SIZE, self::THUMB_SIZE)
-            ->encodeByExtension($extension, quality: self::QUALITY)
-            ->save($thumbPath);
+        $this->encode(
+            $manager->read($absoluteSource)->cover(self::THUMB_SIZE, self::THUMB_SIZE),
+            $extension,
+            $thumbPath,
+            self::QUALITY
+        );
 
         return ['compressed' => $compressedPath, 'thumb' => $thumbPath];
     }
@@ -56,8 +61,9 @@ class ImageOptimizerService
     }
 
     /**
-     * Path relatif versi yang tersedia di disk privat; fallback ke file asli untuk gambar lama
-     * yang belum punya versi hasil optimasi.
+     * Path relatif versi yang tersedia di disk privat. Fallback berurutan:
+     * versi yang diminta → file asli → versi lain yang tersedia (file asli hilang,
+     * mis. hanya -compressed yang tersisa) → path asli.
      */
     public static function displayPath(?string $relativePath, string $suffix): ?string
     {
@@ -65,9 +71,20 @@ class ImageOptimizerService
             return null;
         }
 
-        $variant = self::variantPath($relativePath, $suffix);
+        $candidates = array_unique([
+            self::variantPath($relativePath, $suffix),
+            $relativePath,
+            self::variantPath($relativePath, self::COMPRESSED),
+            self::variantPath($relativePath, self::THUMB),
+        ]);
 
-        return is_file(storage_path('app/private/'.$variant)) ? $variant : $relativePath;
+        foreach ($candidates as $candidate) {
+            if (is_file(storage_path('app/private/'.$candidate))) {
+                return $candidate;
+            }
+        }
+
+        return $relativePath;
     }
 
     public static function url(?string $relativePath, string $suffix): ?string
@@ -75,6 +92,49 @@ class ImageOptimizerService
         $path = self::displayPath($relativePath, $suffix);
 
         return $path ? Storage::url($path) : null;
+    }
+
+    /**
+     * Encode + tulis varian. PNG dikodeksi lewat GD langsung dengan compression level
+     * dari quality — encodeByExtension tidak bisa: Format::encoder membuang opsi
+     * `quality` untuk PngEncoder (parameternya hanya interlaced/indexed).
+     */
+    private function encode(ImageInterface $image, string $extension, string $dest, int $quality): void
+    {
+        if ($extension === 'png') {
+            imagepng($image->core()->native(), $dest, self::pngLevel($quality));
+
+            return;
+        }
+
+        $image->encodeByExtension($extension, quality: $quality)->save($dest);
+    }
+
+    private static function pngLevel(int $quality): int
+    {
+        return max(0, min(9, (int) round($quality / 10)));
+    }
+
+    /**
+     * Varian -compressed wajib lebih kecil dari file sumber. Kalau encode quality 80
+     * gagal mengecilkan (PNG hasil encode GD, atau JPEG yang di-encode ulang dari
+     * kualitas lebih rendah), pakai langkah fallback yang lebih agresif:
+     * PNG → palet 255 warna + level 9; selain PNG → quality 60.
+     */
+    private function writeCompressed(ImageInterface $image, string $extension, string $dest, string $source): void
+    {
+        $this->encode($image, $extension, $dest, self::QUALITY);
+
+        if (is_file($dest) && filesize($dest) < filesize($source)) {
+            return;
+        }
+
+        if ($extension === 'png') {
+            $image->reduceColors(255);
+            $this->encode($image, $extension, $dest, 100);
+        } else {
+            $this->encode($image, $extension, $dest, 60);
+        }
     }
 
     public function deleteVariants(string $relativePath): void

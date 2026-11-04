@@ -4,7 +4,9 @@ use App\Models\AdminLog;
 use App\Models\Game;
 use App\Models\Product;
 use App\Models\User;
+use App\Services\Image\ImageOptimizerService;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 
 function productUploadPayload(array $overrides = []): array
 {
@@ -136,4 +138,100 @@ test('gagal level PHP pada description_image menampilkan alasan spesifik', funct
         ->toContain('Upload gagal:')
         ->toContain('permission denied')
         ->not->toContain('failed to upload');
+});
+
+test('upload PNG besar (>4MB): original + compressed + thumb semua ada, compressed lebih kecil', function () {
+    $admin = User::factory()->admin()->create();
+    $file = noisyUploadedImage('besar.png', 1400, 1400);
+    expect(filesize($file->getRealPath()))->toBeGreaterThan(4 * 1024 * 1024);
+
+    $this->actingAs($admin)->post('/office/products', productUploadPayload([
+        'description_image' => $file,
+    ]))->assertRedirect();
+
+    $product = Product::where('sku', 'like', 'IMG-%')->latest('id')->firstOrFail();
+    $path = $product->description_image_path;
+
+    $stored = storage_path('app/private/'.$path);
+    $compressed = storage_path('app/private/'.ImageOptimizerService::variantPath($path, 'compressed'));
+    $thumb = storage_path('app/private/'.ImageOptimizerService::variantPath($path, 'thumb'));
+
+    expect(file_exists($stored))->toBeTrue()
+        ->and(file_exists($compressed))->toBeTrue()
+        ->and(file_exists($thumb))->toBeTrue()
+        ->and(filesize($compressed))->toBeLessThan(filesize($stored));
+});
+
+test('upload JPEG: original + compressed + thumb semua ada, compressed lebih kecil', function () {
+    $admin = User::factory()->admin()->create();
+
+    $this->actingAs($admin)->post('/office/products', productUploadPayload([
+        'image' => noisyUploadedImage('foto.jpg', 1200, 800),
+    ]))->assertRedirect();
+
+    $product = Product::where('sku', 'like', 'IMG-%')->latest('id')->firstOrFail();
+    $path = $product->image_path;
+
+    $stored = storage_path('app/private/'.$path);
+    $compressed = storage_path('app/private/'.ImageOptimizerService::variantPath($path, 'compressed'));
+    $thumb = storage_path('app/private/'.ImageOptimizerService::variantPath($path, 'thumb'));
+
+    expect(file_exists($stored))->toBeTrue()
+        ->and(file_exists($compressed))->toBeTrue()
+        ->and(file_exists($thumb))->toBeTrue()
+        ->and(filesize($compressed))->toBeLessThan(filesize($stored));
+});
+
+test('URL gambar di halaman product menunjuk ke file yang benar-benar ada di disk', function () {
+    $admin = User::factory()->admin()->create();
+
+    $this->actingAs($admin)->post('/office/products', productUploadPayload([
+        'image' => UploadedFile::fake()->image('tampil.jpg'),
+    ]))->assertRedirect();
+
+    $product = Product::where('sku', 'like', 'IMG-%')->latest('id')->firstOrFail();
+    $path = $product->image_path;
+
+    $pairs = [
+        ImageOptimizerService::url($path, 'compressed') => ImageOptimizerService::variantPath($path, 'compressed'),
+        ImageOptimizerService::url($path, 'thumb') => ImageOptimizerService::variantPath($path, 'thumb'),
+        Storage::url($path) => $path,
+    ];
+
+    foreach ($pairs as $url => $diskRelative) {
+        $response = $this->get($url)->assertOk();
+        expect($response->headers->get('Content-Type'))->toContain('image')
+            ->and($response->getContent())->toBe(file_get_contents(storage_path('app/private/'.$diskRelative)));
+    }
+});
+
+test('ganti foto produk: file lama terhapus dan set baru lengkap (original + compressed + thumb)', function () {
+    $admin = User::factory()->admin()->create();
+
+    $this->actingAs($admin)->post('/office/products', productUploadPayload([
+        'image' => UploadedFile::fake()->image('satu.jpg'),
+    ]))->assertRedirect();
+
+    $product = Product::where('sku', 'like', 'IMG-%')->latest('id')->firstOrFail();
+    $old = $product->image_path;
+
+    $this->actingAs($admin)->put("/office/products/{$product->id}", productUploadPayload([
+        'image' => UploadedFile::fake()->image('dua.jpg'),
+    ]))->assertRedirect();
+
+    $product->refresh();
+    $new = $product->image_path;
+
+    expect($new)->not->toBe($old);
+
+    // Set lama bersih total (base + variants + master).
+    expect(file_exists(storage_path('app/private/'.$old)))->toBeFalse()
+        ->and(file_exists(storage_path('app/private/'.ImageOptimizerService::variantPath($old, 'compressed'))))->toBeFalse()
+        ->and(file_exists(storage_path('app/private/'.ImageOptimizerService::variantPath($old, 'thumb'))))->toBeFalse()
+        ->and(file_exists(storage_path('app/private/originals/'.$old)))->toBeFalse();
+
+    // Set baru lengkap — original TIDAK ikut terhapus saat generate variants.
+    expect(file_exists(storage_path('app/private/'.$new)))->toBeTrue()
+        ->and(file_exists(storage_path('app/private/'.ImageOptimizerService::variantPath($new, 'compressed'))))->toBeTrue()
+        ->and(file_exists(storage_path('app/private/'.ImageOptimizerService::variantPath($new, 'thumb'))))->toBeTrue();
 });

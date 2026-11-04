@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 use Symfony\Component\HttpFoundation\Response;
 
 class ProtectedImageController extends Controller
@@ -33,6 +34,27 @@ class ProtectedImageController extends Controller
         return response((string) file_get_contents($path), 200, [
             'Content-Type' => mime_content_type($path) ?: 'image/png',
             'X-Protected-Image' => '1',
+        ]);
+    }
+
+    /**
+     * Sajikan file gambar tayang dari storage privat untuk URL /storage/* yang
+     * dibangkitkan Storage::url() (disk local, root app/private). Hanya subfolder
+     * gambar publik yang boleh tayang — master originals/ dan payment-proofs
+     * tetap privat.
+     */
+    public function showFile(string $path): Response
+    {
+        $path = str_replace('\\', '/', $path);
+        abort_if(str_contains($path, '..'), 404);
+        abort_unless(Str::startsWith($path, ['products/', 'games/', 'developers/', 'hero-slides/']), 404);
+
+        $absolute = storage_path('app/private/'.$path);
+        abort_unless(is_file($absolute), 404);
+
+        return response((string) file_get_contents($absolute), 200, [
+            'Content-Type' => mime_content_type($absolute) ?: 'application/octet-stream',
+            'Cache-Control' => 'public, max-age=86400',
         ]);
     }
 

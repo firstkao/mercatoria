@@ -33,7 +33,9 @@ return [
         'local' => [
             'driver' => 'local',
             'root' => storage_path('app/private'),
-            'serve' => true,
+            // serve dimatikan: route ServeFile bawaan hanya melayani URL bertanda tangan
+            // (Storage::url() selalu polos → 403). Penyajian file tayang ditangani
+            // ProtectedImageController::showFile dengan whitelist subfolder publik.
             'throw' => false,
             'report' => false,
         ],
