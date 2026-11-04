@@ -577,7 +577,7 @@
 <div class="pp-share">
     <p class="pp-share-title">Bagikan Produk Ini</p>
     @auth
-        <p class="pp-share-note">Bagikan &amp; dapat <strong>+5 koin</strong> per IP Indonesia unik saat link dibuka.</p>
+        <p class="pp-share-note">Bagikan &amp; dapatkan <strong>+5 koin</strong> per IP Indonesia unik saat link dibuka.</p>
     @else
         <p class="pp-share-note">
             <a href="{{ route('login') }}">Masuk</a> untuk membagikan link referral dan mendapat koin.
@@ -618,8 +618,8 @@
                             <img src="https://upload.wikimedia.org/wikipedia/commons/e/e0/QRIS_Logo.svg"
                                  alt="QRIS" loading="lazy">
                         </div>
-                        <div class="pp-pay-logo shopee">
-                            <img src="https://upload.wikimedia.org/wikipedia/commons/f/fe/Shopee.svg"
+                        <div class="pp-pay-logo">
+                            <img src="https://shopeepay.com/static/media/shopeePayLogo.e0c80b4be312ff7fc6bd1220fd56142d.svg"
                                  alt="ShopeePay" loading="lazy">
                         </div>
                     </div>
