@@ -32,7 +32,11 @@ test('UAT permission: guest dialihkan ke login di SEMUA route /office', function
         $method = collect($route->methods())->first(fn ($m) => $m !== 'HEAD');
 
         $response = $this->call($method, '/'.$uri);
-        expect($response->status())->toBeIn([302, 401, 419], "{$method} /{$uri}");
+        // Route bukti bayar menjawab 403 untuk guest/non-admin (middleware admin tanpa auth).
+        expect($response->status())->toBeIn(
+            str_contains($route->uri(), 'payment-proofs') ? [302, 401, 419, 403] : [302, 401, 419],
+            "{$method} /{$uri}"
+        );
     }
 });
 

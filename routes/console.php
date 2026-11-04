@@ -18,6 +18,7 @@ Schedule::command('notification:purge')->dailyAt('03:30')->timezone('Asia/Jakart
 Schedule::command('user:purge-crush')->dailyAt('04:00')->timezone('Asia/Jakarta');
 Schedule::command('spammer:recheck-grace')->dailyAt('05:30')->timezone('Asia/Jakarta');
 Schedule::command('payments:purge-proofs')->dailyAt('03:45')->timezone('Asia/Jakarta');
+Schedule::command('storage:cleanup-orphans')->weeklyOn(0, '03:00')->timezone('Asia/Jakarta');
 Schedule::command('sitemap:generate')->dailyAt('06:00')->timezone('Asia/Jakarta');
 Schedule::command('user:birthday-bonus')->dailyAt('07:00')->timezone('Asia/Jakarta');
 Schedule::command('coin:expire')->dailyAt('08:10')->timezone('Asia/Jakarta');

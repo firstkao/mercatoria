@@ -79,6 +79,12 @@ Route::get('/storage/{path}', [ProtectedImageController::class, 'showFile'])
     ->where('path', '.+\.(?:jpe?g|png|webp|gif|avif|svg)$')
     ->name('storage.file');
 
+// Bukti bayar (PRD 17.7) — folder payment-proofs saja, khusus admin (guest/non-admin 403).
+Route::get('/office/payment-proofs/{path}', [ProtectedImageController::class, 'showPaymentProof'])
+    ->middleware('admin')
+    ->where('path', '.*')
+    ->name('office.payment-proofs.show');
+
 // Dropdown berantai alamat (PRD 7.3)
 Route::prefix('api/regions')->group(function () {
     Route::get('/provinces', [RegionController::class, 'provinces'])->name('api.regions.provinces');

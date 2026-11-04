@@ -59,6 +59,24 @@ class ProtectedImageController extends Controller
     }
 
     /**
+     * Bukti bayar (PRD 17.7) — hanya admin (middleware admin), folder payment-proofs saja.
+     * Dipakai link "Lihat" di halaman order admin.
+     */
+    public function showPaymentProof(string $path): Response
+    {
+        $path = str_replace('\\', '/', $path);
+        abort_if(str_contains($path, '..'), 404);
+
+        $absolute = storage_path('app/private/payment-proofs/'.$path);
+        abort_unless(is_file($absolute), 404);
+
+        return response((string) file_get_contents($absolute), 200, [
+            'Content-Type' => mime_content_type($absolute) ?: 'application/octet-stream',
+            'Cache-Control' => 'private, max-age=300',
+        ]);
+    }
+
+    /**
      * Gambar decoy: kotak gelap dengan teks heavy watermark.
      */
     private function decoyPng(): string

@@ -226,7 +226,7 @@
                                     <td class="py-1.5 text-ink/80">{{ format_rp($payment->amount) }}</td>
                                     <td class="py-1.5">
                                         @if ($payment->proof_path ?? $payment->file_path ?? null)
-                                            <a href="{{ \Illuminate\Support\Facades\Storage::url($payment->proof_path ?? $payment->file_path) }}" target="_blank" class="text-link underline decoration-link/35 underline-offset-4">Lihat</a>
+                                            <a href="{{ route('office.payment-proofs.show', ['path' => basename($payment->proof_path ?? $payment->file_path)]) }}" target="_blank" class="text-link underline decoration-link/35 underline-offset-4">Lihat</a>
                                         @else
                                             <span class="text-ink/40">—</span>
                                         @endif
