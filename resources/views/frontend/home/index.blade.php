@@ -14,7 +14,8 @@
     @include('frontend.partials._header')
 
     <main class="flex-1">
-        {{-- Hero Carousel (PRD 40.2) — foto saja, tanpa teks overlay --}}
+
+        {{-- ═══ HERO CAROUSEL (PRD 40.2) — foto saja, tanpa teks overlay ═══ --}}
         <section id="hero" class="mx-auto max-w-[1200px] px-8 py-6">
             @if (count($heroSlides ?? []) > 0)
                 <div class="relative overflow-hidden rounded-lg border border-rule" id="hero-carousel">
@@ -45,23 +46,32 @@
             <div class="mt-3 h-px bg-rule"></div>
         </section>
 
-        {{-- Jelajahi Game Favoritmu (PRD 40.4 / Design Spec 4.4.3) --}}
+        {{-- ═══ JELAJAHI GAME FAVORITMU (PRD 40.4) ═══ --}}
         <section id="game-grid" class="mx-auto max-w-[1200px] px-8 pb-12">
             <h2 class="text-center font-display text-[50px] font-semibold text-ink">Jelajahi Game Favoritmu</h2>
             <p class="mt-2 text-center text-[16px] text-ink/60">Temukan merchandise eksklusif dari game favoritmu dan lihat koleksi lengkapnya di setiap kategori!</p>
 
-            <div class="mt-6 grid grid-cols-2 gap-4 md:grid-cols-4 lg:grid-cols-6">
+            {{-- 6 kolom desktop / 3 tablet / 2 mobile — title di BAWAH gambar + badge jumlah produk --}}
+            <div class="mt-6 grid grid-cols-2 gap-5 md:grid-cols-3 lg:grid-cols-6">
                 @forelse (($games ?? collect()) as $game)
-                    <a href="{{ route('catalog.game', $game->slug) }}" class="group relative block aspect-square overflow-hidden rounded-lg bg-paper">
-                        @if ($game->logo_path)
-                            <img src="{{ \Illuminate\Support\Facades\Storage::url($game->logo_path) }}" alt="{{ $game->name }}" class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]">
-                        @else
-                            <div class="flex h-full w-full items-center justify-center bg-[#F5F7FA]">
-                                <span class="font-mono text-[10px] uppercase tracking-[0.18em] text-ink/35">{{ $game->name }}</span>
-                            </div>
-                        @endif
-                        <div class="absolute bottom-2 left-1/2 w-[82%] -translate-x-1/2 rounded bg-white/92 px-2 py-1.5 text-center">
-                            <p class="text-[13px] font-bold uppercase leading-tight text-ink">{{ $game->name }}</p>
+                    <a href="{{ route('catalog.game', $game->slug) }}" class="group block text-center">
+                        <div class="relative aspect-square overflow-hidden rounded-lg bg-paper">
+                            @if ($game->logo_path)
+                                <img src="{{ \Illuminate\Support\Facades\Storage::url($game->logo_path) }}"
+                                     alt="{{ $game->name }}"
+                                     class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]">
+                            @else
+                                <div class="flex h-full w-full items-center justify-center bg-[#F5F7FA]">
+                                    <span class="font-mono text-[10px] uppercase tracking-[0.18em] text-ink/35">{{ $game->name }}</span>
+                                </div>
+                            @endif
+                        </div>
+                        {{-- Title di bawah gambar (bukan overlay) --}}
+                        <div class="mt-2">
+                            <h3 class="text-[13px] font-bold text-ink leading-tight">{{ $game->name }}</h3>
+                            @if (isset($game->products_count))
+                                <mark class="mt-0.5 inline-block rounded bg-[#F5F7FA] px-1.5 py-[1px] text-[11px] text-ink/60">{{ $game->products_count }} Produk</mark>
+                            @endif
                         </div>
                     </a>
                 @empty
@@ -70,32 +80,53 @@
             </div>
         </section>
 
-        {{-- MERCH BARU (PRD 40.6 / Design Spec 4.4.4) --}}
+        {{-- ═══ MERCH BARU (PRD 40.6) ═══ --}}
         <section id="merch-baru" class="mx-auto max-w-[1200px] px-8 pb-14">
             <h2 class="text-center text-[28px] font-bold uppercase tracking-wide text-ink">MERCH BARU</h2>
 
-            <div class="mt-5 grid grid-cols-2 gap-3.5 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-7">
+            {{-- 7 kolom desktop / 3 tablet / 2 mobile --}}
+            <div class="mt-5 grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-7">
                 @forelse (($products ?? collect()) as $product)
                     <a href="{{ route('product.show', [$product->game->slug, $product->slug]) }}" class="group block">
-                        <div class="relative aspect-[5/4] overflow-hidden rounded bg-paper">
+
+                        {{-- Gambar SQUARE + Badge segitiga di pojok kiri atas --}}
+                        <div class="relative aspect-square overflow-hidden rounded bg-paper">
                             @if ($product->image_path)
-                                <img src="{{ \App\Services\Image\ImageOptimizerService::url($product->image_path, 'thumb') }}" alt="{{ $product->name }}" class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]">
+                                <img src="{{ \App\Services\Image\ImageOptimizerService::url($product->image_path, 'thumb') }}"
+                                     alt="{{ $product->name }}"
+                                     class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]">
                             @endif
+
+                            {{-- Badge: bentuk segitiga/panah kanan (seperti awl-triangled) --}}
                             @if ($product->tags->contains('slug', 'presale'))
-                                <span class="absolute left-2 top-2 rounded bg-[#3986C6] px-2 py-[3px] text-[9px] font-bold uppercase text-white">PRESALE</span>
+                                <div class="absolute left-0 top-0 flex" style="z-index:9;">
+                                    <span class="bg-[#3986C6] px-[6px] py-[3px] text-[11px] font-bold uppercase leading-none text-white">PRESALE</span>
+                                    <svg viewBox="0 0 100 100" preserveAspectRatio="none" class="w-[8px] self-stretch"><polygon points="0,0 0,100 100,50" fill="#3986C6"/></svg>
+                                </div>
                             @elseif ($product->tags->contains('slug', 'limited'))
-                                <span class="absolute left-2 top-2 rounded bg-[#E53935] px-2 py-[3px] text-[9px] font-bold uppercase text-white">LIMITED</span>
+                                <div class="absolute left-0 top-0 flex" style="z-index:9;">
+                                    <span class="bg-[#FF4949] px-[6px] py-[3px] text-[11px] font-bold uppercase leading-none text-white">LIMITED</span>
+                                    <svg viewBox="0 0 100 100" preserveAspectRatio="none" class="w-[8px] self-stretch"><polygon points="0,0 0,100 100,50" fill="#FF4949"/></svg>
+                                </div>
                             @endif
                         </div>
-                        <p class="mt-1.5 text-[15px] font-bold text-ink">{{ $product->name }}</p>
-                        @if (!empty($product->price_min) && !empty($product->price_max))
-                            <p class="mt-0.5 text-[15px]">
-                                <span class="text-[13px] text-ink/45 line-through">{{ format_rp($product->price_min) }}</span>
-                                <span class="text-ink/45"> – </span>
-                                <strong class="text-ink">{{ format_rp($product->price_max) }}</strong>
+
+                        {{-- Nama produk: [GAME] Nama Produk --}}
+                        <p class="mt-1.5 text-[13px] font-bold text-ink leading-snug">
+                            {{ $product->name }}
+                        </p>
+
+                        {{-- Harga --}}
+                        @if (!empty($product->price_min) && !empty($product->price_max) && $product->price_min != $product->price_max)
+                            <p class="mt-0.5 text-[13px]">
+                                <span class="text-ink/40 line-through">{{ format_rp($product->price_min) }}</span>
+                                <span class="text-ink/40"> – </span>
+                                <strong class="font-bold text-ink">{{ format_rp($product->price_max) }}</strong>
                             </p>
                         @elseif (!empty($product->price_idr))
-                            <p class="mt-0.5 text-[15px] font-bold text-ink">{{ format_rp($product->price_idr) }}</p>
+                            <p class="mt-0.5 text-[13px] font-bold text-ink">{{ format_rp($product->price_idr) }}</p>
+                        @elseif (!empty($product->price_max))
+                            <p class="mt-0.5 text-[13px] font-bold text-ink">{{ format_rp($product->price_max) }}</p>
                         @endif
                     </a>
                 @empty
