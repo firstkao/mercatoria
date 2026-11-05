@@ -65,19 +65,7 @@ class AppServiceProvider extends ServiceProvider
             $cartCount = 0;
 
             if ($user) {
-                [$cartTotal, $cartCount] = self::perRequest('nav_cart', function () use ($user): array {
-                    $shipping = app(ShippingCalculatorService::class);
-                    $total = 0;
-                    $count = 0;
-
-                    foreach (Cart::with(['product.game.defaultStore', 'product.store', 'variant'])->where('user_id', $user->id)->get() as $item) {
-                        $pricing = $shipping->calculateItemShipping($item->product, $item->variant);
-                        $total += $pricing['final_price_bersih'] * $item->qty;
-                        $count += $item->qty;
-                    }
-
-                    return [$total, $count];
-                });
+                [$cartTotal, $cartCount] = self::perRequest('nav_cart', fn () => self::cartSummary($user));
             }
 
             $view->with('navGames', $this->activeGames())
@@ -142,6 +130,27 @@ class AppServiceProvider extends ServiceProvider
         }
 
         return $attributes->get($key);
+    }
+
+    /**
+     * Total harga bersih + jumlah item keranjang user.
+     * Dipakai composer navbar (page load) dan CartController@store (respons JSON AJAX) agar angkanya selalu sama.
+     *
+     * @return array{0: int|float, 1: int}
+     */
+    public static function cartSummary(\App\Models\User $user): array
+    {
+        $shipping = app(ShippingCalculatorService::class);
+        $total = 0;
+        $count = 0;
+
+        foreach (Cart::with(['product.game.defaultStore', 'product.store', 'variant'])->where('user_id', $user->id)->get() as $item) {
+            $pricing = $shipping->calculateItemShipping($item->product, $item->variant);
+            $total += $pricing['final_price_bersih'] * $item->qty;
+            $count += $item->qty;
+        }
+
+        return [$total, $count];
     }
 
     private function activeGames(): Collection
