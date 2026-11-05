@@ -119,7 +119,7 @@
         @if ($items->isEmpty())
             <div class="cart-empty">
                 Keranjang kamu masih kosong.
-                <a href="/">Mulai belanja</a>
+                <a href="/semua-produk">Mulai belanja</a>
             </div>
         @else
             <form id="checkout-form" action="{{ route('checkout.show') }}" method="GET">

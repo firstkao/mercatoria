@@ -6,7 +6,7 @@
     @include('frontend.partials._auth-style')
 
     <style>
-        /* Katalog game / developer — CSS biasa (tidak bergantung build Tailwind), selaras dengan au-* & hp-*/pp-*. */
+        /* Katalog game / developer / semua produk — CSS biasa (tidak bergantung build Tailwind), selaras dengan au-* & hp-*/pp-*. */
         .cg-wrap, .cg-wrap *, .cg-wrap *::before, .cg-wrap *::after { box-sizing: border-box; }
         .cg-wrap { font-family: 'Roboto', system-ui, sans-serif; color: #333; -webkit-font-smoothing: antialiased; }
         .cg-wrap a { text-decoration: none; }
@@ -26,6 +26,7 @@
         }
         .cg-title { margin: 12px 0 0; text-align: center; }
         .cg-title.is-head { margin-top: 12px; }
+        .cg-sub { margin: 6px 0 0; font-size: 14px; line-height: 21px; color: #888; text-align: center; }
 
         .cg-layout { display: flex; align-items: flex-start; gap: 24px; margin-top: 28px; }
         .cg-side { display: flex; flex: none; flex-direction: column; gap: 16px; width: 25%; }
@@ -94,11 +95,21 @@
     </style>
 
     <div class="cg-wrap">
+
+        {{-- ═══════════════════════════════════════════════
+             BREADCRUMB — handle 3 konteks
+             ═══════════════════════════════════════════════ --}}
         <nav class="cg-crumb">
             <a href="/">Beranda</a>
             <span>/</span>
             @if ($developer)
+                <a href="{{ route('catalog.all') }}">Semua Produk</a>
+                <span>/</span>
                 <a href="/">Developer</a>
+            @elseif ($game)
+                <a href="{{ route('catalog.all') }}">Semua Produk</a>
+                <span>/</span>
+                <a href="/">Game</a>
             @else
                 <a href="/">Produk</a>
             @endif
@@ -106,8 +117,22 @@
             <span class="is-current">{{ $title }}</span>
         </nav>
 
-        {{-- [NEW] Header developer --}}
-        @if ($developer)
+        {{-- ═══════════════════════════════════════════════
+             HEADER — handle 3 konteks
+             ═══════════════════════════════════════════════ --}}
+        @if ($game)
+            {{-- Header Game --}}
+            <div class="cg-head">
+                @if ($game->logo_path ?? null)
+                    <img src="{{ Storage::url($game->logo_path) }}" alt="{{ $game->name }}"
+                         class="cg-logo">
+                @endif
+                <h1 class="au-title cg-title is-head">{{ $game->name }}</h1>
+                <p class="au-eyebrow">Game</p>
+            </div>
+
+        @elseif ($developer)
+            {{-- Header Developer --}}
             <div class="cg-head">
                 @if ($developer->logo_path)
                     <img src="{{ Storage::url($developer->logo_path) }}" alt="{{ $developer->name }}"
@@ -116,17 +141,43 @@
                 <h1 class="au-title cg-title is-head">{{ $developer->name }}</h1>
                 <p class="au-eyebrow">Developer</p>
             </div>
+
         @else
-            <h1 class="au-title cg-title">{{ $title }}</h1>
+            {{-- Header Semua Produk --}}
+            <div class="cg-head">
+                <h1 class="au-title cg-title">{{ $title }}</h1>
+                <p class="cg-sub">Jelajahi seluruh koleksi Mercatoria</p>
+            </div>
         @endif
 
+        {{-- ═══════════════════════════════════════════════
+             LAYOUT — sidebar + grid
+             ═══════════════════════════════════════════════ --}}
         <div class="cg-layout">
+
+            {{-- ═══ SIDEBAR ═══ --}}
             <aside class="cg-side">
-                {{-- Kategori Game — sembunyikan di halaman developer --}}
+
+                {{-- Navigasi Game — tampil kecuali di halaman developer --}}
                 @unless ($developer)
                     <div class="cg-card">
                         <h2 class="cg-card-h">Kategori Game</h2>
                         <ul class="cg-list">
+                            {{-- Link "Semua Produk" — highlighted kalau lagi di halaman ini --}}
+                            @if (! $game)
+                                <li>
+                                    <a href="{{ route('catalog.all') }}" class="cg-link is-on">
+                                        Semua Produk
+                                    </a>
+                                </li>
+                            @else
+                                <li>
+                                    <a href="{{ route('catalog.all') }}" class="cg-link">
+                                        Semua Produk
+                                    </a>
+                                </li>
+                            @endif
+
                             @foreach ($games as $g)
                                 <li>
                                     <a href="/{{ $g->slug }}"
@@ -139,7 +190,7 @@
                     </div>
                 @endunless
 
-                {{-- [NEW] Developer lain --}}
+                {{-- Developer lain — tampil cuma di halaman developer --}}
                 @if ($developer)
                     <div class="cg-card">
                         <h2 class="cg-card-h">Developer Lain</h2>
@@ -158,6 +209,7 @@
                     </div>
                 @endif
 
+                {{-- Kategori Merch — tampil cuma kalau ada game context --}}
                 @if ($game)
                     <div class="cg-card">
                         <h2 class="cg-card-h">Kategori Merch</h2>
@@ -180,6 +232,7 @@
                     </div>
                 @endif
 
+                {{-- Penawaran Terbaik — selalu tampil --}}
                 @if ($bestOffers->isNotEmpty())
                     <div class="cg-card">
                         <h2 class="cg-card-h">Penawaran Terbaik</h2>
@@ -201,6 +254,7 @@
                 @endif
             </aside>
 
+            {{-- ═══ MAIN — grid produk (sama untuk semua konteks) ═══ --}}
             <div class="cg-main">
                 <div class="cg-toolbar">
                     <p class="cg-count">

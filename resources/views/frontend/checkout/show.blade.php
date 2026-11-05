@@ -135,7 +135,7 @@
     </style>
 
     <div class="ck-box">
-        <h1 class="ck-title">Checkout</h1>
+        <h1 class="ck-title">Lanjut ke Pembayaran</h1>
 
         @if ($errors->any())
             <div class="ck-notice is-error">
@@ -205,37 +205,39 @@
                         <div class="ck-table-wrap">
                             <table class="ck-table">
                                 <thead>
-                                    <tr>
-                                        <th style="width:76px"></th>
-                                        <th>Produk</th>
-                                        <th>Harga</th>
-                                        <th>Jumlah</th>
-                                        <th style="text-align:right;padding-right:20px">Subtotal</th>
-                                    </tr>
-                                </thead>
+    <tr>
+        <th style="width:32px">No</th>
+        <th style="width:76px"></th>
+        <th>Produk</th>
+        <th>Harga</th>
+        <th>Jumlah</th>
+        <th style="text-align:right;padding-right:20px">Subtotal</th>
+    </tr>
+</thead>
                                 <tbody>
-                                    @foreach ($items as $index => $item)
-                                        @php $img = $item->variant?->image_path ?? $item->product->image_path; @endphp
-                                        <tr>
-                                            <td>
-                                                <span class="ck-thumb">
-                                                    @if ($img)
-                                                        <img src="{{ \App\Services\Image\ImageOptimizerService::url($img, 'thumb') }}" alt="{{ $item->product->name }}">
-                                                    @endif
-                                                </span>
-                                            </td>
-                                            <td>
-                                                <p class="ck-item-name">{{ $item->product->name }}</p>
-                                                @if ($item->variant)
-                                                    <p class="ck-item-var">Varian: {{ $item->variant->name }}</p>
-                                                @endif
-                                            </td>
-                                            <td>{{ format_rp($lines[$index]['final_price_bersih']) }}</td>
-                                            <td>{{ $item->qty }}</td>
-                                            <td style="text-align:right;padding-right:20px">{{ format_rp($lines[$index]['final_price_bersih'] * $item->qty) }}</td>
-                                        </tr>
-                                    @endforeach
-                                </tbody>
+    @foreach ($items as $index => $item)
+        @php $img = $item->variant?->image_path ?? $item->product->image_path; @endphp
+        <tr>
+            <td style="color:#26222f;font-weight:500;font-size:14px;">{{ $loop->iteration }}</td>
+            <td>
+                <span class="ck-thumb">
+                    @if ($img)
+                        <img src="{{ \App\Services\Image\ImageOptimizerService::url($img, 'thumb') }}" alt="{{ $item->product->name }}">
+                    @endif
+                </span>
+            </td>
+            <td>
+                <p class="ck-item-name">{{ $item->product->name }}</p>
+                @if ($item->variant)
+                    <p class="ck-item-var">Varian: {{ $item->variant->name }}</p>
+                @endif
+            </td>
+            <td>{{ format_rp($lines[$index]['final_price_bersih']) }}</td>
+            <td>{{ $item->qty }}</td>
+            <td style="text-align:right;padding-right:20px">{{ format_rp($lines[$index]['final_price_bersih'] * $item->qty) }}</td>
+        </tr>
+    @endforeach
+</tbody>
                             </table>
                         </div>
                     </section>
@@ -371,7 +373,7 @@
                     qrisThreshold: @json((float) setting('qris_threshold', 500000)),
                     qrisRate: @json((float) setting('fee_qris_percent', 0.03)) / 100,
                     dpPercent: @json((float) setting('dp_minimum_percent', 50)) / 100,
-                    feeShopeeFp: @json((float) setting('fee_shopee_fp', 109)),
+                    feeShopeeFp: @json((float) setting('fee_shopee_fp', 2000)),
                     feeTocoFp: @json((float) setting('fee_toco_fp', 1)),
                     feeShopeeDp: @json((float) setting('fee_shopee_dp', 25)) / 100,
                     feeTocoDp: @json((float) setting('fee_toco_dp', 0)),

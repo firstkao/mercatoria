@@ -389,8 +389,11 @@ Route::middleware('auth')->group(function () {
 |--------------------------------------------------------------------------
 */
 Route::middleware('auth')->group(function () {
+    // ═══ Static routes DULU ═══
     Route::get('/search', [SearchController::class, 'index'])->middleware('throttle:30,1')->name('search');
+    Route::get('/semua-produk', [CatalogController::class, 'allProducts'])->name('catalog.all');
 
+    // ═══ Baru wildcard routes ═══
     Route::get('/developer/{developer:slug}', [CatalogController::class, 'developer'])
         ->name('catalog.developer');
 
@@ -400,7 +403,6 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/{game:slug}/{product:slug}', [ProductController::class, 'show'])
         ->name('product.show');
-
 });
 
 Route::get('/{slug}', [PublicSlugController::class, 'show'])->name('catalog.game');
