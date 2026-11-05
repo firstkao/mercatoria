@@ -82,7 +82,7 @@
         .ck-opt input:checked + span { border-color: #26222f; box-shadow: inset 0 0 0 1px #26222f; }
         .ck-opt input:focus-visible + span { outline: 2px solid #02a1ea; outline-offset: 2px; }
 
-        /* ═══ Diskon — toggle row (dipakai Koin & Voucher) ═══ */
+        /* ═══ Diskon — toggle row ═══ */
         .ck-disc-toggle {
             display: flex; align-items: center; gap: 10px; cursor: pointer;
             padding: 14px 16px;
@@ -291,20 +291,24 @@
                                 </div>
                             </div>
 
-                            {{-- Voucher --}}
-                            @if ($userVouchers->isNotEmpty())
-                                <div class="ck-field">
-                                    <label class="ck-disc-toggle" for="use_voucher">
-                                        <input type="checkbox" id="use_voucher" value="1">
-                                        <span class="ck-disc-label">Gunakan Voucher</span>
+                            {{-- Voucher — SELALU TAMPIL (input manual + kartu jika ada) --}}
+                            <div class="ck-field">
+                                <label class="ck-disc-toggle" for="use_voucher">
+                                    <input type="checkbox" id="use_voucher" value="1">
+                                    <span class="ck-disc-label">Gunakan Voucher</span>
+                                    @if ($userVouchers->isNotEmpty())
                                         <span class="ck-disc-info">{{ $userVouchers->count() }} tersedia</span>
-                                    </label>
+                                    @endif
+                                </label>
 
-                                    <div id="voucher-box" hidden style="margin-top:12px;">
-                                        <label for="voucher_code" class="ck-label">Kode Voucher</label>
-                                        <input type="text" id="voucher_code" placeholder="Ketik kode voucher..."
-                                               class="ck-input" autocomplete="off" spellcheck="false">
+                                <div id="voucher-box" hidden style="margin-top:12px;">
+                                    {{-- INPUT MANUAL — selalu ada, user bisa ketik kode sendiri --}}
+                                    <label for="voucher_code" class="ck-label">Kode Voucher</label>
+                                    <input type="text" id="voucher_code" placeholder="Ketik kode voucher kamu di sini..."
+                                           class="ck-input" autocomplete="off" spellcheck="false">
 
+                                    {{-- Kartu voucher — hanya jika punya voucher --}}
+                                    @if ($userVouchers->isNotEmpty())
                                         <p class="ck-hint" style="margin-top:14px;">Atau pilih dari voucher kamu:</p>
                                         <div class="ck-voucher-list">
                                             @foreach ($userVouchers as $uv)
@@ -316,9 +320,9 @@
                                                 </div>
                                             @endforeach
                                         </div>
-                                    </div>
+                                    @endif
                                 </div>
-                            @endif
+                            </div>
 
                         </div>
                     </section>
@@ -397,10 +401,15 @@
 
                 let selectedVoucherId = 0;
 
-                // ═══ Voucher card click ═══
+                // ═══ Voucher card click → isi input ═══
                 document.querySelectorAll('.ck-voucher-card').forEach(function (card) {
                     card.addEventListener('click', function () {
-                        voucherCodeInput.value = this.dataset.code;
+                        // Toggle: kalau udah active, unselect
+                        if (this.classList.contains('is-active')) {
+                            voucherCodeInput.value = '';
+                        } else {
+                            voucherCodeInput.value = this.dataset.code;
+                        }
                         onAnyChange();
                     });
                 });
@@ -420,17 +429,17 @@
                 function syncAll() {
                     // Toggle boxes
                     coinBox.hidden = !useCoin.checked;
-                    if (useVoucher) voucherBox.hidden = !useVoucher.checked;
+                    voucherBox.hidden = !useVoucher.checked;
 
                     // Clear inactive inputs
                     if (!useCoin.checked) coinAmount.value = '';
-                    if (!useVoucher || !useVoucher.checked) {
-                        if (voucherCodeInput) voucherCodeInput.value = '';
+                    if (!useVoucher.checked) {
+                        voucherCodeInput.value = '';
                         selectedVoucherId = 0;
                     }
 
                     // Voucher lookup dari code input
-                    if (useVoucher && useVoucher.checked && voucherCodeInput) {
+                    if (useVoucher.checked) {
                         const code = voucherCodeInput.value.toUpperCase().trim();
                         const match = voucherByCode[code];
                         selectedVoucherId = match ? match.id : 0;
@@ -449,7 +458,7 @@
                     if (useCoin.checked && (parseInt(coinAmount.value) || 0) > 0) {
                         discountTypeHidden.value = 'coin';
                         voucherIdHidden.value = '';
-                    } else if (useVoucher && useVoucher.checked && selectedVoucherId > 0) {
+                    } else if (useVoucher.checked && selectedVoucherId > 0) {
                         discountTypeHidden.value = 'voucher';
                         voucherIdHidden.value = selectedVoucherId;
                     } else {
@@ -463,7 +472,7 @@
                     if (useCoin.checked) {
                         return Math.min(parseInt(coinAmount.value) || 0, CONFIG.maxCoin);
                     }
-                    if (useVoucher && useVoucher.checked && selectedVoucherId > 0) {
+                    if (useVoucher.checked && selectedVoucherId > 0) {
                         return (voucherById[selectedVoucherId] || {}).nominal || 0;
                     }
                     return 0;
