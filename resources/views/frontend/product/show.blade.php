@@ -763,18 +763,31 @@
                         }
                     })
                     .then(function (res) {
-                        if (res.ok || res.status === 200 || res.status === 302) {
-                            // Update qty di modal
-                            if (modalQty) {
-                                modalQty.textContent = '×' + (parseInt(qty.value, 10) || 1);
-                            }
-                            // Buka modal
-                            modal.classList.add('is-open');
-                            document.body.style.overflow = 'hidden';
-                        } else {
-                            // Fallback: submit normal
-                            cartForm.submit();
+                        // Belum login → arahkan ke halaman login
+                        if (res.status === 401) { window.location.href = '{{ route('login') }}'; return null; }
+                        // Gagal (validasi/stok/dll) → submit normal supaya pesan error tampil
+                        if (!res.ok) { cartForm.submit(); return null; }
+                        return res.json();
+                    })
+                    .then(function (data) {
+                        if (!data) return;
+
+                        // Perbarui angka keranjang di header (desktop + mobile)
+                        document.querySelectorAll('[data-cart-total]').forEach(function (el) {
+                            el.textContent = data.total_formatted;
+                            el.style.display = '';
+                        });
+                        document.querySelectorAll('[data-cart-count]').forEach(function (el) {
+                            el.textContent = data.count;
+                            el.style.display = '';
+                        });
+
+                        // Qty di modal + buka modal
+                        if (modalQty) {
+                            modalQty.textContent = '×' + (parseInt(qty.value, 10) || 1);
                         }
+                        modal.classList.add('is-open');
+                        document.body.style.overflow = 'hidden';
                     })
                     .catch(function () {
                         // Fallback: submit normal
