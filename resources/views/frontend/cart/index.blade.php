@@ -68,6 +68,7 @@
 
         .cart-foot { display: flex; align-items: center; gap: 10px; padding: 18px 17px 18px; border-top: 1px solid #ddd; }
         .cart-foot-note { margin: 0; font-size: 14px; line-height: 21px; color: #7a7a7a; }
+        .cart-foot-note b { font-weight: 700; color: #26222f; }
         .cart-coupon { width: 226px; height: 37px; padding: 0 12px; border: 1px solid #ddd; border-radius: 0; background: #fff;
                        font: 400 15px/35px 'Roboto', system-ui, sans-serif; color: #26222f; outline: 0; }
         .cart-coupon::placeholder { color: #999; }
@@ -199,7 +200,18 @@
                         </tbody>
                     </table>
                     <div class="cart-foot">
-                        <p class="cart-foot-note">Punya voucher atau koin? Pilih di halaman checkout. Total akhir (skema DP/FP, platform, biaya layanan) dihitung di sana.</p>
+                        <p class="cart-foot-note">
+                            @if (($voucherCount ?? 0) > 0 || ($coinBalance ?? 0) > 0)
+                                Kamu punya
+                                @if (($voucherCount ?? 0) > 0)<b>{{ $voucherCount }} voucher aktif</b>@endif
+                                @if (($voucherCount ?? 0) > 0 && ($coinBalance ?? 0) > 0) dan @endif
+                                @if (($coinBalance ?? 0) > 0)saldo <b>{{ number_format($coinBalance, 0, ',', '.') }} koin</b>@endif.
+                                Pakai di halaman checkout.
+                            @else
+                                Voucher dan koin bisa dipakai di halaman checkout.
+                            @endif
+                            Total akhir (skema DP/FP, platform, biaya layanan) dihitung di sana.
+                        </p>
                     </div>
                 </div>
 
