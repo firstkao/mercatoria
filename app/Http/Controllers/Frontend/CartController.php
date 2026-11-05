@@ -8,8 +8,10 @@ use App\Models\ActivityLog;
 use App\Models\Cart;
 use App\Models\Product;
 use App\Models\UserNotification;
+use App\Providers\AppServiceProvider;
 use App\Services\Cart\CartService;
 use App\Services\SplitBox\SplitBoxService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -37,7 +39,7 @@ class CartController extends Controller
         return view('frontend.cart.index', ['items' => $items, 'purgedNotice' => $purgedNotice]);
     }
 
-    public function store(AddToCartRequest $request): RedirectResponse
+    public function store(AddToCartRequest $request): RedirectResponse|JsonResponse
     {
         $product = Product::findOrFail($request->input('product_id'));
         $variant = $request->filled('variant_id')
@@ -47,6 +49,18 @@ class CartController extends Controller
         $this->carts->add($request->user(), $product, $variant, (int) $request->input('qty', 1));
 
         ActivityLog::record('add_to_cart', 'Tambah ke keranjang');
+
+        // AJAX dari halaman produk: balas JSON (angka keranjang di header ikut diperbarui tanpa reload).
+        if ($request->expectsJson()) {
+            [$total, $count] = AppServiceProvider::cartSummary($request->user());
+
+            return response()->json([
+                'ok' => true,
+                'count' => $count,
+                'total' => $total,
+                'total_formatted' => format_rp($total),
+            ]);
+        }
 
         return redirect()->route('cart.index');
     }
