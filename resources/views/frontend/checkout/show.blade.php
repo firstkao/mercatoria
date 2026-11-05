@@ -82,18 +82,31 @@
         .ck-opt input:checked + span { border-color: #26222f; box-shadow: inset 0 0 0 1px #26222f; }
         .ck-opt input:focus-visible + span { outline: 2px solid #02a1ea; outline-offset: 2px; }
 
-        /* ═══ Diskon — checkbox Koin ═══ */
-        .ck-coin-toggle {
+        /* ═══ Diskon — toggle row (dipakai Koin & Voucher) ═══ */
+        .ck-disc-toggle {
             display: flex; align-items: center; gap: 10px; cursor: pointer;
             padding: 14px 16px;
             border: 1px solid #ddd; background: #fff;
             transition: border-color .15s;
             user-select: none;
         }
-        .ck-coin-toggle:hover { border-color: #999; }
-        .ck-coin-toggle input { width: 18px; height: 18px; accent-color: #26222f; flex-shrink: 0; cursor: pointer; }
-        .ck-coin-toggle .ck-coin-label { font-size: 15px; font-weight: 500; color: #26222f; }
-        .ck-coin-toggle .ck-coin-balance { font-size: 13px; color: #888; margin-left: auto; }
+        .ck-disc-toggle:hover { border-color: #999; }
+        .ck-disc-toggle input[type="checkbox"] { width: 18px; height: 18px; accent-color: #26222f; flex-shrink: 0; cursor: pointer; }
+        .ck-disc-toggle .ck-disc-label { font-size: 15px; font-weight: 500; color: #26222f; }
+        .ck-disc-toggle .ck-disc-info { font-size: 13px; color: #888; margin-left: auto; }
+
+        /* Voucher cards */
+        .ck-voucher-list { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+        .ck-voucher-card {
+            padding: 10px 16px;
+            border: 1px solid #ddd; background: #fff;
+            cursor: pointer;
+            transition: all .15s;
+        }
+        .ck-voucher-card:hover { border-color: #999; }
+        .ck-voucher-card.is-active { border-color: #26222f; box-shadow: inset 0 0 0 1px #26222f; background: #f7f6f7; }
+        .ck-voucher-card .v-code { display: block; font-size: 13px; font-weight: 600; color: #26222f; text-transform: uppercase; letter-spacing: .03em; }
+        .ck-voucher-card .v-nominal { display: block; font-size: 12px; color: #888; margin-top: 2px; }
 
         /* Ringkasan */
         .ck-sum { margin: 0; padding: 8px 20px 20px; }
@@ -167,8 +180,9 @@
                 <input type="hidden" name="cart_item_ids[]" value="{{ $item->id }}">
             @endforeach
 
-            {{-- Hidden field — di-set otomatis oleh JS --}}
+            {{-- Hidden fields — di-manage JS --}}
             <input type="hidden" name="discount_type" id="discount_type_hidden" value="none">
+            <input type="hidden" name="user_voucher_id" id="user_voucher_id_hidden" value="">
 
             <div class="ck-cols">
 
@@ -257,18 +271,18 @@
                         </div>
                     </section>
 
-                    {{-- ═══ Diskon — checkbox Koin + dropdown Voucher ═══ --}}
+                    {{-- ═══ Diskon — Koin & Voucher (exclusive) ═══ --}}
                     <section class="ck-sec">
                         <h2>Diskon</h2>
                         <div class="ck-body">
-                            {{-- Koin — checkbox toggle --}}
-                            <div class="ck-field">
-                                <label class="ck-coin-toggle" for="use_coin">
-                                    <input type="checkbox" name="use_coin" id="use_coin" value="1" class="summary-trigger">
-                                    <span class="ck-coin-label">Gunakan Koin</span>
-                                    <span class="ck-coin-balance">Saldo: {{ number_format($coinBalance, 0, ',', '.') }} koin</span>
-                                </label>
 
+                            {{-- Koin --}}
+                            <div class="ck-field">
+                                <label class="ck-disc-toggle" for="use_coin">
+                                    <input type="checkbox" id="use_coin" value="1">
+                                    <span class="ck-disc-label">Gunakan Koin</span>
+                                    <span class="ck-disc-info">Saldo: {{ number_format($coinBalance, 0, ',', '.') }} koin</span>
+                                </label>
                                 <div id="coin-box" hidden style="margin-top:12px;">
                                     <label for="coin_amount" class="ck-label">Jumlah Koin</label>
                                     <input type="number" name="coin_amount" id="coin_amount" min="0" max="{{ min($coinBalance, $maxCoin) }}"
@@ -277,18 +291,35 @@
                                 </div>
                             </div>
 
-                            {{-- Voucher — dropdown langsung --}}
-                            <div class="ck-field">
-                                <label for="user_voucher_id" class="ck-label">Voucher <span style="font-weight:400;color:#888;">(opsional)</span></label>
-                                <select name="user_voucher_id" id="user_voucher_id" class="ck-input summary-trigger">
-                                    <option value="">— Tanpa voucher —</option>
-                                    @foreach ($userVouchers as $userVoucher)
-                                        <option value="{{ $userVoucher->id }}">
-                                            {{ $userVoucher->voucher->code }} — potong {{ format_rp($userVoucher->voucher->nominal) }}
-                                        </option>
-                                    @endforeach
-                                </select>
-                            </div>
+                            {{-- Voucher --}}
+                            @if ($userVouchers->isNotEmpty())
+                                <div class="ck-field">
+                                    <label class="ck-disc-toggle" for="use_voucher">
+                                        <input type="checkbox" id="use_voucher" value="1">
+                                        <span class="ck-disc-label">Gunakan Voucher</span>
+                                        <span class="ck-disc-info">{{ $userVouchers->count() }} tersedia</span>
+                                    </label>
+
+                                    <div id="voucher-box" hidden style="margin-top:12px;">
+                                        <label for="voucher_code" class="ck-label">Kode Voucher</label>
+                                        <input type="text" id="voucher_code" placeholder="Ketik kode voucher..."
+                                               class="ck-input" autocomplete="off" spellcheck="false">
+
+                                        <p class="ck-hint" style="margin-top:14px;">Atau pilih dari voucher kamu:</p>
+                                        <div class="ck-voucher-list">
+                                            @foreach ($userVouchers as $uv)
+                                                <div class="ck-voucher-card"
+                                                     data-id="{{ $uv->id }}"
+                                                     data-code="{{ strtoupper($uv->voucher->code) }}">
+                                                    <span class="v-code">{{ $uv->voucher->code }}</span>
+                                                    <span class="v-nominal">Potong {{ format_rp($uv->voucher->nominal) }}</span>
+                                                </div>
+                                            @endforeach
+                                        </div>
+                                    </div>
+                                </div>
+                            @endif
+
                         </div>
                     </section>
 
@@ -310,16 +341,9 @@
                             <div class="ck-sum-row"><dt>Subtotal</dt><dd id="sum-subtotal">{{ format_rp($initialSubtotal) }}</dd></div>
                             <div class="ck-sum-row is-minus"><dt>Diskon</dt><dd id="sum-discount">- Rp0</dd></div>
                             <div class="ck-sum-row is-main"><dt>Total Harga Barang</dt><dd id="sum-total">{{ format_rp($initialSubtotal) }}</dd></div>
-
-                            {{-- Fee QRIS: hidden by default, muncul hanya jika QRIS + ≥ threshold --}}
                             <div class="ck-sum-row is-muted" id="row-fee-qris" style="display:none;"><dt>Fee QRIS</dt><dd id="sum-fee-qris">Rp0</dd></div>
-
                             <div class="ck-sum-row is-total"><dt>Bayar di Web</dt><dd id="sum-tagihan">{{ format_rp($initialSubtotal) }}</dd></div>
-
-                            {{-- Estimasi CO: muncul hanya saat DP --}}
                             <div class="ck-sum-row is-muted" id="row-estimasi" style="display:none;"><dt>Estimasi CO Marketplace</dt><dd id="sum-estimasi">Rp0</dd></div>
-
-                            {{-- Biaya CO: muncul hanya saat FP --}}
                             <div class="ck-sum-row is-muted" id="row-fee-co"><dt>Biaya CO Marketplace</dt><dd id="sum-fee-co">Rp0</dd></div>
                         </dl>
                         <button type="submit" class="ck-go">Buat Pesanan</button>
@@ -336,7 +360,7 @@
                 const cartItemIds = @json($items->pluck('id'));
                 const rp = (value) => 'Rp' + Number(value || 0).toLocaleString('id-ID');
 
-                // ═══ Data dari server → JS (kalkulasi instant) ═══
+                // ═══ Server config → JS ═══
                 const CONFIG = {
                     subtotal: @json($initialSubtotal),
                     maxCoin: @json((float) $maxCoin),
@@ -349,60 +373,99 @@
                     feeTocoDp: @json((float) setting('fee_toco_dp', 0)),
                 };
 
-                // Voucher nominal map
-                const voucherNominals = {};
+                // ═══ Voucher lookup maps ═══
+                const voucherById = {};
+                const voucherByCode = {};
                 @foreach ($userVouchers as $uv)
-                    voucherNominals[{{ $uv->id }}] = {{ (float) $uv->voucher->nominal }};
+                    @php $nom = (float) $uv->voucher->nominal; @endphp
+                    voucherById[{{ $uv->id }}] = { code: '{{ strtoupper($uv->voucher->code) }}', nominal: {{ $nom }} };
+                    voucherByCode['{{ strtoupper($uv->voucher->code) }}'] = { id: {{ $uv->id }}, nominal: {{ $nom }} };
                 @endforeach
 
-                // Element refs
+                // ═══ Element refs ═══
                 const useCoin = document.getElementById('use_coin');
+                const useVoucher = document.getElementById('use_voucher');
                 const coinBox = document.getElementById('coin-box');
                 const coinAmount = document.getElementById('coin_amount');
-                const voucherSelect = document.getElementById('user_voucher_id');
+                const voucherBox = document.getElementById('voucher-box');
+                const voucherCodeInput = document.getElementById('voucher_code');
                 const discountTypeHidden = document.getElementById('discount_type_hidden');
+                const voucherIdHidden = document.getElementById('user_voucher_id_hidden');
                 const rowFeeQris = document.getElementById('row-fee-qris');
                 const rowEstimasi = document.getElementById('row-estimasi');
                 const rowFeeCo = document.getElementById('row-fee-co');
 
-                // ═══ Sync toggle: coin box + exclusive koin/voucher ═══
-                function syncDiscount() {
-                    // Tampilkan input koin hanya jika checkbox dicentang
+                let selectedVoucherId = 0;
+
+                // ═══ Voucher card click ═══
+                document.querySelectorAll('.ck-voucher-card').forEach(function (card) {
+                    card.addEventListener('click', function () {
+                        voucherCodeInput.value = this.dataset.code;
+                        onAnyChange();
+                    });
+                });
+
+                // ═══ Exclusive: Koin ↔ Voucher ═══
+                if (useCoin) useCoin.addEventListener('change', function () {
+                    if (this.checked && useVoucher) useVoucher.checked = false;
+                    onAnyChange();
+                });
+
+                if (useVoucher) useVoucher.addEventListener('change', function () {
+                    if (this.checked && useCoin) useCoin.checked = false;
+                    onAnyChange();
+                });
+
+                // ═══ Sync all UI + hidden fields ═══
+                function syncAll() {
+                    // Toggle boxes
                     coinBox.hidden = !useCoin.checked;
+                    if (useVoucher) voucherBox.hidden = !useVoucher.checked;
+
+                    // Clear inactive inputs
                     if (!useCoin.checked) coinAmount.value = '';
-
-                    // Exclusive: koin & voucher gak bisa barengan
-                    if (useCoin.checked && voucherSelect.value) {
-                        voucherSelect.value = '';
-                    }
-                    if (!useCoin.checked && voucherSelect.value) {
-                        // Voucher dipilih tanpa koin — OK
+                    if (!useVoucher || !useVoucher.checked) {
+                        if (voucherCodeInput) voucherCodeInput.value = '';
+                        selectedVoucherId = 0;
                     }
 
-                    // Update hidden discount_type untuk backend
-                    if (useCoin.checked && parseInt(coinAmount.value) > 0) {
+                    // Voucher lookup dari code input
+                    if (useVoucher && useVoucher.checked && voucherCodeInput) {
+                        const code = voucherCodeInput.value.toUpperCase().trim();
+                        const match = voucherByCode[code];
+                        selectedVoucherId = match ? match.id : 0;
+
+                        // Highlight card yang cocok
+                        document.querySelectorAll('.ck-voucher-card').forEach(function (c) {
+                            c.classList.toggle('is-active', parseInt(c.dataset.id) === selectedVoucherId);
+                        });
+                    } else {
+                        document.querySelectorAll('.ck-voucher-card').forEach(function (c) {
+                            c.classList.remove('is-active');
+                        });
+                    }
+
+                    // Hidden fields
+                    if (useCoin.checked && (parseInt(coinAmount.value) || 0) > 0) {
                         discountTypeHidden.value = 'coin';
-                    } else if (voucherSelect.value) {
+                        voucherIdHidden.value = '';
+                    } else if (useVoucher && useVoucher.checked && selectedVoucherId > 0) {
                         discountTypeHidden.value = 'voucher';
+                        voucherIdHidden.value = selectedVoucherId;
                     } else {
                         discountTypeHidden.value = 'none';
+                        voucherIdHidden.value = '';
                     }
                 }
 
                 // ═══ Hitung diskon ═══
                 function getDiscount() {
-                    // Koin: hanya jika checkbox dicentang
                     if (useCoin.checked) {
-                        const coins = parseInt(coinAmount.value) || 0;
-                        return Math.min(coins, CONFIG.maxCoin);
+                        return Math.min(parseInt(coinAmount.value) || 0, CONFIG.maxCoin);
                     }
-
-                    // Voucher: hanya jika dipilih
-                    const vid = parseInt(voucherSelect.value) || 0;
-                    if (vid > 0) {
-                        return voucherNominals[vid] || 0;
+                    if (useVoucher && useVoucher.checked && selectedVoucherId > 0) {
+                        return (voucherById[selectedVoucherId] || {}).nominal || 0;
                     }
-
                     return 0;
                 }
 
@@ -416,9 +479,7 @@
                     const method = form.payment_method.value;
 
                     // QRIS fee
-                    const nominalTagihan = scheme === 'dp'
-                        ? totalBarang * CONFIG.dpPercent
-                        : totalBarang;
+                    const nominalTagihan = scheme === 'dp' ? totalBarang * CONFIG.dpPercent : totalBarang;
                     const feeQris = (method === 'qris' && nominalTagihan >= CONFIG.qrisThreshold)
                         ? Math.round(nominalTagihan * CONFIG.qrisRate)
                         : 0;
@@ -439,7 +500,7 @@
                         feeCo = platform === 'shopee' ? CONFIG.feeShopeeFp : CONFIG.feeTocoFp;
                     }
 
-                    // Update semua angka
+                    // Update ringkasan
                     document.getElementById('sum-subtotal').textContent = rp(subtotal);
                     document.getElementById('sum-discount').textContent = '- ' + rp(discount);
                     document.getElementById('sum-total').textContent = rp(totalBarang);
@@ -463,7 +524,7 @@
                         payment_method: form.payment_method.value,
                         discount_type: discountTypeHidden.value,
                         coin_amount: useCoin.checked && coinAmount.value ? Number(coinAmount.value) : null,
-                        user_voucher_id: voucherSelect.value ? Number(voucherSelect.value) : null,
+                        user_voucher_id: voucherIdHidden.value ? Number(voucherIdHidden.value) : null,
                     };
 
                     try {
@@ -496,23 +557,27 @@
                     }
                 }
 
-                // ═══ Handler ═══
-                function onChange() {
-                    syncDiscount();
+                // ═══ Master handler ═══
+                function onAnyChange() {
+                    syncAll();
                     calculateInstant();
                     refreshFromServer();
                 }
 
-                // Event delegation
-                form.addEventListener('change', onChange);
+                // ═══ Event delegation ═══
+                form.addEventListener('change', function (e) {
+                    if (e.target === useCoin || e.target === useVoucher) return;
+                    onAnyChange();
+                });
+
                 form.addEventListener('input', function (e) {
-                    if (e.target.matches('input[type="number"]')) onChange();
+                    if (e.target.matches('input[type="number"]') || e.target.id === 'voucher_code') {
+                        onAnyChange();
+                    }
                 });
 
                 // Init
-                syncDiscount();
-                calculateInstant();
-                refreshFromServer();
+                onAnyChange();
 
                 // Submit
                 form.addEventListener('submit', function () {
