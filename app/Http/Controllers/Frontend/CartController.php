@@ -65,23 +65,31 @@ class CartController extends Controller
         return redirect()->route('cart.index');
     }
 
-    public function update(Request $request, Cart $cart): RedirectResponse
+    public function update(Request $request, Cart $cart): RedirectResponse|JsonResponse
     {
         abort_unless($cart->user_id === $request->user()->id, 403);
 
         // PRD 49.9: qty item dalam bundle Split Box tidak bisa diubah satu per satu.
         if ($cart->bundle_group_id) {
-            return redirect()->route('cart.index')->withErrors(['qty' => 'Jumlah item paket Split Box tidak dapat diubah. Hapus paket lalu pilih ulang.']);
+            $message = 'Jumlah item paket Split Box tidak dapat diubah. Hapus paket lalu pilih ulang.';
+
+            return $request->expectsJson()
+                ? response()->json(['ok' => false, 'message' => $message], 422)
+                : redirect()->route('cart.index')->withErrors(['qty' => $message]);
         }
 
         $validated = $request->validate(['qty' => ['required', 'integer', 'min:1', 'max:999']]);
 
         $cart->update(['qty' => $validated['qty']]);
 
+        if ($request->expectsJson()) {
+            return $this->summaryResponse($request);
+        }
+
         return redirect()->route('cart.index');
     }
 
-    public function destroy(Request $request, Cart $cart): RedirectResponse
+    public function destroy(Request $request, Cart $cart): RedirectResponse|JsonResponse
     {
         abort_unless($cart->user_id === $request->user()->id, 403);
 
@@ -96,6 +104,23 @@ class CartController extends Controller
 
         ActivityLog::record('remove_from_cart', 'Hapus dari keranjang');
 
+        if ($request->expectsJson()) {
+            return $this->summaryResponse($request);
+        }
+
         return redirect()->route('cart.index');
+    }
+
+    /** Ringkasan keranjang (jumlah + total) untuk header; dipakai respons AJAX. */
+    private function summaryResponse(Request $request): JsonResponse
+    {
+        [$total, $count] = AppServiceProvider::cartSummary($request->user());
+
+        return response()->json([
+            'ok' => true,
+            'count' => $count,
+            'total' => $total,
+            'total_formatted' => format_rp($total),
+        ]);
     }
 }
