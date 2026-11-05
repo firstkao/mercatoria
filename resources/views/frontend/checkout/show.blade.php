@@ -241,27 +241,39 @@
                         </div>
                     </section>
 
-                    {{-- Diskon --}}
+                    {{-- ═══ Diskon — konsep jelas: pilih salah satu ═══ --}}
                     <section class="ck-sec">
                         <h2>Diskon</h2>
                         <div class="ck-body">
-                            <div class="ck-opts" style="--cols: {{ $userVouchers->isNotEmpty() ? 3 : 2 }}">
-                                <label class="ck-opt"><input type="radio" name="discount_type" value="none" class="summary-trigger" checked><span>Tanpa diskon</span></label>
-                                <label class="ck-opt"><input type="radio" name="discount_type" value="coin" class="summary-trigger"><span>Pakai Koin</span></label>
-                                @if ($userVouchers->isNotEmpty())
-                                    <label class="ck-opt"><input type="radio" name="discount_type" value="voucher" class="summary-trigger"><span>Pakai Voucher</span></label>
-                                @endif
+                            <div class="ck-field">
+                                <span class="ck-label">Pilih Diskon <span style="font-weight:400;color:#888;">(pilih salah satu)</span></span>
+                                <div class="ck-opts" style="--cols: {{ $userVouchers->isNotEmpty() ? 3 : 2 }}">
+                                    <label class="ck-opt">
+                                        <input type="radio" name="discount_type" value="none" class="summary-trigger" checked>
+                                        <span>Tidak Dipakai<small>Tanpa diskon</small></span>
+                                    </label>
+                                    <label class="ck-opt">
+                                        <input type="radio" name="discount_type" value="coin" class="summary-trigger">
+                                        <span>Koin<small>Saldo: {{ number_format($coinBalance, 0, ',', '.') }}</small></span>
+                                    </label>
+                                    @if ($userVouchers->isNotEmpty())
+                                        <label class="ck-opt">
+                                            <input type="radio" name="discount_type" value="voucher" class="summary-trigger">
+                                            <span>Voucher<small>{{ $userVouchers->count() }} tersedia</small></span>
+                                        </label>
+                                    @endif
+                                </div>
                             </div>
 
                             <div class="ck-field" id="coin-box" hidden>
-                                <label for="coin_amount" class="ck-label">Jumlah koin</label>
+                                <label for="coin_amount" class="ck-label">Jumlah Koin</label>
                                 <input type="number" name="coin_amount" id="coin_amount" min="0" max="{{ min($coinBalance, $maxCoin) }}"
                                        placeholder="0" class="ck-input summary-trigger">
-                                <p class="ck-hint">Saldo {{ number_format($coinBalance, 0, ',', '.') }} koin · maksimal dipakai {{ number_format($maxCoin, 0, ',', '.') }}</p>
+                                <p class="ck-hint">Maksimal dipakai {{ number_format($maxCoin, 0, ',', '.') }} koin</p>
                             </div>
 
                             <div class="ck-field" id="voucher-box" hidden>
-                                <label for="user_voucher_id" class="ck-label">Voucher</label>
+                                <label for="user_voucher_id" class="ck-label">Pilih Voucher</label>
                                 <select name="user_voucher_id" id="user_voucher_id" class="ck-input summary-trigger">
                                     <option value="">— Pilih voucher —</option>
                                     @foreach ($userVouchers as $userVoucher)
@@ -284,7 +296,7 @@
                     </section>
                 </div>
 
-                {{-- ═════ KANAN: ringkasan ═════ --}}
+                {{-- ═════ KANAN: ringkasan — dinamis ═════ --}}
                 <aside class="ck-side">
                     <section class="ck-sec">
                         <h2>Ringkasan Pembayaran</h2>
@@ -292,10 +304,17 @@
                             <div class="ck-sum-row"><dt>Subtotal</dt><dd id="sum-subtotal">{{ format_rp($initialSubtotal) }}</dd></div>
                             <div class="ck-sum-row is-minus"><dt>Diskon</dt><dd id="sum-discount">- Rp0</dd></div>
                             <div class="ck-sum-row is-main"><dt>Total Harga Barang</dt><dd id="sum-total">{{ format_rp($initialSubtotal) }}</dd></div>
-                            <div class="ck-sum-row is-muted"><dt>Fee QRIS</dt><dd id="sum-fee-qris">Rp0</dd></div>
+
+                            {{-- Fee QRIS: muncul hanya jika QRIS + ≥ threshold --}}
+                            <div class="ck-sum-row is-muted" id="row-fee-qris" style="display:none;"><dt>Fee QRIS</dt><dd id="sum-fee-qris">Rp0</dd></div>
+
                             <div class="ck-sum-row is-total"><dt>Bayar di Web</dt><dd id="sum-tagihan">{{ format_rp($initialSubtotal) }}</dd></div>
-                            <div class="ck-sum-row is-muted"><dt>Estimasi CO Marketplace</dt><dd id="sum-estimasi">Rp0</dd></div>
-                            <div class="ck-sum-row is-muted"><dt>Biaya CO Marketplace</dt><dd id="sum-fee-co">Rp0</dd></div>
+
+                            {{-- Estimasi CO: muncul hanya saat DP --}}
+                            <div class="ck-sum-row is-muted" id="row-estimasi" style="display:none;"><dt>Estimasi CO Marketplace</dt><dd id="sum-estimasi">Rp0</dd></div>
+
+                            {{-- Biaya CO: muncul hanya saat FP --}}
+                            <div class="ck-sum-row is-muted" id="row-fee-co"><dt>Biaya CO Marketplace</dt><dd id="sum-fee-co">Rp0</dd></div>
                         </dl>
                         <button type="submit" class="ck-go">Buat Pesanan</button>
                     </section>
@@ -310,10 +329,15 @@
                 const token = form.querySelector('input[name=_token]').value;
                 const cartItemIds = @json($items->pluck('id'));
                 const rp = (value) => 'Rp' + Number(value || 0).toLocaleString('id-ID');
+
+                // Element refs
                 const coinBox = document.getElementById('coin-box');
                 const voucherBox = document.getElementById('voucher-box');
+                const rowFeeQris = document.getElementById('row-fee-qris');
+                const rowEstimasi = document.getElementById('row-estimasi');
+                const rowFeeCo = document.getElementById('row-fee-co');
 
-                // Tampilkan hanya kolom diskon yang dipilih; kosongkan yang disembunyikan
+                // ═══ Diskon toggle (exclusive: coin XOR voucher) ═══
                 function syncDiscount() {
                     const type = form.discount_type.value;
                     coinBox.hidden = type !== 'coin';
@@ -322,6 +346,19 @@
                     if (type !== 'voucher') form.user_voucher_id.value = '';
                 }
 
+                // ═══ Summary rows show/hide (dinamis) ═══
+                function syncSummaryRows(s) {
+                    // Fee QRIS: tampil hanya jika fee > 0
+                    rowFeeQris.style.display = s.fee_qris > 0 ? '' : 'none';
+
+                    // DP → tampilkan estimasi, sembunyikan fee CO
+                    // FP → tampilkan fee CO, sembunyikan estimasi
+                    const isDP = form.scheme.value === 'dp';
+                    rowEstimasi.style.display = isDP ? '' : 'none';
+                    rowFeeCo.style.display = isDP ? 'none' : '';
+                }
+
+                // ═══ Refresh ringkasan via AJAX ═══
                 async function refreshSummary() {
                     const payload = {
                         cart_item_ids: cartItemIds,
@@ -344,32 +381,38 @@
                             body: JSON.stringify(payload),
                         });
 
-                        if (!response.ok) {
-                            return;
-                        }
+                        if (!response.ok) return;
 
                         const s = await response.json();
+
+                        // Update semua nilai
                         document.getElementById('sum-subtotal').textContent = rp(s.subtotal);
                         document.getElementById('sum-discount').textContent = '- ' + rp(s.discount);
                         document.getElementById('sum-total').textContent = rp(s.total_barang);
                         document.getElementById('sum-fee-qris').textContent = rp(s.fee_qris);
                         document.getElementById('sum-tagihan').textContent = rp(s.tagihan_web);
-                        document.getElementById('sum-estimasi').textContent = rp(s.estimasi_co_marketplace);
-                        document.getElementById('sum-fee-co').textContent = rp(s.fee_co_marketplace);
+                        document.getElementById('sum-estimasi').textContent = rp(s.estimasi_co_marketplace ?? 0);
+                        document.getElementById('sum-fee-co').textContent = rp(s.fee_co_marketplace ?? 0);
+
+                        // Show/hide rows
+                        syncSummaryRows(s);
                     } catch (error) {
                         // Server tetap menghitung ulang saat "Buat Pesanan".
                     }
                 }
 
+                // ═══ Bind events ═══
                 form.querySelectorAll('.summary-trigger').forEach((el) => {
                     const handler = () => { syncDiscount(); refreshSummary(); };
                     el.addEventListener('change', handler);
                     el.addEventListener('input', handler);
                 });
 
+                // Init
                 syncDiscount();
                 refreshSummary();
 
+                // Submit: disable button
                 form.addEventListener('submit', function () {
                     var btn = form.querySelector('button[type="submit"]');
                     if (!btn || btn.disabled) return;
