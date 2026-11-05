@@ -33,6 +33,22 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // ═══ SEO & JSON-LD default global (fallback semua halaman) ═══
+        // Controller yang butuh custom tinggal override via compact('seo') / compact('jsonLd').
+        View::share('seo', [
+            'title' => config('app.name', 'MERCATORIA'),
+            'description' => '',
+            'image' => '',
+            'url' => '',
+            'canonical' => '',
+            'robots' => 'index, follow',
+            'type' => 'website',
+            'site_name' => config('app.name', 'MERCATORIA'),
+            'locale' => 'id_ID',
+            'keywords' => '',
+        ]);
+        View::share('jsonLd', []);
+
         RateLimiter::for('login', function (Request $request): Limit {
             return Limit::perMinute((int) setting('login_rate_limit_per_minute', 5))->by($request->ip());
         });

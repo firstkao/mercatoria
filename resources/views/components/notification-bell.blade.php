@@ -12,7 +12,7 @@
         @endif
     </summary>
 
-    <div class="absolute right-0 top-full z-30 mt-2 w-[380px] max-w-[90vw] rounded-xl border border-gray-100 bg-white shadow-lg">
+    <div class="absolute right-0 top-full z-30 mt-2 w-[380px] max-w-[90vw] border border-[#e1e1e1] bg-white">
         <div class="flex items-center justify-between border-b border-gray-100 px-4 py-3">
             <div>
                 <p class="text-sm font-semibold">Notifikasi</p>

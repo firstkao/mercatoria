@@ -8,7 +8,7 @@ test('promo bar permanen dengan NEWWEB merah bold dan nominal bold italic', func
 
     expect($html)->toContain('promo-bar')
         ->toContain('Gunakan kode promo')
-        ->toContain('<strong class="text-danger">NEWWEB</strong>', false)
+        ->toContain('<strong style="color:#fd0000">NEWWEB</strong>', false)
         ->toContain('<strong><em>Rp 25.000</em></strong>', false)
         ->toContain('dengan minimal pembelanjaan')
         ->toContain('<strong><em>Rp 150.000</em></strong>', false);

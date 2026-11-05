@@ -37,9 +37,10 @@
 
     .au-err { margin: 6px 0 0; font-size: 13px; line-height: 18px; color: #e53935; }
 
-    .au-pw { position: relative; }
+    .au-pw { position: relative; margin-top: 8px; }
+    .au-pw .au-input { margin-top: 0; }
     .au-pw .au-input { padding-right: 44px; }
-    .au-eye { position: absolute; top: 8px; right: 0; width: 44px; height: 42px; display: flex; align-items: center; justify-content: center;
+    .au-eye { position: absolute; top: 0; right: 0; width: 44px; height: 42px; display: flex; align-items: center; justify-content: center;
               border: 0; background: none; color: #999; cursor: pointer; }
     .au-eye:hover { color: #000; }
     .au-eye .on { display: none; }

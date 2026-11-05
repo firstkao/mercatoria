@@ -1,3 +1,5 @@
-<div id="promo-bar" class="relative border-b border-[#D8D2C4] bg-[#F2EFE8] px-10 py-2 text-center">
-    <p class="text-[13px] text-ink">Gunakan kode promo <strong class="text-danger">NEWWEB</strong> dan nikmati potongan harga sebesar <strong><em>Rp 25.000</em></strong> dengan minimal pembelanjaan <strong><em>Rp 150.000</em></strong>.</p>
+<div id="promo-bar" style="position:relative;background:#f7f7f7;padding:0 40px;height:40px;display:flex;align-items:center;justify-content:center;text-align:center">
+    <p style="margin:0;font-size:13px;line-height:19px;color:#000">
+        Gunakan kode promo <strong style="color:#fd0000">NEWWEB</strong> dan nikmati potongan harga sebesar <strong><em>Rp 25.000</em></strong> dengan minimal pembelanjaan <strong><em>Rp 150.000</em></strong>.
+    </p>
 </div>

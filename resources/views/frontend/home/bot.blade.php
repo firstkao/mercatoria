@@ -6,80 +6,144 @@
     <x-seo-head :seo="$seo" :json-ld="$jsonLd" />
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=IBM+Plex+Mono:wght@400;500;600&family=Schibsted+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=IBM+Plex+Mono:wght@400;500;600&family=Schibsted+Grotesk:wght@400;500;600;700&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
     @vite(['resources/css/app.css'])
+    <style>
+        /* Homepage — CSS biasa (tidak bergantung build Tailwind). Ukuran dari screenshot 1920px. */
+        .hp, .hp *, .hp *::before, .hp *::after { box-sizing: border-box; }
+        .hp { width: 100%; max-width: 1172px; margin: 0 auto; padding: 0 16px; color: #000; font-family: 'Roboto', system-ui, sans-serif; }
+        .hp a { color: inherit; text-decoration: none; }
+        .hp img { display: block; max-width: 100%; }
+
+        /* Hero 1140×650 */
+        .hp-hero { padding-top: 10px; }
+        .hp-hero-box { position: relative; overflow: hidden; }
+        .hp-hero-track { position: relative; aspect-ratio: 1140 / 650; background: #1f2230; }
+        .hp-slide { position: absolute; inset: 0; display: none; }
+        .hp-slide.is-on { display: block; }
+        .hp-slide img { width: 100%; height: 100%; object-fit: cover; }
+        .hp-arrow { position: absolute; top: 50%; transform: translateY(-50%); background: none; border: 0; padding: 4px; cursor: pointer; color: rgba(255,255,255,.6); line-height: 0; }
+        .hp-arrow:hover { color: #fff; }
+        .hp-arrow.prev { left: 14px; } .hp-arrow.next { right: 14px; }
+        .hp-dots { position: absolute; left: 50%; bottom: 14px; transform: translateX(-50%); display: flex; gap: 6px; }
+        .hp-dots button { width: 6px; height: 6px; padding: 0; border: 0; border-radius: 50%; background: rgba(255,255,255,.45); cursor: pointer; }
+        .hp-dots button.is-on { background: #fff; }
+        .hp-line { height: 1px; margin-top: 35px; background: #000; }
+
+        /* Judul */
+        .hp-h2 { margin: 52px 0 0; text-align: center; font-size: 50px; line-height: 60px; font-weight: 700; color: #000; }
+        .hp-sub { margin: 23px 0 0; text-align: center; font-size: 15px; line-height: 22px; font-weight: 700; color: #597480; }
+
+        /* Grid game: 6 kolom × 173px */
+        .hp-games { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); column-gap: 20px; row-gap: 44.7px; margin-top: 27px; }
+        .hp-game { display: block; background: #fff; padding-bottom: 15px; }
+        .hp-game-img { position: relative; aspect-ratio: 1 / 1; overflow: hidden; background: linear-gradient(160deg, #e4e8ef 0%, #cfd5df 100%); }
+        .hp-game-img > img { width: 100%; height: 100%; object-fit: cover; }
+        .hp-game-ph { display: flex; width: 100%; height: 100%; align-items: center; justify-content: center; padding-bottom: 36px; font-size: 64px; line-height: 1; font-weight: 700; color: rgba(255,255,255,.7); user-select: none; }
+        .hp-game-label { position: absolute; left: 50%; bottom: 10px; width: 84%; transform: translateX(-50%); padding: 7px 4px; text-align: center; background: rgba(255,255,255,.9); }
+        .hp-game-label h3 { margin: 0; font-size: 13px; line-height: 22px; font-weight: 700; text-transform: uppercase; color: #222; }
+
+        /* Merch baru: 7 kolom × 146px */
+        .hp-merch-h { margin: 66px 0 0; text-align: center; font-size: 32px; line-height: 38px; font-weight: 500; text-transform: uppercase; color: #312e39; }
+        .hp-merch { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); column-gap: 20px; row-gap: 50px; margin-top: 23px; padding-bottom: 58px; }
+        .hp-card { display: block; }
+        .hp-card-img { position: relative; aspect-ratio: 1 / 1; overflow: hidden; background: #fff; }
+        .hp-card-img > img { width: 100%; height: 100%; object-fit: cover; }
+        .hp-name { margin: 10px 0 0; font-size: 14px; line-height: 21px; font-weight: 500; color: #000; }
+        .hp-price { margin: 8px 0 0; font-size: 14px; line-height: 21px; font-weight: 500; color: #02a1ea; }
+        .hp-price s { color: rgba(0,0,0,.4); }
+        .hp-price i { font-style: normal; color: rgba(0,0,0,.4); }
+        .hp-empty { grid-column: 1 / -1; text-align: center; font-size: 14px; color: rgba(0,0,0,.45); }
+
+        /* Ribbon LIMITED / PRESALE */
+        .hp-flag { position: absolute; top: 0; left: 0; z-index: 9; height: 21px; padding: 0 15px 0 9px; font-size: 15px; line-height: 21px; font-weight: 500; text-transform: uppercase; color: #fff;
+                   clip-path: polygon(0 0, 100% 0, calc(100% - 9px) 100%, 0 100%); }
+        .hp-flag.is-limited { background: #FF4949; }
+        .hp-flag.is-presale { background: #3986C6; }
+
+        @media (max-width: 1100px) { .hp-merch { grid-template-columns: repeat(5, minmax(0, 1fr)); } }
+        @media (max-width: 900px)  { .hp-games { grid-template-columns: repeat(3, minmax(0, 1fr)); } .hp-merch { grid-template-columns: repeat(3, minmax(0, 1fr)); } .hp-h2 { font-size: 36px; line-height: 44px; } }
+        @media (max-width: 560px)  { .hp-games, .hp-merch { grid-template-columns: repeat(2, minmax(0, 1fr)); } .hp-h2 { font-size: 28px; line-height: 36px; margin-top: 32px; } .hp-sub { font-size: 13px; } .hp-merch-h { font-size: 24px; margin-top: 40px; } }
+    </style>
 </head>
-<body id="top" class="flex min-h-screen flex-col bg-white font-sans text-ink antialiased">
+<body id="top" class="flex min-h-screen flex-col font-sans text-ink antialiased" style="background:#f7f7f7;font-family:'Roboto',system-ui,-apple-system,'Segoe UI',sans-serif">
     @include('frontend.partials._header')
 
-    <main class="flex-1">
-        {{-- Hero: gambar statis tanpa carousel JS (ringan untuk crawler) --}}
-        <section id="hero" class="mx-auto max-w-[1200px] px-8 py-6">
-            @foreach (($heroSlides ?? []) as $slide)
-                <a href="{{ data_get($slide, 'url') ?? '#' }}" class="mb-3 block overflow-hidden rounded-lg border border-rule">
-                    @if (data_get($slide, 'image'))
-                        <img src="{{ data_get($slide, 'image') }}" alt="" class="aspect-[13/8] w-full object-cover">
-                    @endif
-                </a>
-            @endforeach
-        </section>
+    <main style="flex:1 1 auto">
+        <div class="hp">
 
-        {{-- Jelajahi Game Favoritmu --}}
-        <section id="game-grid" class="mx-auto max-w-[1200px] px-8 pb-12">
-            <h2 class="text-center font-display text-[50px] font-semibold text-ink">Jelajahi Game Favoritmu</h2>
-            <p class="mt-2 text-center text-[16px] text-ink/60">Temukan merchandise eksklusif dari game favoritmu dan lihat koleksi lengkapnya di setiap kategori!</p>
+            {{-- ═══ HERO (statis, tanpa JS) ═══ --}}
+            <section id="hero" class="hp-hero">
+                @foreach (($heroSlides ?? []) as $slide)
+                    <a href="{{ data_get($slide, 'url') ?? '#' }}" class="hp-hero-track" style="display:block;margin-bottom:12px">
+                        @if (data_get($slide, 'image'))
+                            <img src="{{ data_get($slide, 'image') }}" alt="" style="width:100%;height:100%;object-fit:cover">
+                        @endif
+                    </a>
+                @endforeach
+                <div class="hp-line"></div>
+            </section>
 
-            <div class="mt-6 grid grid-cols-2 gap-4 md:grid-cols-4 lg:grid-cols-6">
-                @foreach (($games ?? collect()) as $game)
-                    <a href="{{ route('catalog.game', $game->slug) }}" class="group relative block aspect-square overflow-hidden rounded-lg bg-paper">
-                        @if ($game->logo_path)
-                            <img src="{{ \Illuminate\Support\Facades\Storage::url($game->logo_path) }}" alt="{{ $game->name }}" class="h-full w-full object-cover">
-                        @else
-                            <div class="flex h-full w-full items-center justify-center bg-[#F5F7FA]">
-                                <span class="font-mono text-[10px] uppercase tracking-[0.18em] text-ink/35">{{ $game->name }}</span>
+            {{-- ═══ JELAJAHI GAME FAVORITMU ═══ --}}
+            <section id="game-grid">
+                <h2 class="hp-h2">Jelajahi Game Favoritmu</h2>
+                <p class="hp-sub">Temukan merchandise eksklusif dari game favoritmu dan lihat koleksi lengkapnya di setiap kategori!</p>
+
+                <div class="hp-games">
+                    @forelse (($games ?? collect()) as $game)
+                        <a href="{{ route('catalog.game', $game->slug) }}" class="hp-game">
+                            <div class="hp-game-img">
+                                @if ($game->logo_path)
+                                    <img src="{{ \Illuminate\Support\Facades\Storage::url($game->logo_path) }}" alt="{{ $game->name }}">
+                                @else
+                                    <div class="hp-game-ph" aria-hidden="true">{{ mb_strtoupper(mb_substr($game->name, 0, 1)) }}</div>
+                                @endif
+                                <div class="hp-game-label"><h3>{{ $game->name }}</h3></div>
                             </div>
-                        @endif
-                        <div class="absolute bottom-2 left-1/2 w-[82%] -translate-x-1/2 rounded bg-white/92 px-2 py-1.5 text-center">
-                            <p class="text-[13px] font-bold uppercase leading-tight text-ink">{{ $game->name }}</p>
-                        </div>
-                    </a>
-                @endforeach
-            </div>
-        </section>
+                        </a>
+                    @empty
+                        <p class="hp-empty">Game akan segera hadir.</p>
+                    @endforelse
+                </div>
+            </section>
 
-        {{-- MERCH BARU --}}
-        <section id="merch-baru" class="mx-auto max-w-[1200px] px-8 pb-14">
-            <h2 class="text-center text-[28px] font-bold uppercase tracking-wide text-ink">MERCH BARU</h2>
+            {{-- ═══ MERCH BARU ═══ --}}
+            <section id="merch-baru">
+                <h2 class="hp-merch-h">MERCH BARU</h2>
 
-            <div class="mt-5 grid grid-cols-2 gap-3.5 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-7">
-                @foreach (($products ?? collect()) as $product)
-                    <a href="{{ route('product.show', [$product->game->slug, $product->slug]) }}" class="group block">
-                        <div class="relative aspect-[5/4] overflow-hidden rounded bg-paper">
-                            @if ($product->image_path)
-                                <img src="{{ \App\Services\Image\ImageOptimizerService::url($product->image_path, 'thumb') }}" alt="{{ $product->name }}" class="h-full w-full object-cover">
+                <div class="hp-merch">
+                    @forelse (($products ?? collect()) as $product)
+                        <a href="{{ route('product.show', [$product->game->slug, $product->slug]) }}" class="hp-card">
+                            <div class="hp-card-img">
+                                @if ($product->image_path)
+                                    <img src="{{ \App\Services\Image\ImageOptimizerService::url($product->image_path, 'thumb') }}" alt="{{ $product->name }}">
+                                @endif
+                                @if ($product->tags->contains('slug', 'presale'))
+                                    <span class="hp-flag is-presale">PRESALE</span>
+                                @elseif ($product->tags->contains('slug', 'limited'))
+                                    <span class="hp-flag is-limited">LIMITED</span>
+                                @endif
+                            </div>
+
+                            <p class="hp-name">{{ $product->name }}</p>
+
+                            @if (!empty($product->price_min) && !empty($product->price_max) && $product->price_min != $product->price_max)
+                                <p class="hp-price"><s>{{ format_rp($product->price_min) }}</s> <i>–</i> {{ format_rp($product->price_max) }}</p>
+                            @elseif (!empty($product->price_idr))
+                                <p class="hp-price">{{ format_rp($product->price_idr) }}</p>
+                            @elseif (!empty($product->price_max))
+                                <p class="hp-price">{{ format_rp($product->price_max) }}</p>
                             @endif
-                            @if ($product->tags->contains('slug', 'presale'))
-                                <span class="absolute left-2 top-2 rounded bg-[#3986C6] px-2 py-[3px] text-[9px] font-bold uppercase text-white">PRESALE</span>
-                            @elseif ($product->tags->contains('slug', 'limited'))
-                                <span class="absolute left-2 top-2 rounded bg-[#E53935] px-2 py-[3px] text-[9px] font-bold uppercase text-white">LIMITED</span>
-                            @endif
-                        </div>
-                        <p class="mt-1.5 text-[15px] font-bold text-ink">{{ $product->name }}</p>
-                        @if (!empty($product->price_min) && !empty($product->price_max))
-                            <p class="mt-0.5 text-[15px]">
-                                <span class="text-[13px] text-ink/45 line-through">{{ format_rp($product->price_min) }}</span>
-                                <span class="text-ink/45"> – </span>
-                                <strong class="text-ink">{{ format_rp($product->price_max) }}</strong>
-                            </p>
-                        @elseif (!empty($product->price_idr))
-                            <p class="mt-0.5 text-[15px] font-bold text-ink">{{ format_rp($product->price_idr) }}</p>
-                        @endif
-                    </a>
-                @endforeach
-            </div>
-        </section>
+                        </a>
+                    @empty
+                        <p class="hp-empty">Belum ada merch.</p>
+                    @endforelse
+                </div>
+            </section>
+        </div>
     </main>
 
     @include('frontend.partials._footer')
+
 </body>
 </html>

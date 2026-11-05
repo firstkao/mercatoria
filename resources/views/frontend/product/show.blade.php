@@ -23,19 +23,37 @@
             default => ''
         } : '';
         $coins = $pricing['coins'] ?? intdiv((int) $pricing['final_price_bersih'], 100);
+
+        // SEO: AppServiceProvider selalu share $seo dengan title = nama app, sehingga @section('title')
+        // diabaikan layout. Kalau controller belum kirim $seo sendiri, isi dari data produk di sini.
+        if (($seo['title'] ?? null) === config('app.name', 'MERCATORIA')) {
+            $productUrl = url('/'.$game->slug.'/'.$product->slug);
+            $seo = array_merge($seo ?? [], [
+                'title'       => $product->name.' — MERCATORIA',
+                'description' => 'Beli '.$product->name.' ('.$game->name.') di MERCATORIA. Harga '.format_rp($pricing['final_price_bersih']).', sudah termasuk ongkir CN-ID & bea.',
+                'url'         => $productUrl,
+                'canonical'   => $productUrl,
+                'image'       => $mainPath ? url(Storage::url($mainPath)) : '',
+            ]);
+        }
     @endphp
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Raleway:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
 
     <style>
-        .pp-wrap {
-            --pp-font: 'Raleway', system-ui, sans-serif;
-            --pp-ink: #161a26;
+        /* Background halaman produk = beranda (hanya aktif di halaman ini) */
+        body { background: #f7f7f7; }
+
+        .pp-wrap, .pp-modal-overlay {
+            --pp-font: 'Roboto', system-ui, sans-serif;
+            --pp-ink: #000;
             --pp-line: #e1e1e1;
+            --pp-blue: #02a1ea;
+        }
+        .pp-wrap {
             font-family: var(--pp-font);
-            font-variant-numeric: lining-nums;
             color: #333;
             -webkit-font-smoothing: antialiased;
         }
@@ -43,12 +61,12 @@
         .pp-wrap a { color: inherit; text-decoration: none; }
 
         .pp-box {
-            max-width: 1080px;
-            margin: 24px auto;
+            max-width: 1140px;
+            margin: -22px auto 24px;
             padding: 36px 40px 60px;
             background: #fff;
-            border: 1px solid var(--pp-line);
-            border-radius: 4px;
+            border: 0;
+            border-radius: 0;
         }
 
         .pp-top {
@@ -92,13 +110,13 @@
         .pp-flag {
             position: absolute; top: 0; left: 0; z-index: 2;
             height: 18px; padding: 0 14px 0 8px; line-height: 18px;
-            font-size: 10px; font-weight: 600; letter-spacing: .04em;
-            text-transform: uppercase; color: #fff; background: #E53935;
+            font-size: 10px; font-weight: 500; letter-spacing: 0;
+            text-transform: uppercase; color: #fff; background: #FF4949;
             clip-path: polygon(0 0, 100% 0, calc(100% - 8px) 100%, 0 100%);
         }
         .pp-flag.is-presale { background: #3986C6; color: #fff; }
         .pp-flag.is-new { background: #4FC3F7; color: #fff; }
-        .pp-flag.is-limited { background: #E53935; color: #fff; }
+        .pp-flag.is-limited { background: #FF4949; color: #fff; }
 
         .pp-thumbs { display: flex; gap: 6px; margin-top: 10px; overflow-x: auto; }
         .pp-thumbs button {
@@ -145,11 +163,11 @@
 
         .pp-price {
             margin: 10px 0 0; font-size: 22px; line-height: 26px;
-            font-weight: 600; color: #20232a;
+            font-weight: 600; color: var(--pp-blue);
         }
         .pp-price s {
             display: block; font-size: 13px; line-height: 16px;
-            font-weight: 400; color: #aaa;
+            font-weight: 400; color: rgba(0,0,0,.4);
         }
 
         .pp-chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0 0; }
@@ -217,65 +235,65 @@
             transition: color .15s;
         }
         .pp-meta-item a:hover {
-            color: #29B6F6;
+            color: #02a1ea;
         }
 
         /* ═══ Share buttons — COMPACT 1 baris ═══ */
-.pp-share {
-    margin-top: 18px;
-    padding: 14px 16px;
-    background: #fafafa;
-    border: 1px solid var(--pp-line);
-    border-radius: 6px;
-}
-.pp-share-title {
-    margin: 0 0 8px;
-    font-size: 11px; font-weight: 700;
-    text-transform: uppercase; letter-spacing: .12em;
-    color: #555;
-    display: flex; align-items: center; gap: 6px;
-}
-.pp-share-title::before {
-    content: '';
-    display: inline-block;
-    width: 3px; height: 14px;
-    background: var(--pp-ink);
-    border-radius: 2px;
-}
-.pp-share-note {
-    margin: 0 0 10px; font-size: 11px; color: #777; line-height: 16px;
-}
-.pp-share-note a { text-decoration: underline; text-underline-offset: 2px; color: #333; }
+        .pp-share {
+            margin-top: 18px;
+            padding: 14px 16px;
+            background: #fafafa;
+            border: 1px solid var(--pp-line);
+            border-radius: 6px;
+        }
+        .pp-share-title {
+            margin: 0 0 8px;
+            font-size: 11px; font-weight: 700;
+            text-transform: uppercase; letter-spacing: .12em;
+            color: #555;
+            display: flex; align-items: center; gap: 6px;
+        }
+        .pp-share-title::before {
+            content: '';
+            display: inline-block;
+            width: 3px; height: 14px;
+            background: var(--pp-ink);
+            border-radius: 2px;
+        }
+        .pp-share-note {
+            margin: 0 0 10px; font-size: 11px; color: #777; line-height: 16px;
+        }
+        .pp-share-note a { text-decoration: underline; text-underline-offset: 2px; color: #333; }
 
-/* Compact row — flex nowrap, gap kecil, auto-shrink */
-.pp-share-btns {
-    display: flex;
-    gap: 5px;
-    flex-wrap: nowrap;
-}
-.pp-sbtn {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    height: 24px;
-    padding: 0 8px;
-    border: 1px solid var(--pp-line);
-    border-radius: 3px;
-    background: #fff;
-    font-family: var(--pp-font);
-    font-size: 10px;
-    font-weight: 600;
-    color: #555;
-    cursor: pointer;
-    white-space: nowrap;
-    transition: all .15s;
-    flex-shrink: 0;
-}
-.pp-sbtn:hover {
-    border-color: var(--pp-ink);
-    color: var(--pp-ink);
-}
-.pp-sbtn svg { flex-shrink: 0; }
+        /* Compact row — flex nowrap, gap kecil, auto-shrink */
+        .pp-share-btns {
+            display: flex;
+            gap: 5px;
+            flex-wrap: nowrap;
+        }
+        .pp-sbtn {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            height: 24px;
+            padding: 0 8px;
+            border: 1px solid var(--pp-line);
+            border-radius: 3px;
+            background: #fff;
+            font-family: var(--pp-font);
+            font-size: 10px;
+            font-weight: 600;
+            color: #555;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all .15s;
+            flex-shrink: 0;
+        }
+        .pp-sbtn:hover {
+            border-color: var(--pp-ink);
+            color: var(--pp-ink);
+        }
+        .pp-sbtn svg { flex-shrink: 0; }
 
         /* Payment */
         .pp-pay {
@@ -312,7 +330,7 @@
 
         .pp-rel-h {
             margin: 48px 0 0; font-size: 28px; line-height: 34px;
-            font-weight: 500; color: var(--pp-ink);
+            font-weight: 500; color: #312e39;
         }
         .pp-rel {
             display: grid; grid-template-columns: repeat(6, minmax(0, 1fr));
@@ -436,7 +454,7 @@
     <div class="pp-wrap">
 
         @if (in_array($userState ?? '', ['crush', 'ex', 'ons']) && isset($kuotaViewTotal))
-            <div style="max-width:1080px;margin:16px auto 0;padding:10px 16px;border:1px solid #fcd34d;background:#fffbeb;font-size:13px;color:#78350f;">
+            <div style="max-width:1140px;margin:16px auto 0;padding:10px 16px;border:1px solid #fcd34d;background:#fffbeb;font-size:13px;color:#78350f;">
                 Kuota jelajah katalog kamu tersisa {{ ($kuotaViewTotal - ($kuotaViewUsed ?? 0)) }} dari {{ $kuotaViewTotal }} produk.
             </div>
         @endif
@@ -574,38 +592,38 @@
                     </div>
 
                     {{-- ═══ 3. Share — WA + Threads, hapus Email ═══ --}}
-<div class="pp-share">
-    <p class="pp-share-title">Bagikan Produk Ini</p>
-    @auth
-        <p class="pp-share-note">Bagikan &amp; dapatkan <strong>+5 koin</strong> per IP Indonesia unik saat link dibuka.</p>
-    @else
-        <p class="pp-share-note">
-            <a href="{{ route('login') }}">Masuk</a> untuk membagikan link referral dan mendapat koin.
-        </p>
-    @endauth
-    <div class="pp-share-btns">
-    <button type="button" data-copy="{{ $shareUrl }}" class="pp-sbtn" title="Salin link">
-        <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1h1a1 1 0 0 1 1 1V14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1h1z"/><path d="M9.5 1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5zm-3-1A1.5 1.5 0 0 0 5 1.5v1A1.5 1.5 0 0 0 6.5 4h3A1.5 1.5 0 0 0 11 2.5v-1A1.5 1.5 0 0 0 9.5 0z"/></svg>
-        <span data-label>Salin Link</span>
-    </button>
-    <a href="https://wa.me/?text={{ urlencode($product->name . ' — ' . $shareUrl) }}" target="_blank" rel="noopener" class="pp-sbtn" title="WhatsApp">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
-        WhatsApp
-    </a>
-    <a href="https://www.facebook.com/sharer/sharer.php?u={{ urlencode($shareUrl) }}" target="_blank" rel="noopener" class="pp-sbtn" title="Facebook">
-        <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M16 8.049c0-4.446-3.582-8.05-8-8.05C3.58 0-.002 3.603-.002 8.05c0 4.017 2.926 7.347 6.75 7.951v-5.625h-2.03V8.05H6.75V6.275c0-2.017 1.195-3.131 3.022-3.131.876 0 1.791.157 1.791.157v1.98h-1.009c-.993 0-1.303.621-1.303 1.258v1.51h2.218l-.354 2.326H9.25V16c3.824-.604 6.75-3.934 6.75-7.951"/></svg>
-        Facebook
-    </a>
-    <a href="https://twitter.com/intent/tweet?url={{ urlencode($shareUrl) }}&text={{ urlencode($product->name) }}" target="_blank" rel="noopener" class="pp-sbtn" title="X / Twitter">
-        <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor"><path d="M12.6.75h2.454l-5.36 6.142L16 15.25h-4.937l-3.867-5.07-4.425 5.07H.316l5.733-6.57L0 .75h5.063l3.495 4.633L12.601.75Zm-.86 13.028h1.36L4.323 2.145H2.865z"/></svg>
-        X
-    </a>
-    <a href="https://www.threads.net/intent/post?text={{ urlencode($product->name . ' — ' . $shareUrl) }}" target="_blank" rel="noopener" class="pp-sbtn" title="Threads">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M12.186 24h-.007c-3.581-.024-6.334-1.205-8.184-3.509C2.35 18.44 1.5 15.586 1.472 12.01v-.017c.03-3.579.879-6.43 2.525-8.482C5.845 1.205 8.6.024 12.18 0h.014c2.746.02 5.043.725 6.826 2.098 1.677 1.29 2.858 3.13 3.509 5.467l-2.04.569c-1.104-3.96-3.898-5.984-8.304-6.015-2.91.022-5.11.936-6.54 2.717C4.307 6.504 3.616 8.914 3.59 12c.025 3.086.718 5.496 2.057 7.164 1.43 1.783 3.631 2.698 6.54 2.717 2.623-.02 4.358-.631 5.8-2.045 1.647-1.613 1.618-3.593 1.09-4.798-.31-.71-.873-1.3-1.634-1.75-.192 1.352-.622 2.446-1.284 3.272-.886 1.102-2.14 1.704-3.73 1.79-1.202.065-2.361-.218-3.259-.801-1.063-.689-1.685-1.74-1.752-2.96-.065-1.18.408-2.265 1.33-3.064.88-.76 2.119-1.207 3.583-1.291a13.6 13.6 0 0 1 3.02.142c-.126-.742-.375-1.332-.743-1.757-.51-.586-1.308-.883-2.359-.89h-.029c-.844 0-1.992.232-2.721 1.32L7.734 7.847c.98-1.454 2.568-2.256 4.478-2.256h.044c3.194.02 5.097 1.975 5.287 5.388.108.046.216.094.321.142 1.49.7 2.58 1.761 3.154 3.07.797 1.82.871 4.79-1.548 7.158-1.85 1.81-4.094 2.628-7.277 2.65Zm1.003-11.69c-.242 0-.487.007-.739.021-1.836.093-2.98.947-2.916 2.143.067 1.256 1.452 1.839 2.784 1.791 1.224-.045 2.818-.553 3.086-3.71a10.5 10.5 0 0 0-2.215-.245z"/></svg>
-        Threads
-    </a>
-</div>
-</div>
+                    <div class="pp-share">
+                        <p class="pp-share-title">Bagikan Produk Ini</p>
+                        @auth
+                            <p class="pp-share-note">Bagikan &amp; dapatkan <strong>+5 koin</strong> per IP Indonesia unik saat link dibuka.</p>
+                        @else
+                            <p class="pp-share-note">
+                                <a href="{{ route('login') }}">Masuk</a> untuk membagikan link referral dan mendapat koin.
+                            </p>
+                        @endauth
+                        <div class="pp-share-btns">
+                            <button type="button" data-copy="{{ $shareUrl }}" class="pp-sbtn" title="Salin link">
+                                <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1h1a1 1 0 0 1 1 1V14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1h1z"/><path d="M9.5 1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5zm-3-1A1.5 1.5 0 0 0 5 1.5v1A1.5 1.5 0 0 0 6.5 4h3A1.5 1.5 0 0 0 11 2.5v-1A1.5 1.5 0 0 0 9.5 0z"/></svg>
+                                <span data-label>Salin Link</span>
+                            </button>
+                            <a href="https://wa.me/?text={{ urlencode($product->name . ' — ' . $shareUrl) }}" target="_blank" rel="noopener" class="pp-sbtn" title="WhatsApp">
+                                <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+                                WhatsApp
+                            </a>
+                            <a href="https://www.facebook.com/sharer/sharer.php?u={{ urlencode($shareUrl) }}" target="_blank" rel="noopener" class="pp-sbtn" title="Facebook">
+                                <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M16 8.049c0-4.446-3.582-8.05-8-8.05C3.58 0-.002 3.603-.002 8.05c0 4.017 2.926 7.347 6.75 7.951v-5.625h-2.03V8.05H6.75V6.275c0-2.017 1.195-3.131 3.022-3.131.876 0 1.791.157 1.791.157v1.98h-1.009c-.993 0-1.303.621-1.303 1.258v1.51h2.218l-.354 2.326H9.25V16c3.824-.604 6.75-3.934 6.75-7.951"/></svg>
+                                Facebook
+                            </a>
+                            <a href="https://twitter.com/intent/tweet?url={{ urlencode($shareUrl) }}&text={{ urlencode($product->name) }}" target="_blank" rel="noopener" class="pp-sbtn" title="X / Twitter">
+                                <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor"><path d="M12.6.75h2.454l-5.36 6.142L16 15.25h-4.937l-3.867-5.07-4.425 5.07H.316l5.733-6.57L0 .75h5.063l3.495 4.633L12.601.75Zm-.86 13.028h1.36L4.323 2.145H2.865z"/></svg>
+                                X
+                            </a>
+                            <a href="https://www.threads.net/intent/post?text={{ urlencode($product->name . ' — ' . $shareUrl) }}" target="_blank" rel="noopener" class="pp-sbtn" title="Threads">
+                                <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M12.186 24h-.007c-3.581-.024-6.334-1.205-8.184-3.509C2.35 18.44 1.5 15.586 1.472 12.01v-.017c.03-3.579.879-6.43 2.525-8.482C5.845 1.205 8.6.024 12.18 0h.014c2.746.02 5.043.725 6.826 2.098 1.677 1.29 2.858 3.13 3.509 5.467l-2.04.569c-1.104-3.96-3.898-5.984-8.304-6.015-2.91.022-5.11.936-6.54 2.717C4.307 6.504 3.616 8.914 3.59 12c.025 3.086.718 5.496 2.057 7.164 1.43 1.783 3.631 2.698 6.54 2.717 2.623-.02 4.358-.631 5.8-2.045 1.647-1.613 1.618-3.593 1.09-4.798-.31-.71-.873-1.3-1.634-1.75-.192 1.352-.622 2.446-1.284 3.272-.886 1.102-2.14 1.704-3.73 1.79-1.202.065-2.361-.218-3.259-.801-1.063-.689-1.685-1.74-1.752-2.96-.065-1.18.408-2.265 1.33-3.064.88-.76 2.119-1.207 3.583-1.291a13.6 13.6 0 0 1 3.02.142c-.126-.742-.375-1.332-.743-1.757-.51-.586-1.308-.883-2.359-.89h-.029c-.844 0-1.992.232-2.721 1.32L7.734 7.847c.98-1.454 2.568-2.256 4.478-2.256h.044c3.194.02 5.097 1.975 5.287 5.388.108.046.216.094.321.142 1.49.7 2.58 1.761 3.154 3.07.797 1.82.871 4.79-1.548 7.158-1.85 1.81-4.094 2.628-7.277 2.65Zm1.003-11.69c-.242 0-.487.007-.739.021-1.836.093-2.98.947-2.916 2.143.067 1.256 1.452 1.839 2.784 1.791 1.224-.045 2.818-.553 3.086-3.71a10.5 10.5 0 0 0-2.215-.245z"/></svg>
+                                Threads
+                            </a>
+                        </div>
+                    </div>
 
                     {{-- Payment --}}
                     <div class="pp-pay">
@@ -700,7 +718,7 @@
                     var l = btn.querySelector('[data-label]');
                     if (!l) return;
                     l.textContent = 'Tersalin!';
-                    setTimeout(function () { l.textContent = 'Copy Link'; }, 2000);
+                    setTimeout(function () { l.textContent = 'Salin Link'; }, 2000);
                 });
             });
 

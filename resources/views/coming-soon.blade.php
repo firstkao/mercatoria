@@ -3,15 +3,17 @@
 @section('title', 'Menyusul — MERCATORIA')
 
 @section('content')
-    <div class="mx-auto max-w-xl rounded-xl border border-rule bg-white p-10 text-center">
-        <p class="font-mono text-[10px] uppercase tracking-[0.22em] text-ink/45">Info</p>
-        <h1 class="mt-2 font-display text-[1.75rem] leading-tight font-semibold text-ink sm:text-3xl">Menyusul</h1>
-        <p class="mt-3 text-sm text-ink/65">
-            Halaman ini belum dibangun. Fitur sedang dalam antrean pengembangan —
-            tidak ada yang perlu dikhawatirkan dari pesananmu.
-        </p>
-        <a href="{{ route('dashboard') }}" class="mt-6 inline-block rounded-lg bg-black px-6 py-2.5 text-sm font-semibold tracking-[0.12em] text-white transition-colors hover:bg-ink">
-            Kembali ke Dashboard
-        </a>
+    @include('frontend.partials._auth-style')
+
+    <div class="au" style="max-width:576px;margin:0 auto">
+        <div class="au-card" style="padding:48px 32px 40px;text-align:center">
+            <p class="au-eyebrow">Info</p>
+            <h1 class="au-title">Menyusul</h1>
+            <p class="au-lead">
+                Halaman ini belum dibangun. Fitur sedang dalam antrean pengembangan —
+                tidak ada yang perlu dikhawatirkan dari pesananmu.
+            </p>
+            <a href="{{ route('dashboard') }}" class="au-btn" style="display:inline-block;width:auto;margin-top:24px;padding:0 28px">Kembali ke Dashboard</a>
+        </div>
     </div>
 @endsection

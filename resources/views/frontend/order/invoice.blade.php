@@ -4,25 +4,32 @@
     <meta charset="utf-8">
     <title>Invoice {{ $order->no_order }}</title>
     <style>
-        body { font-family: DejaVu Sans, sans-serif; font-size: 11px; color: #111; margin: 0; position: relative; }
+        /* Invoice — palet bahasa visual (putih, garis #e1e1e1, tanpa radius), aman untuk dompdf. */
+        body { font-family: 'Roboto', 'DejaVu Sans', sans-serif; font-size: 11px; color: #333; margin: 0; position: relative; }
         .watermark {
             position: fixed; top: 45%; left: 15%; transform: rotate(-30deg);
             font-size: 64px; color: rgba(0, 0, 0, 0.06); font-weight: 700; letter-spacing: 8px;
         }
         .header { border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 14px; }
-        .brand { font-size: 18px; font-weight: 700; letter-spacing: 2px; }
-        .meta { margin-top: 4px; color: #444; line-height: 1.5; }
-        h1 { font-size: 14px; margin: 0 0 2px; }
-        .no { font-size: 13px; font-weight: 700; letter-spacing: 1px; }
-        table.items { width: 100%; border-collapse: collapse; margin-top: 12px; }
-        table.items th { background: #f2f2f2; text-align: left; padding: 6px 8px; border: 1px solid #ddd; }
-        table.items td { padding: 6px 8px; border: 1px solid #ddd; }
+        .brand { font-size: 18px; font-weight: 700; letter-spacing: 2px; color: #000; }
+        .meta { margin-top: 4px; color: #555; line-height: 1.5; }
+        h1 { font-size: 14px; margin: 0 0 2px; color: #000; }
+        .no { font-size: 13px; font-weight: 700; letter-spacing: 1px; color: #000; }
+        table.items { width: 100%; border-collapse: collapse; margin-top: 12px; background: #fff; }
+        table.items th {
+            background: #fff; text-align: left; padding: 6px 8px; border: 1px solid #e1e1e1;
+            font-size: 10px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: #333;
+        }
+        table.items td { padding: 6px 8px; border: 1px solid #e1e1e1; color: #333; }
+        .var { color: #888; }
         .totals { width: 45%; margin-left: auto; margin-top: 12px; }
-        .totals td { padding: 3px 6px; }
+        .totals td { padding: 3px 6px; color: #333; }
         .totals td.r { text-align: right; }
-        .grand td { font-weight: 700; border-top: 1px solid #000; }
-        .note { margin-top: 12px; padding: 8px; background: #f7f7f7; }
-        .footer { margin-top: 24px; padding-top: 8px; border-top: 1px solid #ccc; color: #666; font-size: 9px; }
+        .totals .muted, .totals .muted td { color: #555; }
+        .grand td { font-weight: 700; color: #000; border-top: 1px solid #000; }
+        .note { margin-top: 12px; padding: 8px; background: #f7f7f7; color: #555; }
+        .note strong { color: #000; }
+        .footer { margin-top: 24px; padding-top: 8px; border-top: 1px solid #e1e1e1; color: #888; font-size: 9px; }
     </style>
 </head>
 <body>
@@ -60,7 +67,7 @@
                     <td>
                         {{ $snapshot->product_name }}
                         @if ($snapshot->variant_name)
-                            <br><span style="color:#666">Varian: {{ $snapshot->variant_name }}</span>
+                            <br><span class="var">Varian: {{ $snapshot->variant_name }}</span>
                         @endif
                     </td>
                     <td>{{ $snapshot->qty }}</td>
@@ -74,12 +81,12 @@
     <table class="totals">
         <tr><td>Subtotal</td><td class="r">{{ format_rp($order->subtotal) }}</td></tr>
         @if ((float) $order->discount_amount > 0)
-            <tr>
+            <tr class="muted">
                 <td>Diskon {{ $order->discount_type === 'coin' ? 'Koin' : 'Voucher' }}</td>
                 <td class="r">- {{ format_rp($order->discount_amount) }}</td>
             </tr>
         @endif
-        <tr><td>Fee QRIS</td><td class="r">{{ format_rp($order->fee_qris) }}</td></tr>
+        <tr class="muted"><td>Fee QRIS</td><td class="r">{{ format_rp($order->fee_qris) }}</td></tr>
         <tr class="grand"><td>Total</td><td class="r">{{ format_rp($order->total) }}</td></tr>
         <tr class="grand"><td>Tagihan Web</td><td class="r">{{ format_rp($order->tagihan_web) }}</td></tr>
     </table>

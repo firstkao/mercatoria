@@ -8,26 +8,27 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=IBM+Plex+Mono:wght@400;500;600&family=Schibsted+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
     @vite(['resources/css/app.css'])
+    @include('frontend.partials._auth-style')
 </head>
-<body class="flex min-h-screen flex-col bg-paper font-sans text-ink antialiased">
+<body style="display:flex;flex-direction:column;min-height:100vh;margin:0;background:#f7f7f7;font-family:'Roboto',system-ui,sans-serif">
     @include('frontend.partials._header')
 
-    <main class="flex flex-1 items-center justify-center px-4 py-16">
-        <div class="w-full max-w-md rounded-xl border border-rule bg-white px-8 py-12 text-center">
-            <p class="font-mono text-[10px] uppercase tracking-[0.22em] text-ink/45">Error 429</p>
-            <h1 class="mt-2 font-display text-[1.75rem] leading-tight font-semibold text-ink sm:text-3xl">Terlalu banyak percobaan</h1>
-            <p class="mt-3 text-sm text-ink/65">
-                Kamu mengirim terlalu banyak permintaan dalam waktu singkat. Tunggu sebentar, lalu coba lagi.
-            </p>
-            <a href="{ route('home') }" class="mt-6 inline-block rounded-lg bg-black px-6 py-2.5 text-sm font-semibold tracking-[0.12em] text-white transition-colors hover:bg-ink">
-                Kembali ke Beranda
-            </a>
-            <div class="mt-6 h-px bg-rule"></div>
-            <nav class="mt-4 flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-sm">
-                <a href="{ route('home') }" class="font-medium text-link underline decoration-link/35 underline-offset-4">Beranda</a>
-                <a href="{ route('login') }" class="font-medium text-link underline decoration-link/35 underline-offset-4">Masuk</a>
-                <a href="{ route('register') }" class="font-medium text-link underline decoration-link/35 underline-offset-4">Daftar</a>
-            </nav>
+    <main style="flex:1 1 auto;display:flex;align-items:center;justify-content:center;padding:64px 16px">
+        <div class="au" style="width:100%;max-width:448px">
+            <div class="au-card" style="padding:48px 32px 40px;text-align:center">
+                <p class="au-eyebrow">Error 429</p>
+                <h1 class="au-title">Terlalu banyak percobaan</h1>
+                <p class="au-lead">
+                    Kamu mengirim terlalu banyak permintaan dalam waktu singkat. Tunggu sebentar, lalu coba lagi.
+                </p>
+                <a href="{{ route('home') }}" class="au-btn" style="display:inline-block;width:auto;margin-top:24px;padding:0 28px">Kembali ke Beranda</a>
+                <div class="au-hr" style="margin-top:28px"></div>
+                <nav style="display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:8px 20px;margin-top:18px;font-size:14px">
+                    <a href="{{ route('home') }}" class="au-link">Beranda</a>
+                    <a href="{{ route('login') }}" class="au-link">Masuk</a>
+                    <a href="{{ route('register') }}" class="au-link">Daftar</a>
+                </nav>
+            </div>
         </div>
     </main>
 
