@@ -241,7 +241,7 @@
                         </div>
                     </section>
 
-                    {{-- ═══ Diskon — konsep jelas: pilih salah satu ═══ --}}
+                    {{-- ═══ Diskon — pilih salah satu ═══ --}}
                     <section class="ck-sec">
                         <h2>Diskon</h2>
                         <div class="ck-body">
@@ -296,7 +296,7 @@
                     </section>
                 </div>
 
-                {{-- ═════ KANAN: ringkasan — dinamis ═════ --}}
+                {{-- ═════ KANAN: ringkasan — dinamis real-time ═════ --}}
                 <aside class="ck-side">
                     <section class="ck-sec">
                         <h2>Ringkasan Pembayaran</h2>
@@ -305,7 +305,7 @@
                             <div class="ck-sum-row is-minus"><dt>Diskon</dt><dd id="sum-discount">- Rp0</dd></div>
                             <div class="ck-sum-row is-main"><dt>Total Harga Barang</dt><dd id="sum-total">{{ format_rp($initialSubtotal) }}</dd></div>
 
-                            {{-- Fee QRIS: muncul hanya jika QRIS + ≥ threshold --}}
+                            {{-- Fee QRIS: hidden by default, muncul hanya jika QRIS + ≥ threshold --}}
                             <div class="ck-sum-row is-muted" id="row-fee-qris" style="display:none;"><dt>Fee QRIS</dt><dd id="sum-fee-qris">Rp0</dd></div>
 
                             <div class="ck-sum-row is-total"><dt>Bayar di Web</dt><dd id="sum-tagihan">{{ format_rp($initialSubtotal) }}</dd></div>
@@ -330,6 +330,25 @@
                 const cartItemIds = @json($items->pluck('id'));
                 const rp = (value) => 'Rp' + Number(value || 0).toLocaleString('id-ID');
 
+                // ═══ Data dari server → JS (buat kalkulasi instant) ═══
+                const CONFIG = {
+                    subtotal: @json($initialSubtotal),
+                    maxCoin: @json((float) $maxCoin),
+                    qrisThreshold: @json((float) setting('qris_threshold', 500000)),
+                    qrisRate: @json((float) setting('fee_qris_percent', 0.03)) / 100,
+                    dpPercent: @json((float) setting('dp_minimum_percent', 50)) / 100,
+                    feeShopeeFp: @json((float) setting('fee_shopee_fp', 109)),
+                    feeTocoFp: @json((float) setting('fee_toco_fp', 1)),
+                    feeShopeeDp: @json((float) setting('fee_shopee_dp', 25)) / 100,
+                    feeTocoDp: @json((float) setting('fee_toco_dp', 0)),
+                };
+
+                // Voucher nominal map: { user_voucher_id: nominal }
+                const voucherNominals = {};
+                @foreach ($userVouchers as $uv)
+                    voucherNominals[{{ $uv->id }}] = {{ (float) $uv->voucher->nominal }};
+                @endforeach
+
                 // Element refs
                 const coinBox = document.getElementById('coin-box');
                 const voucherBox = document.getElementById('voucher-box');
@@ -346,20 +365,69 @@
                     if (type !== 'voucher') form.user_voucher_id.value = '';
                 }
 
-                // ═══ Summary rows show/hide (dinamis) ═══
-                function syncSummaryRows(s) {
-                    // Fee QRIS: tampil hanya jika fee > 0
-                    rowFeeQris.style.display = s.fee_qris > 0 ? '' : 'none';
+                // ═══ Kalkulasi INSTANT (tanpa AJAX — 0ms) ═══
+                function calculateInstant() {
+                    const subtotal = CONFIG.subtotal;
 
-                    // DP → tampilkan estimasi, sembunyikan fee CO
-                    // FP → tampilkan fee CO, sembunyikan estimasi
-                    const isDP = form.scheme.value === 'dp';
-                    rowEstimasi.style.display = isDP ? '' : 'none';
-                    rowFeeCo.style.display = isDP ? 'none' : '';
+                    // Hitung diskon
+                    let discount = 0;
+                    const dtype = form.discount_type.value;
+                    if (dtype === 'coin') {
+                        const coins = parseInt(form.coin_amount.value) || 0;
+                        discount = Math.min(coins, CONFIG.maxCoin);
+                    } else if (dtype === 'voucher') {
+                        const vid = parseInt(form.user_voucher_id.value) || 0;
+                        discount = voucherNominals[vid] || 0;
+                    }
+
+                    const totalBarang = Math.max(0, subtotal - discount);
+                    const scheme = form.scheme.value;
+                    const platform = form.platform.value;
+                    const method = form.payment_method.value;
+
+                    // QRIS fee: hanya jika method=qris DAN nominal ≥ threshold
+                    const nominalTagihan = scheme === 'dp'
+                        ? totalBarang * CONFIG.dpPercent
+                        : totalBarang;
+                    const feeQris = (method === 'qris' && nominalTagihan >= CONFIG.qrisThreshold)
+                        ? Math.round(nominalTagihan * CONFIG.qrisRate)
+                        : 0;
+
+                    let tagihanWeb, estimasi, feeCo;
+
+                    if (scheme === 'dp') {
+                        // ═══ DP: bayar 50% dulu, sisa = estimasi CO ═══
+                        const dp = totalBarang * CONFIG.dpPercent;
+                        const sisa = totalBarang - dp;
+                        tagihanWeb = Math.round(dp + feeQris);
+                        estimasi = platform === 'shopee'
+                            ? Math.round(sisa * (1 + CONFIG.feeShopeeDp))
+                            : Math.round(sisa + CONFIG.feeTocoDp);
+                        feeCo = 0;
+                    } else {
+                        // ═══ FP: bayar 100% + fee CO ═══
+                        tagihanWeb = Math.round(totalBarang + feeQris);
+                        estimasi = 0;
+                        feeCo = platform === 'shopee' ? CONFIG.feeShopeeFp : CONFIG.feeTocoFp;
+                    }
+
+                    // Update semua angka ringkasan
+                    document.getElementById('sum-subtotal').textContent = rp(subtotal);
+                    document.getElementById('sum-discount').textContent = '- ' + rp(discount);
+                    document.getElementById('sum-total').textContent = rp(totalBarang);
+                    document.getElementById('sum-fee-qris').textContent = rp(feeQris);
+                    document.getElementById('sum-tagihan').textContent = rp(tagihanWeb);
+                    document.getElementById('sum-estimasi').textContent = rp(estimasi);
+                    document.getElementById('sum-fee-co').textContent = rp(feeCo);
+
+                    // Show/hide rows — INSTANT
+                    rowFeeQris.style.display = feeQris > 0 ? '' : 'none';
+                    rowEstimasi.style.display = scheme === 'dp' ? '' : 'none';
+                    rowFeeCo.style.display = scheme === 'dp' ? 'none' : '';
                 }
 
-                // ═══ Refresh ringkasan via AJAX ═══
-                async function refreshSummary() {
+                // ═══ AJAX → override dengan angka presisi dari server ═══
+                async function refreshFromServer() {
                     const payload = {
                         cart_item_ids: cartItemIds,
                         platform: form.platform.value,
@@ -384,8 +452,6 @@
                         if (!response.ok) return;
 
                         const s = await response.json();
-
-                        // Update semua nilai
                         document.getElementById('sum-subtotal').textContent = rp(s.subtotal);
                         document.getElementById('sum-discount').textContent = '- ' + rp(s.discount);
                         document.getElementById('sum-total').textContent = rp(s.total_barang);
@@ -394,23 +460,31 @@
                         document.getElementById('sum-estimasi').textContent = rp(s.estimasi_co_marketplace ?? 0);
                         document.getElementById('sum-fee-co').textContent = rp(s.fee_co_marketplace ?? 0);
 
-                        // Show/hide rows
-                        syncSummaryRows(s);
-                    } catch (error) {
-                        // Server tetap menghitung ulang saat "Buat Pesanan".
+                        rowFeeQris.style.display = s.fee_qris > 0 ? '' : 'none';
+                        rowEstimasi.style.display = form.scheme.value === 'dp' ? '' : 'none';
+                        rowFeeCo.style.display = form.scheme.value === 'dp' ? 'none' : '';
+                    } catch (e) {
+                        // Biarkan nilai instant yang tampil
                     }
                 }
 
-                // ═══ Bind events ═══
-                form.querySelectorAll('.summary-trigger').forEach((el) => {
-                    const handler = () => { syncDiscount(); refreshSummary(); };
-                    el.addEventListener('change', handler);
-                    el.addEventListener('input', handler);
+                // ═══ Handler: instant dulu, lalu AJAX presisi ═══
+                function onChange() {
+                    syncDiscount();
+                    calculateInstant();   // ← langsung berubah (0ms)
+                    refreshFromServer();  // ← lalu presisi dari server
+                }
+
+                // ═══ Event delegation di form (lebih reliable) ═══
+                form.addEventListener('change', onChange);
+                form.addEventListener('input', function (e) {
+                    if (e.target.matches('input[type="number"]')) onChange();
                 });
 
                 // Init
                 syncDiscount();
-                refreshSummary();
+                calculateInstant();
+                refreshFromServer();
 
                 // Submit: disable button
                 form.addEventListener('submit', function () {
