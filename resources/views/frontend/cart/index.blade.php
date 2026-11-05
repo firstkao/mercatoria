@@ -43,18 +43,19 @@
         .cart-table th { height: 50px; padding: 0; background: #fbfbfb; border-bottom: 1px solid #ddd; text-align: left; font-size: 16px; line-height: 24px; font-weight: 500; color: #26222f; }
         .cart-table td { padding: 0; height: 93px; border-bottom: 1px solid #ddd; vertical-align: middle; color: #7a7a7a; }
         .cart-table tbody tr:last-child td { border-bottom: 0; }
-        .cart-table .c-x { padding-left: 18px; }
+        .cart-table .c-check { padding-left: 18px; }
 
-        .cart-x { display: inline-flex; width: 20px; height: 20px; padding: 0; border: 0; background: none; color: #9a9a9a; cursor: pointer; }
+        .cart-sub { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding-right: 12px; }
+        .cart-x { display: inline-flex; flex: none; width: 20px; height: 20px; padding: 0; border: 0; background: none; color: #9a9a9a; cursor: pointer; }
         .cart-x:hover { color: #e53935; }
 
-        .cart-thumb { position: relative; display: block; width: 70px; height: 70px; background: #f1f1f1; }
+        .cart-thumb { display: block; width: 70px; height: 70px; background: #f1f1f1; }
         .cart-thumb img { display: block; width: 100%; height: 100%; object-fit: cover; }
-        .cart-check { width: 16px; height: 16px; margin: 0; accent-color: #26222f; vertical-align: middle; }
-        .cart-thumb .cart-check { position: absolute; top: 4px; left: 4px; background: #fff; }
+        .cart-check { display: block; width: 18px; height: 18px; margin: 0; accent-color: #26222f; cursor: pointer; }
 
         .cart-name { display: block; font-size: 16px; line-height: 24px; font-weight: 500; color: #26222f; }
         a.cart-name:hover { color: #02a1ea; }
+        .cart-variant { margin: 2px 0 0; font-size: 14px; line-height: 20px; color: #7a7a7a; }
         .cart-bundle { margin: 2px 0 0; font-size: 12px; line-height: 16px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: #3986C6; }
 
         .cart-qty { display: flex; width: 118px; height: 36px; border: 1px solid #ddd; }
@@ -63,23 +64,20 @@
         .cart-qty button:hover { background: #f7f7f7; }
         .cart-qty input { width: 42px; border-left: 1px solid #ddd; border-right: 1px solid #ddd; color: #7a7a7a; -moz-appearance: textfield; }
         .cart-qty input::-webkit-outer-spin-button, .cart-qty input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+        .cart-qty.is-saving { opacity: .55; }
         .cart-qty.is-static { justify-content: center; align-items: center; color: #7a7a7a; font-size: 15px; }
 
-        .cart-foot { display: flex; justify-content: flex-end; padding: 12px 17px 26px; border-top: 1px solid #ddd; }
-        .cart-btn { display: inline-block; height: 33px; padding: 0 18px; border: 0; border-radius: 2px; background: #26222f; color: #fff; cursor: pointer;
-                    font: 700 12px/33px 'Roboto', system-ui, sans-serif; letter-spacing: .06em; text-transform: uppercase; }
+        .cart-foot { display: flex; align-items: center; gap: 10px; padding: 12px 17px 26px; border-top: 1px solid #ddd; }
+        .cart-coupon { width: 226px; height: 37px; padding: 0 12px; border: 1px solid #ddd; border-radius: 0; background: #fff;
+                       font: 400 15px/35px 'Roboto', system-ui, sans-serif; color: #26222f; outline: 0; }
+        .cart-coupon::placeholder { color: #999; }
+        .cart-coupon:focus { border-color: #26222f; }
+        .cart-btn { display: inline-block; height: 37px; padding: 0 18px; border: 0; border-radius: 2px; background: #26222f; color: #fff; cursor: pointer;
+                    font: 700 12px/37px 'Roboto', system-ui, sans-serif; letter-spacing: .06em; text-transform: uppercase; }
         .cart-btn:hover { background: #3a3547; }
-        .cart-btn:disabled { background: #918f96; cursor: default; }
 
         /* Bawah: catatan (kiri) + total (kanan) */
-        .cart-lower { display: flex; align-items: flex-start; justify-content: space-between; gap: 32px; margin-top: 33px; }
-        .cart-note { flex: 1; max-width: 440px; }
-        .cart-note label { display: block; font-size: 14px; line-height: 20px; font-weight: 500; color: #26222f; }
-        .cart-note textarea { display: block; width: 100%; margin-top: 8px; padding: 10px 14px; border: 1px solid #ddd; border-radius: 0; background: #fff; resize: vertical;
-                              font: 400 14px/20px 'Roboto', system-ui, sans-serif; color: #26222f; outline: 0; }
-        .cart-note textarea:focus { border-color: #26222f; }
-        .cart-note small { display: block; margin-top: 6px; font-size: 12px; color: #999; }
-
+        .cart-lower { display: flex; justify-content: flex-end; margin-top: 33px; }
         .cart-total { width: 520px; flex: none; border: 1px solid #ddd; }
         .cart-total h2 { margin: 0; padding: 0 20px; height: 53px; border-bottom: 1px solid #ddd; background: #fbfbfb; font-size: 21px; line-height: 52px; font-weight: 400; color: #26222f; }
         .cart-total-body { padding: 0 21px 34px; }
@@ -101,9 +99,7 @@
 
         @media (max-width: 900px) {
             .cart-box { padding: 28px 18px 48px; }
-            .cart-lower { flex-direction: column; }
             .cart-total { width: 100%; }
-            .cart-note { max-width: none; width: 100%; }
         }
     </style>
 
@@ -134,12 +130,12 @@
                 <div class="cart-table-wrap" style="margin-top:32px">
                     <table class="cart-table">
                         <colgroup>
-                            <col style="width:71px"><col style="width:106px"><col><col style="width:112px"><col style="width:162px"><col style="width:97px">
+                            <col style="width:71px"><col style="width:106px"><col><col style="width:112px"><col style="width:138px"><col style="width:160px">
                         </colgroup>
                         <thead>
                             <tr>
+                                <th class="c-check"><input type="checkbox" checked class="cart-check" id="cart-all" title="Pilih semua" aria-label="Pilih semua"></th>
                                 <th></th>
-                                <th><input type="checkbox" checked class="cart-check" id="cart-all" title="Pilih semua" aria-label="Pilih semua"></th>
                                 <th>Produk</th>
                                 <th>Harga</th>
                                 <th>Jumlah</th>
@@ -154,24 +150,24 @@
                                     $img = $item->variant?->image_path ?? $item->product->image_path;
                                     $url = '/'.$item->product->game->slug.'/'.$item->product->slug;
                                 @endphp
-                                <tr data-row data-sub="{{ $price * $item->qty }}">
-                                    <td class="c-x">
-                                        <button type="submit" form="delete-form-{{ $item->id }}" class="cart-x" aria-label="Hapus {{ $item->product->name }}" title="Hapus">
-                                            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.2" aria-hidden="true"><circle cx="10" cy="10" r="8.5"/><path d="m7 7 6 6m0-6-6 6"/></svg>
-                                        </button>
+                                <tr data-row data-price="{{ $price }}" data-sub="{{ $price * $item->qty }}">
+                                    <td class="c-check">
+                                        <input type="checkbox" name="items[]" value="{{ $item->id }}" checked
+                                               form="checkout-form" class="cart-check" data-pick aria-label="Pilih {{ $item->product->name }}"
+                                               @if ($item->bundle_group_id) data-bundle="{{ $item->bundle_group_id }}" @endif>
                                     </td>
                                     <td>
-                                        <div class="cart-thumb">
+                                        <a href="{{ $url }}" class="cart-thumb">
                                             @if ($img)
                                                 <img src="{{ \App\Services\Image\ImageOptimizerService::url($img, 'thumb') }}" alt="{{ $item->product->name }}">
                                             @endif
-                                            <input type="checkbox" name="items[]" value="{{ $item->id }}" checked
-                                                   form="checkout-form" class="cart-check" data-pick
-                                                   @if ($item->bundle_group_id) data-bundle="{{ $item->bundle_group_id }}" @endif>
-                                        </div>
+                                        </a>
                                     </td>
                                     <td>
-                                        <a href="{{ $url }}" class="cart-name">{{ $item->product->name }}{{ $item->variant ? ' – '.$item->variant->name : '' }}</a>
+                                        <a href="{{ $url }}" class="cart-name">{{ $item->product->name }}</a>
+                                        @if ($item->variant)
+                                            <p class="cart-variant">Varian: {{ $item->variant->name }}</p>
+                                        @endif
                                         @if ($item->bundle_group_id)
                                             <p class="cart-bundle">Paket Split Box</p>
                                         @endif
@@ -183,30 +179,31 @@
                                         @else
                                             <div class="cart-qty">
                                                 <button type="button" data-step="-1" aria-label="Kurangi">-</button>
-                                                <input type="number" name="qty" value="{{ $item->qty }}" data-orig="{{ $item->qty }}" min="1" max="999"
+                                                <input type="number" name="qty" value="{{ $item->qty }}" min="1" max="999"
                                                        form="qty-form-{{ $item->id }}" data-qty-input>
                                                 <button type="button" data-step="1" aria-label="Tambah">+</button>
                                             </div>
                                         @endif
                                     </td>
-                                    <td>{{ format_rp($price * $item->qty) }}</td>
+                                    <td>
+                                        <div class="cart-sub">
+                                            <span data-row-sub>{{ format_rp($price * $item->qty) }}</span>
+                                            <button type="submit" form="delete-form-{{ $item->id }}" class="cart-x" aria-label="Hapus {{ $item->product->name }}" title="Hapus">
+                                                <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.2" aria-hidden="true"><circle cx="10" cy="10" r="8.5"/><path d="m7 7 6 6m0-6-6 6"/></svg>
+                                            </button>
+                                        </div>
+                                    </td>
                                 </tr>
                             @endforeach
                         </tbody>
                     </table>
                     <div class="cart-foot">
-                        <button type="button" class="cart-btn" id="cart-update" disabled>Perbarui Keranjang</button>
+                        <input type="text" name="voucher_code" form="checkout-form" class="cart-coupon" placeholder="Kode kupon" maxlength="50" autocomplete="off">
+                        <button type="submit" form="checkout-form" class="cart-btn">Terapkan kupon</button>
                     </div>
                 </div>
 
                 <div class="cart-lower">
-                    <div class="cart-note">
-                        <label for="customer_note">Catatan untuk Mercatoria</label>
-                        <textarea name="customer_note" id="customer_note" rows="3" maxlength="500" form="checkout-form"
-                                  placeholder="Contoh: bubble wrap extra, packing rapi, mau bonus A/B"></textarea>
-                        <small>Maksimal 500 karakter.</small>
-                    </div>
-
                     <div class="cart-total">
                         <h2>Total keranjang belanja</h2>
                         <div class="cart-total-body">
@@ -269,38 +266,57 @@
                         recalc();
                     });
 
-                    // Stepper qty + tombol Perbarui Keranjang
-                    var upd = document.getElementById('cart-update');
-                    function changed() {
-                        return Array.prototype.filter.call(document.querySelectorAll('[data-qty-input]'), function (i) {
-                            return i.value !== i.getAttribute('data-orig');
-                        });
+                    // Qty: stepper (+/-) atau ketik → hitung ulang langsung, simpan otomatis ke server
+                    var timers = {};
+
+                    function updateRow(tr) {
+                        var input = tr.querySelector('[data-qty-input]');
+                        if (!input) return;
+                        var qty = Math.min(999, Math.max(1, parseInt(input.value, 10) || 1));
+                        var sub = (parseFloat(tr.getAttribute('data-price')) || 0) * qty;
+                        tr.setAttribute('data-sub', sub);
+                        tr.querySelector('[data-row-sub]').textContent = rp(sub);
+                        recalc();
                     }
-                    function sync() { upd.disabled = changed().length === 0; }
+
+                    function save(input) {
+                        var form = document.getElementById(input.getAttribute('form'));
+                        var box = input.parentNode;
+                        box.classList.add('is-saving');
+                        fetch(form.action, {
+                            method: 'POST',
+                            body: new FormData(form),
+                            headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' }
+                        })
+                        .then(function (res) { return res.ok ? res.json() : Promise.reject(res); })
+                        .then(function (data) {
+                            // Angka keranjang di header ikut diperbarui
+                            document.querySelectorAll('[data-cart-total]').forEach(function (el) { el.textContent = data.total_formatted; el.style.display = ''; });
+                            document.querySelectorAll('[data-cart-count]').forEach(function (el) { el.textContent = data.count; el.style.display = ''; });
+                        })
+                        .catch(function () { window.location.reload(); })
+                        .finally(function () { box.classList.remove('is-saving'); });
+                    }
+
+                    function queue(input) {
+                        var id = input.getAttribute('form');
+                        clearTimeout(timers[id]);
+                        timers[id] = setTimeout(function () { save(input); }, 450);
+                    }
 
                     document.querySelectorAll('[data-step]').forEach(function (b) {
                         b.addEventListener('click', function () {
                             var input = b.parentNode.querySelector('[data-qty-input]');
                             var n = (parseInt(input.value, 10) || 1) + parseInt(b.getAttribute('data-step'), 10);
                             input.value = Math.min(999, Math.max(1, n));
-                            sync();
+                            updateRow(input.closest('[data-row]'));
+                            queue(input);
                         });
                     });
-                    document.querySelectorAll('[data-qty-input]').forEach(function (i) { i.addEventListener('input', sync); });
-
-                    upd.addEventListener('click', function () {
-                        upd.disabled = true;
-                        upd.textContent = 'Memperbarui...';
-                        var jobs = changed().map(function (i) {
-                            var form = document.getElementById(i.getAttribute('form'));
-                            return fetch(form.action, {
-                                method: 'POST',
-                                body: new FormData(form),
-                                headers: { 'X-Requested-With': 'XMLHttpRequest' }
-                            });
-                        });
-                        Promise.all(jobs).then(function () { window.location.reload(); })
-                                         .catch(function () { window.location.reload(); });
+                    document.querySelectorAll('[data-qty-input]').forEach(function (i) {
+                        i.addEventListener('input', function () { updateRow(i.closest('[data-row]')); queue(i); });
+                        // Enter di kolom qty: simpan lewat AJAX saja (tanpa pindah halaman)
+                        i.addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); clearTimeout(timers[i.getAttribute('form')]); save(i); } });
                     });
                 })();
             </script>
