@@ -10,7 +10,6 @@
         $calc = app(\App\Services\Order\ShippingCalculatorService::class);
         $rows = $items->map(fn ($i) => ['item' => $i, 'p' => $calc->calculateItemShipping($i->product, $i->variant)]);
         $subtotal = $rows->sum(fn ($r) => $r['p']['final_price_bersih'] * $r['item']->qty);
-        $stores = $rows->pluck('p.store_name')->filter()->unique()->values();
         $province = auth()->user()->provinsi ?? null;
         // Koin yang didapat: 1 koin per Rp100 (sama dengan perhitungan di halaman produk)
         $coinEarn = intdiv((int) $subtotal, 100);
@@ -67,7 +66,8 @@
         .cart-qty.is-saving { opacity: .55; }
         .cart-qty.is-static { justify-content: center; align-items: center; color: #7a7a7a; font-size: 15px; }
 
-        .cart-foot { display: flex; align-items: center; gap: 10px; padding: 12px 17px 26px; border-top: 1px solid #ddd; }
+        .cart-foot { display: flex; align-items: center; gap: 10px; padding: 18px 17px 18px; border-top: 1px solid #ddd; }
+        .cart-foot-note { margin: 0; font-size: 14px; line-height: 21px; color: #7a7a7a; }
         .cart-coupon { width: 226px; height: 37px; padding: 0 12px; border: 1px solid #ddd; border-radius: 0; background: #fff;
                        font: 400 15px/35px 'Roboto', system-ui, sans-serif; color: #26222f; outline: 0; }
         .cart-coupon::placeholder { color: #999; }
@@ -85,15 +85,16 @@
         .cart-tr > b { flex: none; width: 207px; font-weight: 500; color: #26222f; }
         .cart-tr > div { flex: 1; color: #7a7a7a; }
         .cart-tr.is-sub { padding: 30px 0 12px; }
-        .cart-tr.is-ship { padding: 11px 0 30px; }
+        .cart-tr.is-ship { padding: 11px 0 22px; border-bottom: 0; }
         .cart-tr.is-ship p { margin: 0; }
         .cart-tr.is-ship p + p { margin-top: 6px; }
         .cart-tr.is-ship p.is-link { margin-top: 16px; }
         .cart-tr.is-ship p strong { font-weight: 700; color: #4a4655; }
+        .cart-tr.is-ship p.is-note { margin-top: 12px; font-size: 13px; line-height: 19px; color: #999; }
         .cart-tr.is-ship p.is-link a { color: #26222f; }
         .cart-tr.is-ship p.is-link a:hover { color: #02a1ea; }
         .cart-tr.is-all { padding: 11px 0; }
-        .cart-go { display: block; width: 100%; height: 64px; margin-top: 22px; border: 0; border-radius: 2px; background: #26222f; color: #fff; cursor: pointer;
+        .cart-go { display: block; width: 100%; height: 64px; margin-top: 8px; border: 0; border-radius: 2px; background: #26222f; color: #fff; cursor: pointer;
                    font: 500 18px/64px 'Roboto', system-ui, sans-serif; letter-spacing: .02em; text-transform: uppercase; text-align: center; }
         .cart-go:hover { background: #3a3547; }
 
@@ -198,8 +199,7 @@
                         </tbody>
                     </table>
                     <div class="cart-foot">
-                        <input type="text" name="voucher_code" form="checkout-form" class="cart-coupon" placeholder="Kode kupon" maxlength="50" autocomplete="off">
-                        <button type="submit" form="checkout-form" class="cart-btn">Terapkan kupon</button>
+                        <p class="cart-foot-note">Punya voucher atau koin? Pilih di halaman checkout. Total akhir (skema DP/FP, platform, biaya layanan) dihitung di sana.</p>
                     </div>
                 </div>
 
@@ -211,14 +211,15 @@
                             <div class="cart-tr is-ship">
                                 <b>Pengiriman</b>
                                 <div>
-                                    <p>{{ $stores->isNotEmpty() ? $stores->implode(', ') : 'Standar' }}</p>
                                     @if ($province)
                                         <p>Dikirim ke <strong>{{ $province }}</strong>.</p>
+                                    @else
+                                        <p>Alamat pengiriman belum diatur.</p>
                                     @endif
                                     <p class="is-link"><a href="{{ route('profile.edit') }}">Ubah alamat</a></p>
+                                    <p class="is-note">Platform (Toco/Shopee), skema DP/FP, dan biaya layanan dipilih di checkout.</p>
                                 </div>
                             </div>
-                            <div class="cart-tr is-all"><b>Total</b><div id="cart-total">{{ format_rp($subtotal) }}</div></div>
                             <button type="submit" form="checkout-form" class="cart-go">Lanjutkan ke checkout</button>
                         </div>
                     </div>
@@ -248,7 +249,6 @@
                             if (c && c.checked) sum += parseFloat(tr.getAttribute('data-sub')) || 0;
                         });
                         document.getElementById('cart-subtotal').textContent = rp(sum);
-                        document.getElementById('cart-total').textContent = rp(sum);
                         document.getElementById('cart-coin-n').textContent = Math.floor(sum / 100).toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
                         if (all) all.checked = Array.prototype.every.call(picks, function (c) { return c.checked; });
                     }
