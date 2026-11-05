@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Checkout — MERCATORIA')
+@section('title', 'Lanjut ke Pembayaran — MERCATORIA')
 
 @section('content')
     {{-- Font Roboto + background #f7f7f7 (sama dengan beranda/produk/keranjang) --}}
