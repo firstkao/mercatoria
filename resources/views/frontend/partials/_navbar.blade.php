@@ -51,14 +51,10 @@
             <a href="{{ setting('url_whatsapp', '#') }}" class="transition-colors hover:text-[#4FC3F7]" aria-label="WhatsApp"><x-icons.whatsapp width="16" height="16" /></a>
         </div>
         @auth
-            @if (!empty($cartTotal))
-                <span class="text-[13px] font-bold text-ink">{{ format_rp($cartTotal) }}</span>
-            @endif
+            <span data-cart-total class="text-[13px] font-bold text-ink" @if (empty($cartTotal)) style="display:none" @endif>{{ format_rp($cartTotal ?? 0) }}</span>
             <a href="{{ route('cart.index') }}" class="relative text-[#333] transition-colors hover:text-[#4FC3F7]" aria-label="Keranjang">
                 <x-icons.shopping-cart width="18" height="18" />
-                @if (($cartCount ?? 0) > 0)
-                    <span class="absolute -right-2 -top-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-[#333] px-1 text-[9px] font-bold leading-none text-white">{{ $cartCount }}</span>
-                @endif
+                <span data-cart-count class="absolute -right-2 -top-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-[#333] px-1 text-[9px] font-bold leading-none text-white" @if (($cartCount ?? 0) < 1) style="display:none" @endif>{{ $cartCount ?? 0 }}</span>
             </a>
             <x-notification-bell :notifications="$bellNotifications ?? []" :unread-count="$bellUnreadCount ?? 0" />
             <a href="{{ route('dashboard') }}" class="flex items-center gap-1.5 text-[#333] transition-colors hover:text-[#4FC3F7]" aria-label="Akun"><x-icons.user width="18" height="18" /></a>
@@ -112,9 +108,7 @@
         @auth
             <a href="{{ route('cart.index') }}" class="relative flex h-10 w-10 items-center justify-center text-[#333]" aria-label="Keranjang">
                 <x-icons.shopping-cart width="20" height="20" />
-                @if (($cartCount ?? 0) > 0)
-                    <span class="absolute right-0 top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-[#333] px-1 text-[9px] font-bold leading-none text-white">{{ $cartCount }}</span>
-                @endif
+                <span data-cart-count class="absolute right-0 top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-[#333] px-1 text-[9px] font-bold leading-none text-white" @if (($cartCount ?? 0) < 1) style="display:none" @endif>{{ $cartCount ?? 0 }}</span>
             </a>
             <a href="{{ route('dashboard') }}" class="flex h-10 w-10 items-center justify-center text-[#333]" aria-label="Akun">
                 <x-icons.user width="20" height="20" />
