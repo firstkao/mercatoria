@@ -199,20 +199,6 @@
                             @endforeach
                         </tbody>
                     </table>
-                    <div class="cart-foot">
-                        <p class="cart-foot-note">
-                            @if (($voucherCount ?? 0) > 0 || ($coinBalance ?? 0) > 0)
-                                Kamu punya
-                                @if (($voucherCount ?? 0) > 0)<b>{{ $voucherCount }} voucher aktif</b>@endif
-                                @if (($voucherCount ?? 0) > 0 && ($coinBalance ?? 0) > 0) dan @endif
-                                @if (($coinBalance ?? 0) > 0)saldo <b>{{ number_format($coinBalance, 0, ',', '.') }} koin</b>@endif.
-                                Pakai di halaman checkout.
-                            @else
-                                Voucher dan koin bisa dipakai di halaman checkout.
-                            @endif
-                            Total akhir (skema DP/FP, platform, biaya layanan) dihitung di sana.
-                        </p>
-                    </div>
                 </div>
 
                 <div class="cart-lower">
@@ -229,7 +215,6 @@
                                         <p>Alamat pengiriman belum diatur.</p>
                                     @endif
                                     <p class="is-link"><a href="{{ route('profile.edit') }}">Ubah alamat</a></p>
-                                    <p class="is-note">Platform (Toco/Shopee), skema DP/FP, dan biaya layanan dipilih di checkout.</p>
                                 </div>
                             </div>
                             <button type="submit" form="checkout-form" class="cart-go">Lanjutkan ke checkout</button>
