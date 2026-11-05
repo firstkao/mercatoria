@@ -133,6 +133,8 @@ class ShippingCalculatorService
      * Total order di checkout (PRD 20.6) — TANPA CEILING lagi.
      * Harga item sudah fix (dibulatkan sekali di calculateItemShipping).
      *
+     * Semua key SELALU return (0 kalau tidak berlaku) supaya frontend tidak undefined.
+     *
      * @param  array<int, array{final_price_bersih: float|int, qty: int}>  $items
      * @return array{
      *     subtotal: float,
@@ -140,8 +142,8 @@ class ShippingCalculatorService
      *     total_barang: float,
      *     fee_qris: float,
      *     tagihan_web: float,
-     *     estimasi_co_marketplace?: float,
-     *     fee_co_marketplace?: float
+     *     estimasi_co_marketplace: float,
+     *     fee_co_marketplace: float
      * }
      */
     public function calculateCheckoutTotal(
@@ -153,42 +155,55 @@ class ShippingCalculatorService
     ): array {
         $subtotal = (float) collect($items)->sum(fn ($i) => $i['final_price_bersih'] * $i['qty']);
         $totalBarang = max(0, $subtotal - $discount);
+
+        // ═══ QRIS fee: hanya jika method=qris DAN tagihan ≥ threshold ═══
         $qrisThreshold = (float) setting('qris_threshold', 500000);
         $qrisRate = (float) setting('fee_qris_percent', 0.03) / 100;
-        // PRD 21: fee QRIS dari nominal tagihan web yang sebenarnya dibayar (FP=100%, DP=50%).
+        $dpPercent = ((float) setting('dp_minimum_percent', 50)) / 100;
+
+        // Nominal yang benar-benar dibayar di web (FP=100%, DP=50%)
         $nominalTagihanWeb = $scheme === 'dp'
-            ? $totalBarang * ((float) setting('dp_minimum_percent', 50) / 100)
+            ? $totalBarang * $dpPercent
             : $totalBarang;
+
+        // Fee QRIS hanya jika: method=qris DAN nominal ≥ threshold
         $feeQris = ($method === 'qris' && $nominalTagihanWeb >= $qrisThreshold)
             ? round($nominalTagihanWeb * $qrisRate, 2)
             : 0.0;
 
-        if ($scheme === 'dp') {
-            $dp = $totalBarang * ((float) setting('dp_minimum_percent', 50) / 100);
-            $sisa = $totalBarang - $dp;
-            $shopeePercent = ((float) setting('fee_shopee_dp', 25)) / 100;
+        // ═══ Skema FP (Full Payment) ═══
+        if ($scheme !== 'dp') {
+            $feeCo = (float) ($platform === 'shopee'
+                ? setting('fee_shopee_fp', 109)
+                : setting('fee_toco_fp', 1));
 
             return [
                 'subtotal' => $subtotal,
                 'discount' => $discount,
                 'total_barang' => $totalBarang,
                 'fee_qris' => $feeQris,
-                'tagihan_web' => round($dp + $feeQris, 2),
-                'estimasi_co_marketplace' => $platform === 'shopee'
-                    ? round($sisa * (1 + $shopeePercent), 2)
-                    : round($sisa + (float) setting('fee_toco_dp', 0), 2),
+                'tagihan_web' => round($totalBarang + $feeQris, 2),
+                'estimasi_co_marketplace' => 0.0,
+                'fee_co_marketplace' => $feeCo,
             ];
         }
+
+        // ═══ Skema DP (Down Payment) ═══
+        $dp = $totalBarang * $dpPercent;
+        $sisa = $totalBarang - $dp;
+
+        $estimasiCo = $platform === 'shopee'
+            ? round($sisa * (1 + ((float) setting('fee_shopee_dp', 25)) / 100), 2)
+            : round($sisa + (float) setting('fee_toco_dp', 0), 2);
 
         return [
             'subtotal' => $subtotal,
             'discount' => $discount,
             'total_barang' => $totalBarang,
             'fee_qris' => $feeQris,
-            'tagihan_web' => round($totalBarang + $feeQris, 2),
-            'fee_co_marketplace' => (float) ($platform === 'shopee'
-                ? setting('fee_shopee_fp', 109)
-                : setting('fee_toco_fp', 1)),
+            'tagihan_web' => round($dp + $feeQris, 2),
+            'estimasi_co_marketplace' => $estimasiCo,
+            'fee_co_marketplace' => 0.0,
         ];
     }
 
