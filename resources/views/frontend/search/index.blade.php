@@ -106,7 +106,6 @@
             cursor: pointer;
         }
         .sr-sel:focus { border-color: #26222f; }
-        .sr-narrow { width: 120px; }
         .sr-filters button {
             height: 38px;
             padding: 0 20px;
@@ -181,6 +180,13 @@
                 @endforeach
             </select>
 
+            <select name="developer_id" onchange="this.form.submit()" class="sr-sel">
+                <option value="">Semua Developer</option>
+                @foreach ($developers ?? [] as $dev)
+                    <option value="{{ $dev->id }}" @selected(($filters['developer_id'] ?? null) == $dev->id)>{{ $dev->name }}</option>
+                @endforeach
+            </select>
+
             <select name="merch_category_id" onchange="this.form.submit()" class="sr-sel">
                 <option value="">Kategori Merch</option>
                 @foreach ($categories as $category)
@@ -200,9 +206,6 @@
                 <option value="tersedia" @selected(request('availability') === 'tersedia')>Tersedia</option>
                 <option value="kosong" @selected(request('availability') === 'kosong')>Kosong</option>
             </select>
-
-            <input type="number" name="min_price" min="0" value="{{ request('min_price') }}" placeholder="Harga min" class="sr-sel sr-narrow">
-            <input type="number" name="max_price" min="0" value="{{ request('max_price') }}" placeholder="Harga maks" class="sr-sel sr-narrow">
 
             <select name="sort" onchange="this.form.submit()" class="sr-sel">
                 <option value="">Pengurutan standar</option>
