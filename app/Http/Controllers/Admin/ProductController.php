@@ -78,7 +78,7 @@ class ProductController extends Controller
     public function edit(Product $product): View
     {
         return view('admin.products.form', [
-            'product' => $product->load('variants', 'tags', 'developer'),
+            'product' => $product->load('variants', 'tags', 'developer', 'attributes.values'),
             'games' => Game::orderBy('name')->get(),
             'stores' => Store::orderBy('name')->get(),
             'categories' => MerchCategory::navList(),
@@ -102,11 +102,11 @@ class ProductController extends Controller
             : $data['slug'];
         $data = $this->processUploads($request, $data, null);
 
-        // Auto type=variant kalau ada inline variants
+        // Auto type=variable kalau ada inline variants
         $variantRows = collect($request->input('variants', []))
             ->filter(fn ($v) => filled(data_get($v, 'name')) || filled(data_get($v, 'sku')) || filled(data_get($v, 'price_rmb')));
         if ($variantRows->isNotEmpty()) {
-            $data['type'] = 'variant';
+            $data['type'] = Product::TYPE_VARIABLE;
         }
 
         $product = Product::create($data + ['sold_count' => 0]);
@@ -121,7 +121,6 @@ class ProductController extends Controller
             $product->tags()->sync($request->input('tags'));
         }
 
-        // [FIX] Create inline variants with validation
         $this->processInlineVariants($request, $product);
         $this->syncSplitBox($product);
 
@@ -130,9 +129,6 @@ class ProductController extends Controller
         return redirect()->route('office.products.edit', $product)->with('status', 'Produk dibuat.');
     }
 
-    /**
-     * [FIX] Simpan inline variants setelah product dibuat — dengan validasi per-row.
-     */
     private function processInlineVariants(Request $request, Product $product): void
     {
         $rows = collect($request->input('variants', []));
@@ -142,7 +138,6 @@ class ProductController extends Controller
                 continue;
             }
 
-            // [FIX #5] Validasi per-row sebelum insert
             $validated = validator($v, [
                 'name' => 'required|string|max:255',
                 'sku' => 'nullable|string|max:64|unique:product_variants,sku',
@@ -180,7 +175,6 @@ class ProductController extends Controller
         $product->tags()->sync($request->input('tags', []));
         $this->syncSplitBox($product);
 
-        // PRD 14: auto-group kategori merch by keyword (override manual menang).
         if (! $product->merch_category_id) {
             $product->update([
                 'merch_category_id' => MerchCategory::matchFor($product->name, $product->slug)?->id,
@@ -194,7 +188,6 @@ class ProductController extends Controller
 
     public function destroy(Request $request, Product $product): RedirectResponse
     {
-        // [FIX #3] Shared delete logic
         $this->deleteProductWithFiles($product, $request->user(), 'Hapus permanen');
 
         return redirect()->route('office.products.index')->with('status', 'Produk dihapus permanen.');
@@ -204,9 +197,6 @@ class ProductController extends Controller
     // DUPLICATE / PREVIEW
     // ──────────────────────────────────────
 
-    /**
-     * PRD 13.5/22.6: duplikat produk (field + varian + file + tags) sebagai draft.
-     */
     public function duplicate(Request $request, Product $product): RedirectResponse
     {
         $copy = $this->duplicateProduct($product, $request->user());
@@ -215,10 +205,6 @@ class ProductController extends Controller
             ->with('status', 'Produk diduplikat sebagai draft.');
     }
 
-    /**
-     * Modal "Buat Split Box": salinan produk (tanpa varian) dengan is_split_box aktif.
-     * Varian dipecah manual oleh admin; produk asli tidak berubah.
-     */
     public function splitClone(Request $request, Product $product): RedirectResponse
     {
         $data = $request->validate([
@@ -228,7 +214,6 @@ class ProductController extends Controller
 
         $copy = $this->duplicateProduct($product, $request->user(), withVariants: false);
 
-        // Nama selalu berakhiran " (Split Box)" dan slug selalu di-regenerate dari nama + "-split-box".
         $baseName = trim(preg_replace('/\s*\(\s*split\s*box\s*\)\s*$/i', '', $data['split_name']));
         $name = ($baseName !== '' ? $baseName : $product->name).' (Split Box)';
         $baseSlug = Str::slug($baseName !== '' ? $baseName : $product->name).'-split-box';
@@ -249,9 +234,6 @@ class ProductController extends Controller
             ->with('status', 'Produk split box dibuat sebagai draft. Pecah varian secara manual.');
     }
 
-    /**
-     * [FIX #2] Shared duplicate logic — copy file gambar + tags.
-     */
     private function duplicateProduct(Product $product, $user, bool $withVariants = true): Product
     {
         $copy = $product->replicate(['sold_count']);
@@ -260,19 +242,16 @@ class ProductController extends Controller
         $copy->slug = $product->slug.'-copy-'.Str::random(4);
         $copy->is_active = false;
 
-        // [FIX #2] Copy file foto utama
         if ($product->image_path) {
             $copy->image_path = $this->copyImageFile($product->image_path);
         }
 
-        // [FIX #2] Copy file deskripsi
         if ($product->description_image_path) {
             $copy->description_image_path = $this->copyImageFile($product->description_image_path);
         }
 
         $copy->save();
 
-        // [FIX #2] Copy varian + foto varian
         foreach ($withVariants ? $product->variants : [] as $variant) {
             $variantCopy = $variant->replicate();
             $variantCopy->sku = $variant->sku.'-COPY-'.Str::random(4);
@@ -285,7 +264,6 @@ class ProductController extends Controller
             $variantCopy->save();
         }
 
-        // [FIX #2] Copy tags
         $copy->tags()->sync($product->tags->pluck('id')->all());
 
         if ($withVariants) {
@@ -300,10 +278,6 @@ class ProductController extends Controller
         return $copy;
     }
 
-    /**
-     * Produk Split Box wajib punya record SplitBox dan satu slot (default Normal) per varian,
-     * agar admin bisa mengatur role/qty dan membuka kloter dari tab Split Box.
-     */
     private function syncSplitBox(Product $product): void
     {
         $product->refresh();
@@ -326,9 +300,6 @@ class ProductController extends Controller
         }
     }
 
-    /**
-     * Salin konfigurasi SplitBox + slot (dipetakan ke varian salinan). Kloter/order tidak disalin; admin membuka kloter baru.
-     */
     private function duplicateSplitBox(Product $product, Product $copy): void
     {
         $source = $product->splitBox()->with('slots')->first();
@@ -353,12 +324,9 @@ class ProductController extends Controller
         }
     }
 
-    /**
-     * PRD 13.5/22.6: preview tampilan user sebelum publish.
-     */
     public function preview(Product $product): View
     {
-        $product->load(['variants', 'tags', 'merchCategory', 'game', 'developer']);
+        $product->load(['variants', 'tags', 'merchCategory', 'game', 'developer', 'attributes.values']);
 
         return view('frontend.product.show', [
             'game' => $product->game,
@@ -383,9 +351,6 @@ class ProductController extends Controller
     // BULK OPERATIONS
     // ──────────────────────────────────────
 
-    /**
-     * [FIX #1] Bulk action: aktifkan / nonaktifkan / hapus / salin.
-     */
     public function bulk(BulkProductRequest $request): RedirectResponse
     {
         $data = $request->validated();
@@ -394,12 +359,10 @@ class ProductController extends Controller
         foreach ($products as $product) {
             switch ($data['action']) {
                 case 'hapus':
-                    // [FIX #3] Shared delete with file cleanup
                     $this->deleteProductWithFiles($product, $request->user(), 'Bulk hapus permanen');
                     break;
 
                 case 'salin':
-                    // [FIX #2] Shared duplicate with file copy
                     $this->duplicateProduct($product, $request->user());
                     break;
 
@@ -428,9 +391,6 @@ class ProductController extends Controller
             ->with('status', count($data['ids'])." produk {$verb}.");
     }
 
-    /**
-     * [FIX #1] Bulk edit berat varian — support AJAX (fetch) & form POST.
-     */
     public function bulkWeight(BulkWeightRequest $request, Product $product): JsonResponse|RedirectResponse
     {
         $data = $request->validated();
@@ -459,9 +419,6 @@ class ProductController extends Controller
         return redirect()->route('office.products.edit', $product)->with('status', "{$updated} varian diperbarui.");
     }
 
-    /**
-     * Bulk edit harga RMB varian (Backlog EPIC-04-26) — pola sama dengan bulkWeight.
-     */
     public function bulkPrice(BulkPriceRequest $request, Product $product): JsonResponse|RedirectResponse
     {
         $data = $request->validated();
@@ -490,9 +447,6 @@ class ProductController extends Controller
     // VARIANT CRUD
     // ──────────────────────────────────────
 
-    /**
-     * [FIX #1] Dedicated VariantFormRequest — bukan ProductFormRequest.
-     */
     public function storeVariant(VariantFormRequest $request, Product $product): RedirectResponse
     {
         $data = $request->validated();
@@ -516,9 +470,6 @@ class ProductController extends Controller
         return redirect()->route('office.products.edit', $product)->with('status', 'Varian dibuat.');
     }
 
-    /**
-     * [FIX #1] Dedicated VariantFormRequest — bukan ProductFormRequest.
-     */
     public function updateVariant(VariantFormRequest $request, Product $product, ProductVariant $variant): RedirectResponse
     {
         abort_unless($variant->product_id === $product->id, 404);
@@ -545,11 +496,6 @@ class ProductController extends Controller
         return redirect()->route('office.products.edit', $product)->with('status', 'Varian diperbarui.');
     }
 
-    /**
-     * PRD 49.5: seluruh karakter Split Box memakai price_rmb & weight_gram yang sama.
-     *
-     * @param  array<string, mixed>  $data
-     */
     private function splitBoxUniformError(Product $product, array $data, ?ProductVariant $ignore = null): ?string
     {
         if (! $product->is_split_box) {
@@ -568,11 +514,6 @@ class ProductController extends Controller
         return null;
     }
 
-    /**
-     * PRD 49.5: pada update produk Split Box, harga/berat efektif (varian, fallback produk) semua varian harus sama.
-     *
-     * @param  array<string, mixed>  $data
-     */
     private function splitBoxProductUniformError(Product $product, array $data): ?string
     {
         if (! ($data['is_split_box'] ?? $product->is_split_box)) {
@@ -593,12 +534,6 @@ class ProductController extends Controller
         return null;
     }
 
-    /**
-     * PRD 49.5: bulk edit pada produk Split Box harus mencakup SEMUA varian agar harga/berat tetap seragam.
-     *
-     * @param  array<int, int>  $ids
-     * @param  array<string, mixed>  $changes
-     */
     private function splitBoxBulkError(Product $product, array $ids, array $changes): ?string
     {
         if (! $product->is_split_box) {
@@ -628,7 +563,6 @@ class ProductController extends Controller
 
         AdminLog::record($request->user(), 'delete', 'ProductVariant', $variant->id, $variant->only(['name', 'sku']), null, 'Hapus varian');
 
-        // Auto-delete foto varian (PRD 13.6).
         if ($variant->image_path && str_starts_with($variant->image_path, 'products/')) {
             @unlink(storage_path('app/private/'.$variant->image_path));
             @unlink(storage_path('app/private/originals/'.$variant->image_path));
@@ -644,9 +578,6 @@ class ProductController extends Controller
     // PRIVATE HELPERS
     // ──────────────────────────────────────
 
-    /**
-     * [FIX #3] Shared: hapus produk + semua file terkait.
-     */
     private function deleteProductWithFiles(Product $product, $user, string $logMessage): void
     {
         $snapshotCount = OrderItem::where('product_id', $product->id)->count();
@@ -655,7 +586,6 @@ class ProductController extends Controller
             $product->only(['name', 'sku']), null,
             "{$logMessage} ({$snapshotCount} order_item terdampak)");
 
-        // Kumpulkan semua path file sebelum delete
         $imagePaths = array_filter([$product->image_path, $product->description_image_path]);
         foreach ($product->variants as $variant) {
             if ($variant->image_path) {
@@ -665,7 +595,6 @@ class ProductController extends Controller
 
         $product->delete();
 
-        // PRD 13.5: file gambar produk asli ikut dihapus; snapshot order TIDAK.
         foreach (array_filter($imagePaths) as $path) {
             if (str_starts_with($path, 'products/')) {
                 @unlink(storage_path('app/private/'.$path));
@@ -675,22 +604,17 @@ class ProductController extends Controller
         }
     }
 
-    /**
-     * [FIX #2] Copy file gambar ke path baru (master + originals).
-     */
     private function copyImageFile(string $path): string
     {
         $ext = pathinfo($path, PATHINFO_EXTENSION);
         $dir = pathinfo($path, PATHINFO_DIRNAME);
         $newPath = $dir.'/'.Str::random(20).'.'.$ext;
 
-        // Copy versi ter-watermark (app/private/)
         $srcMain = storage_path('app/private/'.$path);
         if (file_exists($srcMain)) {
             @copy($srcMain, storage_path('app/private/'.$newPath));
         }
 
-        // Copy master asli (app/private/originals/)
         $srcOrig = storage_path('app/private/originals/'.$path);
         if (file_exists($srcOrig)) {
             @copy($srcOrig, storage_path('app/private/originals/'.$newPath));
@@ -701,23 +625,17 @@ class ProductController extends Controller
         return $newPath;
     }
 
-    /**
-     * PRD 13.6: upload gambar → watermark + master asli; handle remove flag.
-     */
     private function processUploads(Request $request, array $data, ?Product $product): array
     {
-        // ── Foto utama ──
         if ($request->hasFile('image')) {
             $data['image_path'] = $this->storeImage($request->file('image'), 'img', $product?->image_path, 'image');
         }
 
-        // ── Gambar deskripsi ──
         if ($request->hasFile('description_image')) {
             $data['description_image_path'] = $this->storeImage(
                 $request->file('description_image'), 'desc', $product?->description_image_path, 'description_image'
             );
         } elseif ($request->boolean('remove_description_image') && $product?->description_image_path) {
-            // User klik "Hapus" tanpa upload baru → hapus file existing.
             if (str_starts_with($product->description_image_path, 'products/')) {
                 @unlink(storage_path('app/private/'.$product->description_image_path));
                 @unlink(storage_path('app/private/originals/'.$product->description_image_path));
@@ -726,15 +644,11 @@ class ProductController extends Controller
             $data['description_image_path'] = null;
         }
 
-        // Jangan bawa objek file / flag ke create/diff/admin_logs.
         unset($data['image'], $data['description_image'], $data['remove_description_image']);
 
         return $data;
     }
 
-    /**
-     * Simpan via ImageWatermarkService (master → private/originals, versi tayang ter-watermark).
-     */
     private function storeImage(UploadedFile $file, string $prefix, ?string $oldPath, string $field = 'image'): string
     {
         if (! $file->isValid()) {
@@ -758,7 +672,6 @@ class ProductController extends Controller
             ]);
         }
 
-        // PRD 13.6: auto-delete foto lama saat override (snapshot order tidak tersentuh).
         if ($oldPath && $oldPath !== $target && str_starts_with($oldPath, 'products/')) {
             @unlink(storage_path('app/private/'.$oldPath));
             @unlink(storage_path('app/private/originals/'.$oldPath));
