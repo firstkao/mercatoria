@@ -14,7 +14,6 @@ return new class extends Migration
             $table->unsignedSmallInteger('batch_no');
             $table->string('status', 16)->default('open');
             $table->timestamp('closes_at')->nullable();
-            $table->boolean('is_auto_opened')->default(false);
             $table->timestamps();
 
             $table->unique(['split_box_id', 'batch_no']);
