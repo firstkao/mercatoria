@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Dashboard Pelanggan — MERCATORIA')
+@section('title', 'Dashboard — MERCATORIA')
 
 @section('content')
     @include('frontend.partials._auth-style')
