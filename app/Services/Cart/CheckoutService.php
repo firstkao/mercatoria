@@ -134,7 +134,6 @@ class CheckoutService
                     'variant_id_audit' => $cart->variant_id,
                     'item_type' => $cart->variant_id ? 'variant' : 'single',
                     'bundle_group_id' => $cart->bundle_group_id,
-                    'split_role' => $splitSlot?->split_role,
                     'product_name' => $cart->product->name,
                     'product_sku' => $cart->product->sku,
                     'variant_name' => $cart->variant?->name,
@@ -216,7 +215,7 @@ class CheckoutService
 
             if ($lines !== [] && ! $splitBoxService->validatePair($lines)) {
                 throw ValidationException::withMessages([
-                    'cart_item_ids' => 'Syarat pair Split Box belum terpenuhi (Hot butuh pasangan Normal).',
+                    'cart_item_ids' => 'Syarat Split Box belum terpenuhi (karakter + butuh pasangan karakter normal).',
                 ]);
             }
         }
