@@ -263,7 +263,7 @@
                         </div>
 
                         <div style="margin-top:16px">
-                            <button type="button" onclick="generateVariations()" class="pf-btn is-primary">Generate Varian</button>
+                            <button type="button" onclick="generateVariations(this)" class="pf-btn is-primary">Generate Varian</button>
                         </div>
                     </div>
 
@@ -518,10 +518,37 @@
         btn.insertAdjacentHTML('beforebegin', html);
     };
 
-    window.generateVariations = function () {
-        if (confirm('Generate varian dari kombinasi atribut? Harga & berat akan di-copy dari produk.')) {
-            document.getElementById('product-form').submit();
-        }
+    window.generateVariations = function (btn) {
+        @if ($product->exists)
+        btn.disabled = true;
+        btn.textContent = 'Generating...';
+
+        fetch('{{ route('office.products.generate-variations', $product) }}', {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                'Accept': 'application/json'
+            }
+        })
+        .then(function (res) { return res.json(); })
+        .then(function (data) {
+            if (data.success) {
+                alert(data.message);
+                location.reload();
+            } else {
+                alert(data.message || 'Gagal');
+            }
+        })
+        .catch(function () {
+            alert('Gagal generate varian');
+        })
+        .finally(function () {
+            btn.disabled = false;
+            btn.textContent = 'Generate Varian';
+        });
+        @else
+        alert('Simpan produk dulu sebelum generate varian.');
+        @endif
     };
 
     window.applyBulkAction = function () {
