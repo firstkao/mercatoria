@@ -78,7 +78,7 @@ class ProductController extends Controller
     public function edit(Product $product): View
     {
         return view('admin.products.form', [
-            'product' => $product->load('variants', 'tags', 'developer', 'attributes.values'),
+            'product' => $product->load('variants.attributeValues.attribute', 'tags', 'developer', 'attributes.values'),
             'games' => Game::orderBy('name')->get(),
             'stores' => Store::orderBy('name')->get(),
             'categories' => MerchCategory::navList(),
@@ -94,19 +94,13 @@ class ProductController extends Controller
     public function store(ProductFormRequest $request): RedirectResponse
     {
         $data = $request->validated();
-        unset($data['variants'], $data['tags']);
+        unset($data['variants'], $data['tags'], $data['attributes']);
         $data['is_active'] = $request->boolean('is_active');
 
         $data['slug'] = blank($data['slug'] ?? null)
             ? Str::slug($data['name']).'-'.Str::random(4)
             : $data['slug'];
         $data = $this->processUploads($request, $data, null);
-
-        $variantRows = collect($request->input('variants', []))
-            ->filter(fn ($v) => filled(data_get($v, 'name')) || filled(data_get($v, 'sku')) || filled(data_get($v, 'price_rmb')));
-        if ($variantRows->isNotEmpty()) {
-            $data['type'] = Product::TYPE_VARIABLE;
-        }
 
         $product = Product::create($data + ['sold_count' => 0]);
 
@@ -120,7 +114,7 @@ class ProductController extends Controller
             $product->tags()->sync($request->input('tags'));
         }
 
-        $this->processInlineVariants($request, $product);
+        $this->syncAttributes($request, $product);
         $this->syncSplitBox($product);
 
         AdminLog::record($request->user(), 'create', 'Product', $product->id, null, $product->only(array_keys($data)), 'Tambah produk');
@@ -128,41 +122,12 @@ class ProductController extends Controller
         return redirect()->route('office.products.edit', $product)->with('status', 'Produk dibuat.');
     }
 
-    private function processInlineVariants(Request $request, Product $product): void
-    {
-        $rows = collect($request->input('variants', []));
-
-        foreach ($rows as $i => $v) {
-            if (blank(data_get($v, 'name')) && blank(data_get($v, 'sku')) && blank(data_get($v, 'price_rmb'))) {
-                continue;
-            }
-
-            $validated = validator($v, [
-                'name' => 'required|string|max:255',
-                'sku' => 'nullable|string|max:64|unique:product_variants,sku',
-                'price_rmb' => 'required|numeric|min:0',
-                'weight_gram' => 'nullable|integer|min:1',
-                'availability' => 'nullable|in:tersedia,kosong',
-            ])->validate();
-
-            $validated['availability'] = $validated['availability'] ?? 'tersedia';
-            $validated['sku'] = $validated['sku'] ?? ProductVariant::generateSku($product);
-
-            if ($request->hasFile("variants.{$i}.image")) {
-                $validated['image_path'] = $this->storeImage(
-                    $request->file("variants.{$i}.image"), 'var', null, "variants.{$i}.image"
-                );
-            }
-
-            $product->variants()->create($validated);
-        }
-    }
-
     public function update(ProductFormRequest $request, Product $product): RedirectResponse
     {
         $data = $request->validated();
-        unset($data['variants'], $data['tags']);
+        unset($data['variants'], $data['tags'], $data['attributes']);
         $data['is_active'] = $request->boolean('is_active');
+
         if ($error = $this->splitBoxProductUniformError($product, $data)) {
             return back()->withErrors(['price_rmb' => $error])->withInput();
         }
@@ -172,6 +137,7 @@ class ProductController extends Controller
 
         $product->update($data);
         $product->tags()->sync($request->input('tags', []));
+        $this->syncAttributes($request, $product);
         $this->syncSplitBox($product);
 
         if (! $product->merch_category_id) {
@@ -190,6 +156,133 @@ class ProductController extends Controller
         $this->deleteProductWithFiles($product, $request->user(), 'Hapus permanen');
 
         return redirect()->route('office.products.index')->with('status', 'Produk dihapus permanen.');
+    }
+
+    // ──────────────────────────────────────
+    // GENERATE VARIATIONS
+    // ──────────────────────────────────────
+
+    public function generateVariations(Request $request, Product $product): JsonResponse
+    {
+        if ($product->type !== Product::TYPE_VARIABLE) {
+            return response()->json(['success' => false, 'message' => 'Produk bukan variable'], 422);
+        }
+
+        $attributes = $product->attributes()->with('values')->get();
+
+        if ($attributes->isEmpty()) {
+            return response()->json(['success' => false, 'message' => 'Belum ada atribut'], 422);
+        }
+
+        $combinations = $this->generateCombinations($attributes);
+        $created = 0;
+
+        foreach ($combinations as $combo) {
+            $valueIds = collect($combo)->pluck('id')->sort()->values()->all();
+            $name = collect($combo)->pluck('value')->join(' / ');
+
+            $existing = $product->variants()
+                ->whereHas('attributeValues', function ($q) use ($valueIds) {
+                    $q->whereIn('product_attribute_values.id', $valueIds);
+                }, '=', count($valueIds))
+                ->first();
+
+            if ($existing) {
+                continue;
+            }
+
+            $variant = $product->variants()->create([
+                'name' => $name,
+                'sku' => ProductVariant::generateSku($product),
+                'price_rmb' => $product->price_rmb,
+                'weight_gram' => $product->weight_gram,
+                'availability' => Product::AVAIL_TERSEDIA,
+            ]);
+
+            $variant->attributeValues()->sync($valueIds);
+            $created++;
+        }
+
+        AdminLog::record($request->user(), 'create', 'Product', $product->id, null, [
+            'variations_created' => $created,
+        ], "Generate {$created} varian");
+
+        return response()->json([
+            'success' => true,
+            'message' => "{$created} varian berhasil dibuat",
+            'created' => $created,
+        ]);
+    }
+
+    private function generateCombinations($attributes): array
+    {
+        $sets = $attributes->map(fn ($attr) => $attr->values->map(fn ($v) => [
+            'id' => $v->id,
+            'value' => $v->value,
+        ])->all())->all();
+
+        $result = [[]];
+        foreach ($sets as $set) {
+            $tmp = [];
+            foreach ($result as $r) {
+                foreach ($set as $item) {
+                    $tmp[] = array_merge($r, [$item]);
+                }
+            }
+            $result = $tmp;
+        }
+
+        return $result;
+    }
+
+    private function syncAttributes(Request $request, Product $product): void
+    {
+        $attributes = $request->input('attributes', []);
+
+        foreach ($attributes as $attrData) {
+            if (blank($attrData['name'] ?? null)) {
+                continue;
+            }
+
+            if (! empty($attrData['id'])) {
+                $attr = $product->attributes()->find($attrData['id']);
+                if ($attr) {
+                    $attr->update(['name' => $attrData['name']]);
+                }
+            } else {
+                $attr = $product->attributes()->create(['name' => $attrData['name']]);
+            }
+
+            if (! $attr) {
+                continue;
+            }
+
+            $existingIds = [];
+            foreach ($attrData['values'] ?? [] as $valData) {
+                if (blank($valData['value'] ?? null)) {
+                    continue;
+                }
+
+                if (! empty($valData['id'])) {
+                    $val = $attr->values()->find($valData['id']);
+                    if ($val) {
+                        $val->update([
+                            'value' => $valData['value'],
+                            'modifier' => $valData['modifier'] ?? 0,
+                        ]);
+                        $existingIds[] = $val->id;
+                    }
+                } else {
+                    $val = $attr->values()->create([
+                        'value' => $valData['value'],
+                        'modifier' => $valData['modifier'] ?? 0,
+                    ]);
+                    $existingIds[] = $val->id;
+                }
+            }
+
+            $attr->values()->whereNotIn('id', $existingIds)->delete();
+        }
     }
 
     // ──────────────────────────────────────
@@ -230,7 +323,7 @@ class ProductController extends Controller
         $this->syncSplitBox($copy);
 
         return redirect()->route('office.products.edit', $copy)
-            ->with('status', 'Produk split box dibuat sebagai draft. Pecah varian secara manual.');
+            ->with('status', 'Produk split box dibuat sebagai draft.');
     }
 
     private function duplicateProduct(Product $product, $user, bool $withVariants = true): Product
@@ -323,7 +416,7 @@ class ProductController extends Controller
 
     public function preview(Product $product): View
     {
-        $product->load(['variants', 'tags', 'merchCategory', 'game', 'developer', 'attributes.values']);
+        $product->load(['variants.attributeValues.attribute', 'tags', 'merchCategory', 'game', 'developer', 'attributes.values']);
 
         return view('frontend.product.show', [
             'game' => $product->game,
@@ -358,17 +451,14 @@ class ProductController extends Controller
                 case 'hapus':
                     $this->deleteProductWithFiles($product, $request->user(), 'Bulk hapus permanen');
                     break;
-
                 case 'salin':
                     $this->duplicateProduct($product, $request->user());
                     break;
-
                 case 'aktifkan':
                     $product->update(['is_active' => true]);
                     AdminLog::record($request->user(), 'update', 'Product', $product->id,
                         ['is_active' => false], ['is_active' => true], 'Bulk aktifkan');
                     break;
-
                 case 'nonaktifkan':
                     $product->update(['is_active' => false]);
                     AdminLog::record($request->user(), 'update', 'Product', $product->id,
@@ -406,11 +496,7 @@ class ProductController extends Controller
         ], "Bulk edit berat {$updated} varian");
 
         if ($request->expectsJson() || $request->ajax()) {
-            return response()->json([
-                'success' => true,
-                'updated' => $updated,
-                'message' => "{$updated} varian diperbarui.",
-            ]);
+            return response()->json(['success' => true, 'updated' => $updated, 'message' => "{$updated} varian diperbarui."]);
         }
 
         return redirect()->route('office.products.edit', $product)->with('status', "{$updated} varian diperbarui.");
@@ -472,7 +558,6 @@ class ProductController extends Controller
         abort_unless($variant->product_id === $product->id, 404);
 
         $data = $request->validated();
-
         $old = $variant->only(['name', 'sku', 'price_rmb', 'weight_gram', 'availability']);
 
         if ($request->hasFile('image')) {
@@ -485,13 +570,33 @@ class ProductController extends Controller
         }
 
         $data['sku'] = $data['sku'] ?? $variant->sku;
-
         $variant->update($data);
 
         AdminLog::record($request->user(), 'update', 'ProductVariant', $variant->id, $old, $data, 'Edit varian');
 
         return redirect()->route('office.products.edit', $product)->with('status', 'Varian diperbarui.');
     }
+
+    public function destroyVariant(Request $request, Product $product, ProductVariant $variant): RedirectResponse
+    {
+        abort_unless($variant->product_id === $product->id, 404);
+
+        AdminLog::record($request->user(), 'delete', 'ProductVariant', $variant->id, $variant->only(['name', 'sku']), null, 'Hapus varian');
+
+        if ($variant->image_path && str_starts_with($variant->image_path, 'products/')) {
+            @unlink(storage_path('app/private/'.$variant->image_path));
+            @unlink(storage_path('app/private/originals/'.$variant->image_path));
+            $this->optimizer->deleteVariants($variant->image_path);
+        }
+
+        $variant->delete();
+
+        return redirect()->route('office.products.edit', $product)->with('status', 'Varian dihapus.');
+    }
+
+    // ──────────────────────────────────────
+    // PRIVATE HELPERS
+    // ──────────────────────────────────────
 
     private function splitBoxUniformError(Product $product, array $data, ?ProductVariant $ignore = null): ?string
     {
@@ -553,27 +658,6 @@ class ProductController extends Controller
 
         return redirect()->route('office.products.edit', $product)->withErrors(['bulk' => $error]);
     }
-
-    public function destroyVariant(Request $request, Product $product, ProductVariant $variant): RedirectResponse
-    {
-        abort_unless($variant->product_id === $product->id, 404);
-
-        AdminLog::record($request->user(), 'delete', 'ProductVariant', $variant->id, $variant->only(['name', 'sku']), null, 'Hapus varian');
-
-        if ($variant->image_path && str_starts_with($variant->image_path, 'products/')) {
-            @unlink(storage_path('app/private/'.$variant->image_path));
-            @unlink(storage_path('app/private/originals/'.$variant->image_path));
-            $this->optimizer->deleteVariants($variant->image_path);
-        }
-
-        $variant->delete();
-
-        return redirect()->route('office.products.edit', $product)->with('status', 'Varian dihapus.');
-    }
-
-    // ──────────────────────────────────────
-    // PRIVATE HELPERS
-    // ──────────────────────────────────────
 
     private function deleteProductWithFiles(Product $product, $user, string $logMessage): void
     {
