@@ -10,9 +10,17 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <x-ga4 />
     <style>
-        /* Homepage — CSS biasa (tidak bergantung build Tailwind). Ukuran dari screenshot 1920px. */
+        /* Homepage — lebar disamakan dengan katalog (min 1300px) */
         .hp, .hp *, .hp *::before, .hp *::after { box-sizing: border-box; }
-        .hp { width: 100%; max-width: 1172px; margin: 0 auto; padding: 0 16px; color: #000; font-family: 'Roboto', system-ui, sans-serif; }
+        .hp {
+            position: relative;
+            left: 50%;
+            transform: translateX(-50%);
+            width: min(1300px, calc(100vw - 48px));
+            margin: 32px 0 28px;
+            color: #000;
+            font-family: 'Roboto', system-ui, sans-serif;
+        }
         .hp a { color: inherit; text-decoration: none; }
         .hp img { display: block; max-width: 100%; }
 
