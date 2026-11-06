@@ -8,6 +8,7 @@
     $orderCount = $product->exists ? $product->ordersCount() : 0;
     $developerList = $developers ?? [];
     $currentType = old('type', $product->type ?: 'single');
+    $isSplitBox = $product->exists && $product->is_split_box;
 @endphp
 
 <style>
@@ -137,7 +138,7 @@
 
         <div class="pf-layout">
             <div class="pf-main">
-                {{-- Type Selector (always visible) --}}
+                {{-- Type Selector --}}
                 <div class="pf-section">
                     <p class="pf-label">Tipe Produk</p>
                     <div class="type-selector">
@@ -183,11 +184,11 @@
                             </div>
                             <div>
                                 <label class="pf-label">Harga RMB *</label>
-                                <input type="number" step="0.01" name="price_rmb" value="{{ old('price_rmb', $product->price_rmb) }}" required class="pf-input">
+                                <input type="number" step="0.01" name="price_rmb" id="input-price-rmb" value="{{ old('price_rmb', $product->price_rmb) }}" required class="pf-input">
                             </div>
                             <div>
                                 <label class="pf-label">Berat (gram) *</label>
-                                <input type="number" name="weight_gram" required min="1" value="{{ old('weight_gram', $product->weight_gram) }}" class="pf-input">
+                                <input type="number" name="weight_gram" id="input-weight-gram" required min="1" value="{{ old('weight_gram', $product->weight_gram) }}" class="pf-input">
                             </div>
                         </div>
                         <div class="pf-grid-2" style="margin-top:16px">
@@ -209,15 +210,15 @@
                                 </select>
                             </div>
                         </div>
-                        <p class="pf-note">Harga & berat ini jadi default. Varian bisa override.</p>
+                        <p class="pf-note">Harga & berat ini jadi default untuk semua varian.</p>
                     </div>
 
-                    {{-- Atribut (only for variable) --}}
+                    {{-- Atribut --}}
                     <div class="pf-section" data-prod-panel="atribut" style="display:none">
                         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
                             <div>
                                 <p style="margin:0;font-size:14px;font-weight:600">Atribut</p>
-                                <p style="margin:4px 0 0;font-size:11px;color:#888">Tambah atribut lalu generate varian</p>
+                                <p style="margin:4px 0 0;font-size:11px;color:#888">Tambah atribut untuk produk variable</p>
                             </div>
                             <button type="button" onclick="addAttributeRow()" class="pf-btn">+ Tambah Atribut</button>
                         </div>
@@ -225,7 +226,7 @@
                         <div id="attributes-list">
                             @if ($product->exists)
                                 @foreach ($product->attributes as $i => $attr)
-                                    <div class="pf-attr-box" data-attr-index="{{ $i }}">
+                                    <div class="pf-attr-box">
                                         <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap">
                                             <input type="text" name="attributes[{{ $i }}][name]" value="{{ $attr->name }}" class="pf-input" style="flex:1;min-width:150px;max-width:200px" placeholder="Nama atribut">
                                             <input type="hidden" name="attributes[{{ $i }}][id]" value="{{ $attr->id }}">
@@ -241,12 +242,16 @@
                                             @foreach ($attr->values as $j => $val)
                                                 <div class="pf-chip" style="padding-right:4px">
                                                     <input type="hidden" name="attributes[{{ $i }}][values][{{ $j }}][id]" value="{{ $val->id }}">
-                                                    <input type="text" name="attributes[{{ $i }}][values][{{ $j }}][value]" value="{{ $val->value }}" style="width:70px;border:0;background:transparent;font-size:12px">
-                                                    <select name="attributes[{{ $i }}][values][{{ $j }}][modifier]" style="border:0;background:transparent;font-size:11px;width:46px">
-                                                        <option value="0" @selected($val->modifier == 0)>—</option>
-                                                        <option value="1" @selected($val->modifier == 1)>+1</option>
-                                                        <option value="2" @selected($val->modifier == 2)>+2</option>
-                                                    </select>
+                                                    <input type="text" name="attributes[{{ $i }}][values][{{ $j }}][value]" value="{{ $val->value }}" style="width:80px;border:0;background:transparent;font-size:12px">
+                                                    @if ($isSplitBox)
+                                                        <select name="attributes[{{ $i }}][values][{{ $j }}][modifier]" style="border:0;background:transparent;font-size:11px;width:46px">
+                                                            <option value="0" @selected($val->modifier == 0)>—</option>
+                                                            <option value="1" @selected($val->modifier == 1)>+1</option>
+                                                            <option value="2" @selected($val->modifier == 2)>+2</option>
+                                                        </select>
+                                                    @else
+                                                        <input type="hidden" name="attributes[{{ $i }}][values][{{ $j }}][modifier]" value="0">
+                                                    @endif
                                                     <button type="button" onclick="this.closest('.pf-chip').remove()" style="border:0;background:none;color:#999;cursor:pointer;padding:0 4px">&times;</button>
                                                 </div>
                                             @endforeach
@@ -262,7 +267,7 @@
                         </div>
                     </div>
 
-                    {{-- Varian (only for variable) --}}
+                    {{-- Varian --}}
                     <div class="pf-section" data-prod-panel="varian" style="display:none">
                         @if ($product->exists && $product->type === 'variable' && $product->variants->count())
                             <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px">
@@ -303,8 +308,8 @@
                                                 </div>
                                             </td>
                                             <td style="font-size:12px;color:#666">{{ $variant->sku }}</td>
-                                            <td><input type="number" step="0.01" name="variants[{{ $variant->id }}][price_rmb]" value="{{ $variant->price_rmb }}" class="pf-input" style="width:80px"></td>
-                                            <td><input type="number" name="variants[{{ $variant->id }}][weight_gram]" value="{{ $variant->weight_gram }}" class="pf-input" style="width:70px"></td>
+                                            <td><input type="number" step="0.01" name="variants[{{ $variant->id }}][price_rmb]" value="{{ $variant->price_rmb ?? $product->price_rmb }}" class="pf-input" style="width:80px"></td>
+                                            <td><input type="number" name="variants[{{ $variant->id }}][weight_gram]" value="{{ $variant->weight_gram ?? $product->weight_gram }}" class="pf-input" style="width:70px"></td>
                                             <td>
                                                 <select name="variants[{{ $variant->id }}][availability]" class="pf-select" style="width:90px;font-size:12px">
                                                     <option value="tersedia" @selected($variant->availability === 'tersedia')>Tersedia</option>
@@ -444,18 +449,17 @@
 <script>
 (function () {
     var currentType = '{{ $currentType }}';
+    var isSplitBox = {{ $isSplitBox ? 'true' : 'false' }};
 
     function updateTabs() {
         var isVariable = currentType === 'variable';
         document.getElementById('tab-atribut').classList.toggle('is-disabled', !isVariable);
         document.getElementById('tab-varian').classList.toggle('is-disabled', !isVariable);
-        
         if (!isVariable) {
             document.querySelector('[data-prod-tab="general"]').click();
         }
     }
 
-    // Type selector
     document.querySelectorAll('.type-option').forEach(function (opt) {
         opt.addEventListener('click', function () {
             document.querySelectorAll('.type-option').forEach(function (o) { o.classList.remove('is-on'); });
@@ -466,7 +470,6 @@
         });
     });
 
-    // Tabs
     document.querySelectorAll('[data-prod-tab]').forEach(function (tab) {
         tab.addEventListener('click', function () {
             if (tab.classList.contains('is-disabled')) return;
@@ -501,18 +504,22 @@
     window.addValueRow = function (btn, attrIdx) {
         var container = btn.parentElement;
         var valIndex = container.querySelectorAll('.pf-chip').length;
+        var modifierHtml = isSplitBox
+            ? '<select name="attributes[' + attrIdx + '][values][' + valIndex + '][modifier]" style="border:0;background:transparent;font-size:11px;width:46px">'
+                + '<option value="0">—</option><option value="1">+1</option><option value="2">+2</option>'
+                + '</select>'
+            : '<input type="hidden" name="attributes[' + attrIdx + '][values][' + valIndex + '][modifier]" value="0">';
+
         var html = '<div class="pf-chip" style="padding-right:4px">'
-            + '<input type="text" name="attributes[' + attrIdx + '][values][' + valIndex + '][value]" style="width:70px;border:0;background:transparent;font-size:12px" placeholder="Nilai">'
-            + '<select name="attributes[' + attrIdx + '][values][' + valIndex + '][modifier]" style="border:0;background:transparent;font-size:11px;width:46px">'
-            + '<option value="0">—</option><option value="1">+1</option><option value="2">+2</option>'
-            + '</select>'
+            + '<input type="text" name="attributes[' + attrIdx + '][values][' + valIndex + '][value]" style="width:80px;border:0;background:transparent;font-size:12px" placeholder="Nilai">'
+            + modifierHtml
             + '<button type="button" onclick="this.closest(\'.pf-chip\').remove()" style="border:0;background:none;color:#999;cursor:pointer;padding:0 4px">&times;</button>'
             + '</div>';
         btn.insertAdjacentHTML('beforebegin', html);
     };
 
     window.generateVariations = function () {
-        if (confirm('Generate varian dari kombinasi atribut?')) {
+        if (confirm('Generate varian dari kombinasi atribut? Harga & berat akan di-copy dari produk.')) {
             document.getElementById('product-form').submit();
         }
     };
