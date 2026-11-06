@@ -519,36 +519,74 @@
     };
 
     window.generateVariations = function (btn) {
-        @if ($product->exists)
-        btn.disabled = true;
-        btn.textContent = 'Generating...';
+    btn.disabled = true;
+    btn.textContent = 'Generating...';
 
-        fetch('{{ route('office.products.generate-variations', $product) }}', {
+    @if ($product->exists)
+        doGenerate(btn, '{{ route('office.products.generate-variations', $product) }}');
+    @else
+        var form = document.getElementById('product-form');
+        var formData = new FormData(form);
+        formData.set('is_active', '0');
+
+        fetch(form.action, {
             method: 'POST',
+            body: formData,
             headers: {
-                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                'X-Requested-With': 'XMLHttpRequest',
                 'Accept': 'application/json'
             }
         })
         .then(function (res) { return res.json(); })
         .then(function (data) {
-            if (data.success) {
-                alert(data.message);
-                location.reload();
+            if (data.product_id) {
+                window.location.href = '/office/products/' + data.product_id + '/edit?generate=1';
             } else {
-                alert(data.message || 'Gagal');
+                alert(data.message || 'Gagal simpan');
+                btn.disabled = false;
+                btn.textContent = 'Generate Varian';
             }
         })
         .catch(function () {
-            alert('Gagal generate varian');
-        })
-        .finally(function () {
+            alert('Gagal simpan produk');
             btn.disabled = false;
             btn.textContent = 'Generate Varian';
         });
-        @else
-        alert('Simpan produk dulu sebelum generate varian.');
-        @endif
+    @endif
+};
+
+function doGenerate(btn, url) {
+    fetch(url, {
+        method: 'POST',
+        headers: {
+            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+            'Accept': 'application/json'
+        }
+    })
+    .then(function (res) { return res.json(); })
+    .then(function (data) {
+        if (data.success) {
+            alert(data.message);
+            location.href = location.pathname;
+        } else {
+            alert(data.message || 'Gagal');
+        }
+    })
+    .catch(function () {
+        alert('Gagal generate varian');
+    })
+    .finally(function () {
+        btn.disabled = false;
+        btn.textContent = 'Generate Varian';
+    });
+}
+
+@if (request('generate') && $product->exists)
+document.addEventListener('DOMContentLoaded', function () {
+    var btn = document.querySelector('button[onclick*="generateVariations"]');
+    if (btn) doGenerate(btn, '{{ route('office.products.generate-variations', $product) }}');
+});
+@endif
     };
 
     window.applyBulkAction = function () {
