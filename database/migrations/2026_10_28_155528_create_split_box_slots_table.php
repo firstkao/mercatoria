@@ -12,7 +12,6 @@ return new class extends Migration
             $table->id();
             $table->foreignId('split_box_id')->constrained()->cascadeOnDelete();
             $table->foreignId('variant_id')->constrained('product_variants')->cascadeOnDelete();
-            $table->string('split_role', 16)->default('normal');
             $table->unsignedSmallInteger('qty_per_box')->default(1);
             $table->unsignedSmallInteger('sort_order')->default(0);
             $table->timestamps();
