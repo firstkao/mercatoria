@@ -15,95 +15,51 @@
     .pf, .pf *, .pf *::before, .pf *::after { box-sizing: border-box; }
     .pf { font-family: 'Roboto', system-ui, sans-serif; color: #333; -webkit-font-smoothing: antialiased; }
     .pf a { text-decoration: none; }
-
-    .pf-box {
-        position: relative; left: 50%; transform: translateX(-50%);
-        width: min(1300px, calc(100vw - 48px)); margin: 24px 0;
-        background: #fff; border: 1px solid #e1e1e1;
-    }
-    .pf-header {
-        display: flex; align-items: center; justify-content: space-between;
-        padding: 16px 24px; border-bottom: 1px solid #e1e1e1;
-    }
+    .pf-box { position: relative; left: 50%; transform: translateX(-50%); width: min(1300px, calc(100vw - 48px)); margin: 24px 0; background: #fff; border: 1px solid #e1e1e1; }
+    .pf-header { display: flex; align-items: center; justify-content: space-between; padding: 16px 24px; border-bottom: 1px solid #e1e1e1; }
     .pf-header h1 { margin: 0; font-size: 16px; font-weight: 600; color: #000; }
     .pf-header-actions { display: flex; gap: 8px; }
-
     .pf-layout { display: grid; grid-template-columns: 1fr 300px; }
     .pf-main { border-right: 1px solid #e1e1e1; min-width: 0; }
     .pf-side { background: #fafafa; }
-    @media (max-width: 900px) {
-        .pf-layout { grid-template-columns: 1fr; }
-        .pf-main { border-right: 0; border-bottom: 1px solid #e1e1e1; }
-    }
-
+    @media (max-width: 900px) { .pf-layout { grid-template-columns: 1fr; } .pf-main { border-right: 0; border-bottom: 1px solid #e1e1e1; } }
     .pf-section { padding: 24px; border-bottom: 1px solid #e1e1e1; }
     .pf-section:last-child { border-bottom: 0; }
-
     .pf-label { display: block; margin: 0 0 6px; font-size: 12px; font-weight: 600; color: #555; }
-    .pf-input, .pf-select {
-        width: 100%; height: 36px; padding: 0 12px;
-        border: 1px solid #e1e1e1; background: #fff;
-        font: 400 13px/36px 'Roboto', system-ui, sans-serif; color: #333;
-    }
+    .pf-input, .pf-select { width: 100%; height: 36px; padding: 0 12px; border: 1px solid #e1e1e1; background: #fff; font: 400 13px/36px 'Roboto', system-ui, sans-serif; color: #333; }
     .pf-input:focus, .pf-select:focus { outline: 0; border-color: #333; }
-
     .pf-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
     .pf-grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
     @media (max-width: 700px) { .pf-grid-2, .pf-grid-3 { grid-template-columns: 1fr; } }
-
     .pf-tabs { display: flex; gap: 0; border-bottom: 1px solid #e1e1e1; }
-    .pf-tab {
-        padding: 12px 20px; border: 0; border-bottom: 2px solid transparent;
-        background: none; font: 400 13px/20px 'Roboto', system-ui, sans-serif;
-        color: #888; cursor: pointer;
-    }
+    .pf-tab { padding: 12px 20px; border: 0; border-bottom: 2px solid transparent; background: none; font: 400 13px/20px 'Roboto', system-ui, sans-serif; color: #888; cursor: pointer; }
     .pf-tab:hover { color: #333; }
     .pf-tab.is-on { color: #000; font-weight: 600; border-bottom-color: #000; }
     .pf-tab.is-disabled { opacity: .4; pointer-events: none; }
-
-    .pf-btn {
-        display: inline-flex; align-items: center; gap: 6px;
-        height: 34px; padding: 0 16px;
-        border: 1px solid #e1e1e1; background: #fff;
-        font: 500 12px/34px 'Roboto', system-ui, sans-serif; color: #333; cursor: pointer;
-    }
+    .pf-btn { display: inline-flex; align-items: center; gap: 6px; height: 34px; padding: 0 16px; border: 1px solid #e1e1e1; background: #fff; font: 500 12px/34px 'Roboto', system-ui, sans-serif; color: #333; cursor: pointer; }
     .pf-btn:hover { border-color: #333; }
     .pf-btn.is-primary { background: #000; border-color: #000; color: #fff; }
     .pf-btn.is-primary:hover { background: #222; }
     .pf-btn.is-danger { color: #c62828; border-color: #ffcdd2; }
     .pf-btn.is-danger:hover { background: #ffebee; }
-
-    .pf-chip {
-        display: inline-flex; align-items: center; gap: 4px;
-        height: 28px; padding: 0 8px;
-        border: 1px solid #e1e1e1; background: #fff; font-size: 12px; color: #333;
-    }
+    .pf-chip { display: inline-flex; align-items: center; gap: 4px; height: 28px; padding: 0 8px; border: 1px solid #e1e1e1; background: #fff; font-size: 12px; color: #333; }
     .pf-chip.is-on { background: #000; color: #fff; border-color: #000; }
-
     .pf-attr-box { margin-top: 12px; padding: 16px; border: 1px solid #e1e1e1; background: #fff; }
     .pf-err { margin: 4px 0 0; font-size: 11px; color: #c62828; }
     .pf-note { margin: 8px 0 0; font-size: 11px; color: #888; }
-
     .pf-side-section { padding: 16px 20px; border-bottom: 1px solid #e1e1e1; }
     .pf-side-section:last-child { border-bottom: 0; }
     .pf-side-label { margin: 0 0 10px; font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: #888; }
-
     .pf-flash { margin: 0 0 16px; padding: 12px 16px; border: 1px solid #c8e6c9; background: #e8f5e9; font-size: 13px; color: #2e7d32; }
     .pf-flash.is-error { border-color: #ffcdd2; background: #ffebee; color: #c62828; }
-
     .var-table { width: 100%; font-size: 13px; border-collapse: collapse; }
     .var-table th { padding: 10px; text-align: left; font-size: 11px; color: #888; font-weight: 600; border-bottom: 1px solid #e1e1e1; }
     .var-table td { padding: 10px; border-bottom: 1px solid #e1e1e1; vertical-align: middle; }
     .var-table input, .var-table select { height: 30px; font-size: 12px; }
-
     .type-selector { display: flex; gap: 12px; margin-bottom: 20px; }
-    .type-option {
-        flex: 1; padding: 16px; border: 2px solid #e1e1e1; cursor: pointer; text-align: center;
-        transition: border-color .15s;
-    }
+    .type-option { flex: 1; padding: 16px; border: 2px solid #e1e1e1; cursor: pointer; text-align: center; transition: border-color .15s; }
     .type-option:hover { border-color: #999; }
     .type-option.is-on { border-color: #000; background: #fafafa; }
-    .type-option input { display: none; }
     .type-option strong { display: block; margin-bottom: 4px; }
     .type-option span { font-size: 12px; color: #888; }
 </style>
@@ -138,7 +94,7 @@
 
         <div class="pf-layout">
             <div class="pf-main">
-               {{-- Type Selector --}}
+                {{-- Type Selector --}}
                 <div class="pf-section">
                     <p class="pf-label">Tipe Produk</p>
                     <div class="type-selector">
@@ -151,19 +107,6 @@
                             <span>Produk dengan atribut & varian</span>
                         </div>
                     </div>
-                
-                    <div class="pf-grid-2">
-                        <div>
-                            <label class="pf-label">Nama Produk *</label>
-                            <input type="text" name="name" value="{{ old('name', $product->name) }}" required class="pf-input">
-                            @error('name')<p class="pf-err">{{ $message }}</p>@enderror
-                        </div>
-                        <div>
-                            <label class="pf-label">Slug</label>
-                            <input type="text" name="slug" value="{{ old('slug', $product->slug) }}" class="pf-input">
-                        </div>
-                    </div>
-                </div>
 
                     <div class="pf-grid-2">
                         <div>
@@ -195,11 +138,11 @@
                             </div>
                             <div>
                                 <label class="pf-label">Harga RMB *</label>
-                                <input type="number" step="0.01" name="price_rmb" id="input-price-rmb" value="{{ old('price_rmb', $product->price_rmb) }}" required class="pf-input">
+                                <input type="number" step="0.01" name="price_rmb" value="{{ old('price_rmb', $product->price_rmb) }}" required class="pf-input">
                             </div>
                             <div>
                                 <label class="pf-label">Berat (gram) *</label>
-                                <input type="number" name="weight_gram" id="input-weight-gram" required min="1" value="{{ old('weight_gram', $product->weight_gram) }}" class="pf-input">
+                                <input type="number" name="weight_gram" required min="1" value="{{ old('weight_gram', $product->weight_gram) }}" class="pf-input">
                             </div>
                         </div>
                         <div class="pf-grid-2" style="margin-top:16px">
@@ -293,7 +236,6 @@
                                     <button type="button" onclick="applyBulkAction()" class="pf-btn">Terapkan</button>
                                 </div>
                             </div>
-
                             <table class="var-table">
                                 <thead>
                                     <tr>
@@ -365,7 +307,6 @@
                     @endif
                     <button type="submit" onclick="document.getElementById('input-is-active').value='0'" class="pf-btn" style="width:100%;margin-top:10px">Simpan Draft</button>
                 </div>
-
                 <div class="pf-side-section">
                     <p class="pf-side-label">Ketersediaan</p>
                     <select name="availability" class="pf-select">
@@ -387,14 +328,12 @@
                         @endforeach
                     </select>
                 </div>
-
                 @if ($product->exists)
                     <div class="pf-side-section">
                         <p class="pf-side-label">Order</p>
                         <p style="margin:0;font-size:24px;font-weight:700">{{ $orderCount }}</p>
                     </div>
                 @endif
-
                 <div class="pf-side-section">
                     <p class="pf-side-label">Tag</p>
                     @foreach ($tags as $tag)
@@ -404,7 +343,6 @@
                         </label>
                     @endforeach
                 </div>
-
                 <div class="pf-side-section">
                     <p class="pf-side-label">Foto Produk</p>
                     <input type="file" name="image" accept=".jpg,.jpeg,.png,.webp" class="pf-input" style="height:auto;padding:8px">
@@ -412,7 +350,6 @@
                         <img src="{{ asset('storage/'.$product->image_path) }}" style="width:100%;margin-top:8px;border:1px solid #e1e1e1">
                     @endif
                 </div>
-
                 <div class="pf-side-section">
                     <p class="pf-side-label">Diskon</p>
                     <input type="number" step="0.01" min="0" name="discount_amount" value="{{ old('discount_amount', $product->discount_amount) }}" placeholder="Nominal RMB" class="pf-input">
@@ -421,7 +358,6 @@
                         <input type="date" name="discount_end" value="{{ old('discount_end', $product->discount_end?->toDateString()) }}" class="pf-input" style="font-size:12px">
                     </div>
                 </div>
-
                 @if ($product->exists)
                     <div class="pf-side-section">
                         <p class="pf-side-label">Split Box</p>
@@ -459,27 +395,28 @@
 
 <script>
 (function () {
-    var currentType = '{{ $currentType }}';
     var isSplitBox = {{ $isSplitBox ? 'true' : 'false' }};
+    var productExists = {{ $product->exists ? 'true' : 'false' }};
+    var generateUrl = '{{ $product->exists ? route('office.products.generate-variations', $product) : '' }}';
+    var editUrlTemplate = '{{ route('office.products.edit', ['product' => '__ID__']) }}';
 
-    function updateTabs() {
-        var isVariable = currentType === 'variable';
-        document.getElementById('tab-atribut').classList.toggle('is-disabled', !isVariable);
-        document.getElementById('tab-varian').classList.toggle('is-disabled', !isVariable);
-        if (!isVariable) {
-            document.querySelector('[data-prod-tab="general"]').click();
-        }
-    }
-
-    document.querySelectorAll('.type-option').forEach(function (opt) {
-        opt.addEventListener('click', function () {
-            document.querySelectorAll('.type-option').forEach(function (o) { o.classList.remove('is-on'); });
-            opt.classList.add('is-on');
-            currentType = opt.getAttribute('data-type');
-            document.getElementById('input-type').value = currentType;
-            updateTabs();
+    window.setProductType = function (type) {
+        document.querySelectorAll('.type-option').forEach(function (o) {
+            o.classList.toggle('is-on', o.getAttribute('data-type') === type);
         });
-    });
+        document.getElementById('input-type').value = type;
+
+        var isVariable = type === 'variable';
+        var tabAtribut = document.getElementById('tab-atribut');
+        var tabVarian = document.getElementById('tab-varian');
+        if (tabAtribut) tabAtribut.classList.toggle('is-disabled', !isVariable);
+        if (tabVarian) tabVarian.classList.toggle('is-disabled', !isVariable);
+
+        if (!isVariable) {
+            var generalTab = document.querySelector('[data-prod-tab="general"]');
+            if (generalTab) generalTab.click();
+        }
+    };
 
     document.querySelectorAll('[data-prod-tab]').forEach(function (tab) {
         tab.addEventListener('click', function () {
@@ -487,11 +424,12 @@
             document.querySelectorAll('[data-prod-tab]').forEach(function (t) { t.classList.remove('is-on'); });
             document.querySelectorAll('[data-prod-panel]').forEach(function (p) { p.style.display = 'none'; });
             tab.classList.add('is-on');
-            document.querySelector('[data-prod-panel="' + tab.getAttribute('data-prod-tab') + '"]').style.display = '';
+            var panel = document.querySelector('[data-prod-panel="' + tab.getAttribute('data-prod-tab') + '"]');
+            if (panel) panel.style.display = '';
         });
     });
 
-    updateTabs();
+    setProductType('{{ $currentType }}');
 
     var attrIndex = {{ $product->exists ? $product->attributes->count() : 0 }};
 
@@ -516,11 +454,8 @@
         var container = btn.parentElement;
         var valIndex = container.querySelectorAll('.pf-chip').length;
         var modifierHtml = isSplitBox
-            ? '<select name="attributes[' + attrIdx + '][values][' + valIndex + '][modifier]" style="border:0;background:transparent;font-size:11px;width:46px">'
-                + '<option value="0">—</option><option value="1">+1</option><option value="2">+2</option>'
-                + '</select>'
+            ? '<select name="attributes[' + attrIdx + '][values][' + valIndex + '][modifier]" style="border:0;background:transparent;font-size:11px;width:46px"><option value="0">—</option><option value="1">+1</option><option value="2">+2</option></select>'
             : '<input type="hidden" name="attributes[' + attrIdx + '][values][' + valIndex + '][modifier]" value="0">';
-
         var html = '<div class="pf-chip" style="padding-right:4px">'
             + '<input type="text" name="attributes[' + attrIdx + '][values][' + valIndex + '][value]" style="width:80px;border:0;background:transparent;font-size:12px" placeholder="Nilai">'
             + modifierHtml
@@ -529,117 +464,70 @@
         btn.insertAdjacentHTML('beforebegin', html);
     };
 
-   window.generateVariations = function (btn) {
-    btn.disabled = true;
-    var originalText = btn.textContent;
-    btn.textContent = 'Generating...';
+    window.generateVariations = function (btn) {
+        btn.disabled = true;
+        var originalText = btn.textContent;
+        btn.textContent = 'Generating...';
 
-    @if ($product->exists)
-        generateExisting(btn, originalText);
-    @else
-        saveAndGenerate(btn, originalText);
-    @endif
-};
-
-function generateExisting(btn, originalText) {
-    fetch('{{ $product->exists ? route('office.products.generate-variations', $product) : '#' }}', {
-        method: 'POST',
-        headers: {
-            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || '{{ csrf_token() }}',
-            'Accept': 'application/json'
-        }
-    })
-    .then(function (res) { return res.json(); })
-    .then(function (data) {
-        if (data.success) {
-            alert(data.message);
-            window.location.href = window.location.pathname;
+        if (productExists) {
+            doGenerate(btn, originalText, generateUrl);
         } else {
-            alert(data.message || 'Gagal generate');
-        }
-    })
-    .catch(function (err) {
-        alert('Gagal: ' + err.message);
-    })
-    .finally(function () {
-        btn.disabled = false;
-        btn.textContent = originalText;
-    });
-}
+            var form = document.getElementById('product-form');
+            var formData = new FormData(form);
+            formData.set('is_active', '0');
 
-function saveAndGenerate(btn, originalText) {
-    var form = document.getElementById('product-form');
-    var formData = new FormData(form);
-    formData.set('is_active', '0');
-
-    fetch(form.action, {
-        method: 'POST',
-        body: formData,
-        headers: {
-            'X-Requested-With': 'XMLHttpRequest',
-            'Accept': 'application/json'
+            fetch(form.action, {
+                method: 'POST',
+                body: formData,
+                headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' }
+            })
+            .then(function (res) { return res.json(); })
+            .then(function (data) {
+                if (data.product_id) {
+                    window.location.href = editUrlTemplate.replace('__ID__', data.product_id) + '?generate=1';
+                } else {
+                    alert(data.message || 'Gagal simpan');
+                    btn.disabled = false;
+                    btn.textContent = originalText;
+                }
+            })
+            .catch(function (err) {
+                alert('Gagal simpan: ' + err.message);
+                btn.disabled = false;
+                btn.textContent = originalText;
+            });
         }
-    })
-    .then(function (res) { return res.json(); })
-    .then(function (data) {
-        if (data.product_id) {
-            window.location.href = '{{ route('office.products.edit', ['product' => '__ID__']) }}'.replace('__ID__', data.product_id) + '?generate=1';
-        } else {
-            alert(data.message || 'Gagal simpan');
+    };
+
+    function doGenerate(btn, originalText, url) {
+        fetch(url, {
+            method: 'POST',
+            headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Accept': 'application/json' }
+        })
+        .then(function (res) { return res.json(); })
+        .then(function (data) {
+            if (data.success) {
+                alert(data.message);
+                window.location.href = window.location.pathname;
+            } else {
+                alert(data.message || 'Gagal');
+            }
+        })
+        .catch(function (err) {
+            alert('Gagal: ' + err.message);
+        })
+        .finally(function () {
             btn.disabled = false;
             btn.textContent = originalText;
-        }
-    })
-    .catch(function (err) {
-        alert('Gagal simpan: ' + err.message);
-        btn.disabled = false;
-        btn.textContent = originalText;
-    });
-}
-
-@if (request('generate') && $product->exists)
-document.addEventListener('DOMContentLoaded', function () {
-    var btn = document.querySelector('button[onclick*="generateVariations"]');
-    if (btn) {
-        generateExisting(btn, 'Generate Varian');
+        });
     }
-});
-@endif
-};
 
-function doGenerate(btn, url) {
-    fetch(url, {
-        method: 'POST',
-        headers: {
-            'X-CSRF-TOKEN': '{{ csrf_token() }}',
-            'Accept': 'application/json'
-        }
-    })
-    .then(function (res) { return res.json(); })
-    .then(function (data) {
-        if (data.success) {
-            alert(data.message);
-            location.href = location.pathname;
-        } else {
-            alert(data.message || 'Gagal');
-        }
-    })
-    .catch(function () {
-        alert('Gagal generate varian');
-    })
-    .finally(function () {
-        btn.disabled = false;
-        btn.textContent = 'Generate Varian';
+    @if (request('generate') && $product->exists)
+    document.addEventListener('DOMContentLoaded', function () {
+        var btn = document.querySelector('button[onclick*="generateVariations"]');
+        if (btn) doGenerate(btn, 'Generate Varian', generateUrl);
     });
-}
-
-@if (request('generate') && $product->exists)
-document.addEventListener('DOMContentLoaded', function () {
-    var btn = document.querySelector('button[onclick*="generateVariations"]');
-    if (btn) doGenerate(btn, '{{ route('office.products.generate-variations', $product) }}');
-});
-@endif
-    };
+    @endif
 
     window.applyBulkAction = function () {
         var action = document.getElementById('bulk-action').value;
