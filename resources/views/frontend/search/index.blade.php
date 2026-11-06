@@ -6,83 +6,154 @@
     @include('frontend.partials._auth-style')
 
     <style>
-        /* Pencarian — CSS biasa (tidak bergantung build Tailwind), selaras dengan au-* & hp-*/pp-*. */
         .sr-wrap, .sr-wrap *, .sr-wrap *::before, .sr-wrap *::after { box-sizing: border-box; }
-        .sr-wrap { font-family: 'Roboto', system-ui, sans-serif; color: #333; -webkit-font-smoothing: antialiased; }
-        .sr-wrap a { text-decoration: none; }
+        .sr-wrap {
+            position: relative;
+            left: 50%;
+            transform: translateX(-50%);
+            width: min(1300px, calc(100vw - 48px));
+            margin: 32px 0 28px;
+            font-family: 'Roboto', system-ui, sans-serif;
+            color: #3d3439;
+            -webkit-font-smoothing: antialiased;
+        }
+        .sr-wrap a { text-decoration: none; color: inherit; }
 
-        .sr-head { padding: 36px 40px 40px; background: #fff; border: 1px solid #e1e1e1; border-radius: 0; }
-
-        .sr-search { display: flex; gap: 10px; margin-top: 24px; }
-        .sr-search .au-input { flex: 1; margin-top: 0; }
-        .sr-search .au-btn { display: inline-block; width: auto; height: 42px; padding: 0 28px; line-height: 40px; }
+        .sr-head {
+            padding: 36px 40px 32px;
+            background: #fff;
+        }
+        .sr-title {
+            margin: 0;
+            font-size: 32px;
+            line-height: 40px;
+            font-weight: 500;
+            color: #26222f;
+        }
+        .sr-search {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        .sr-search input {
+            flex: 1;
+            height: 44px;
+            padding: 0 14px;
+            border: 1px solid #ddd;
+            font: 400 15px/44px 'Roboto', system-ui, sans-serif;
+            outline: 0;
+        }
+        .sr-search input:focus { border-color: #26222f; }
+        .sr-search button {
+            height: 44px;
+            padding: 0 28px;
+            border: 0;
+            background: #26222f;
+            color: #fff;
+            font: 700 14px/44px 'Roboto', system-ui, sans-serif;
+            letter-spacing: .02em;
+            text-transform: uppercase;
+            cursor: pointer;
+        }
+        .sr-search button:hover { background: #3a3547; }
 
         .sr-count {
-            margin: 24px 0 0; font-size: 11px; line-height: 16px; font-weight: 500;
-            letter-spacing: .14em; text-transform: uppercase; color: #888;
+            margin: 16px 0 0;
+            font-size: 15px;
+            line-height: 22px;
+            color: #6f6a72;
         }
 
-        .sr-suggest { margin: 20px 0 0; }
+        .sr-suggest { margin-top: 20px; }
         .sr-suggest-h {
-            margin: 0; font-size: 11px; line-height: 16px; font-weight: 700;
-            letter-spacing: .06em; text-transform: uppercase; color: #333;
+            margin: 0 0 10px;
+            font-size: 13px;
+            font-weight: 700;
+            letter-spacing: .04em;
+            text-transform: uppercase;
+            color: #26222f;
         }
-        .sr-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+        .sr-chips { display: flex; flex-wrap: wrap; gap: 8px; }
         .sr-chip {
-            display: inline-block; height: 26px; padding: 0 12px;
-            border: 1px solid #e1e1e1; border-radius: 0; background: #fff;
-            font-size: 11px; line-height: 24px; color: #333;
+            display: inline-block;
+            height: 32px;
+            padding: 0 14px;
+            border: 1px solid #ddd;
+            background: #fff;
+            font-size: 13px;
+            line-height: 30px;
+            color: #333;
         }
-        .sr-chip:hover { border-color: #000; }
+        .sr-chip:hover { border-color: #26222f; }
 
         .sr-filters {
-            display: flex; flex-wrap: wrap; align-items: center; gap: 8px;
-            margin: 16px 0 0; padding: 14px 16px;
-            background: #fff; border: 1px solid #e1e1e1; border-radius: 0;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 10px;
+            margin-top: 24px;
+            padding: 16px 20px;
+            background: #fff;
         }
         .sr-sel {
-            display: inline-block; height: 34px; margin: 0; padding: 0 10px;
-            border: 1px solid #e1e1e1; border-radius: 0; background: #fff;
-            font: 400 14px/20px 'Roboto', system-ui, sans-serif; color: #333; outline: 0; transition: border-color .15s;
+            height: 38px;
+            padding: 0 12px;
+            border: 1px solid #ddd;
+            background: #fff;
+            font: 400 14px/38px 'Roboto', system-ui, sans-serif;
+            color: #333;
+            outline: 0;
+            cursor: pointer;
         }
-        .sr-sel:focus { border-color: #000; }
-        .sr-narrow { width: 112px; }
-        .sr-sort-label { margin: 0 0 0 auto; font-size: 11px; line-height: 16px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: #333; }
+        .sr-sel:focus { border-color: #26222f; }
+        .sr-narrow { width: 120px; }
+        .sr-filters button {
+            height: 38px;
+            padding: 0 20px;
+            border: 0;
+            background: #26222f;
+            color: #fff;
+            font: 700 13px/38px 'Roboto', system-ui, sans-serif;
+            letter-spacing: .02em;
+            text-transform: uppercase;
+            cursor: pointer;
+        }
+        .sr-filters button:hover { background: #3a3547; }
 
         .sr-grid {
-            display: grid; grid-template-columns: repeat(6, minmax(0, 1fr));
-            column-gap: 16px; row-gap: 20px; margin-top: 16px;
+            display: grid;
+            grid-template-columns: repeat(6, minmax(0, 1fr));
+            column-gap: 20px;
+            row-gap: 44px;
+            margin-top: 28px;
         }
-        .sr-pager { margin-top: 24px; }
+        .sr-pager { margin-top: 48px; }
 
-        @media (max-width: 1100px) { .sr-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+        @media (max-width: 1360px) { .sr-grid { grid-template-columns: repeat(5, minmax(0, 1fr)); } }
+        @media (max-width: 1180px) { .sr-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
         @media (max-width: 767px) {
-            .sr-head { padding: 28px 20px 32px; }
+            .sr-head { padding: 24px 16px; }
+            .sr-title { font-size: 26px; line-height: 32px; }
             .sr-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
             .sr-search { flex-wrap: wrap; }
-            .sr-sort-label { margin-left: 0; }
         }
     </style>
 
     <div class="sr-wrap">
         <div class="sr-head">
-            <p class="au-eyebrow">Pencarian</p>
-            <h1 class="au-title">
+            <h1 class="sr-title">
                 Hasil Pencarian
-                @if ($q !== '') untuk &ldquo;{{ $q }}&rdquo; @endif
+                @if ($q !== '') untuk “{{ $q }}” @endif
             </h1>
 
             <form action="{{ route('search') }}" method="GET" class="sr-search">
-                <input type="search" name="q" value="{{ $q }}" placeholder="Cari produk, karakter, game..."
-                       class="au-input">
-                <button type="submit" class="au-btn">
-                    Cari
-                </button>
+                <input type="search" name="q" value="{{ $q }}" placeholder="Cari produk, karakter, game...">
+                <button type="submit">Cari</button>
             </form>
 
             <p class="sr-count">
                 @if ($results->total() > 0)
-                    Menampilkan {{ $results->firstItem() }}&ndash;{{ $results->lastItem() }} dari {{ $results->total() }} hasil
+                    Menampilkan {{ $results->firstItem() }}–{{ $results->lastItem() }} dari {{ $results->total() }} hasil
                 @else
                     Tidak ada hasil ditemukan.
                 @endif
@@ -93,9 +164,7 @@
                     <p class="sr-suggest-h">Coba jelajahi game</p>
                     <div class="sr-chips">
                         @foreach ($games->take(8) as $g)
-                            <a href="{{ route('search', ['game_id' => $g->id]) }}" class="sr-chip">
-                                {{ $g->name }}
-                            </a>
+                            <a href="{{ route('search', ['game_id' => $g->id]) }}" class="sr-chip">{{ $g->name }}</a>
                         @endforeach
                     </div>
                 </div>
@@ -131,19 +200,20 @@
                 <option value="tersedia" @selected(request('availability') === 'tersedia')>Tersedia</option>
                 <option value="kosong" @selected(request('availability') === 'kosong')>Kosong</option>
             </select>
+
             <input type="number" name="min_price" min="0" value="{{ request('min_price') }}" placeholder="Harga min" class="sr-sel sr-narrow">
             <input type="number" name="max_price" min="0" value="{{ request('max_price') }}" placeholder="Harga maks" class="sr-sel sr-narrow">
 
-            <label for="sort" class="sr-sort-label">Urutkan</label>
-            <select name="sort" id="sort" onchange="this.form.submit()" class="sr-sel">
-                <option value="">Relevansi</option>
+            <select name="sort" onchange="this.form.submit()" class="sr-sel">
+                <option value="">Pengurutan standar</option>
                 <option value="termurah" @selected(request('sort') === 'termurah')>Termurah</option>
                 <option value="termahal" @selected(request('sort') === 'termahal')>Termahal</option>
                 <option value="terpopuler" @selected(request('sort') === 'terpopuler')>Terpopuler</option>
                 <option value="terbaru" @selected(request('sort') === 'terbaru')>Terbaru</option>
                 <option value="abjad" @selected(request('sort') === 'abjad')>Abjad (A-Z)</option>
             </select>
-            <button type="submit" class="au-btn is-sm">Terapkan</button>
+
+            <button type="submit">Terapkan</button>
         </form>
 
         @if ($results->isNotEmpty())
@@ -152,7 +222,8 @@
                     <x-product-card
                         :product="$product"
                         :shipping="$shipping"
-                        :matched-variant="$matchedVariants[$product->id]"
+                        :matched-variant="$matchedVariants[$product->id] ?? null"
+                        :simple="true"
                     />
                 @endforeach
             </div>
