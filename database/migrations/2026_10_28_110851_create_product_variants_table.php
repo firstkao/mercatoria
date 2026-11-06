@@ -26,11 +26,15 @@ return new class extends Migration
             $table->index(['product_id', 'availability'], 'pv_product_avail_idx');
         });
 
-        Schema::create('product_variant_attribute_values', function (Blueprint $table) {
-            $table->foreignId('product_variant_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('product_attribute_value_id')->constrained()->cascadeOnDelete();
-
-            $table->primary(['product_variant_id', 'product_attribute_value_id'], 'pvav_primary');
+        Schema::create('product_attribute_values', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('product_attribute_id')->constrained()->cascadeOnDelete();
+            $table->string('value', 100);
+            $table->unsignedTinyInteger('modifier')->default(0); // 0, 1, atau 2
+            $table->unsignedInteger('position')->default(0);
+            $table->timestamps();
+        
+            $table->index(['product_attribute_id', 'position']);
         });
     }
 
