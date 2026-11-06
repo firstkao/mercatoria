@@ -6,12 +6,20 @@
     @include('frontend.partials._auth-style')
 
     <style>
-        /* Halaman Undang Teman — CSS biasa, scope .pf-* (tidak bergantung build Tailwind). */
-        .pf-tabs { display: flex; flex-wrap: wrap; gap: 0; margin: 24px 0 0; border-bottom: 1px solid #e1e1e1; }
-        .pf-tab { display: inline-block; padding: 11px 16px; margin-bottom: -1px; border-bottom: 2px solid transparent;
-                  font: 400 13px/18px 'Roboto', system-ui, sans-serif; color: #888; text-decoration: none; transition: color .15s; }
-        .pf-tab:hover { color: #000; }
-        .pf-tab.is-on { color: #000; font-weight: 700; border-bottom-color: #000; }
+        .pf-wrap, .pf-wrap *, .pf-wrap *::before, .pf-wrap *::after { box-sizing: border-box; }
+        .pf-wrap {
+            position: relative;
+            left: 50%;
+            transform: translateX(-50%);
+            width: min(1300px, calc(100vw - 48px));
+            margin: 32px 0 28px;
+        }
+
+        .pf-tabs { display: flex; flex-wrap: wrap; gap: 0; margin: 24px 0 0; border-bottom: 1px solid #e1e1e1; background: #fff; padding: 0 20px; }
+        .pf-tab { display: inline-block; padding: 14px 18px; margin-bottom: -1px; border-bottom: 2px solid transparent;
+                  font: 400 14px/20px 'Roboto', system-ui, sans-serif; color: #888; text-decoration: none; transition: color .15s; }
+        .pf-tab:hover { color: #26222f; }
+        .pf-tab.is-on { color: #26222f; font-weight: 700; border-bottom-color: #26222f; }
 
         .pf-card { margin-top: 20px; padding: 24px 28px 28px; background: #fff; border: 1px solid #e1e1e1; border-radius: 0; }
         .pf-label { margin: 0; font-size: 11px; line-height: 16px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: #333; }
@@ -49,130 +57,129 @@
         }
     </style>
 
-    <div class="au pf">
-        <p class="au-eyebrow">Akun</p>
-        <h1 class="au-title">Undang Teman</h1>
-        <p class="au-lead">Ajak teman berbelanja dan dapatkan koin.</p>
+    <div class="pf-wrap">
+        <div class="au pf">
+            <p class="au-eyebrow">Akun</p>
+            <h1 class="au-title">Undang Teman</h1>
+            <p class="au-lead">Ajak teman berbelanja dan dapatkan koin.</p>
 
-        <div class="pf-tabs">
-            <a href="{{ route('dashboard') }}" class="pf-tab">Pesanan Saya</a>
-            <a href="{{ route('profile.notifications') }}" class="pf-tab">Notifikasi</a>
-            <a href="{{ route('profile.coins') }}" class="pf-tab">Koin</a>
-            <a href="{{ route('profile.wallet') }}" class="pf-tab">Voucher</a>
-            <a href="{{ route('profile.referral') }}" class="pf-tab is-on">Undang Teman</a>
-            <a href="{{ route('profile.edit') }}" class="pf-tab">Edit Profil</a>
-        </div>
-
-        <div class="pf-card">
-            <p class="pf-label">KODE UNDANGANMU</p>
-            <p class="pf-code">{{ $user->referral_code }}</p>
-            <p class="pf-link" id="referral-link">
-                Link: {{ url('/register?ref='.$user->referral_code) }}
-            </p>
-            <div class="pf-actions">
-                <button type="button" data-copy="{{ $user->referral_code }}" class="au-btn is-ghost is-sm">
-                    <x-icons.clipboard width="14" height="14" />
-                    Copy Kode
-                </button>
-                <button type="button" data-copy="{{ url('/register?ref='.$user->referral_code) }}" class="au-btn is-ghost is-sm">
-                    <x-icons.link width="14" height="14" />
-                    Copy Link Undangan
-                </button>
+            <div class="pf-tabs">
+                <a href="{{ route('dashboard') }}" class="pf-tab">Pesanan Saya</a>
+                <a href="{{ route('profile.notifications') }}" class="pf-tab">Notifikasi</a>
+                <a href="{{ route('profile.coins') }}" class="pf-tab">Koin</a>
+                <a href="{{ route('profile.wallet') }}" class="pf-tab">Voucher</a>
+                <a href="{{ route('profile.referral') }}" class="pf-tab is-on">Undang Teman</a>
+                <a href="{{ route('profile.edit') }}" class="pf-tab">Edit Profil</a>
             </div>
-        </div>
 
-        {{-- Reward Program (Design Spec 10.3 / PRD 9.2) --}}
-        <div class="pf-grid">
-            <div class="pf-stat">
-                <p class="pf-label">UNDANG TEMAN</p>
-                <p class="pf-stat-value is-sm">+3.000 Koin</p>
-                <p class="pf-stat-desc">Saat temanmu menyelesaikan order pertama. Teman mendapat +1.000 koin saat pembayaran pertama terverifikasi.</p>
-            </div>
-            <div class="pf-stat">
-                <p class="pf-label">SHARE PRODUK</p>
-                <p class="pf-stat-value is-sm">+5 Koin / Klik</p>
-                <p class="pf-stat-desc">Per IP unik Indonesia saat membuka link produk yang kamu bagikan.</p>
-            </div>
-        </div>
-
-        {{-- Stats share (data BE menyusul) --}}
-        @isset($shareStats)
-            <div class="pf-grid is-3">
-                <div class="pf-stat">
-                    <p class="pf-label">LINK DIBUKA</p>
-                    <p class="pf-stat-value">{{ $shareStats['opens'] ?? 0 }}</p>
-                </div>
-                <div class="pf-stat">
-                    <p class="pf-label">KOIN DARI SHARE</p>
-                    <p class="pf-stat-value">{{ number_format($shareStats['coins'] ?? 0, 0, ',', '.') }}</p>
-                </div>
-                <div class="pf-stat">
-                    <p class="pf-label">REWARD</p>
-                    <p class="pf-stat-value">5 / klik</p>
+            <div class="pf-card">
+                <p class="pf-label">KODE UNDANGANMU</p>
+                <p class="pf-code">{{ $user->referral_code }}</p>
+                <p class="pf-link" id="referral-link">
+                    Link: {{ url('/register?ref='.$user->referral_code) }}
+                </p>
+                <div class="pf-actions">
+                    <button type="button" data-copy="{{ $user->referral_code }}" class="au-btn is-ghost is-sm">
+                        <x-icons.clipboard width="14" height="14" />
+                        Copy Kode
+                    </button>
+                    <button type="button" data-copy="{{ url('/register?ref='.$user->referral_code) }}" class="au-btn is-ghost is-sm">
+                        <x-icons.link width="14" height="14" />
+                        Copy Link Undangan
+                    </button>
                 </div>
             </div>
-        @endisset
 
-        {{-- Stats Undang Teman (DS 10.3) --}}
-        @isset($referralStats)
-            <div class="pf-grid is-4">
+            <div class="pf-grid">
                 <div class="pf-stat">
-                    <p class="pf-label">Total Diundang</p>
-                    <p class="pf-stat-value">{{ $referralStats['total_diundang'] ?? 0 }}</p>
+                    <p class="pf-label">UNDANG TEMAN</p>
+                    <p class="pf-stat-value is-sm">+3.000 Koin</p>
+                    <p class="pf-stat-desc">Saat temanmu menyelesaikan order pertama. Teman mendapat +1.000 koin saat pembayaran pertama terverifikasi.</p>
                 </div>
                 <div class="pf-stat">
-                    <p class="pf-label">Berhasil</p>
-                    <p class="pf-stat-value">{{ $referralStats['berhasil'] ?? 0 }}</p>
-                </div>
-                <div class="pf-stat">
-                    <p class="pf-label">Menunggu Order</p>
-                    <p class="pf-stat-value">{{ $referralStats['menunggu_order'] ?? 0 }}</p>
-                </div>
-                <div class="pf-stat">
-                    <p class="pf-label">Koin</p>
-                    <p class="pf-stat-value">{{ number_format($referralStats['koin_didapat'] ?? 0, 0, ',', '.') }}</p>
+                    <p class="pf-label">SHARE PRODUK</p>
+                    <p class="pf-stat-value is-sm">+5 Koin / Klik</p>
+                    <p class="pf-stat-desc">Per IP unik Indonesia saat membuka link produk yang kamu bagikan.</p>
                 </div>
             </div>
-        @endisset
 
-        <div class="pf-card">
-            <h2 class="pf-sect-h">Riwayat Undangan</h2>
-            @if ($referrals->isEmpty())
-                <p class="pf-empty">Belum ada yang bergabung lewat kode kamu.</p>
-            @else
-                <div class="pf-table-wrap">
-                    <table class="pf-table">
-                        <thead>
-                            <tr>
-                                <th>Nama / Email</th>
-                                <th>Tgl Daftar</th>
-                                <th>Status</th>
-                                <th>Koin</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach ($referrals as $referral)
-                                @php
-                                    $hasOrder = $referral->orders()->exists();
-                                    $koin = $hasOrder ? 3000 : 0;
-                                @endphp
+            @isset($shareStats)
+                <div class="pf-grid is-3">
+                    <div class="pf-stat">
+                        <p class="pf-label">LINK DIBUKA</p>
+                        <p class="pf-stat-value">{{ $shareStats['opens'] ?? 0 }}</p>
+                    </div>
+                    <div class="pf-stat">
+                        <p class="pf-label">KOIN DARI SHARE</p>
+                        <p class="pf-stat-value">{{ number_format($shareStats['coins'] ?? 0, 0, ',', '.') }}</p>
+                    </div>
+                    <div class="pf-stat">
+                        <p class="pf-label">REWARD</p>
+                        <p class="pf-stat-value">5 / klik</p>
+                    </div>
+                </div>
+            @endisset
+
+            @isset($referralStats)
+                <div class="pf-grid is-4">
+                    <div class="pf-stat">
+                        <p class="pf-label">Total Diundang</p>
+                        <p class="pf-stat-value">{{ $referralStats['total_diundang'] ?? 0 }}</p>
+                    </div>
+                    <div class="pf-stat">
+                        <p class="pf-label">Berhasil</p>
+                        <p class="pf-stat-value">{{ $referralStats['berhasil'] ?? 0 }}</p>
+                    </div>
+                    <div class="pf-stat">
+                        <p class="pf-label">Menunggu Order</p>
+                        <p class="pf-stat-value">{{ $referralStats['menunggu_order'] ?? 0 }}</p>
+                    </div>
+                    <div class="pf-stat">
+                        <p class="pf-label">Koin</p>
+                        <p class="pf-stat-value">{{ number_format($referralStats['koin_didapat'] ?? 0, 0, ',', '.') }}</p>
+                    </div>
+                </div>
+            @endisset
+
+            <div class="pf-card">
+                <h2 class="pf-sect-h">Riwayat Undangan</h2>
+                @if ($referrals->isEmpty())
+                    <p class="pf-empty">Belum ada yang bergabung lewat kode kamu.</p>
+                @else
+                    <div class="pf-table-wrap">
+                        <table class="pf-table">
+                            <thead>
                                 <tr>
-                                    <td>{{ $referral->name }}</td>
-                                    <td>{{ $referral->created_at->format('d/m/Y') }}</td>
-                                    <td>
-                                        @if ($hasOrder)
-                                            <span class="pf-chip is-ok">Order Pertama Lunas</span>
-                                        @else
-                                            <span class="pf-chip is-wait">Menunggu Order</span>
-                                        @endif
-                                    </td>
-                                    <td>+{{ number_format($koin) }}</td>
+                                    <th>Nama / Email</th>
+                                    <th>Tgl Daftar</th>
+                                    <th>Status</th>
+                                    <th>Koin</th>
                                 </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
-                </div>
-            @endif
+                            </thead>
+                            <tbody>
+                                @foreach ($referrals as $referral)
+                                    @php
+                                        $hasOrder = $referral->orders()->exists();
+                                        $koin = $hasOrder ? 3000 : 0;
+                                    @endphp
+                                    <tr>
+                                        <td>{{ $referral->name }}</td>
+                                        <td>{{ $referral->created_at->format('d/m/Y') }}</td>
+                                        <td>
+                                            @if ($hasOrder)
+                                                <span class="pf-chip is-ok">Order Pertama Lunas</span>
+                                            @else
+                                                <span class="pf-chip is-wait">Menunggu Order</span>
+                                            @endif
+                                        </td>
+                                        <td>+{{ number_format($koin) }}</td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                @endif
+            </div>
         </div>
     </div>
 
