@@ -14,7 +14,7 @@ class ProductAttributeValue extends Model
         'modifier',
         'position',
     ];
-    
+
     protected function casts(): array
     {
         return [
