@@ -18,7 +18,6 @@ class OrderItemSnapshot extends Model
         'variant_id_audit',
         'item_type',
         'bundle_group_id',
-        'split_role',
         'split_batch_no',
         'product_name',
         'product_sku',
