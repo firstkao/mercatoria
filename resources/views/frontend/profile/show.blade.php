@@ -9,7 +9,7 @@
 
         <div class="ac-head">
             <div>
-                <h1 class="ac-title">Dashboard Pelanggan</h1>
+                <h1 class="ac-title">Dashboard</h1>
                 <p class="ac-lead">Selamat datang, {{ $user->name }}</p>
                 <div class="ac-meta">
                     <x-user-badge :value="$stateBadge" type="state" />
