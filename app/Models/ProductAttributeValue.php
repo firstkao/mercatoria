@@ -11,12 +11,14 @@ class ProductAttributeValue extends Model
     protected $fillable = [
         'product_attribute_id',
         'value',
+        'modifier',
         'position',
     ];
-
+    
     protected function casts(): array
     {
         return [
+            'modifier' => 'integer',
             'position' => 'integer',
         ];
     }
