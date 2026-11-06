@@ -24,8 +24,6 @@
         } : '';
         $coins = $pricing['coins'] ?? intdiv((int) $pricing['final_price_bersih'], 100);
 
-        // SEO: AppServiceProvider selalu share $seo dengan title = nama app, sehingga @section('title')
-        // diabaikan layout. Kalau controller belum kirim $seo sendiri, isi dari data produk di sini.
         if (($seo['title'] ?? null) === config('app.name', 'MERCATORIA')) {
             $productUrl = url('/'.$game->slug.'/'.$product->slug);
             $seo = array_merge($seo ?? [], [
@@ -43,7 +41,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
 
     <style>
-        /* Background halaman produk = beranda (hanya aktif di halaman ini) */
         body { background: #f7f7f7; }
 
         .pp-wrap, .pp-modal-overlay {
@@ -61,8 +58,11 @@
         .pp-wrap a { color: inherit; text-decoration: none; }
 
         .pp-box {
-            max-width: 1140px;
-            margin: -22px auto 24px;
+            position: relative;
+            left: 50%;
+            transform: translateX(-50%);
+            width: min(1300px, calc(100vw - 48px));
+            margin: 32px 0 28px;
             padding: 36px 40px 60px;
             background: #fff;
             border: 0;
@@ -76,7 +76,6 @@
             align-items: start;
         }
 
-        /* ── Gallery ── */
         .pp-gallery {
             position: relative;
             overflow: hidden;
@@ -84,14 +83,12 @@
         .pp-gallery > .pp-img {
             display: block; width: 100%; aspect-ratio: 1/1;
             object-fit: contain; cursor: zoom-in; background: #fff;
-            /* ═══ 1. Zoom on hover ═══ */
             transition: transform .25s ease;
         }
         .pp-gallery:hover > .pp-img {
             transform: scale(1.8);
             cursor: zoom-in;
         }
-        /* Zoom lens indicator */
         .pp-zoom-lens {
             position: absolute;
             top: 10px; right: 11px; z-index: 2;
@@ -126,7 +123,6 @@
         .pp-thumbs button.is-on { border-color: #333; }
         .pp-thumbs img { width: 100%; height: 100%; object-fit: cover; display: block; }
 
-        /* Lightbox */
         .pp-lightbox-hint {
             position: absolute; top: 20px; left: 50%; transform: translateX(-50%);
             padding: 8px 22px;
@@ -152,7 +148,6 @@
             background: #f5f5f5; color: #111; border-color: #999;
         }
 
-        /* ── Info ── */
         .pp-crumb { margin: 0; font-size: 12px; line-height: 18px; color: #888; }
         .pp-crumb a:hover { color: #222; }
 
@@ -216,7 +211,6 @@
         }
         .pp-add:hover { background: #77767c; }
 
-        /* ═══ 2. Meta links — biru saat hover, tanpa underline ═══ */
         .pp-meta {
             margin: 14px 0 0;
             display: grid;
@@ -238,7 +232,6 @@
             color: #02a1ea;
         }
 
-        /* ═══ Share buttons — COMPACT 1 baris ═══ */
         .pp-share {
             margin-top: 18px;
             padding: 14px 16px;
@@ -265,7 +258,6 @@
         }
         .pp-share-note a { text-decoration: underline; text-underline-offset: 2px; color: #333; }
 
-        /* Compact row — flex nowrap, gap kecil, auto-shrink */
         .pp-share-btns {
             display: flex;
             gap: 5px;
@@ -295,7 +287,6 @@
         }
         .pp-sbtn svg { flex-shrink: 0; }
 
-        /* Payment */
         .pp-pay {
             position: relative; margin-top: 22px; height: 58px;
             border: 1px solid var(--pp-line); border-radius: 3px;
@@ -337,7 +328,6 @@
             gap: 12px; margin-top: 20px;
         }
 
-        /* ═══ 4. Modal — Cart Added ═══ */
         .pp-modal-overlay {
             position: fixed; inset: 0;
             background: rgba(0,0,0,.5);
@@ -440,7 +430,7 @@
         }
 
         @media (max-width: 767px) {
-            .pp-box { margin: 16px 12px; padding: 16px 16px 40px; }
+            .pp-box { margin: 16px 0; padding: 16px 16px 40px; }
             .pp-top { grid-template-columns: 1fr; row-gap: 20px; }
             .pp-meta { grid-template-columns: 1fr; }
             .pp-rel { grid-template-columns: repeat(3, minmax(0, 1fr)); }
@@ -454,7 +444,7 @@
     <div class="pp-wrap">
 
         @if (in_array($userState ?? '', ['crush', 'ex', 'ons']) && isset($kuotaViewTotal))
-            <div style="max-width:1140px;margin:16px auto 0;padding:10px 16px;border:1px solid #fcd34d;background:#fffbeb;font-size:13px;color:#78350f;">
+            <div style="width:min(1300px, calc(100vw - 48px));margin:16px auto 0;padding:10px 16px;border:1px solid #fcd34d;background:#fffbeb;font-size:13px;color:#78350f;">
                 Kuota jelajah katalog kamu tersisa {{ ($kuotaViewTotal - ($kuotaViewUsed ?? 0)) }} dari {{ $kuotaViewTotal }} produk.
             </div>
         @endif
@@ -471,7 +461,7 @@
                         @endif
                         @if ($mainPath)
                             <img id="product-main-img" class="pp-img"
-                                 src="{{ \App\Services\Image\ImageOptimizerService::url($mainPath, 'compressed') }}"
+                                 src="{{ Storage::url($mainPath) }}"
                                  alt="{{ $product->name }}"
                                  onclick="document.getElementById('product-lightbox').showModal()">
                             <div class="pp-zoom-lens">
@@ -486,7 +476,7 @@
                         <div class="pp-thumbs">
                             @foreach ($thumbs as $thumb)
                                 <button type="button" class="{{ $mainPath === $thumb['path'] ? 'is-on' : '' }}" title="{{ $thumb['label'] }}"
-                                        onclick="var u='{{ \App\Services\Image\ImageOptimizerService::url($thumb['path'], 'compressed') }}';document.getElementById('product-main-img').src=u;document.getElementById('lightbox-img').src=u;">
+                                        onclick="var u='{{ Storage::url($thumb['path']) }}';document.getElementById('product-main-img').src=u;document.getElementById('lightbox-img').src=u;">
                                     <img src="{{ \App\Services\Image\ImageOptimizerService::url($thumb['path'], 'thumb') }}" alt="{{ $thumb['label'] }}">
                                 </button>
                             @endforeach
@@ -549,7 +539,6 @@
                         <p class="pp-soldout">Stok kosong</p>
                     @endif
 
-                    {{-- ═══ 4. Form + AJAX — gak redirect, muncul modal ═══ --}}
                     @unless ($product->is_split_box && $product->splitBox)
                         <form method="POST" action="{{ route('cart.store') }}" class="pp-buy" id="pp-cart-form">
                             @csrf
@@ -568,7 +557,6 @@
 
                     <hr class="pp-hr is-2">
 
-                    {{-- Meta 2 kolom --}}
                     <div class="pp-meta">
                         <div class="pp-meta-item">
                             <span class="pp-meta-label">SKU:</span> {{ $variant?->sku ?? $product->sku }}
@@ -578,10 +566,7 @@
                         </div>
                         @if ($product->tags->isNotEmpty())
                             <div class="pp-meta-item">
-                                <span class="pp-meta-label">Tag:</span>
-                                @foreach ($product->tags as $tag)
-                                    <a href="/product-tag/{{ $tag->slug }}">{{ $tag->name }}</a>{{ $loop->last ? '' : ', ' }}
-                                @endforeach
+                                <span class="pp-meta-label">Tag:</span> {{ $product->tags->pluck('name')->join(', ') }}
                             </div>
                         @endif
                         @if ($product->developer)
@@ -591,7 +576,6 @@
                         @endif
                     </div>
 
-                    {{-- ═══ 3. Share — WA + Threads, hapus Email ═══ --}}
                     <div class="pp-share">
                         <p class="pp-share-title">Bagikan Produk Ini</p>
                         @auth
@@ -625,7 +609,6 @@
                         </div>
                     </div>
 
-                    {{-- Payment --}}
                     <div class="pp-pay">
                         <b>Jaminan Pembayaran Aman</b>
                         <div class="pp-pay-logo">
@@ -663,7 +646,6 @@
         </div>
     </div>
 
-    {{-- ═══ 4. Modal "Ditambahkan ke Keranjang" ═══ --}}
     <div class="pp-modal-overlay" id="pp-cart-modal">
         <div class="pp-modal">
             <div class="pp-modal-icon">
@@ -701,7 +683,6 @@
         (function () {
             var qty = document.getElementById('qty');
 
-            // Qty +/- buttons
             document.querySelectorAll('[data-qty]').forEach(function (btn) {
                 btn.addEventListener('click', function () {
                     if (!qty) return;
@@ -710,7 +691,6 @@
                 });
             });
 
-            // Copy link
             document.querySelectorAll('[data-copy]').forEach(function (btn) {
                 btn.addEventListener('click', function () {
                     if (!(navigator.clipboard && navigator.clipboard.writeText)) return;
@@ -722,7 +702,6 @@
                 });
             });
 
-            // ═══ 1. Hover zoom — follow mouse position ═══
             var gallery = document.getElementById('pp-gallery');
             var mainImg = document.getElementById('product-main-img');
             if (gallery && mainImg) {
@@ -737,7 +716,6 @@
                 });
             }
 
-            // ═══ 4. AJAX Cart + Modal ═══
             var cartForm = document.getElementById('pp-cart-form');
             var modal = document.getElementById('pp-cart-modal');
             var modalClose = document.getElementById('pp-modal-close');
@@ -763,16 +741,13 @@
                         }
                     })
                     .then(function (res) {
-                        // Belum login → arahkan ke halaman login
                         if (res.status === 401) { window.location.href = '{{ route('login') }}'; return null; }
-                        // Gagal (validasi/stok/dll) → submit normal supaya pesan error tampil
                         if (!res.ok) { cartForm.submit(); return null; }
                         return res.json();
                     })
                     .then(function (data) {
                         if (!data) return;
 
-                        // Perbarui angka keranjang di header (desktop + mobile)
                         document.querySelectorAll('[data-cart-total]').forEach(function (el) {
                             el.textContent = data.total_formatted;
                             el.style.display = '';
@@ -782,7 +757,6 @@
                             el.style.display = '';
                         });
 
-                        // Qty di modal + buka modal
                         if (modalQty) {
                             modalQty.textContent = '×' + (parseInt(qty.value, 10) || 1);
                         }
@@ -790,7 +764,6 @@
                         document.body.style.overflow = 'hidden';
                     })
                     .catch(function () {
-                        // Fallback: submit normal
                         cartForm.submit();
                     })
                     .finally(function () {
@@ -799,7 +772,6 @@
                     });
                 });
 
-                // Close modal
                 function closeModal() {
                     modal.classList.remove('is-open');
                     document.body.style.overflow = '';
@@ -809,12 +781,10 @@
                     modalClose.addEventListener('click', closeModal);
                 }
 
-                // Click overlay = close
                 modal.addEventListener('click', function (e) {
                     if (e.target === modal) closeModal();
                 });
 
-                // ESC = close
                 document.addEventListener('keydown', function (e) {
                     if (e.key === 'Escape' && modal.classList.contains('is-open')) {
                         closeModal();
