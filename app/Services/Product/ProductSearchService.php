@@ -2,6 +2,7 @@
 
 namespace App\Services\Product;
 
+use App\Models\Game;
 use App\Models\Product;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
@@ -9,10 +10,6 @@ use Illuminate\Http\Request;
 
 class ProductSearchService
 {
-    /**
-     * Deep search (PRD 13.7 / 13.13): nama & SKU produk, nama & SKU varian,
-     * nama game, dan nama developer. Produk nonaktif disembunyikan.
-     */
     public function search(string $keyword, array $filters = [], int $perPage = 30, ?Request $request = null): LengthAwarePaginator
     {
         $q = trim($keyword);
@@ -22,48 +19,57 @@ class ProductSearchService
             ->with([
                 'game.defaultStore',
                 'store',
-                'developer',       // [FIX] eager load developer (sebelumnya tidak)
+                'developer',
                 'tags',
                 'merchCategory',
                 'variants' => fn ($vq) => $vq->orderBy('id', 'desc'),
             ]);
 
+        // Cek apakah keyword match nama game
+        $matchedGame = null;
         if ($q !== '') {
-            // [FIX #2] Escape LIKE wildcards (% _ \)
+            $matchedGame = Game::where('is_active', true)
+                ->where('name', 'LIKE', $q)
+                ->first();
+        }
+
+        if ($q !== '') {
             $like = '%'.addcslashes($q, '%_\\').'%';
 
-            $query->where(function (Builder $sub) use ($like) {
-                $sub->where('products.name', 'LIKE', $like)
-                    ->orWhere('products.sku', 'LIKE', $like)
-                    ->orWhereHas('variants', function (Builder $vq) use ($like) {
-                        $vq->where('product_variants.name', 'LIKE', $like)
-                            ->orWhere('product_variants.sku', 'LIKE', $like);
-                    })
-                    ->orWhereHas('game', fn (Builder $gq) => $gq->where('games.name', 'LIKE', $like))
-                    // Developer milik produk ATAU salah satu developer game-nya (game bisa punya >1 developer).
-                    ->orWhereHas('developer', fn (Builder $dq) => $dq->where('developers.name', 'LIKE', $like))
-                    ->orWhereHas('game.developers', fn (Builder $dq) => $dq->where('developers.name', 'LIKE', $like));
+            $query->where(function (Builder $sub) use ($like, $matchedGame) {
+                // Kalau match nama game → batasi hanya produk dari game itu
+                if ($matchedGame) {
+                    $sub->where('products.game_id', $matchedGame->id);
+                }
+
+                // Tetap deep search di dalam scope yang sudah dibatasi
+                $sub->where(function (Builder $inner) use ($like) {
+                    $inner->where('products.name', 'LIKE', $like)
+                        ->orWhere('products.sku', 'LIKE', $like)
+                        ->orWhereHas('variants', function (Builder $vq) use ($like) {
+                            $vq->where('product_variants.name', 'LIKE', $like)
+                                ->orWhere('product_variants.sku', 'LIKE', $like);
+                        })
+                        ->orWhereHas('developer', fn (Builder $dq) => $dq->where('developers.name', 'LIKE', $like))
+                        ->orWhereHas('game.developers', fn (Builder $dq) => $dq->where('developers.name', 'LIKE', $like));
+                });
             });
 
-            // Kecocokan judul produk diurutkan di atas kecocokan lainnya.
             $query->orderByRaw(
                 'CASE WHEN products.name LIKE ? THEN 0 ELSE 1 END ASC',
                 [$like]
             );
-
-            // Secondary sort — hasil yang sama-sama match diurutkan stabil.
             $query->orderByDesc('products.id');
         } else {
-            // Default sort saat tanpa keyword.
             $query->orderByDesc('products.id');
         }
 
+        // Filter dari request
         if (! empty($filters['game_id'])) {
             $query->where('products.game_id', $filters['game_id']);
         }
 
         if (! empty($filters['developer_id'])) {
-            // [FIX] Filter developer — sebelumnya tidak ada
             $query->where(function (Builder $dq) use ($filters) {
                 $dq->where('products.developer_id', $filters['developer_id'])
                     ->orWhereHas('game.developers', fn (Builder $gq) => $gq->where('developers.id', $filters['developer_id']));
