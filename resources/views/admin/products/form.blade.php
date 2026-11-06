@@ -7,6 +7,7 @@
     $productTags = old('tags', $product->exists ? $product->tags->pluck('id')->all() : []);
     $orderCount = $product->exists ? $product->ordersCount() : 0;
     $developerList = $developers ?? [];
+    $currentType = old('type', $product->type ?: 'single');
 @endphp
 
 <style>
@@ -57,6 +58,7 @@
     }
     .pf-tab:hover { color: #333; }
     .pf-tab.is-on { color: #000; font-weight: 600; border-bottom-color: #000; }
+    .pf-tab.is-disabled { opacity: .4; pointer-events: none; }
 
     .pf-btn {
         display: inline-flex; align-items: center; gap: 6px;
@@ -92,6 +94,17 @@
     .var-table th { padding: 10px; text-align: left; font-size: 11px; color: #888; font-weight: 600; border-bottom: 1px solid #e1e1e1; }
     .var-table td { padding: 10px; border-bottom: 1px solid #e1e1e1; vertical-align: middle; }
     .var-table input, .var-table select { height: 30px; font-size: 12px; }
+
+    .type-selector { display: flex; gap: 12px; margin-bottom: 20px; }
+    .type-option {
+        flex: 1; padding: 16px; border: 2px solid #e1e1e1; cursor: pointer; text-align: center;
+        transition: border-color .15s;
+    }
+    .type-option:hover { border-color: #999; }
+    .type-option.is-on { border-color: #000; background: #fafafa; }
+    .type-option input { display: none; }
+    .type-option strong { display: block; margin-bottom: 4px; }
+    .type-option span { font-size: 12px; color: #888; }
 </style>
 
 @if (session('status'))
@@ -109,6 +122,7 @@
 
     <input type="hidden" name="is_active" id="input-is-active" value="{{ old('is_active', $product->exists ? ($product->is_active ? 1 : 0) : 1) }}">
     <input type="hidden" name="is_split_box" value="{{ old('is_split_box', $product->exists ? ($product->is_split_box ? 1 : 0) : 0) }}">
+    <input type="hidden" name="type" id="input-type" value="{{ $currentType }}">
 
     <div class="pf-box">
         <div class="pf-header">
@@ -123,7 +137,22 @@
 
         <div class="pf-layout">
             <div class="pf-main">
+                {{-- Type Selector (always visible) --}}
                 <div class="pf-section">
+                    <p class="pf-label">Tipe Produk</p>
+                    <div class="type-selector">
+                        <label class="type-option {{ $currentType === 'single' ? 'is-on' : '' }}" data-type="single">
+                            <input type="radio" name="type_radio" value="single" {{ $currentType === 'single' ? 'checked' : '' }}>
+                            <strong>Simple</strong>
+                            <span>Produk tanpa varian</span>
+                        </label>
+                        <label class="type-option {{ $currentType === 'variable' ? 'is-on' : '' }}" data-type="variable">
+                            <input type="radio" name="type_radio" value="variable" {{ $currentType === 'variable' ? 'checked' : '' }}>
+                            <strong>Variable</strong>
+                            <span>Produk dengan atribut & varian</span>
+                        </label>
+                    </div>
+
                     <div class="pf-grid-2">
                         <div>
                             <label class="pf-label">Nama Produk *</label>
@@ -137,11 +166,12 @@
                     </div>
                 </div>
 
+                {{-- Tabs --}}
                 <div>
                     <div class="pf-tabs">
                         <button type="button" data-prod-tab="general" class="pf-tab is-on">General</button>
-                        <button type="button" data-prod-tab="atribut" class="pf-tab">Atribut</button>
-                        <button type="button" data-prod-tab="varian" class="pf-tab">Varian</button>
+                        <button type="button" data-prod-tab="atribut" class="pf-tab" id="tab-atribut">Atribut</button>
+                        <button type="button" data-prod-tab="varian" class="pf-tab" id="tab-varian">Varian</button>
                     </div>
 
                     {{-- General --}}
@@ -160,19 +190,7 @@
                                 <input type="number" name="weight_gram" required min="1" value="{{ old('weight_gram', $product->weight_gram) }}" class="pf-input">
                             </div>
                         </div>
-                        <p class="pf-note">Harga & berat ini jadi default. Varian bisa override.</p>
-                    </div>
-
-                    {{-- Atribut --}}
-                    <div class="pf-section" data-prod-panel="atribut" style="display:none">
-                        <div class="pf-grid-2">
-                            <div>
-                                <label class="pf-label">Tipe Produk *</label>
-                                <select name="type" id="input-type" required class="pf-select">
-                                    <option value="single" @selected(old('type', $product->type ?: 'single') === 'single')>Simple</option>
-                                    <option value="variable" @selected(old('type', $product->type) === 'variable')>Variable</option>
-                                </select>
-                            </div>
+                        <div class="pf-grid-2" style="margin-top:16px">
                             <div>
                                 <label class="pf-label">Game *</label>
                                 <select name="game_id" required class="pf-select">
@@ -190,72 +208,63 @@
                                     @endforeach
                                 </select>
                             </div>
-                            <div>
-                                <label class="pf-label">Kategori Merch</label>
-                                <select name="merch_category_id" class="pf-select">
-                                    <option value="">— auto —</option>
-                                    @foreach ($categories as $category)
-                                        <option value="{{ $category->id }}" @selected(old('merch_category_id', $product->merch_category_id) == $category->id)>{{ $category->name }}</option>
-                                    @endforeach
-                                </select>
-                            </div>
                         </div>
-
-                        @if ($product->exists && $product->type === 'variable')
-                            <div style="margin-top:28px;padding-top:20px;border-top:1px solid #e1e1e1">
-                                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
-                                    <div>
-                                        <p style="margin:0;font-size:14px;font-weight:600">Atribut</p>
-                                        <p style="margin:4px 0 0;font-size:11px;color:#888">Tambah atribut lalu generate varian</p>
-                                    </div>
-                                    <button type="button" onclick="addAttributeRow()" class="pf-btn">+ Tambah Atribut</button>
-                                </div>
-
-                                <div id="attributes-list">
-                                    @foreach ($product->attributes as $i => $attr)
-                                        <div class="pf-attr-box" data-attr-index="{{ $i }}">
-                                            <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap">
-                                                <input type="text" name="attributes[{{ $i }}][name]" value="{{ $attr->name }}" class="pf-input" style="flex:1;min-width:150px;max-width:200px" placeholder="Nama atribut">
-                                                <input type="hidden" name="attributes[{{ $i }}][id]" value="{{ $attr->id }}">
-                                                <label style="font-size:12px;color:#555;display:flex;align-items:center;gap:4px">
-                                                    <input type="checkbox" name="attributes[{{ $i }}][visible]" value="1" checked> Tampilkan
-                                                </label>
-                                                <label style="font-size:12px;color:#555;display:flex;align-items:center;gap:4px">
-                                                    <input type="checkbox" name="attributes[{{ $i }}][variation]" value="1" checked> Untuk varian
-                                                </label>
-                                                <button type="button" onclick="this.closest('.pf-attr-box').remove()" class="pf-btn is-danger" style="margin-left:auto">Hapus</button>
-                                            </div>
-                                            <div style="display:flex;flex-wrap:wrap;gap:6px;align-items:center">
-                                                @foreach ($attr->values as $j => $val)
-                                                    <div class="pf-chip" style="padding-right:4px">
-                                                        <input type="hidden" name="attributes[{{ $i }}][values][{{ $j }}][id]" value="{{ $val->id }}">
-                                                        <input type="text" name="attributes[{{ $i }}][values][{{ $j }}][value]" value="{{ $val->value }}" style="width:70px;border:0;background:transparent;font-size:12px">
-                                                        <select name="attributes[{{ $i }}][values][{{ $j }}][modifier]" style="border:0;background:transparent;font-size:11px;width:46px">
-                                                            <option value="0" @selected($val->modifier == 0)>—</option>
-                                                            <option value="1" @selected($val->modifier == 1)>+1</option>
-                                                            <option value="2" @selected($val->modifier == 2)>+2</option>
-                                                        </select>
-                                                        <button type="button" onclick="this.closest('.pf-chip').remove()" style="border:0;background:none;color:#999;cursor:pointer;padding:0 4px">&times;</button>
-                                                    </div>
-                                                @endforeach
-                                                <button type="button" onclick="addValueRow(this, {{ $i }})" class="pf-chip">+ Tambah</button>
-                                            </div>
-                                        </div>
-                                    @endforeach
-                                </div>
-
-                                <div style="margin-top:16px;display:flex;gap:8px">
-                                    <button type="button" onclick="generateVariations()" class="pf-btn is-primary">Generate Varian</button>
-                                </div>
-                            </div>
-                        @elseif (!$product->exists)
-                            <p class="pf-note" style="margin-top:16px">Simpan produk sebagai Variable dulu untuk menambah atribut.</p>
-                        @endif
+                        <p class="pf-note">Harga & berat ini jadi default. Varian bisa override.</p>
                     </div>
 
-                    {{-- Varian --}}
+                    {{-- Atribut (only for variable) --}}
+                    <div class="pf-section" data-prod-panel="atribut" style="display:none">
+                        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+                            <div>
+                                <p style="margin:0;font-size:14px;font-weight:600">Atribut</p>
+                                <p style="margin:4px 0 0;font-size:11px;color:#888">Tambah atribut lalu generate varian</p>
+                            </div>
+                            <button type="button" onclick="addAttributeRow()" class="pf-btn">+ Tambah Atribut</button>
+                        </div>
+
+                        <div id="attributes-list">
+                            @if ($product->exists)
+                                @foreach ($product->attributes as $i => $attr)
+                                    <div class="pf-attr-box" data-attr-index="{{ $i }}">
+                                        <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap">
+                                            <input type="text" name="attributes[{{ $i }}][name]" value="{{ $attr->name }}" class="pf-input" style="flex:1;min-width:150px;max-width:200px" placeholder="Nama atribut">
+                                            <input type="hidden" name="attributes[{{ $i }}][id]" value="{{ $attr->id }}">
+                                            <label style="font-size:12px;color:#555;display:flex;align-items:center;gap:4px">
+                                                <input type="checkbox" name="attributes[{{ $i }}][visible]" value="1" checked> Tampilkan
+                                            </label>
+                                            <label style="font-size:12px;color:#555;display:flex;align-items:center;gap:4px">
+                                                <input type="checkbox" name="attributes[{{ $i }}][variation]" value="1" checked> Untuk varian
+                                            </label>
+                                            <button type="button" onclick="this.closest('.pf-attr-box').remove()" class="pf-btn is-danger" style="margin-left:auto">Hapus</button>
+                                        </div>
+                                        <div style="display:flex;flex-wrap:wrap;gap:6px;align-items:center">
+                                            @foreach ($attr->values as $j => $val)
+                                                <div class="pf-chip" style="padding-right:4px">
+                                                    <input type="hidden" name="attributes[{{ $i }}][values][{{ $j }}][id]" value="{{ $val->id }}">
+                                                    <input type="text" name="attributes[{{ $i }}][values][{{ $j }}][value]" value="{{ $val->value }}" style="width:70px;border:0;background:transparent;font-size:12px">
+                                                    <select name="attributes[{{ $i }}][values][{{ $j }}][modifier]" style="border:0;background:transparent;font-size:11px;width:46px">
+                                                        <option value="0" @selected($val->modifier == 0)>—</option>
+                                                        <option value="1" @selected($val->modifier == 1)>+1</option>
+                                                        <option value="2" @selected($val->modifier == 2)>+2</option>
+                                                    </select>
+                                                    <button type="button" onclick="this.closest('.pf-chip').remove()" style="border:0;background:none;color:#999;cursor:pointer;padding:0 4px">&times;</button>
+                                                </div>
+                                            @endforeach
+                                            <button type="button" onclick="addValueRow(this, {{ $i }})" class="pf-chip">+ Tambah</button>
+                                        </div>
+                                    </div>
+                                @endforeach
+                            @endif
+                        </div>
+
+                        <div style="margin-top:16px">
+                            <button type="button" onclick="generateVariations()" class="pf-btn is-primary">Generate Varian</button>
+                        </div>
+                    </div>
+
+                    {{-- Varian (only for variable) --}}
                     <div class="pf-section" data-prod-panel="varian" style="display:none">
-                        @if ($product->exists && $product->type === 'variable')
+                        @if ($product->exists && $product->type === 'variable' && $product->variants->count())
                             <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px">
                                 <p style="margin:0;font-size:14px;font-weight:600">Varian ({{ $product->variants->count() }})</p>
                                 <div style="display:flex;gap:8px">
@@ -269,53 +278,49 @@
                                 </div>
                             </div>
 
-                            @if ($product->variants->count())
-                                <table class="var-table">
-                                    <thead>
+                            <table class="var-table">
+                                <thead>
+                                    <tr>
+                                        <th style="width:30px"><input type="checkbox" id="check-all-variants"></th>
+                                        <th>Varian</th>
+                                        <th>SKU</th>
+                                        <th>Harga</th>
+                                        <th>Berat</th>
+                                        <th>Stok</th>
+                                        <th style="width:60px"></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach ($product->variants as $variant)
                                         <tr>
-                                            <th style="width:30px"><input type="checkbox" id="check-all-variants"></th>
-                                            <th>Varian</th>
-                                            <th>SKU</th>
-                                            <th>Harga</th>
-                                            <th>Berat</th>
-                                            <th>Stok</th>
-                                            <th style="width:60px"></th>
+                                            <td><input type="checkbox" class="variant-check" value="{{ $variant->id }}"></td>
+                                            <td>
+                                                <div style="font-weight:500">{{ $variant->name }}</div>
+                                                <div style="font-size:11px;color:#888;margin-top:2px">
+                                                    @foreach ($variant->attributeValues as $av)
+                                                        <span>{{ $av->attribute->name }}: {{ $av->value }}</span>@if (!$loop->last), @endif
+                                                    @endforeach
+                                                </div>
+                                            </td>
+                                            <td style="font-size:12px;color:#666">{{ $variant->sku }}</td>
+                                            <td><input type="number" step="0.01" name="variants[{{ $variant->id }}][price_rmb]" value="{{ $variant->price_rmb }}" class="pf-input" style="width:80px"></td>
+                                            <td><input type="number" name="variants[{{ $variant->id }}][weight_gram]" value="{{ $variant->weight_gram }}" class="pf-input" style="width:70px"></td>
+                                            <td>
+                                                <select name="variants[{{ $variant->id }}][availability]" class="pf-select" style="width:90px;font-size:12px">
+                                                    <option value="tersedia" @selected($variant->availability === 'tersedia')>Tersedia</option>
+                                                    <option value="kosong" @selected($variant->availability === 'kosong')>Kosong</option>
+                                                </select>
+                                            </td>
+                                            <td><button type="button" class="pf-btn" style="height:28px;padding:0 10px;font-size:11px">Edit</button></td>
                                         </tr>
-                                    </thead>
-                                    <tbody>
-                                        @foreach ($product->variants as $variant)
-                                            <tr>
-                                                <td><input type="checkbox" class="variant-check" value="{{ $variant->id }}"></td>
-                                                <td>
-                                                    <div style="font-weight:500">{{ $variant->name }}</div>
-                                                    <div style="font-size:11px;color:#888;margin-top:2px">
-                                                        @foreach ($variant->attributeValues as $av)
-                                                            <span>{{ $av->attribute->name }}: {{ $av->value }}</span>@if (!$loop->last), @endif
-                                                        @endforeach
-                                                    </div>
-                                                </td>
-                                                <td style="font-size:12px;color:#666">{{ $variant->sku }}</td>
-                                                <td><input type="number" step="0.01" name="variants[{{ $variant->id }}][price_rmb]" value="{{ $variant->price_rmb }}" class="pf-input" style="width:80px"></td>
-                                                <td><input type="number" name="variants[{{ $variant->id }}][weight_gram]" value="{{ $variant->weight_gram }}" class="pf-input" style="width:70px"></td>
-                                                <td>
-                                                    <select name="variants[{{ $variant->id }}][availability]" class="pf-select" style="width:90px;font-size:12px">
-                                                        <option value="tersedia" @selected($variant->availability === 'tersedia')>Tersedia</option>
-                                                        <option value="kosong" @selected($variant->availability === 'kosong')>Kosong</option>
-                                                    </select>
-                                                </td>
-                                                <td><button type="button" onclick="editVariant({{ $variant->id }})" class="pf-btn" style="height:28px;padding:0 10px;font-size:11px">Edit</button></td>
-                                            </tr>
-                                        @endforeach
-                                    </tbody>
-                                </table>
-                            @else
-                                <div style="padding:40px;text-align:center;border:1px dashed #e1e1e1">
-                                    <p style="margin:0;color:#888">Belum ada varian.</p>
-                                    <p style="margin:8px 0 0;font-size:12px;color:#aaa">Tambah atribut lalu klik "Generate Varian".</p>
-                                </div>
-                            @endif
+                                    @endforeach
+                                </tbody>
+                            </table>
                         @else
-                            <p class="pf-note">Ubah tipe produk ke Variable untuk mengelola varian.</p>
+                            <div style="padding:40px;text-align:center;border:1px dashed #e1e1e1">
+                                <p style="margin:0;color:#888">Belum ada varian.</p>
+                                <p style="margin:8px 0 0;font-size:12px;color:#aaa">Tambah atribut di tab Atribut, lalu klik "Generate Varian".</p>
+                            </div>
                         @endif
                     </div>
                 </div>
@@ -358,6 +363,13 @@
                             <option value="{{ $store->id }}" @selected(old('store_id', $product->store_id) == $store->id)>{{ $store->name }}</option>
                         @endforeach
                     </select>
+                    <p class="pf-side-label" style="margin-top:16px">Kategori</p>
+                    <select name="merch_category_id" class="pf-select">
+                        <option value="">— auto —</option>
+                        @foreach ($categories as $category)
+                            <option value="{{ $category->id }}" @selected(old('merch_category_id', $product->merch_category_id) == $category->id)>{{ $category->name }}</option>
+                        @endforeach
+                    </select>
                 </div>
 
                 @if ($product->exists)
@@ -398,7 +410,7 @@
                     <div class="pf-side-section">
                         <p class="pf-side-label">Split Box</p>
                         @if (! $product->is_split_box)
-                            <button type="button" onclick="document.getElementById('modal-split').style.display='flex'" class="pf-btn" style="width:100%">Buat Split Box</button>
+                            <button type="button" class="pf-btn" style="width:100%">Buat Split Box</button>
                         @else
                             <span class="pf-chip is-on">Aktif</span>
                             @if ($product->parent_id)
@@ -431,14 +443,41 @@
 
 <script>
 (function () {
+    var currentType = '{{ $currentType }}';
+
+    function updateTabs() {
+        var isVariable = currentType === 'variable';
+        document.getElementById('tab-atribut').classList.toggle('is-disabled', !isVariable);
+        document.getElementById('tab-varian').classList.toggle('is-disabled', !isVariable);
+        
+        if (!isVariable) {
+            document.querySelector('[data-prod-tab="general"]').click();
+        }
+    }
+
+    // Type selector
+    document.querySelectorAll('.type-option').forEach(function (opt) {
+        opt.addEventListener('click', function () {
+            document.querySelectorAll('.type-option').forEach(function (o) { o.classList.remove('is-on'); });
+            opt.classList.add('is-on');
+            currentType = opt.getAttribute('data-type');
+            document.getElementById('input-type').value = currentType;
+            updateTabs();
+        });
+    });
+
+    // Tabs
     document.querySelectorAll('[data-prod-tab]').forEach(function (tab) {
         tab.addEventListener('click', function () {
+            if (tab.classList.contains('is-disabled')) return;
             document.querySelectorAll('[data-prod-tab]').forEach(function (t) { t.classList.remove('is-on'); });
             document.querySelectorAll('[data-prod-panel]').forEach(function (p) { p.style.display = 'none'; });
             tab.classList.add('is-on');
             document.querySelector('[data-prod-panel="' + tab.getAttribute('data-prod-tab') + '"]').style.display = '';
         });
     });
+
+    updateTabs();
 
     var attrIndex = {{ $product->exists ? $product->attributes->count() : 0 }};
 
