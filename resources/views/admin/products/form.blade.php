@@ -138,21 +138,32 @@
 
         <div class="pf-layout">
             <div class="pf-main">
-                {{-- Type Selector --}}
+               {{-- Type Selector --}}
                 <div class="pf-section">
                     <p class="pf-label">Tipe Produk</p>
                     <div class="type-selector">
-                        <label class="type-option {{ $currentType === 'single' ? 'is-on' : '' }}" data-type="single">
-                            <input type="radio" name="type_radio" value="single" {{ $currentType === 'single' ? 'checked' : '' }}>
+                        <div class="type-option {{ $currentType === 'single' ? 'is-on' : '' }}" data-type="single" onclick="setProductType('single')">
                             <strong>Simple</strong>
                             <span>Produk tanpa varian</span>
-                        </label>
-                        <label class="type-option {{ $currentType === 'variable' ? 'is-on' : '' }}" data-type="variable">
-                            <input type="radio" name="type_radio" value="variable" {{ $currentType === 'variable' ? 'checked' : '' }}>
+                        </div>
+                        <div class="type-option {{ $currentType === 'variable' ? 'is-on' : '' }}" data-type="variable" onclick="setProductType('variable')">
                             <strong>Variable</strong>
                             <span>Produk dengan atribut & varian</span>
-                        </label>
+                        </div>
                     </div>
+                
+                    <div class="pf-grid-2">
+                        <div>
+                            <label class="pf-label">Nama Produk *</label>
+                            <input type="text" name="name" value="{{ old('name', $product->name) }}" required class="pf-input">
+                            @error('name')<p class="pf-err">{{ $message }}</p>@enderror
+                        </div>
+                        <div>
+                            <label class="pf-label">Slug</label>
+                            <input type="text" name="slug" value="{{ old('slug', $product->slug) }}" class="pf-input">
+                        </div>
+                    </div>
+                </div>
 
                     <div class="pf-grid-2">
                         <div>
