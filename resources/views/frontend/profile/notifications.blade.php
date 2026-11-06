@@ -1,4 +1,4 @@
-﻿@extends('layouts.app')
+@extends('layouts.app')
 
 @section('title', 'Semua Notifikasi — MERCATORIA')
 
@@ -9,56 +9,75 @@
         body { background: #f7f7f7; }
 
         .nt, .nt *, .nt *::before, .nt *::after { box-sizing: border-box; }
-        .nt { font-family: 'Roboto', system-ui, sans-serif; color: #333; -webkit-font-smoothing: antialiased; }
+        .nt {
+            position: relative;
+            left: 50%;
+            transform: translateX(-50%);
+            width: min(1300px, calc(100vw - 48px));
+            margin: 32px 0 28px;
+            font-family: 'Roboto', system-ui, sans-serif;
+            color: #3d3439;
+            -webkit-font-smoothing: antialiased;
+        }
         .nt a { text-decoration: none; }
 
-        .nt-nav { display: flex; flex-wrap: wrap; gap: 2px; margin: 24px 0 0; border-bottom: 1px solid #e1e1e1; }
-        .nt-nav a { display: block; padding: 10px 16px; font-size: 14px; line-height: 20px; color: #555; text-decoration: none; border-bottom: 2px solid transparent; margin-bottom: -1px; transition: color .15s; }
-        .nt-nav a:hover { color: #000; }
-        .nt-nav a.is-on { color: #000; font-weight: 700; border-bottom-color: #000; }
+        .nt-head { padding: 36px 40px 28px; background: #fff; }
+        .nt-title { margin: 0; font-size: 32px; line-height: 40px; font-weight: 500; color: #26222f; }
 
-        .nt-tabs { display: flex; flex-wrap: wrap; gap: 2px; margin: 24px 0 0; border-bottom: 1px solid #e1e1e1; }
-        .nt-tabs button { padding: 8px 16px; font: 400 13px/20px 'Roboto', system-ui, sans-serif; color: #555; background: none; border: 0; border-bottom: 2px solid transparent; margin-bottom: -1px; cursor: pointer; transition: color .15s; }
-        .nt-tabs button:hover { color: #000; }
-        .nt-tabs button.is-on { color: #000; font-weight: 700; border-bottom-color: #000; }
+        .nt-nav { display: flex; flex-wrap: wrap; gap: 0; margin-top: 24px; border-bottom: 1px solid #eee; background: #fff; padding: 0 20px; }
+        .nt-nav a { display: block; padding: 14px 18px; font-size: 14px; color: #888; border-bottom: 2px solid transparent; }
+        .nt-nav a:hover { color: #26222f; }
+        .nt-nav a.is-on { color: #26222f; font-weight: 700; border-bottom-color: #26222f; }
 
-        .nt-toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-top: 16px; }
+        .nt-tabs { display: flex; flex-wrap: wrap; gap: 0; margin-top: 20px; border-bottom: 1px solid #eee; background: #fff; padding: 0 20px; }
+        .nt-tabs button { padding: 12px 18px; font: 400 14px/20px 'Roboto', system-ui, sans-serif; color: #888; background: none; border: 0; border-bottom: 2px solid transparent; cursor: pointer; }
+        .nt-tabs button:hover { color: #26222f; }
+        .nt-tabs button.is-on { color: #26222f; font-weight: 700; border-bottom-color: #26222f; }
+
+        .nt-toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-top: 16px; padding: 0 20px; }
         .nt-search-wrap { position: relative; flex: 1 1 200px; min-width: 200px; }
-        .nt-search { display: block; width: 100%; height: 42px; padding: 0 14px 0 38px; border: 1px solid #e1e1e1; border-radius: 0; background: #fff;
-                     font: 400 14px/20px 'Roboto', system-ui, sans-serif; color: #000; outline: 0; transition: border-color .15s; }
-        .nt-search:focus { border-color: #000; }
+        .nt-search { display: block; width: 100%; height: 42px; padding: 0 14px 0 38px; border: 1px solid #ddd; border-radius: 0; background: #fff;
+                     font: 400 14px/20px 'Roboto', system-ui, sans-serif; color: #000; outline: 0; }
+        .nt-search:focus { border-color: #26222f; }
         .nt-search::placeholder { color: #aaa; }
         .nt-search-icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #aaa; pointer-events: none; }
-        .nt-sort { display: block; height: 42px; padding: 0 12px; border: 1px solid #e1e1e1; border-radius: 0; background: #fff;
+        .nt-sort { display: block; height: 42px; padding: 0 12px; border: 1px solid #ddd; border-radius: 0; background: #fff;
                    font: 400 14px/20px 'Roboto', system-ui, sans-serif; color: #333; outline: 0; cursor: pointer; }
-        .nt-sort:focus { border-color: #000; }
+        .nt-sort:focus { border-color: #26222f; }
 
-        .nt-bulk { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-top: 12px; font-size: 13px; color: #333; }
+        .nt-bulk { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-top: 12px; padding: 0 20px; font-size: 13px; color: #333; }
         .nt-bulk-check { display: flex; align-items: center; gap: 6px; cursor: pointer; }
-        .nt-bulk-check input { width: 15px; height: 15px; accent-color: #000; }
-        .nt-bulk-btn { display: inline-block; height: 32px; padding: 0 14px; border: 1px solid #e1e1e1; border-radius: 0; background: #fff;
-                       font: 500 12px/30px 'Roboto', system-ui, sans-serif; color: #333; cursor: pointer; transition: border-color .15s; }
-        .nt-bulk-btn:hover { border-color: #000; }
+        .nt-bulk-check input { width: 15px; height: 15px; accent-color: #26222f; }
+        .nt-bulk-btn { display: inline-block; height: 32px; padding: 0 14px; border: 1px solid #ddd; border-radius: 0; background: #fff;
+                       font: 500 12px/30px 'Roboto', system-ui, sans-serif; color: #333; cursor: pointer; }
+        .nt-bulk-btn:hover { border-color: #26222f; }
         .nt-bulk-btn.is-danger { color: #e53935; border-color: rgba(229,57,53,.4); }
         .nt-bulk-btn.is-danger:hover { border-color: #e53935; }
 
-        .nt-list { display: flex; flex-direction: column; gap: 8px; margin-top: 16px; }
-        .nt-item { display: flex; align-items: flex-start; gap: 12px; padding: 12px 16px; background: #fff; border: 1px solid #e1e1e1; transition: border-color .15s; }
-        .nt-item:hover { border-color: #000; }
+        .nt-list { display: flex; flex-direction: column; gap: 8px; margin-top: 16px; padding: 0 20px; }
+        .nt-item { display: flex; align-items: flex-start; gap: 12px; padding: 14px 16px; background: #fff; border: 1px solid #eee; transition: border-color .15s; }
+        .nt-item:hover { border-color: #26222f; }
         .nt-item.is-read { opacity: .6; }
-        .nt-item input[type="checkbox"] { flex: none; width: 15px; height: 15px; margin-top: 3px; accent-color: #000; }
+        .nt-item input[type="checkbox"] { flex: none; width: 15px; height: 15px; margin-top: 3px; accent-color: #26222f; }
         .nt-item-body { flex: 1 1 0; min-width: 0; }
         .nt-item-title { margin: 0; font-size: 14px; line-height: 20px; color: #333; }
-        .nt-item-title.is-unread { font-weight: 700; color: #000; }
-        .nt-item-time { margin: 3px 0 0; font-size: 11px; line-height: 16px; letter-spacing: .06em; text-transform: uppercase; color: #888; }
+        .nt-item-title.is-unread { font-weight: 700; color: #26222f; }
+        .nt-item-time { margin: 3px 0 0; font-size: 12px; color: #888; }
 
-        .nt-empty { padding: 32px 20px; text-align: center; font-size: 14px; color: #888; background: #fff; border: 1px solid #e1e1e1; }
-        .nt-pagination { margin-top: 16px; }
+        .nt-empty { padding: 40px 20px; text-align: center; font-size: 14px; color: #888; background: #fff; border: 1px solid #eee; margin: 16px 20px 0; }
+        .nt-pagination { margin-top: 16px; padding: 0 20px; }
+
+        @media (max-width: 767px) {
+            .nt-head { padding: 24px 16px; }
+            .nt-title { font-size: 26px; }
+            .nt-toolbar, .nt-bulk, .nt-list, .nt-pagination { padding: 0 12px; }
+        }
     </style>
 
     <div class="nt">
-        <p class="au-eyebrow">Akun</p>
-        <h1 class="au-title">Semua Notifikasi</h1>
+        <div class="nt-head">
+            <h1 class="nt-title">Semua Notifikasi</h1>
+        </div>
 
         <div class="nt-nav">
             <a href="{{ route('dashboard') }}">Pesanan Saya</a>
@@ -69,7 +88,6 @@
             <a href="{{ route('profile.edit') }}">Edit Profil</a>
         </div>
 
-        {{-- Filter Tab (DS 11.1) --}}
         <div class="nt-tabs" role="tablist">
             <button type="button" data-notif-filter="all" class="notif-tab is-on">Semua</button>
             <button type="button" data-notif-filter="unread" class="notif-tab">Belum Dibaca</button>
@@ -80,7 +98,6 @@
             <button type="button" data-notif-filter="sistem" class="notif-tab">Sistem</button>
         </div>
 
-        {{-- Search + Sort (DS 11.1) --}}
         <div class="nt-toolbar">
             <div class="nt-search-wrap">
                 <input type="text" id="notif-search" placeholder="Cari notifikasi..." class="nt-search">
@@ -92,7 +109,6 @@
             </select>
         </div>
 
-        {{-- Bulk Action (DS 11.1) --}}
         <div class="nt-bulk">
             <label class="nt-bulk-check">
                 <input type="checkbox" id="notif-select-all"> Pilih Semua
@@ -112,9 +128,7 @@
                     </div>
                 </div>
             @empty
-                <div class="nt-empty">
-                    Belum ada notifikasi.
-                </div>
+                <div class="nt-empty">Belum ada notifikasi.</div>
             @endforelse
         </div>
 
@@ -127,9 +141,7 @@
             var items = document.querySelectorAll('[data-notif-item]');
             tabs.forEach(function (tab) {
                 tab.addEventListener('click', function () {
-                    tabs.forEach(function (t) {
-                        t.classList.remove('is-on');
-                    });
+                    tabs.forEach(function (t) { t.classList.remove('is-on'); });
                     tab.classList.add('is-on');
                     var filter = tab.getAttribute('data-notif-filter');
                     items.forEach(function (item) {
