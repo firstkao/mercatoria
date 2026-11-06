@@ -104,7 +104,6 @@
             text-transform: uppercase; color: #aaa;
         }
 
-        /* Tag PRESALE / LIMITED — diperbesar */
         .pp-flag {
             position: absolute; top: 0; left: 0; z-index: 2;
             height: 26px; padding: 0 18px 0 10px; line-height: 26px;
@@ -640,7 +639,7 @@
                 <h2 class="pp-rel-h">Produk Terkait</h2>
                 <div class="pp-rel">
                     @foreach ($related as $relatedProduct)
-                        <x-product-card :product="$relatedProduct" :shipping="$shipping" />
+                        <x-product-card :product="$relatedProduct" :shipping="$shipping" :simple="true" />
                     @endforeach
                 </div>
             @endif
