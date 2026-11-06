@@ -16,7 +16,7 @@ class Product extends Model
 
     public const TYPE_SINGLE = 'single';
 
-    public const TYPE_VARIANT = 'variant';
+    public const TYPE_VARIABLE = 'variable';
 
     public const AVAIL_TERSEDIA = 'tersedia';
 
@@ -47,6 +47,7 @@ class Product extends Model
 
     protected $attributes = [
         'sold_count' => 0,
+        'type' => self::TYPE_SINGLE,
     ];
 
     protected function casts(): array
@@ -88,20 +89,19 @@ class Product extends Model
         return $this->belongsTo(MerchCategory::class);
     }
 
-    /**
-     * Tags assigned to this product.
-     */
     public function tags(): BelongsToMany
     {
         return $this->belongsToMany(Tag::class)->withTimestamps();
     }
 
-    /**
-     * Variants — newest first (baru di atas).
-     */
     public function variants(): HasMany
     {
         return $this->hasMany(ProductVariant::class)->orderBy('id', 'desc');
+    }
+
+    public function attributes(): HasMany
+    {
+        return $this->hasMany(ProductAttribute::class)->orderBy('position');
     }
 
     public function splitBox(): HasOne
@@ -114,25 +114,16 @@ class Product extends Model
         return $this->hasMany(OrderItem::class);
     }
 
-    /**
-     * Relasi order yang menyertakan produk ini — via pivot order_items.
-     */
     public function orders(): BelongsToMany
     {
         return $this->belongsToMany(Order::class, 'order_items');
     }
 
-    /**
-     * Produk asli (untuk split box / salinan).
-     */
     public function parent(): BelongsTo
     {
         return $this->belongsTo(Product::class, 'parent_id');
     }
 
-    /**
-     * Semua salinan / split box dari produk ini.
-     */
     public function children(): HasMany
     {
         return $this->hasMany(Product::class, 'parent_id');
@@ -142,9 +133,16 @@ class Product extends Model
     // HELPERS
     // ──────────────────────────────────────
 
-    /**
-     * Jumlah order unik yang menyertakan produk ini.
-     */
+    public function isVariable(): bool
+    {
+        return $this->type === self::TYPE_VARIABLE;
+    }
+
+    public function isSingle(): bool
+    {
+        return $this->type === self::TYPE_SINGLE;
+    }
+
     public function ordersCount(): int
     {
         return OrderItem::where('product_id', $this->id)
@@ -152,9 +150,6 @@ class Product extends Model
             ->count('order_id');
     }
 
-    /**
-     * Store efektif: override produk, fallback default store game.
-     */
     public function effectiveStore(): ?Store
     {
         if ($this->store_id && $this->store) {
@@ -164,18 +159,12 @@ class Product extends Model
         return $this->game?->defaultStore;
     }
 
-    /**
-     * Berat efektif (gram) — fallback ke default setting.
-     */
     public function effectiveWeight(): int
     {
         return $this->weight_gram
             ?? (int) setting('default_weight_gram', 500);
     }
 
-    /**
-     * Apakah ada diskon yang sedang aktif.
-     */
     public function hasActiveDiscount(): bool
     {
         if (! $this->discount_amount || (float) $this->discount_amount <= 0) {
@@ -195,9 +184,6 @@ class Product extends Model
         return true;
     }
 
-    /**
-     * Diskon aktif dalam Rupiah (0 kalau tidak ada diskon aktif).
-     */
     public function activeDiscountAmount(): float
     {
         return $this->hasActiveDiscount() ? (float) $this->discount_amount : 0.0;
@@ -207,26 +193,16 @@ class Product extends Model
     // SCOPES
     // ──────────────────────────────────────
 
-    /**
-     * Produk aktif (published).
-     */
     public function scopeActive(Builder $query): Builder
     {
         return $query->where('is_active', true);
     }
 
-    /**
-     * Produk berdasarkan game.
-     */
     public function scopeForGame(Builder $query, int $gameId): Builder
     {
         return $query->where('game_id', $gameId);
     }
 
-    /**
-     * Exclude produk split box (tampilkan produk utuh saja).
-     * Handle NULL — row lama yang belum punya is_split_box tetap tampil.
-     */
     public function scopeExcludeSplitBox(Builder $query): Builder
     {
         return $query->where(function (Builder $q) {
