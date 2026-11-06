@@ -22,7 +22,7 @@ class SplitBoxPicker extends Component
 
     public function mount(Product $product): void
     {
-        $this->product = $product->load(['splitBox.slots.variant', 'splitBox.slots.batchSlots.batch']);
+        $this->product = $product->load(['splitBox.slots.variant.attributeValues', 'splitBox.slots.batchSlots.batch']);
 
         foreach ($this->product->splitBox?->slots ?? [] as $slot) {
             $this->selected[$slot->id] = 0;
@@ -49,7 +49,6 @@ class SplitBoxPicker extends Component
         if (! $this->product->splitBox) {
             $this->message = 'Produk ini bukan split box.';
             $this->messageIsError = true;
-
             return;
         }
 
@@ -59,13 +58,11 @@ class SplitBoxPicker extends Component
             $qty = (int) ($this->selected[$slot->id] ?? 0);
 
             if ($qty > 0) {
-                // Cek stok tersedia
                 $available = $this->getAvailable($slot->id);
 
                 if ($qty > $available) {
                     $this->message = "Slot \"{$slot->variant?->name}\" tersisa {$available}. Kurangi jumlahnya.";
                     $this->messageIsError = true;
-
                     return;
                 }
 
@@ -76,14 +73,12 @@ class SplitBoxPicker extends Component
         if ($lines === []) {
             $this->message = 'Pilih minimal 1 karakter.';
             $this->messageIsError = true;
-
             return;
         }
 
         if (! $splitBox->validatePair($lines)) {
-            $this->message = 'Kamu memilih karakter Hot. Pilih cukup karakter Normal untuk memenuhi syarat pair.';
+            $this->message = 'Karakter dengan tanda + membutuhkan karakter normal yang cukup.';
             $this->messageIsError = true;
-
             return;
         }
 
@@ -107,30 +102,30 @@ class SplitBoxPicker extends Component
 
     public function render()
     {
-        $this->product->load(['splitBox.slots.variant', 'splitBox.slots.batchSlots.batch']);
+        $this->product->load(['splitBox.slots.variant.attributeValues', 'splitBox.slots.batchSlots.batch']);
 
-        $hotCount = 0;
-        $pairNeeded = 0;
+        $modifierNeeded = 0;
         $normalCount = 0;
 
         foreach ($this->product->splitBox?->slots ?? [] as $slot) {
             $qty = (int) ($this->selected[$slot->id] ?? 0);
+            $modifier = (int) $slot->variant?->attributeValues->max('modifier') ?? 0;
 
-            if ($slot->isHot()) {
-                $hotCount += $qty;
-                $pairNeeded += $slot->pairRequirement() * $qty;
+            if ($modifier > 0) {
+                $modifierNeeded += $modifier * $qty;
             } else {
                 $normalCount += $qty;
             }
         }
 
         return view('livewire.split-box-picker', [
-            'hotCount' => $hotCount,
-            'pairMissing' => max(0, $pairNeeded - $normalCount),
+            'modifierNeeded' => $modifierNeeded,
+            'normalCount' => $normalCount,
+            'pairMissing' => max(0, $modifierNeeded - $normalCount),
             'slots' => $this->product->splitBox?->slots->map(fn ($slot) => [
                 'id' => $slot->id,
                 'name' => $slot->variant?->name,
-                'role' => $slot->split_role,
+                'modifier' => (int) $slot->variant?->attributeValues->max('modifier') ?? 0,
                 'available' => $slot->batchSlots
                     ->filter(fn ($bs) => $bs->batch->status === SplitBoxBatch::STATUS_OPEN)
                     ->sum(fn ($bs) => $bs->availableQty()),
@@ -138,9 +133,6 @@ class SplitBoxPicker extends Component
         ]);
     }
 
-    /**
-     * Hitung stok tersedia untuk slot (hanya batch terbuka).
-     */
     private function getAvailable(int $slotId): int
     {
         $slot = $this->product->splitBox?->slots->firstWhere('id', $slotId);
@@ -149,7 +141,6 @@ class SplitBoxPicker extends Component
             return 0;
         }
 
-        // Satu item dialokasikan utuh ke satu kloter (FIFO), jadi batas per baris = stok kloter terbesar.
         return (int) $slot->batchSlots
             ->filter(fn ($bs) => $bs->batch->status === SplitBoxBatch::STATUS_OPEN)
             ->max(fn ($bs) => $bs->availableQty());
