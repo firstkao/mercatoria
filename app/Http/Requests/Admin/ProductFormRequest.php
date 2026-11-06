@@ -23,7 +23,6 @@ class ProductFormRequest extends FormRequest
         $action = $this->route()->getActionMethod();
         $product = $this->route('product');
 
-        // ── Product create / update ──
         if (in_array($action, ['store', 'update'], true)) {
             $sku = Rule::unique('products', 'sku');
             $slug = Rule::unique('products', 'slug');
@@ -42,18 +41,18 @@ class ProductFormRequest extends FormRequest
                 'sku' => ['required', 'string', 'max:64', $sku],
                 'slug' => ['nullable', 'string', 'max:170', $slug],
                 'price_rmb' => ['required', 'numeric', 'min:0'],
-                'weight_gram' => ['nullable', 'integer', 'min:1'],          // [FIX #1] wajib via after() saat default_weight_gram = 0
-                'type' => ['required', 'in:single,variant'],
+                'weight_gram' => ['nullable', 'integer', 'min:1'],
+                'type' => ['required', 'in:single,variable'],
                 'discount_amount' => ['nullable', 'numeric', 'min:0'],
                 'discount_start' => ['nullable', 'date'],
-                'discount_end' => ['nullable', 'date', 'after_or_equal:discount_start'], // [FIX #2]
+                'discount_end' => ['nullable', 'date', 'after_or_equal:discount_start'],
                 'availability' => ['required', 'in:tersedia,kosong'],
                 'is_active' => ['nullable', 'boolean'],
-                'is_split_box' => ['nullable', 'boolean'],                    // [FIX #3] NEW
-                'remove_description_image' => ['nullable', 'boolean'],              // [FIX #3] NEW
+                'is_split_box' => ['nullable', 'boolean'],
+                'remove_description_image' => ['nullable', 'boolean'],
                 'image_path' => ['nullable', 'string', 'max:255', 'starts_with:products/'],
                 'image' => ['nullable', 'file', 'mimes:jpg,jpeg,png,webp', 'max:6144'],
-                'description_image' => ['nullable', 'file', 'mimes:jpg,jpeg,png,webp', 'max:6144'], // [FIX #4] 6MB
+                'description_image' => ['nullable', 'file', 'mimes:jpg,jpeg,png,webp', 'max:6144'],
                 'tags' => ['nullable', 'array'],
                 'tags.*' => ['integer', 'exists:tags,id'],
                 'variants' => ['nullable', 'array'],
@@ -71,7 +70,6 @@ class ProductFormRequest extends FormRequest
             ];
         }
 
-        // ── Variant create / update ──
         if (in_array($action, ['storeVariant', 'updateVariant'], true)) {
             $variant = $this->route('variant');
             $sku = Rule::unique('product_variants', 'sku');
@@ -90,7 +88,6 @@ class ProductFormRequest extends FormRequest
             ];
         }
 
-        // ── Bulk weight update ──
         if ($action === 'bulkWeight') {
             return [
                 'weight_gram' => ['required', 'integer', 'min:1'],
@@ -99,25 +96,19 @@ class ProductFormRequest extends FormRequest
             ];
         }
 
-        // ── Bulk product action ──
         if ($action === 'bulk') {
             return [
-                'action' => ['required', 'in:aktifkan,nonaktifkan,hapus,salin'],  // [FIX #5] + salin
+                'action' => ['required', 'in:aktifkan,nonaktifkan,hapus,salin'],
                 'ids' => ['required', 'array', 'min:1'],
                 'ids.*' => ['integer', 'exists:products,id'],
             ];
         }
 
-        // [FIX #6] Fail loud, bukan silent return []
         throw new \RuntimeException(
             "ProductFormRequest: no rules for action '{$action}'. Check controller method name."
         );
     }
 
-    /**
-     * Gagal level PHP (valid() = false) selalu di-report Laravel generik
-     * "The image failed to upload." — ganti dengan alasan spesifik per file.
-     */
     public function messages(): array
     {
         $messages = [];
@@ -147,7 +138,6 @@ class ProductFormRequest extends FormRequest
 
         return [
             function (Validator $validator): void {
-                // default_weight_gram = 0 berarti belum ada default: berat wajib diisi manual.
                 if ($validator->errors()->has('weight_gram') || $this->filled('weight_gram')) {
                     return;
                 }
