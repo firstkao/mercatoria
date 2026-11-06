@@ -1,4 +1,4 @@
-@props(['product', 'shipping', 'matchedVariant' => null])
+@props(['product', 'shipping', 'matchedVariant' => null, 'simple' => false])
 
 @php
     $pricing = $shipping->calculateItemShipping($product, $matchedVariant);
@@ -12,7 +12,6 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
-        /* Kartu produk — CSS biasa (tidak bergantung build Tailwind), selaras dengan hp-* & pp-*. */
         .pc-card, .pc-card *, .pc-card *::before, .pc-card *::after { box-sizing: border-box; }
         .pc-card {
             display: flex; flex-direction: column; height: 100%; overflow: hidden;
@@ -34,7 +33,6 @@
             font-size: 11px; line-height: 16px; letter-spacing: .15em; text-transform: uppercase; color: #aaa;
         }
 
-        /* Flag PRESALE / LIMITED — ribbon seperti hp-flag & pp-flag */
         .pc-tags { position: absolute; top: 0; left: 0; z-index: 2; display: flex; flex-direction: column; align-items: flex-start; gap: 2px; }
         .pc-flag {
             height: 18px; padding: 0 14px 0 8px; line-height: 18px;
@@ -65,7 +63,6 @@
 
         .pc-name {
             margin: 0; font-size: 14px; line-height: 21px; font-weight: 500; color: #000;
-            display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
         }
 
         .pc-variant {
@@ -90,7 +87,6 @@
             <div class="pc-noimg">Tanpa Foto</div>
         @endif
 
-        {{-- [FIX #1] Tags stack vertikal, bukan saling tumpuk --}}
         @if ($tags->isNotEmpty())
             <div class="pc-tags">
                 @foreach ($tags->take(2) as $tag)
@@ -106,17 +102,14 @@
     </div>
 
     <div class="pc-body">
-        <div class="pc-meta">
-            <p class="pc-game">
-                [{{ $product->game->name }}]
-            </p>
-            {{-- [NEW] Developer badge --}}
-            @if ($product->developer)
-                <span class="pc-dev">
-                    {{ $product->developer->name }}
-                </span>
-            @endif
-        </div>
+        @unless ($simple)
+            <div class="pc-meta">
+                <p class="pc-game">[{{ $product->game->name }}]</p>
+                @if ($product->developer)
+                    <span class="pc-dev">{{ $product->developer->name }}</span>
+                @endif
+            </div>
+        @endunless
 
         <p class="pc-name">{{ $product->name }}</p>
 
