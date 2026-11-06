@@ -12,11 +12,8 @@ class SplitBoxBatch extends Model
     use HasFactory;
 
     public const STATUS_OPEN = 'open';
-
     public const STATUS_FULL = 'full';
-
     public const STATUS_CLOSED = 'closed';
-
     public const STATUS_CANCELLED = 'cancelled';
 
     protected $fillable = [
@@ -24,19 +21,13 @@ class SplitBoxBatch extends Model
         'batch_no',
         'status',
         'closes_at',
-        'is_auto_opened',
-        'opened_at',
-        'closed_at',
     ];
 
     protected function casts(): array
     {
         return [
             'batch_no' => 'integer',
-            'is_auto_opened' => 'boolean',
             'closes_at' => 'datetime',
-            'opened_at' => 'datetime',
-            'closed_at' => 'datetime',
         ];
     }
 
