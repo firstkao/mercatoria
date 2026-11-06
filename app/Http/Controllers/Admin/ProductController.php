@@ -91,34 +91,41 @@ class ProductController extends Controller
     // STORE / UPDATE / DESTROY
     // ──────────────────────────────────────
 
-    public function store(ProductFormRequest $request): RedirectResponse
+    public function store(ProductFormRequest $request): RedirectResponse|JsonResponse
     {
         $data = $request->validated();
         unset($data['variants'], $data['tags'], $data['attributes']);
         $data['is_active'] = $request->boolean('is_active');
-
+    
         $data['slug'] = blank($data['slug'] ?? null)
             ? Str::slug($data['name']).'-'.Str::random(4)
             : $data['slug'];
         $data = $this->processUploads($request, $data, null);
-
+    
         $product = Product::create($data + ['sold_count' => 0]);
-
+    
         if (! $product->merch_category_id) {
             $product->update([
                 'merch_category_id' => MerchCategory::matchFor($product->name, $product->slug)?->id,
             ]);
         }
-
+    
         if ($request->filled('tags')) {
             $product->tags()->sync($request->input('tags'));
         }
-
+    
         $this->syncAttributes($request, $product);
         $this->syncSplitBox($product);
-
+    
         AdminLog::record($request->user(), 'create', 'Product', $product->id, null, $product->only(array_keys($data)), 'Tambah produk');
-
+    
+        if ($request->expectsJson() || $request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'product_id' => $product->id,
+            ]);
+        }
+    
         return redirect()->route('office.products.edit', $product)->with('status', 'Produk dibuat.');
     }
 
