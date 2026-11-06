@@ -9,9 +9,17 @@
     <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=IBM+Plex+Mono:wght@400;500;600&family=Schibsted+Grotesk:wght@400;500;600;700&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
     @vite(['resources/css/app.css'])
     <style>
-        /* Homepage — CSS biasa (tidak bergantung build Tailwind). Ukuran dari screenshot 1920px. */
+        /* Homepage — lebar disamakan dengan katalog */
         .hp, .hp *, .hp *::before, .hp *::after { box-sizing: border-box; }
-        .hp { width: 100%; max-width: 1172px; margin: 0 auto; padding: 0 16px; color: #000; font-family: 'Roboto', system-ui, sans-serif; }
+        .hp {
+            position: relative;
+            left: 50%;
+            transform: translateX(-50%);
+            width: min(1300px, calc(100vw - 48px));
+            margin: 32px 0 28px;
+            color: #000;
+            font-family: 'Roboto', system-ui, sans-serif;
+        }
         .hp a { color: inherit; text-decoration: none; }
         .hp img { display: block; max-width: 100%; }
 
