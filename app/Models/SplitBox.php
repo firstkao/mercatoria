@@ -13,17 +13,7 @@ class SplitBox extends Model
 
     protected $fillable = [
         'product_id',
-        'max_auto_batches',
-        'auto_open_batch',
     ];
-
-    protected function casts(): array
-    {
-        return [
-            'max_auto_batches' => 'integer',
-            'auto_open_batch' => 'boolean',
-        ];
-    }
 
     public function product(): BelongsTo
     {
