@@ -518,41 +518,82 @@
         btn.insertAdjacentHTML('beforebegin', html);
     };
 
-    window.generateVariations = function (btn) {
+   window.generateVariations = function (btn) {
     btn.disabled = true;
+    var originalText = btn.textContent;
     btn.textContent = 'Generating...';
 
     @if ($product->exists)
-        doGenerate(btn, '{{ route('office.products.generate-variations', $product) }}');
+        generateExisting(btn, originalText);
     @else
-        var form = document.getElementById('product-form');
-        var formData = new FormData(form);
-        formData.set('is_active', '0');
-
-        fetch(form.action, {
-            method: 'POST',
-            body: formData,
-            headers: {
-                'X-Requested-With': 'XMLHttpRequest',
-                'Accept': 'application/json'
-            }
-        })
-        .then(function (res) { return res.json(); })
-        .then(function (data) {
-            if (data.product_id) {
-                window.location.href = '/office/products/' + data.product_id + '/edit?generate=1';
-            } else {
-                alert(data.message || 'Gagal simpan');
-                btn.disabled = false;
-                btn.textContent = 'Generate Varian';
-            }
-        })
-        .catch(function () {
-            alert('Gagal simpan produk');
-            btn.disabled = false;
-            btn.textContent = 'Generate Varian';
-        });
+        saveAndGenerate(btn, originalText);
     @endif
+};
+
+function generateExisting(btn, originalText) {
+    fetch('{{ $product->exists ? route('office.products.generate-variations', $product) : '#' }}', {
+        method: 'POST',
+        headers: {
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || '{{ csrf_token() }}',
+            'Accept': 'application/json'
+        }
+    })
+    .then(function (res) { return res.json(); })
+    .then(function (data) {
+        if (data.success) {
+            alert(data.message);
+            window.location.href = window.location.pathname;
+        } else {
+            alert(data.message || 'Gagal generate');
+        }
+    })
+    .catch(function (err) {
+        alert('Gagal: ' + err.message);
+    })
+    .finally(function () {
+        btn.disabled = false;
+        btn.textContent = originalText;
+    });
+}
+
+function saveAndGenerate(btn, originalText) {
+    var form = document.getElementById('product-form');
+    var formData = new FormData(form);
+    formData.set('is_active', '0');
+
+    fetch(form.action, {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'Accept': 'application/json'
+        }
+    })
+    .then(function (res) { return res.json(); })
+    .then(function (data) {
+        if (data.product_id) {
+            window.location.href = '{{ route('office.products.edit', ['product' => '__ID__']) }}'.replace('__ID__', data.product_id) + '?generate=1';
+        } else {
+            alert(data.message || 'Gagal simpan');
+            btn.disabled = false;
+            btn.textContent = originalText;
+        }
+    })
+    .catch(function (err) {
+        alert('Gagal simpan: ' + err.message);
+        btn.disabled = false;
+        btn.textContent = originalText;
+    });
+}
+
+@if (request('generate') && $product->exists)
+document.addEventListener('DOMContentLoaded', function () {
+    var btn = document.querySelector('button[onclick*="generateVariations"]');
+    if (btn) {
+        generateExisting(btn, 'Generate Varian');
+    }
+});
+@endif
 };
 
 function doGenerate(btn, url) {
