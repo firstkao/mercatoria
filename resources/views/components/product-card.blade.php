@@ -35,17 +35,17 @@
 
         .pc-tags { position: absolute; top: 0; left: 0; z-index: 2; display: flex; flex-direction: column; align-items: flex-start; gap: 2px; }
         .pc-flag {
-            height: 18px; padding: 0 14px 0 8px; line-height: 18px;
-            font-size: 10px; font-weight: 500; letter-spacing: 0; text-transform: uppercase; color: #fff;
+            height: 22px; padding: 0 16px 0 9px; line-height: 22px;
+            font-size: 11px; font-weight: 600; letter-spacing: .02em; text-transform: uppercase; color: #fff;
             background: #FF4949;
-            clip-path: polygon(0 0, 100% 0, calc(100% - 8px) 100%, 0 100%);
+            clip-path: polygon(0 0, 100% 0, calc(100% - 9px) 100%, 0 100%);
         }
         .pc-flag.is-presale { background: #3986C6; }
         .pc-flag.is-new { background: #4FC3F7; }
         .pc-flag.is-limited { background: #FF4949; }
         .pc-flag-more {
-            height: 16px; padding: 0 8px; line-height: 16px;
-            font-size: 9px; font-weight: 700; text-transform: uppercase; color: #fff;
+            height: 18px; padding: 0 8px; line-height: 18px;
+            font-size: 10px; font-weight: 700; text-transform: uppercase; color: #fff;
             background: rgba(0, 0, 0, .6);
         }
 
