@@ -165,13 +165,25 @@
             font-weight: 400; color: rgba(0,0,0,.4);
         }
 
-        .pp-chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0 0; }
-        .pp-chip {
-            display: inline-block; height: 22px; padding: 0 10px;
-            border: 1px solid var(--pp-line); border-radius: 2px; background: #fff;
-            font-size: 11px; line-height: 20px; color: #333;
+        .pp-attrs { margin-top: 12px; }
+        .pp-attr { margin-bottom: 10px; }
+        .pp-attr-label {
+            margin: 0 0 6px;
+            font-size: 12px;
+            font-weight: 600;
+            color: #555;
+            text-transform: uppercase;
+            letter-spacing: .04em;
         }
-        a.pp-chip:hover, .pp-chip.is-on { border-color: #333; }
+
+        .pp-chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 0; }
+        .pp-chip {
+            display: inline-block; height: 28px; padding: 0 12px;
+            border: 1px solid var(--pp-line); border-radius: 2px; background: #fff;
+            font-size: 12px; line-height: 26px; color: #333;
+            cursor: pointer;
+        }
+        a.pp-chip:hover, .pp-chip:hover, .pp-chip.is-on { border-color: #333; }
         .pp-chip.is-on { background: #333; color: #fff; }
 
         .pp-hr { height: 0; margin: 20px 0 0; border: 0; border-top: 1px solid var(--pp-line); }
@@ -510,7 +522,7 @@
 
                     <h1 class="pp-title">{{ $product->name }}</h1>
 
-                    <p class="pp-price">
+                    <p class="pp-price" id="pp-price">
                         @if ($product->hasActiveDiscount())
                             <s>{{ format_rp($pricing['base_price_bersih']) }}</s>
                         @endif
@@ -519,6 +531,29 @@
 
                     @if ($product->is_split_box && $product->splitBox)
                         <div style="margin-top:10px"><livewire:split-box-picker :product="$product" /></div>
+                    @elseif ($product->isVariable() && $product->attributes->isNotEmpty())
+                        <div class="pp-attrs">
+                            @foreach ($product->attributes as $attr)
+                                <div class="pp-attr">
+                                    <p class="pp-attr-label">{{ $attr->name }}</p>
+                                    <div class="pp-chips">
+                                        @foreach ($attr->values as $val)
+                                            @php
+                                                $isSelected = $variant && $variant->attributeValues->contains('id', $val->id);
+                                                $modifierLabel = $val->modifier > 0 ? ' +'.$val->modifier : '';
+                                            @endphp
+                                            <button type="button"
+                                                    class="pp-chip {{ $isSelected ? 'is-on' : '' }}"
+                                                    data-attr="{{ $attr->id }}"
+                                                    data-value="{{ $val->id }}"
+                                                    data-modifier="{{ $val->modifier }}">
+                                                {{ $val->value }}{{ $modifierLabel }}
+                                            </button>
+                                        @endforeach
+                                    </div>
+                                </div>
+                            @endforeach
+                        </div>
                     @elseif ($product->variants->isNotEmpty())
                         <div class="pp-chips">
                             @foreach ($product->variants as $v)
@@ -544,9 +579,7 @@
                         <form method="POST" action="{{ route('cart.store') }}" class="pp-buy" id="pp-cart-form">
                             @csrf
                             <input type="hidden" name="product_id" value="{{ $product->id }}">
-                            @if ($variant)
-                                <input type="hidden" name="variant_id" value="{{ $variant->id }}">
-                            @endif
+                            <input type="hidden" name="variant_id" id="selected-variant-id" value="{{ $variant?->id }}">
                             <div class="pp-qty">
                                 <button type="button" data-qty="-1" aria-label="Kurangi">-</button>
                                 <input type="number" name="qty" id="qty" value="1" min="1" max="999">
@@ -560,7 +593,7 @@
 
                     <div class="pp-meta">
                         <div class="pp-meta-item">
-                            <span class="pp-meta-label">SKU:</span> {{ $variant?->sku ?? $product->sku }}
+                            <span class="pp-meta-label">SKU:</span> <span id="pp-sku">{{ $variant?->sku ?? $product->sku }}</span>
                         </div>
                         <div class="pp-meta-item">
                             <span class="pp-meta-label">Game:</span> <a href="/{{ $game->slug }}">{{ $game->name }}</a>
@@ -714,6 +747,44 @@
                 });
                 gallery.addEventListener('mouseleave', function () {
                     mainImg.style.transformOrigin = 'center center';
+                });
+            }
+
+            // Attribute selection
+            var attrButtons = document.querySelectorAll('[data-attr]');
+            if (attrButtons.length) {
+                var variants = @json($product->variants->map(fn ($v) => [
+                    'id' => $v->id,
+                    'values' => $v->attributeValues->pluck('id')->all(),
+                    'sku' => $v->sku ?? $product->sku,
+                ]));
+
+                var selected = {};
+
+                attrButtons.forEach(function (btn) {
+                    btn.addEventListener('click', function () {
+                        var attrId = btn.getAttribute('data-attr');
+                        var valueId = parseInt(btn.getAttribute('data-value'), 10);
+
+                        document.querySelectorAll('[data-attr="' + attrId + '"]').forEach(function (b) {
+                            b.classList.remove('is-on');
+                        });
+                        btn.classList.add('is-on');
+                        selected[attrId] = valueId;
+
+                        var selectedIds = Object.values(selected);
+                        var match = variants.find(function (v) {
+                            return selectedIds.length === v.values.length &&
+                                   selectedIds.every(function (id) { return v.values.indexOf(id) !== -1; });
+                        });
+
+                        var hidden = document.getElementById('selected-variant-id');
+                        var skuEl = document.getElementById('pp-sku');
+                        if (match && hidden) {
+                            hidden.value = match.id;
+                            if (skuEl) skuEl.textContent = match.sku;
+                        }
+                    });
                 });
             }
 
