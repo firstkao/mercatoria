@@ -260,20 +260,20 @@
 
         .pp-share-btns {
             display: flex;
-            gap: 5px;
+            gap: 6px;
             flex-wrap: nowrap;
         }
         .pp-sbtn {
             display: inline-flex;
             align-items: center;
-            gap: 4px;
-            height: 24px;
-            padding: 0 8px;
+            gap: 5px;
+            height: 28px;
+            padding: 0 10px;
             border: 1px solid var(--pp-line);
             border-radius: 3px;
             background: #fff;
             font-family: var(--pp-font);
-            font-size: 10px;
+            font-size: 12px;
             font-weight: 600;
             color: #555;
             cursor: pointer;
@@ -438,6 +438,7 @@
             .pp-pay { gap: 20px; }
             .pp-pay-logo img { height: 22px; }
             .pp-modal { padding: 24px 20px; }
+            .pp-share-btns { flex-wrap: wrap; }
         }
     </style>
 
