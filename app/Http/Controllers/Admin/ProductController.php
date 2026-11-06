@@ -102,7 +102,6 @@ class ProductController extends Controller
             : $data['slug'];
         $data = $this->processUploads($request, $data, null);
 
-        // Auto type=variable kalau ada inline variants
         $variantRows = collect($request->input('variants', []))
             ->filter(fn ($v) => filled(data_get($v, 'name')) || filled(data_get($v, 'sku')) || filled(data_get($v, 'price_rmb')));
         if ($variantRows->isNotEmpty()) {
@@ -293,7 +292,6 @@ class ProductController extends Controller
         foreach ($product->variants()->whereNotIn('id', $existing)->orderBy('id')->get() as $variant) {
             $splitBox->slots()->create([
                 'variant_id' => $variant->id,
-                'split_role' => 'normal',
                 'qty_per_box' => 1,
                 'sort_order' => ++$order,
             ]);
@@ -309,14 +307,13 @@ class ProductController extends Controller
         }
 
         $newVariants = $copy->variants()->get()->keyBy(fn ($v) => preg_replace('/-COPY-[A-Za-z0-9]{4}$/', '', $v->sku));
-        $splitBox = $copy->splitBox()->create($source->only(['max_auto_batches', 'auto_open_batch']));
+        $splitBox = $copy->splitBox()->create([]);
 
         foreach ($source->slots as $slot) {
             $variant = $newVariants->get($slot->variant?->sku);
             if ($variant) {
                 $splitBox->slots()->create([
                     'variant_id' => $variant->id,
-                    'split_role' => $slot->split_role,
                     'qty_per_box' => $slot->qty_per_box,
                     'sort_order' => $slot->sort_order,
                 ]);
