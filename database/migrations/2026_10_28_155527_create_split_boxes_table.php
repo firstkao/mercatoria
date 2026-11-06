@@ -11,8 +11,6 @@ return new class extends Migration
         Schema::create('split_boxes', function (Blueprint $table) {
             $table->id();
             $table->foreignId('product_id')->unique()->constrained()->cascadeOnDelete();
-            $table->unsignedTinyInteger('max_auto_batches')->default(3);
-            $table->boolean('auto_open_batch')->default(true);
             $table->timestamps();
         });
     }
