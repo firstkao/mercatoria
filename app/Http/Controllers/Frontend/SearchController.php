@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Frontend;
 
 use App\Http\Controllers\Controller;
+use App\Models\Developer;
 use App\Models\Game;
 use App\Models\MerchCategory;
 use App\Models\Product;
@@ -24,13 +25,13 @@ class SearchController extends Controller
         $q = (string) $request->query('q', '');
         $filters = [
             'game_id' => $request->query('game_id'),
+            'developer_id' => $request->query('developer_id'),
             'merch_category_id' => $request->query('merch_category_id'),
             'tag' => $request->query('tag'),
         ];
 
         $results = $this->search->search($q, array_filter($filters), (int) setting('catalog_per_page', 30), $request);
 
-        // Varian yang cocok keyword (untuk badge "Varian tersedia" — PRD 13.13).
         $matchedVariants = collect($results->items())
             ->mapWithKeys(function (Product $product) use ($q) {
                 if ($q === '') {
@@ -49,6 +50,7 @@ class SearchController extends Controller
             'results' => $results,
             'matchedVariants' => $matchedVariants,
             'games' => Game::where('is_active', true)->orderBy('name')->get(['id', 'name']),
+            'developers' => Developer::where('is_active', true)->orderBy('name')->get(['id', 'name']),
             'categories' => MerchCategory::navList(),
             'tags' => Tag::navList(),
             'filters' => $filters,
