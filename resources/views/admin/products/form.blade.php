@@ -465,39 +465,59 @@
     };
 
     window.generateVariations = function (btn) {
-        btn.disabled = true;
-        var originalText = btn.textContent;
-        btn.textContent = 'Generating...';
+    btn.disabled = true;
+    var originalText = btn.textContent;
+    btn.textContent = 'Generating...';
 
-        if (productExists) {
-            doGenerate(btn, originalText, generateUrl);
-        } else {
-            var form = document.getElementById('product-form');
-            var formData = new FormData(form);
-            formData.set('is_active', '0');
+    var form = document.getElementById('product-form');
+    var formData = new FormData(form);
 
-            fetch(form.action, {
-                method: 'POST',
-                body: formData,
-                headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' }
-            })
-            .then(function (res) { return res.json(); })
-            .then(function (data) {
-                if (data.product_id) {
-                    window.location.href = editUrlTemplate.replace('__ID__', data.product_id) + '?generate=1';
-                } else {
-                    alert(data.message || 'Gagal simpan');
-                    btn.disabled = false;
-                    btn.textContent = originalText;
-                }
-            })
-            .catch(function (err) {
-                alert('Gagal simpan: ' + err.message);
+    // Debug
+    console.log('Sending:');
+    for (var p of formData.entries()) console.log(p[0], p[1]);
+
+    if (productExists) {
+        // Existing product: hit generate endpoint
+        fetch(generateUrl, {
+            method: 'POST',
+            headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Accept': 'application/json' }
+        })
+        .then(function (res) { return res.json(); })
+        .then(function (data) {
+            if (data.success) {
+                alert(data.message);
+                location.reload();
+            } else {
+                alert(data.message || 'Gagal');
+            }
+        })
+        .catch(function (err) { alert('Error: ' + err.message); })
+        .finally(function () { btn.disabled = false; btn.textContent = originalText; });
+    } else {
+        // New product: save first
+        formData.set('is_active', '0');
+        fetch(form.action, {
+            method: 'POST',
+            body: formData,
+            headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' }
+        })
+        .then(function (res) { return res.json(); })
+        .then(function (data) {
+            if (data.product_id) {
+                location.href = editUrlTemplate.replace('__ID__', data.product_id) + '?generate=1';
+            } else {
+                alert(JSON.stringify(data.errors || data.message || 'Gagal'));
                 btn.disabled = false;
                 btn.textContent = originalText;
-            });
-        }
-    };
+            }
+        })
+        .catch(function (err) {
+            alert('Error: ' + err.message);
+            btn.disabled = false;
+            btn.textContent = originalText;
+        });
+    }
+};
 
     function doGenerate(btn, originalText, url) {
         fetch(url, {
