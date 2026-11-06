@@ -6,62 +6,69 @@
     @include('frontend.partials._auth-style')
 
     <style>
-        /* Detail pesanan — CSS biasa (tidak bergantung build Tailwind), selaras dengan beranda & halaman produk. */
         .od, .od *, .od *::before, .od *::after { box-sizing: border-box; }
-        .od { font-family: 'Roboto', system-ui, sans-serif; color: #333; -webkit-font-smoothing: antialiased; }
+        .od {
+            position: relative;
+            left: 50%;
+            transform: translateX(-50%);
+            width: min(1300px, calc(100vw - 48px));
+            margin: 32px 0 28px;
+            font-family: 'Roboto', system-ui, sans-serif;
+            color: #3d3439;
+            -webkit-font-smoothing: antialiased;
+        }
         .od a { text-decoration: none; }
 
-        .od-card { background: #fff; border: 1px solid #e1e1e1; border-radius: 0; padding: 24px; }
-        .od-card + .od-card { margin-top: 20px; }
-        .od-h2 { margin: 0 0 12px; font-size: 11px; line-height: 16px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: #333; }
+        .od-head-wrap { padding: 36px 40px 28px; background: #fff; }
+        .od-title { margin: 0; font-size: 32px; line-height: 40px; font-weight: 500; color: #26222f; }
+
+        .od-card { background: #fff; border: 1px solid #eee; padding: 24px; margin-top: 20px; }
+        .od-h2 { margin: 0 0 12px; font-size: 12px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: #26222f; }
 
         .od-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; }
-        .od-no-label { margin: 0; font-size: 11px; line-height: 16px; font-weight: 500; letter-spacing: .14em; text-transform: uppercase; color: #888; }
-        .od-no { margin: 6px 0 0; font-size: 18px; line-height: 24px; font-weight: 700; letter-spacing: .04em; color: #000; }
-        .od-inv { margin: 4px 0 0; font-size: 12px; line-height: 18px; color: #555; }
+        .od-no-label { margin: 0; font-size: 12px; font-weight: 500; letter-spacing: .1em; text-transform: uppercase; color: #888; }
+        .od-no { margin: 6px 0 0; font-size: 20px; font-weight: 700; color: #26222f; }
+        .od-inv { margin: 4px 0 0; font-size: 13px; color: #6f6a72; }
         .od-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
 
         .od-table { width: 100%; margin-top: 16px; border-collapse: collapse; }
-        .od-table th { padding: 10px 0; border-bottom: 1px solid #e1e1e1; text-align: left; font-size: 11px; line-height: 16px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: #333; }
-        .od-table td { padding: 12px 0; border-bottom: 1px solid #e1e1e1; font-size: 14px; line-height: 21px; color: #333; }
+        .od-table th { padding: 10px 0; border-bottom: 1px solid #eee; text-align: left; font-size: 12px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: #888; }
+        .od-table td { padding: 12px 0; border-bottom: 1px solid #f5f5f5; font-size: 14px; color: #333; }
         .od-table tbody tr:last-child td { border-bottom: 0; }
-        .od-item-name { margin: 0; font-size: 14px; line-height: 21px; font-weight: 500; color: #000; }
-        .od-item-var { margin: 2px 0 0; font-size: 12px; line-height: 18px; color: #888; }
-        .od-item-store { margin: 2px 0 0; font-size: 11px; line-height: 16px; font-weight: 500; letter-spacing: .12em; text-transform: uppercase; color: #888; }
+        .od-item-name { margin: 0; font-weight: 600; color: #26222f; }
+        .od-item-var, .od-item-store { margin: 2px 0 0; font-size: 12px; color: #888; }
 
         .od-sum { margin: 16px 0 0; }
-        .od-sum-row { display: flex; justify-content: space-between; gap: 12px; padding: 6px 0; font-size: 14px; line-height: 21px; color: #555; }
-        .od-sum-row dt { margin: 0; }
-        .od-sum-row dd { margin: 0; color: #333; }
+        .od-sum-row { display: flex; justify-content: space-between; gap: 12px; padding: 6px 0; font-size: 14px; color: #555; }
+        .od-sum-row dt, .od-sum-row dd { margin: 0; }
         .od-sum-row.is-danger, .od-sum-row.is-danger dd { color: #e53935; }
-        .od-sum-row.is-muted, .od-sum-row.is-muted dd { color: #555; }
-        .od-sum-row.is-main, .od-sum-row.is-main dt, .od-sum-row.is-main dd { font-weight: 500; color: #000; }
-        .od-sum-row.is-total { padding-top: 10px; border-top: 1px solid #e1e1e1; font-size: 16px; line-height: 24px; font-weight: 700; }
-        .od-sum-row.is-total, .od-sum-row.is-total dt, .od-sum-row.is-total dd { color: #000; }
+        .od-sum-row.is-main, .od-sum-row.is-main dt, .od-sum-row.is-main dd { font-weight: 600; color: #26222f; }
+        .od-sum-row.is-total { padding-top: 10px; border-top: 1px solid #eee; font-size: 16px; font-weight: 700; color: #26222f; }
 
-        .od-strong { font-weight: 700; color: #000; }
+        .od-file { display: block; width: 100%; height: 42px; padding: 8px 12px; border: 1px solid #ddd; background: #fff; font: 400 14px/24px 'Roboto', system-ui, sans-serif; }
+        .od-file:focus { border-color: #26222f; outline: 0; }
 
-        .od-file { display: block; width: 100%; height: 42px; padding: 8px 12px; border: 1px solid #e1e1e1; border-radius: 0; background: #fff;
-                   font: 400 13px/24px 'Roboto', system-ui, sans-serif; color: #333; outline: 0; }
-        .od-file:focus { border-color: #000; }
-
-        .od-tl { margin: 14px 0 0; padding: 0 0 0 16px; border-left: 1px solid #e1e1e1; list-style: none; }
+        .od-tl { margin: 14px 0 0; padding: 0 0 0 16px; border-left: 1px solid #eee; list-style: none; }
         .od-tl li { position: relative; padding-bottom: 14px; }
         .od-tl li:last-child { padding-bottom: 0; }
-        .od-dot { position: absolute; left: -21px; top: 6px; width: 10px; height: 10px; border-radius: 50%; background: #e1e1e1; }
-        .od-dot.is-on { background: #000; }
-        .od-tl-status { margin: 0; font-size: 14px; line-height: 21px; color: #555; }
-        .od-tl-status.is-strong { font-weight: 700; color: #000; }
-        .od-tl-meta { margin: 4px 0 0; font-size: 11px; line-height: 16px; font-weight: 500; letter-spacing: .12em; text-transform: uppercase; color: #888; }
+        .od-dot { position: absolute; left: -21px; top: 6px; width: 10px; height: 10px; border-radius: 50%; background: #ddd; }
+        .od-dot.is-on { background: #26222f; }
+        .od-tl-status { margin: 0; font-size: 14px; }
+        .od-tl-meta { margin: 4px 0 0; font-size: 12px; color: #888; }
 
-        .od-refund-form { margin-top: 20px; }
+        @media (max-width: 767px) {
+            .od-head-wrap { padding: 24px 16px; }
+            .od-title { font-size: 26px; }
+            .od-card { padding: 16px; }
+        }
     </style>
 
-    <div class="au od">
-        <p class="au-eyebrow">Pesanan</p>
-        <h1 class="au-title">Detail Pesanan</h1>
+    <div class="od">
+        <div class="od-head-wrap">
+            <h1 class="od-title">Detail Pesanan</h1>
+        </div>
 
-        <div class="od-card" style="margin-top:24px">
+        <div class="od-card">
             <div class="od-head">
                 <div>
                     <p class="od-no-label">Nomor Pesanan</p>
@@ -117,35 +124,25 @@
                     </div>
                 @endif
                 <div class="od-sum-row is-main"><dt>Total Harga Barang</dt><dd>{{ format_rp($order->total) }}</dd></div>
-                <div class="od-sum-row is-muted"><dt>Fee QRIS</dt><dd>{{ format_rp($order->fee_qris) }}</dd></div>
+                <div class="od-sum-row"><dt>Fee QRIS</dt><dd>{{ format_rp($order->fee_qris) }}</dd></div>
                 <div class="od-sum-row is-total"><dt>Bayar di Web</dt><dd>{{ format_rp($order->tagihan_web) }}</dd></div>
                 @if ($order->estimasi_co_marketplace)
-                    <div class="od-sum-row is-muted"><dt>Estimasi CO Marketplace</dt><dd>{{ format_rp($order->estimasi_co_marketplace) }}</dd></div>
+                    <div class="od-sum-row"><dt>Estimasi CO Marketplace</dt><dd>{{ format_rp($order->estimasi_co_marketplace) }}</dd></div>
                 @endif
             </dl>
 
             @if ($order->customer_note)
-                <div class="au-note">
+                <div class="au-note" style="margin-top:16px">
                     <span>Catatan: {{ $order->customer_note }}</span>
                 </div>
             @endif
 
             @if ($order->note_to_customer)
-                <div class="au-note">
+                <div class="au-note" style="margin-top:12px">
                     <span>
                         <b>Pesan dari Admin</b><br>
                         {{ $order->note_to_customer }}
-                        @if ($order->note_to_customer_updated_at)
-                            <br><span class="od-no-label">Diperbarui {{ $order->note_to_customer_updated_at->format('d/m/Y H:i') }}</span>
-                        @endif
                     </span>
-                </div>
-            @endif
-
-            @if ((float) $order->discount_amount > 0 && in_array($order->status, ['menunggu_pembayaran', 'ditahan'], true))
-                <div class="au-note">
-                    <i class="bi bi-exclamation-triangle au-ico"></i>
-                    <span>Koin atau voucher yang dipakai pada pesanan ini hangus permanen bila pembayaran gagal (PRD 9.3).</span>
                 </div>
             @endif
         </div>
@@ -154,61 +151,39 @@
             @php $isDenda = $order->status === 'menunggu_denda'; @endphp
             <div class="od-card">
                 <h2 class="od-h2">{{ $isDenda ? 'Bayar & Unggah Bukti Denda' : 'Bayar & Unggah Bukti' }}</h2>
-                <p class="au-lead" style="margin-top:0">
-                    {{ $isDenda ? 'Denda' : 'Tagihan' }}: <span class="od-strong">{{ format_rp($isDenda ? $order->penalty_amount : $order->tagihan_web) }}</span>
+                <p style="margin:0 0 16px;font-size:14px;color:#555">
+                    {{ $isDenda ? 'Denda' : 'Tagihan' }}: <strong>{{ format_rp($isDenda ? $order->penalty_amount : $order->tagihan_web) }}</strong>
                     @if ($isDenda && $order->penalty_deadline_at)
-                        &middot; Batas waktu: {{ $order->penalty_deadline_at->format('d/m/Y H:i') }}
+                        · Batas waktu: {{ $order->penalty_deadline_at->format('d/m/Y H:i') }}
                     @elseif ($order->payment_deadline_at)
-                        &middot; Batas waktu: {{ $order->payment_deadline_at->format('d/m/Y H:i') }}
+                        · Batas waktu: {{ $order->payment_deadline_at->format('d/m/Y H:i') }}
                     @endif
                 </p>
 
-                <form method="POST" action="{{ route('orders.payments.store', $order->no_order) }}" enctype="multipart/form-data"
-                      class="au-form" id="upload-proof-form">
+                <form method="POST" action="{{ route('orders.payments.store', $order->no_order) }}" enctype="multipart/form-data" id="upload-proof-form">
                     @csrf
                     <input type="file" name="proof" accept=".jpg,.jpeg,.png" required class="od-file">
-                    <p class="od-no-label" style="margin:0">Format JPG/PNG, maksimal 1 MB. Hanya bisa diunggah 1 kali.</p>
+                    <p style="margin:6px 0 12px;font-size:12px;color:#888">Format JPG/PNG, maksimal 1 MB.</p>
                     @error('proof')<p class="au-err">{{ $message }}</p>@enderror
                     <button type="submit" class="au-btn">UNGGAH BUKTI</button>
                 </form>
-                <script>
-                    (function () {
-                        var form = document.getElementById('upload-proof-form');
-                        if (!form) return;
-                        form.addEventListener('submit', function () {
-                            var btn = form.querySelector('button[type="submit"]');
-                            if (!btn || btn.disabled) return;
-                            btn.disabled = true;
-                            btn.textContent = 'Memproses...';
-                        });
-                    })();
-                </script>
             </div>
         @elseif ($order->status === 'ditahan')
             <div class="od-card">
                 <h2 class="od-h2">Bukti Bayar Terkirim</h2>
-                <p class="au-lead" style="margin-top:0">
-                    Menunggu verifikasi admin. Form upload terkunci sampai admin menyetujui atau menolak bukti kamu.
-                </p>
+                <p style="margin:0;font-size:14px;color:#555">Menunggu verifikasi admin.</p>
             </div>
         @endif
 
         @if ($refundPending)
-            <div class="od-card">
-                Permintaan refund sedang diproses admin.
-            </div>
+            <div class="od-card">Permintaan refund sedang diproses admin.</div>
         @elseif ($canRequestRefund)
-            <form method="POST" action="{{ route('orders.refund-request', $order->no_order) }}"
-                  class="od-card od-refund-form"
-                  data-confirm="Ajukan refund untuk pesanan ini?" data-confirm-title="Ajukan Refund" data-confirm-text="Ajukan">
+            <form method="POST" action="{{ route('orders.refund-request', $order->no_order) }}" class="od-card">
                 @csrf
-                <label for="refund-reason" class="au-label">Ajukan Refund</label>
-                <textarea id="refund-reason" name="reason" rows="2" maxlength="1000" required placeholder="Alasan refund"
-                          class="au-input">{{ old('reason') }}</textarea>
-                @error('reason')
-                    <p class="au-err">{{ $message }}</p>
-                @enderror
-                <button type="submit" class="au-btn is-ghost is-sm">Kirim Permintaan Refund</button>
+                <label class="au-label">Ajukan Refund</label>
+                <textarea name="reason" rows="2" maxlength="1000" required placeholder="Alasan refund" class="au-input">{{ old('reason') }}</textarea>
+                @error('reason')<p class="au-err">{{ $message }}</p>@enderror
+                <button type="submit" class="au-btn is-ghost is-sm" style="margin-top:12px">Kirim Permintaan Refund</button>
             </form>
         @endif
 
@@ -218,11 +193,11 @@
                 @foreach ($order->statusLogs as $log)
                     <li>
                         <span class="od-dot {{ $loop->last ? 'is-on' : '' }}"></span>
-                        <p class="od-tl-status {{ $loop->last ? 'is-strong' : '' }}">
+                        <p class="od-tl-status">
                             <x-order-status-badge :status="$log->status" />
                         </p>
                         <p class="od-tl-meta">
-                            {{ $log->created_at->format('d/m/Y H:i') }} &middot; oleh {{ $log->changed_by }}
+                            {{ $log->created_at->format('d/m/Y H:i') }} · oleh {{ $log->changed_by }}
                             @if ($log->note) — {{ $log->note }} @endif
                         </p>
                     </li>
