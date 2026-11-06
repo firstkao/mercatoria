@@ -175,6 +175,10 @@ Route::middleware(['auth', 'admin'])->prefix('office')->name('office.')->group(f
     Route::post('/products/{product}/split-clone', [AdminProductController::class, 'splitClone'])->name('products.split-clone');
     Route::get('/products/{product}/preview', [AdminProductController::class, 'preview'])->name('products.preview');
 
+    // Attribute
+    Route::post('/office/products/{product}/generate-variations', [ProductController::class, 'generateVariations'])
+        ->name('office.products.generate-variations');
+
     // Varian
     Route::post('/products/{product}/variants', [AdminProductController::class, 'storeVariant'])->name('products.variants.store');
     Route::put('/products/{product}/variants/{variant}', [AdminProductController::class, 'updateVariant'])->name('products.variants.update');
