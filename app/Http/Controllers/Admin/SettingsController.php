@@ -76,7 +76,6 @@ class SettingsController extends Controller
         'log_retention_days',
         'login_lockout_minutes',
         'login_rate_limit_per_minute',
-        'max_auto_batches',
         'max_register_without_purchase',
         'note_to_customer_max_chars',
         'note_to_customer_send_email',
