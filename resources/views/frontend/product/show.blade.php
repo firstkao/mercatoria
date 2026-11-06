@@ -104,12 +104,13 @@
             text-transform: uppercase; color: #aaa;
         }
 
+        /* Tag PRESALE / LIMITED — diperbesar */
         .pp-flag {
             position: absolute; top: 0; left: 0; z-index: 2;
-            height: 18px; padding: 0 14px 0 8px; line-height: 18px;
-            font-size: 10px; font-weight: 500; letter-spacing: 0;
+            height: 26px; padding: 0 18px 0 10px; line-height: 26px;
+            font-size: 12px; font-weight: 600; letter-spacing: .02em;
             text-transform: uppercase; color: #fff; background: #FF4949;
-            clip-path: polygon(0 0, 100% 0, calc(100% - 8px) 100%, 0 100%);
+            clip-path: polygon(0 0, 100% 0, calc(100% - 10px) 100%, 0 100%);
         }
         .pp-flag.is-presale { background: #3986C6; color: #fff; }
         .pp-flag.is-new { background: #4FC3F7; color: #fff; }
