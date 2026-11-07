@@ -27,6 +27,8 @@ return new class extends Migration
         });
 
         Schema::table('split_box_slots', function (Blueprint $table) {
+            // Tambahkan kolom split_role terlebih dahulu agar tidak error saat di-index
+            $table->string('split_role', 50)->nullable();
             $table->index(['split_box_id', 'split_role']);
         });
 
@@ -53,6 +55,7 @@ return new class extends Migration
 
         Schema::table('split_box_slots', function (Blueprint $table) {
             $table->dropIndex(['split_box_id', 'split_role']);
+            $table->dropColumn(['split_role']);
         });
 
         Schema::table('split_box_batches', function (Blueprint $table) {
