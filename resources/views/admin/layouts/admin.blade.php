@@ -135,7 +135,6 @@
                 @endphp
 
                 @php $navItems = [
-                    [
                         ['__SECTION__','','Dashboard'],
                         ['office.dashboard','bi-speedometer2','Dashboard','office.dashboard'],
                     
@@ -178,7 +177,6 @@
                         ['office.payment-methods.index','bi-wallet2','Metode Pembayaran','office.payment-methods'],
                         ['office.seo.index','bi-globe','SEO','office.seo'],
                         ['office.settings.index','bi-gear','Pengaturan Sistem','office.settings'],
-                    ]
                 ]; @endphp
 
                 @foreach ($navItems as $item)
