@@ -144,6 +144,7 @@
         @if ($product->exists) @method('PUT') @endif
 
         <input type="hidden" name="is_active" id="input-is-active" value="{{ old('is_active', $product->exists ? ($product->is_active ? 1 : 0) : 1) }}">
+        <input type="hidden" name="attributes_present" value="1">
         <input type="hidden" name="is_split_box" value="{{ old('is_split_box', $product->exists ? ($product->is_split_box ? 1 : 0) : 0) }}">
 
         <div class="pf-header">
@@ -248,8 +249,6 @@
                                                 <div class="pf-attr-top">
                                                     <input type="text" name="attributes[{{ $i }}][name]" value="{{ $attr->name }}" class="pf-input" placeholder="Nama atribut">
                                                     <input type="hidden" name="attributes[{{ $i }}][id]" value="{{ $attr->id }}">
-                                                    <label class="pf-check"><input type="checkbox" name="attributes[{{ $i }}][visible]" value="1" checked> Tampilkan</label>
-                                                    <label class="pf-check"><input type="checkbox" name="attributes[{{ $i }}][variation]" value="1" checked data-variation> Untuk varian</label>
                                                     <button type="button" class="pf-btn is-danger is-sm" data-remove-attr style="margin-left:auto">Hapus</button>
                                                 </div>
                                                 <div class="pf-attr-b">
@@ -554,8 +553,6 @@
             '<div class="pf-attr" data-attr="' + i + '" data-next="0">'
             + '<div class="pf-attr-top">'
             + '<input type="text" name="attributes[' + i + '][name]" class="pf-input" placeholder="Nama atribut">'
-            + '<label class="pf-check"><input type="checkbox" name="attributes[' + i + '][visible]" value="1" checked> Tampilkan</label>'
-            + '<label class="pf-check"><input type="checkbox" name="attributes[' + i + '][variation]" value="1" checked data-variation> Untuk varian</label>'
             + '<button type="button" class="pf-btn is-danger is-sm" data-remove-attr style="margin-left:auto">Hapus</button>'
             + '</div>'
             + '<div class="pf-attr-b"><div class="pf-vals">'
@@ -595,9 +592,8 @@
         var sets = [];
         attrList.querySelectorAll('.pf-attr').forEach(function (box) {
             var nameInput = box.querySelector('.pf-attr-top input[type="text"]');
-            var forVar = box.querySelector('[data-variation]');
             var vals = Array.prototype.filter.call(box.querySelectorAll('.pf-val input[type="text"]'), function (i) { return i.value.trim(); });
-            if (nameInput && nameInput.value.trim() && forVar && forVar.checked && vals.length) sets.push(vals.length);
+            if (nameInput && nameInput.value.trim() && vals.length) sets.push(vals.length);
         });
         return sets;
     }
@@ -606,7 +602,7 @@
         if (!hint) return;
         var sets = variationSets();
         var total = sets.length ? sets.reduce(function (a, b) { return a * b; }, 1) : 0;
-        hint.textContent = total ? 'Akan membuat ' + total + ' varian' : 'Isi minimal satu atribut dengan nilai (centang "Untuk varian").';
+        hint.textContent = total ? 'Akan membuat ' + total + ' varian' : 'Isi minimal satu atribut beserta nilainya.';
     }
 
     /* ───────── Simpan atribut → generate varian (tanpa SKU/harga/berat) ───────── */
@@ -648,7 +644,7 @@
         var problems = [];
         if (!document.getElementById('field-name').value.trim()) problems.push('Nama produk wajib diisi.');
         if (!document.getElementById('field-game').value) problems.push('Pilih game.');
-        if (!variationSets().length) problems.push('Tambahkan minimal satu atribut dengan nilai dan centang "Untuk varian".');
+        if (!variationSets().length) problems.push('Tambahkan minimal satu atribut beserta nilainya.');
         if (problems.length) { flash('error', problems); return; }
 
         var label = btnGen.textContent;
