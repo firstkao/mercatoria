@@ -11,6 +11,7 @@
     $isSplitBox = $product->exists && $product->is_split_box;
     $isPublished = $product->exists && $product->is_active;
     $attrCount = $product->exists ? $product->attributes->count() : 0;
+    $weightRequired = (int) setting('default_weight_gram', 0) <= 0;
 @endphp
 
 <style>
@@ -167,13 +168,15 @@
                     <div class="pf-card-b">
                         <div class="pf-grid-2">
                             <div>
-                                <label class="pf-label">Nama Produk <i class="pf-req">*</i></label>
-                                <input type="text" name="name" id="field-name" value="{{ old('name', $product->name) }}" class="pf-input">
+                                <label class="pf-label">Nama Produk</label>
+                                <input type="text" name="name" id="field-name" value="{{ old('name', $product->name === 'Draft tanpa judul' ? '' : $product->name) }}" class="pf-input" placeholder="Nama produk">
                                 @error('name')<p class="pf-err">{{ $message }}</p>@enderror
                             </div>
                             <div>
                                 <label class="pf-label">Slug</label>
-                                <input type="text" name="slug" value="{{ old('slug', $product->slug) }}" class="pf-input">
+                                <input type="text" name="slug" id="field-slug" value="{{ old('slug', $product->slug) }}" class="pf-input" placeholder="otomatis dari nama produk">
+                                <input type="hidden" name="slug_auto" id="field-slug-auto" value="">
+                                @error('slug')<p class="pf-err">{{ $message }}</p>@enderror
                             </div>
                             <div>
                                 <label class="pf-label">Game <i class="pf-req">*</i></label>
@@ -331,8 +334,12 @@
                                                             </div>
                                                         </td>
                                                         <td style="font-size:12px;color:#666">{{ $variant->sku }}</td>
-                                                        <td><input type="number" step="0.01" min="0" name="variants[{{ $variant->id }}][price_rmb]" value="{{ $variant->price_rmb ?? $product->price_rmb }}" class="pf-input" style="width:110px" data-v-price placeholder="Wajib"></td>
-                                                        <td><input type="number" min="1" name="variants[{{ $variant->id }}][weight_gram]" value="{{ $variant->weight_gram ?? $product->weight_gram }}" class="pf-input" style="width:100px" data-v-weight placeholder="Wajib"></td>
+                                                        @php
+                                                            $vPrice = $variant->price_rmb ?? $product->price_rmb;
+                                                            $vWeight = $variant->weight_gram ?? $product->weight_gram;
+                                                        @endphp
+                                                        <td><input type="number" step="0.01" min="0" name="variants[{{ $variant->id }}][price_rmb]" value="{{ (float) $vPrice > 0 ? $vPrice : '' }}" class="pf-input" style="width:110px" data-v-price placeholder="Wajib"></td>
+                                                        <td><input type="number" min="1" name="variants[{{ $variant->id }}][weight_gram]" value="{{ (int) $vWeight > 0 ? $vWeight : '' }}" class="pf-input" style="width:100px" data-v-weight placeholder="{{ $weightRequired ? 'Wajib' : 'Default' }}"></td>
                                                         <td>
                                                             <select name="variants[{{ $variant->id }}][availability]" class="pf-select" style="width:110px" data-v-avail>
                                                                 <option value="tersedia" @selected($variant->availability === 'tersedia')>Tersedia</option>
@@ -476,6 +483,8 @@
     var generateUrl = '{{ $product->exists ? route('office.products.generate-variations', $product) : '' }}';
     var editUrlTemplate = '{{ route('office.products.edit', ['product' => '__ID__']) }}';
     var csrf = '{{ csrf_token() }}';
+    var weightRequired = {{ $weightRequired ? 'true' : 'false' }};
+    var isPublished = {{ $isPublished ? 'true' : 'false' }};
     var typeSel = document.getElementById('input-type');
     var msg = document.getElementById('pf-msg');
     var attrList = document.getElementById('attributes-list');
@@ -642,7 +651,6 @@
     btnGen.addEventListener('click', function () {
         clearFlash();
         var problems = [];
-        if (!document.getElementById('field-name').value.trim()) problems.push('Nama produk wajib diisi.');
         if (!document.getElementById('field-game').value) problems.push('Pilih game.');
         if (!variationSets().length) problems.push('Tambahkan minimal satu atribut beserta nilainya.');
         if (problems.length) { flash('error', problems); return; }
@@ -716,7 +724,7 @@
         var publish = document.getElementById('input-is-active').value === '1';
         var problems = [];
 
-        if (!document.getElementById('field-name').value.trim()) problems.push('Nama produk wajib diisi.');
+        if (publish && !document.getElementById('field-name').value.trim()) problems.push('Nama produk wajib diisi untuk menerbitkan.');
 
         if (typeSel.value === 'single') {
             if (publish) {
@@ -733,12 +741,13 @@
                 rows.forEach(function (r) {
                     ['[data-v-price]', '[data-v-weight]'].forEach(function (sel) {
                         var el = r.querySelector(sel);
-                        var bad = !el.value.trim();
+                        var needed = sel === '[data-v-price]' || weightRequired;
+                        var bad = needed && (!el.value.trim() || parseFloat(el.value) <= 0);
                         el.classList.toggle('is-missing', bad);
                         if (bad) missing++;
                     });
                 });
-                if (missing) problems.push('Isi harga dan berat di semua varian (' + missing + ' kolom masih kosong).');
+                if (missing) problems.push('Lengkapi harga' + (weightRequired ? ' dan berat' : '') + ' di semua varian (' + missing + ' kolom masih kosong).');
             }
         }
 
@@ -750,6 +759,32 @@
             flash('error', problems);
         }
     });
+
+    /* ───────── Slug otomatis dari nama (seperti WooCommerce: berhenti setelah produk terbit / slug diubah manual) ───────── */
+    var nameEl = document.getElementById('field-name');
+    var slugEl = document.getElementById('field-slug');
+    var slugAutoEl = document.getElementById('field-slug-auto');
+
+    function slugify(s) {
+        return String(s).normalize('NFKD').replace(/[\u0300-\u036f]/g, '').toLowerCase()
+            .replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+    }
+
+    var slugManual = isPublished
+        || (slugEl.value.trim() !== ''
+            && slugEl.value.trim() !== slugify(nameEl.value)
+            && !/^draft-tanpa-judul(-\d+)?$/.test(slugEl.value.trim()));
+
+    function syncSlug() {
+        slugAutoEl.value = slugManual ? '' : '1';
+        if (!slugManual) slugEl.value = slugify(nameEl.value);
+    }
+    nameEl.addEventListener('input', function () { if (!slugManual) syncSlug(); });
+    slugEl.addEventListener('input', function () {
+        slugManual = slugEl.value.trim() !== '';   // dikosongkan = kembali otomatis
+        syncSlug();
+    });
+    syncSlug();
 
     /* ───────── Init ───────── */
     applyType();
