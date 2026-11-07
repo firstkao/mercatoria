@@ -25,7 +25,10 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
@@ -96,7 +99,12 @@ class ProductController extends Controller
         $data = $request->validated();
         unset($data['variants'], $data['tags'], $data['attributes']);
         $data['is_active'] = $request->boolean('is_active');
-    
+
+        // Produk variable boleh tanpa SKU/harga/berat di level produk (diisi per varian).
+        if (($data['type'] ?? null) === Product::TYPE_VARIABLE && blank($data['sku'] ?? null)) {
+            $data['sku'] = 'VAR-'.strtoupper(Str::random(8));
+        }
+
         $data['slug'] = blank($data['slug'] ?? null)
             ? Str::slug($data['name']).'-'.Str::random(4)
             : $data['slug'];
@@ -116,17 +124,20 @@ class ProductController extends Controller
     
         $this->syncAttributes($request, $product);
         $this->syncSplitBox($product);
-    
+        $blocked = $this->enforcePublishRules($product);
+
         AdminLog::record($request->user(), 'create', 'Product', $product->id, null, $product->only(array_keys($data)), 'Tambah produk');
-    
+
         if ($request->expectsJson() || $request->ajax()) {
             return response()->json([
                 'success' => true,
                 'product_id' => $product->id,
             ]);
         }
-    
-        return redirect()->route('office.products.edit', $product)->with('status', 'Produk dibuat.');
+
+        $redirect = redirect()->route('office.products.edit', $product)->with('status', 'Produk dibuat.');
+
+        return $blocked ? $redirect->withErrors(['publish' => $blocked]) : $redirect;
     }
 
     public function update(ProductFormRequest $request, Product $product): RedirectResponse
@@ -135,6 +146,13 @@ class ProductController extends Controller
         unset($data['variants'], $data['tags'], $data['attributes']);
         $data['is_active'] = $request->boolean('is_active');
 
+        // Produk variable tidak mengirim SKU/harga/berat produk → jangan menimpa nilai lama dengan kosong.
+        foreach (['sku', 'price_rmb', 'weight_gram'] as $key) {
+            if (array_key_exists($key, $data) && blank($data[$key]) && filled($product->{$key})) {
+                unset($data[$key]);
+            }
+        }
+
         if ($error = $this->splitBoxProductUniformError($product, $data)) {
             return back()->withErrors(['price_rmb' => $error])->withInput();
         }
@@ -142,10 +160,14 @@ class ProductController extends Controller
         $data = $this->processUploads($request, $data, $product);
         [$old, $new] = AdminLog::diff($product, array_keys($data), $data);
 
-        $product->update($data);
-        $product->tags()->sync($request->input('tags', []));
-        $this->syncAttributes($request, $product);
+        DB::transaction(function () use ($product, $data, $request): void {
+            $product->update($data);
+            $product->tags()->sync($request->input('tags', []));
+            $this->syncAttributes($request, $product);
+            $this->syncVariants($request, $product);
+        });
         $this->syncSplitBox($product);
+        $blocked = $this->enforcePublishRules($product);
 
         if (! $product->merch_category_id) {
             $product->update([
@@ -155,7 +177,9 @@ class ProductController extends Controller
 
         AdminLog::record($request->user(), 'update', 'Product', $product->id, $old, $new, 'Ubah produk');
 
-        return redirect()->route('office.products.edit', $product)->with('status', 'Produk diperbarui.');
+        $redirect = redirect()->route('office.products.edit', $product)->with('status', 'Produk diperbarui.');
+
+        return $blocked ? $redirect->withErrors(['publish' => $blocked]) : $redirect;
     }
 
     public function destroy(Request $request, Product $product): RedirectResponse
@@ -175,10 +199,18 @@ class ProductController extends Controller
             return response()->json(['success' => false, 'message' => 'Produk bukan variable'], 422);
         }
 
-        $attributes = $product->attributes()->with('values')->get();
+        // Atribut tanpa nilai dilewati (kalau ikut dihitung, hasil kombinasi jadi kosong).
+        $attributes = $product->attributes()->with('values')->get()
+            ->filter(fn ($attr) => $attr->values->isNotEmpty())
+            ->values();
 
         if ($attributes->isEmpty()) {
-            return response()->json(['success' => false, 'message' => 'Belum ada atribut'], 422);
+            return response()->json(['success' => false, 'message' => 'Belum ada atribut yang punya nilai'], 422);
+        }
+
+        $total = $attributes->reduce(fn ($carry, $attr) => $carry * $attr->values->count(), 1);
+        if ($total > 500) {
+            return response()->json(['success' => false, 'message' => "Terlalu banyak kombinasi ({$total}). Maksimal 500 varian sekali generate."], 422);
         }
 
         $combinations = $this->generateCombinations($attributes);
@@ -245,6 +277,7 @@ class ProductController extends Controller
     private function syncAttributes(Request $request, Product $product): void
     {
         $attributes = $request->input('attributes', []);
+        $keepIds = [];
 
         foreach ($attributes as $attrData) {
             if (blank($attrData['name'] ?? null)) {
@@ -264,6 +297,7 @@ class ProductController extends Controller
                 continue;
             }
 
+            $keepIds[] = $attr->id;
             $existingIds = [];
             foreach ($attrData['values'] ?? [] as $valData) {
                 if (blank($valData['value'] ?? null)) {
@@ -290,6 +324,95 @@ class ProductController extends Controller
 
             $attr->values()->whereNotIn('id', $existingIds)->delete();
         }
+
+        // Atribut yang dihapus di form ikut dihapus (hanya bila form memang mengirim daftar atribut).
+        if ($request->boolean('attributes_present')) {
+            $product->attributes()->whereNotIn('id', $keepIds)->get()->each(function ($attr): void {
+                $attr->values()->delete();
+                $attr->delete();
+            });
+        }
+    }
+
+    /**
+     * Simpan harga/berat/ketersediaan per varian yang dikirim tabel Varian di form produk.
+     * Hanya kolom yang diisi yang diubah; Split Box tetap wajib seragam.
+     */
+    private function syncVariants(Request $request, Product $product): void
+    {
+        $rows = $request->input('variants');
+
+        if (! is_array($rows) || $rows === []) {
+            return;
+        }
+
+        Validator::make(['variants' => $rows], [
+            'variants.*.price_rmb' => ['nullable', 'numeric', 'min:0'],
+            'variants.*.weight_gram' => ['nullable', 'integer', 'min:1'],
+            'variants.*.availability' => ['nullable', Rule::in(['tersedia', 'kosong'])],
+        ], [], [
+            'variants.*.price_rmb' => 'harga varian',
+            'variants.*.weight_gram' => 'berat varian',
+            'variants.*.availability' => 'ketersediaan varian',
+        ])->validate();
+
+        $variants = $product->variants()->whereIn('id', array_map('intval', array_keys($rows)))->get()->keyBy('id');
+
+        foreach ($rows as $id => $row) {
+            $variant = $variants->get((int) $id);
+            if (! $variant) {
+                continue;
+            }
+
+            $changes = [];
+            if (filled($row['price_rmb'] ?? null)) {
+                $changes['price_rmb'] = $row['price_rmb'];
+            }
+            if (filled($row['weight_gram'] ?? null)) {
+                $changes['weight_gram'] = (int) $row['weight_gram'];
+            }
+            if (filled($row['availability'] ?? null)) {
+                $changes['availability'] = $row['availability'];
+            }
+
+            if ($changes !== []) {
+                $variant->update($changes);
+            }
+        }
+
+        if ($error = $this->splitBoxProductUniformError($product->refresh(), [])) {
+            throw ValidationException::withMessages(['price_rmb' => $error]);
+        }
+    }
+
+    /**
+     * Produk variable hanya boleh terbit bila punya varian dengan harga & berat.
+     * Kalau belum memenuhi, produk dijadikan draft dan alasannya dikembalikan.
+     */
+    private function enforcePublishRules(Product $product): ?string
+    {
+        $product->refresh();
+
+        if (! $product->is_active || $product->type !== Product::TYPE_VARIABLE) {
+            return null;
+        }
+
+        $variants = $product->variants()->get();
+
+        $reason = null;
+        if ($variants->isEmpty()) {
+            $reason = 'Produk variable belum punya varian.';
+        } elseif ($variants->contains(fn ($v) => blank($v->price_rmb ?? $product->price_rmb) || blank($v->weight_gram ?? $product->weight_gram))) {
+            $reason = 'Harga dan berat semua varian harus diisi.';
+        }
+
+        if ($reason) {
+            $product->update(['is_active' => false]);
+
+            return $reason.' Produk disimpan sebagai draft.';
+        }
+
+        return null;
     }
 
     // ──────────────────────────────────────
