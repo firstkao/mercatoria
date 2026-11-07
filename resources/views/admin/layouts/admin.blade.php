@@ -158,7 +158,7 @@
                         ['__SECTION__','','Transaksi'],
                         ['office.orders.index','bi-receipt','Pesanan','office.orders'],
                         ['office.payments.index','bi-credit-card','Verifikasi Pembayaran','office.payments'],
-                        ['office.refunds.index','bi-arrow-counterclockwise','Pengembalian (Refund)','office.refunds'],
+                        ['office.refunds.index','bi-arrow-counterclockwise','Pengembalian Dana','office.refunds'],
                         ['office.vouchers.index','bi-ticket-perforated','Voucher','office.vouchers'],
                     
                         ['__SECTION__','','Pengguna'],
