@@ -135,48 +135,50 @@
                 @endphp
 
                 @php $navItems = [
-                    ['__SECTION__','','Dashboard'],
-                    ['office.dashboard','bi-speedometer2','Dashboard','office.dashboard'],
-
-                    ['__SECTION__','','Log'],
-                    ['office.activity-logs','bi-activity','Activity Log','office.activity'],
-                    ['office.auth-logs','bi-shield-lock','Auth Log','office.auth'],
-                    ['office.admin-logs','bi-person-gear','Admin Log','office.admin-logs'],
-
-                    ['__SECTION__','','Produk'],
-                    ['office.products.index','bi-box-seam','Semua Produk','office.products'],
-                    ['office.merch-categories.index','bi-grid','Kategori Merch','office.merch-categories'],
-                    ['office.tags.index','bi-tags','Tag','office.tags'],
-
-                    ['__SECTION__','','Katalog'],
-                    ['office.games.index','bi-controller','Game','office.games'],
-                    ['office.developers.index','bi-building','Developer','office.developers'],
-
-                    ['__SECTION__','','Stores'],
-                    ['office.stores.index','bi-shop','Stores','office.stores'],
-
-                    ['__SECTION__','','Transaksi'],
-                    ['office.orders.index','bi-receipt','Orders','office.orders'],
-                    ['office.payments.index','bi-credit-card','Verifikasi Pembayaran','office.payments'],
-                    ['office.refunds.index','bi-arrow-counterclockwise','Refund','office.refunds'],
-                    ['office.vouchers.index','bi-ticket-perforated','Vouchers','office.vouchers'],
-
-                    ['__SECTION__','','Pengguna'],
-                    ['office.users.index','bi-people','Users','office.users'],
-                    ['office.customers.rank','bi-trophy','Rank Pelanggan','office.customers'],
-                    ['office.spammers.index','bi-shield-exclamation','Spammers','office.spammers'],
-
-                    ['__SECTION__','','Konten'],
-                    ['office.pages.index','bi-file-text','Pages CMS','office.pages'],
-                    ['office.preorder.index','bi-layout-text-window-reverse','Preorder Builder','office.preorder'],
-                    ['office.hero-slides.index','bi-image','Hero Slides','office.hero-slides'],
-
-                    ['__SECTION__','','Pengaturan'],
-                    ['office.email-templates.index','bi-envelope-paper','Email Templates','office.email-templates'],
-                    ['office.reports.index','bi-bar-chart','Laporan','office.reports'],
-                    ['office.payment-methods.index','bi-wallet2','Metode Bayar','office.payment-methods'],
-                    ['office.seo.index','bi-globe','SEO','office.seo'],
-                    ['office.settings.index','bi-gear','Settings','office.settings'],
+                    [
+                        ['__SECTION__','','Dashboard'],
+                        ['office.dashboard','bi-speedometer2','Dashboard','office.dashboard'],
+                    
+                        ['__SECTION__','','Log Sistem'],
+                        ['office.activity-logs','bi-activity','Log Aktivitas','office.activity-logs'],
+                        ['office.auth-logs','bi-shield-lock','Log Autentikasi','office.auth-logs'],
+                        ['office.admin-logs','bi-person-gear','Log Admin','office.admin-logs'],
+                    
+                        ['__SECTION__','','Produk'],
+                        ['office.products.index','bi-box-seam','Semua Produk','office.products'],
+                        ['office.merch-categories.index','bi-grid','Kategori Merch','office.merch-categories'],
+                        ['office.tags.index','bi-tags','Tag','office.tags'],
+                    
+                        ['__SECTION__','','Katalog & Game'],
+                        ['office.games.index','bi-controller','Game','office.games'],
+                        ['office.developers.index','bi-buildings','Developer','office.developers'],
+                    
+                        ['__SECTION__','','Toko'],
+                        ['office.stores.index','bi-shop','Daftar Toko','office.stores'],
+                    
+                        ['__SECTION__','','Transaksi'],
+                        ['office.orders.index','bi-receipt','Pesanan','office.orders'],
+                        ['office.payments.index','bi-credit-card','Verifikasi Pembayaran','office.payments'],
+                        ['office.refunds.index','bi-arrow-counterclockwise','Pengembalian (Refund)','office.refunds'],
+                        ['office.vouchers.index','bi-ticket-perforated','Voucher','office.vouchers'],
+                    
+                        ['__SECTION__','','Pengguna'],
+                        ['office.users.index','bi-people','Pengguna','office.users'],
+                        ['office.customers.rank','bi-trophy','Peringkat Pelanggan','office.customers'],
+                        ['office.spammers.index','bi-shield-exclamation','Spammer','office.spammers'],
+                    
+                        ['__SECTION__','','Konten & CMS'],
+                        ['office.pages.index','bi-file-text','Halaman','office.pages'],
+                        ['office.preorder.index','bi-layout-text-window-reverse','Preorder Builder','office.preorder'],
+                        ['office.hero-slides.index','bi-image','Banner Slider','office.hero-slides'],
+                    
+                        ['__SECTION__','','Pengaturan'],
+                        ['office.email-templates.index','bi-envelope-paper','Template Email','office.email-templates'],
+                        ['office.reports.index','bi-bar-chart','Laporan','office.reports'],
+                        ['office.payment-methods.index','bi-wallet2','Metode Pembayaran','office.payment-methods'],
+                        ['office.seo.index','bi-globe','SEO','office.seo'],
+                        ['office.settings.index','bi-gear','Pengaturan Sistem','office.settings'],
+                    ]
                 ]; @endphp
 
                 @foreach ($navItems as $item)
