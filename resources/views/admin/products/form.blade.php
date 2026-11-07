@@ -126,6 +126,24 @@
     .pf-tag { display: flex; align-items: center; gap: 8px; margin: 6px 0; font-size: 13px; }
     .pf-tag input { accent-color: #26222f; }
     .pf-img { display: block; width: 100%; margin-top: 8px; border: 1px solid #ddd; }
+
+    /* Uploader (tombol jelas + pratinjau + seret & lepas) */
+    .pf-up-frame { position: relative; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 6px; min-height: 140px; padding: 12px; border: 1px dashed #bbb; background: #fafafa; color: #999; font-size: 13px; text-align: center; overflow: hidden; transition: border-color .15s, background .15s; }
+    .pf-up-frame.is-drag { border-color: #26222f; background: #f1f1f1; }
+    .pf-up-frame img { display: block; max-width: 100%; max-height: 260px; object-fit: contain; }
+    .pf-up-frame.is-removed img { opacity: .25; filter: grayscale(1); }
+    .pf-up-frame.is-square { aspect-ratio: 1 / 1; min-height: 0; }
+    .pf-up-btn { position: relative; margin-top: 10px; cursor: pointer; }
+    .pf-up-btn:focus-within { outline: 2px solid #02a1ea; outline-offset: 2px; }
+    .pf-up-input { position: absolute; width: 1px; height: 1px; opacity: 0; overflow: hidden; clip: rect(0 0 0 0); }
+    .pf-up-name { margin: 8px 0 0; font-size: 12px; line-height: 17px; color: #555; word-break: break-all; }
+    .pf-up-name b { font-weight: 500; color: #26222f; }
+    .pf-up-cancel { margin-left: 6px; padding: 0; border: 0; background: none; color: #c62828; font-size: 12px; cursor: pointer; text-decoration: underline; }
+    .pf-up-err { margin: 6px 0 0; font-size: 12px; color: #c62828; }
+    .pf-up-hint { margin: 6px 0 0; font-size: 12px; line-height: 17px; color: #999; }
+    .pf-up-remove { display: inline-flex; align-items: center; gap: 6px; margin-top: 10px; font-size: 13px; color: #c62828; cursor: pointer; }
+    .pf-up-remove input { width: 15px; height: 15px; accent-color: #c62828; margin: 0; }
+    .pf-up-name[hidden], .pf-up-err[hidden], .pf-up-cancel[hidden] { display: none; }
 </style>
 
 <div class="pf-wrap pf">
@@ -366,15 +384,29 @@
                 <section class="pf-card">
                     <div class="pf-card-h"><h2>Deskripsi Produk (Gambar Panjang)</h2></div>
                     <div class="pf-card-b">
-                        <input type="file" name="description_image" accept=".jpg,.jpeg,.png,.webp" class="pf-input" style="height:auto;padding:8px">
-                        @if ($product->description_image_path)
-                            <div style="margin-top:12px">
-                                <img src="{{ asset('storage/'.$product->description_image_path) }}" style="max-width:200px;border:1px solid #ddd" alt="">
-                                <label class="pf-check" style="display:flex;margin-top:8px">
-                                    <input type="checkbox" name="remove_description_image" value="1"> Hapus gambar
-                                </label>
+                        <div data-up data-has-image="{{ $product->description_image_path ? '1' : '0' }}" data-label-new="Pilih Gambar" data-label-change="Ganti Gambar" style="max-width:520px">
+                            <div class="pf-up-frame" data-up-frame>
+                                @if ($product->description_image_path)
+                                    <img src="{{ asset('storage/'.$product->description_image_path) }}" alt="">
+                                @else
+                                    <svg width="28" height="28" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M6.002 5.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0"/><path d="M2.002 1a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V3a2 2 0 0 0-2-2zm12 1a1 1 0 0 1 1 1v6.5l-3.777-1.947a.5.5 0 0 0-.577.093l-3.71 3.71-2.66-1.772a.5.5 0 0 0-.63.062L1.002 12V3a1 1 0 0 1 1-1z"/></svg>
+                                    <span>Belum ada gambar deskripsi<br>Seret &amp; lepas di sini</span>
+                                @endif
                             </div>
-                        @endif
+                            <label class="pf-btn pf-up-btn">
+                                <svg width="15" height="15" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5"/><path d="M7.646 1.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1-.708.708L8.5 2.707V11.5a.5.5 0 0 1-1 0V2.707L5.354 4.854a.5.5 0 1 1-.708-.708z"/></svg>
+                                <span data-up-label>{{ $product->description_image_path ? 'Ganti Gambar' : 'Pilih Gambar' }}</span>
+                                <input type="file" name="description_image" accept=".jpg,.jpeg,.png,.webp" class="pf-up-input" data-up-input>
+                            </label>
+                            <p class="pf-up-name" data-up-name hidden></p>
+                            <p class="pf-up-err" data-up-err hidden></p>
+                            <p class="pf-up-hint">JPG, PNG, atau WebP · maks. 6 MB</p>
+                            @if ($product->description_image_path)
+                                <label class="pf-up-remove">
+                                    <input type="checkbox" name="remove_description_image" value="1" data-up-remove> Hapus gambar saat disimpan
+                                </label>
+                            @endif
+                        </div>
                     </div>
                 </section>
             </div>
@@ -428,10 +460,24 @@
                     </div>
                     <div class="pf-side-sec">
                         <p class="pf-side-label">Foto Produk</p>
-                        <input type="file" name="image" accept=".jpg,.jpeg,.png,.webp" class="pf-input" style="height:auto;padding:8px">
-                        @if ($product->image_path)
-                            <img src="{{ asset('storage/'.$product->image_path) }}" class="pf-img" alt="">
-                        @endif
+                        <div data-up data-has-image="{{ $product->image_path ? '1' : '0' }}" data-label-new="Pilih Foto" data-label-change="Ganti Foto">
+                            <div class="pf-up-frame is-square" data-up-frame>
+                                @if ($product->image_path)
+                                    <img src="{{ asset('storage/'.$product->image_path) }}" alt="">
+                                @else
+                                    <svg width="28" height="28" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M6.002 5.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0"/><path d="M2.002 1a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V3a2 2 0 0 0-2-2zm12 1a1 1 0 0 1 1 1v6.5l-3.777-1.947a.5.5 0 0 0-.577.093l-3.71 3.71-2.66-1.772a.5.5 0 0 0-.63.062L1.002 12V3a1 1 0 0 1 1-1z"/></svg>
+                                    <span>Belum ada foto<br>Seret &amp; lepas di sini</span>
+                                @endif
+                            </div>
+                            <label class="pf-btn is-block pf-up-btn">
+                                <svg width="15" height="15" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5"/><path d="M7.646 1.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1-.708.708L8.5 2.707V11.5a.5.5 0 0 1-1 0V2.707L5.354 4.854a.5.5 0 1 1-.708-.708z"/></svg>
+                                <span data-up-label>{{ $product->image_path ? 'Ganti Foto' : 'Pilih Foto' }}</span>
+                                <input type="file" name="image" accept=".jpg,.jpeg,.png,.webp" class="pf-up-input" data-up-input>
+                            </label>
+                            <p class="pf-up-name" data-up-name hidden></p>
+                            <p class="pf-up-err" data-up-err hidden></p>
+                            <p class="pf-up-hint">JPG, PNG, atau WebP · maks. 6 MB</p>
+                        </div>
                     </div>
                     <div class="pf-side-sec">
                         <p class="pf-side-label">Diskon</p>
@@ -785,6 +831,71 @@
         syncSlug();
     });
     syncSlug();
+
+    /* ───────── Uploader gambar: pratinjau, validasi, seret & lepas ───────── */
+    var OK_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
+    var MAX_BYTES = 6 * 1024 * 1024;
+
+    document.querySelectorAll('[data-up]').forEach(function (box) {
+        var input = box.querySelector('[data-up-input]');
+        var frame = box.querySelector('[data-up-frame]');
+        var nameEl = box.querySelector('[data-up-name]');
+        var errEl = box.querySelector('[data-up-err]');
+        var label = box.querySelector('[data-up-label]');
+        var removeBox = box.querySelector('[data-up-remove]');
+        var hadImage = box.getAttribute('data-has-image') === '1';
+        var original = frame.innerHTML;
+        var objUrl = null;
+
+        function fmtSize(n) { return n >= 1048576 ? (n / 1048576).toFixed(1) + ' MB' : Math.max(1, Math.round(n / 1024)) + ' KB'; }
+        function showError(text) { errEl.textContent = text; errEl.hidden = false; }
+
+        function reset() {
+            input.value = '';
+            if (objUrl) { URL.revokeObjectURL(objUrl); objUrl = null; }
+            frame.innerHTML = original;
+            nameEl.hidden = true; errEl.hidden = true;
+            label.textContent = hadImage ? box.getAttribute('data-label-change') : box.getAttribute('data-label-new');
+        }
+
+        function choose(file) {
+            errEl.hidden = true;
+            if (!file) { reset(); return; }
+            if (OK_TYPES.indexOf(file.type) === -1) { input.value = ''; showError('Format harus JPG, PNG, atau WebP.'); return; }
+            if (file.size > MAX_BYTES) { input.value = ''; showError('Ukuran file ' + fmtSize(file.size) + ' melebihi 6 MB.'); return; }
+            if (objUrl) URL.revokeObjectURL(objUrl);
+            objUrl = URL.createObjectURL(file);
+            frame.innerHTML = '';
+            var img = document.createElement('img'); img.src = objUrl; img.alt = '';
+            frame.appendChild(img);
+            frame.classList.remove('is-removed');
+            if (removeBox) removeBox.checked = false;
+            label.textContent = box.getAttribute('data-label-change');
+            nameEl.innerHTML = '<b></b> (' + fmtSize(file.size) + ') <button type="button" class="pf-up-cancel" data-up-cancel>Batal</button>';
+            nameEl.querySelector('b').textContent = file.name;
+            nameEl.hidden = false;
+            nameEl.querySelector('[data-up-cancel]').addEventListener('click', reset);
+        }
+
+        input.addEventListener('change', function () { choose(input.files && input.files[0]); });
+
+        ['dragenter', 'dragover'].forEach(function (ev) {
+            frame.addEventListener(ev, function (e) { e.preventDefault(); frame.classList.add('is-drag'); });
+        });
+        ['dragleave', 'drop'].forEach(function (ev) {
+            frame.addEventListener(ev, function (e) { e.preventDefault(); frame.classList.remove('is-drag'); });
+        });
+        frame.addEventListener('drop', function (e) {
+            if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files.length) {
+                input.files = e.dataTransfer.files;
+                choose(input.files[0]);
+            }
+        });
+
+        if (removeBox) {
+            removeBox.addEventListener('change', function () { frame.classList.toggle('is-removed', removeBox.checked); });
+        }
+    });
 
     /* ───────── Init ───────── */
     applyType();
