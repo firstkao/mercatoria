@@ -8,6 +8,7 @@ return new class extends Migration
 {
     public function up(): void
     {
+        // 1. Tabel Utama Products
         Schema::create('products', function (Blueprint $table) {
             $table->id();
 
@@ -51,7 +52,26 @@ return new class extends Migration
             $table->index(['merch_category_id', 'is_active']);
         });
 
-        // Attributes
+        // 2. Tabel Product Variants
+        Schema::create('product_variants', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('product_id')->constrained('products')->cascadeOnDelete();
+            $table->string('name', 150);
+            $table->string('sku', 64)->nullable()->unique();
+            $table->decimal('price_rmb', 10, 2)->nullable();
+            $table->decimal('discount_amount', 12, 2)->nullable();
+            $table->date('discount_start')->nullable();
+            $table->date('discount_end')->nullable();
+            $table->integer('weight_gram')->nullable();
+            $table->string('availability', 16)->default('tersedia');
+            $table->string('image_path')->nullable();
+            $table->timestamps();
+
+            $table->index('name', 'pv_name_idx');
+            $table->index(['product_id', 'availability'], 'pv_product_avail_idx');
+        });
+
+        // 3. Tabel Product Attributes
         Schema::create('product_attributes', function (Blueprint $table) {
             $table->id();
             $table->foreignId('product_id')->constrained()->cascadeOnDelete();
@@ -62,6 +82,7 @@ return new class extends Migration
             $table->index(['product_id', 'position']);
         });
 
+        // 4. Tabel Product Attribute Values
         Schema::create('product_attribute_values', function (Blueprint $table) {
             $table->id();
             $table->foreignId('product_attribute_id')->constrained()->cascadeOnDelete();
@@ -78,6 +99,12 @@ return new class extends Migration
     {
         Schema::dropIfExists('product_attribute_values');
         Schema::dropIfExists('product_attributes');
+        Schema::dropIfExists('product_variants');
         Schema::dropIfExists('products');
     }
 };
+```[cite: 2, 3]
+
+Setelah merapikan file migrasinya, Anda bisa menjalankan perintah bersihkan migrasi di terminal:
+```bash
+php artisan migrate:fresh
