@@ -292,8 +292,6 @@ Route::middleware(['auth', 'admin'])->prefix('office')->name('office.')->group(f
         ->name('settings.test-email');
     Route::get('/seo', [AdminSettingsController::class, 'seo'])->name('seo.index');
     Route::post('/seo', [AdminSettingsController::class, 'updateSeo'])->name('seo.update');
-    Route::get('/marketing', [AdminSettingsController::class, 'marketing'])->name('marketing.index');
-    Route::post('/marketing', [AdminSettingsController::class, 'updateMarketing'])->name('marketing.update');
 
     // ── CMS Pages ──
     Route::get('/pages', [AdminPageController::class, 'index'])->name('pages.index');
