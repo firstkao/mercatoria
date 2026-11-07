@@ -103,8 +103,3 @@ return new class extends Migration
         Schema::dropIfExists('products');
     }
 };
-```[cite: 2, 3]
-
-Setelah merapikan file migrasinya, Anda bisa menjalankan perintah bersihkan migrasi di terminal:
-```bash
-php artisan migrate:fresh
