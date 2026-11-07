@@ -32,15 +32,18 @@ class ProductFormRequest extends FormRequest
                 $slug->ignore($product);
             }
 
+            // Produk variable: SKU, harga, dan berat diisi per varian, jadi tidak wajib di level produk.
+            $isVariable = $this->input('type') === Product::TYPE_VARIABLE;
+
             return [
                 'game_id' => ['required', 'exists:games,id'],
                 'developer_id' => ['nullable', 'exists:developers,id'],
                 'store_id' => ['nullable', 'exists:stores,id'],
                 'merch_category_id' => ['nullable', 'exists:merch_categories,id'],
                 'name' => ['required', 'string', 'max:150'],
-                'sku' => ['required', 'string', 'max:64', $sku],
+                'sku' => [$isVariable ? 'nullable' : 'required', 'string', 'max:64', $sku],
                 'slug' => ['nullable', 'string', 'max:170', $slug],
-                'price_rmb' => ['required', 'numeric', 'min:0'],
+                'price_rmb' => [$isVariable ? 'nullable' : 'required', 'numeric', 'min:0'],
                 'weight_gram' => ['nullable', 'integer', 'min:1'],
                 'type' => ['required', 'in:single,variable'],
                 'discount_amount' => ['nullable', 'numeric', 'min:0'],
@@ -56,14 +59,7 @@ class ProductFormRequest extends FormRequest
                 'tags' => ['nullable', 'array'],
                 'tags.*' => ['integer', 'exists:tags,id'],
                 'variants' => ['nullable', 'array'],
-                'variants.*.name' => ['nullable', 'required_with:variants.*.sku,variants.*.price_rmb,variants.*.weight_gram', 'string', 'max:150'],
-                'variants.*.sku' => [
-                    'nullable',
-                    'string',
-                    'max:64',
-                    Rule::unique('product_variants', 'sku'),
-                ],
-                'variants.*.price_rmb' => ['nullable', 'required_with:variants.*.name,variants.*.sku,variants.*.weight_gram', 'numeric', 'min:0'],
+                'variants.*.price_rmb' => ['nullable', 'numeric', 'min:0'],
                 'variants.*.weight_gram' => ['nullable', 'integer', 'min:1'],
                 'variants.*.availability' => ['nullable', 'in:tersedia,kosong'],
                 'variants.*.image' => ['nullable', 'file', 'mimes:jpg,jpeg,png,webp', 'max:6144'],
@@ -138,6 +134,11 @@ class ProductFormRequest extends FormRequest
 
         return [
             function (Validator $validator): void {
+                // Produk variable: berat diisi per varian.
+                if ($this->input('type') === Product::TYPE_VARIABLE) {
+                    return;
+                }
+
                 if ($validator->errors()->has('weight_gram') || $this->filled('weight_gram')) {
                     return;
                 }
@@ -158,7 +159,8 @@ class ProductFormRequest extends FormRequest
 
                 $discountAmount = $this->input('discount_amount');
 
-                if ($discountAmount === null) {
+                // Tanpa harga produk (produk variable) tidak ada pembanding untuk nominal diskon.
+                if ($discountAmount === null || $this->input('price_rmb') === null) {
                     return;
                 }
 
