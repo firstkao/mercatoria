@@ -106,9 +106,9 @@
 
     <div class="flex items-center gap-2">
         @auth
-            <a href="{{ route('cart.index') }}" class="relative flex h-10 w-10 items-center justify-center text-[#333]" aria-label="Keranjang">
+            <a href="{{ route('cart.index') }}" class="relative flex h-10 w-10 items-center justify-center text-gray-600 hover:text-blue-600" aria-label="Keranjang">
                 <x-icons.shopping-cart width="20" height="20" />
-                <span data-cart-count class="absolute right-0 top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-[#333] px-1 text-[9px] font-bold leading-none text-white" @if (($cartCount ?? 0) < 1) style="display:none" @endif>{{ $cartCount ?? 0 }}</span>
+                <span data-cart-count class="absolute right-0 top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500 px-1 text-[9px] font-bold leading-none text-white" @if (($cartCount ?? 0) < 1) style="display:none" @endif>{{ $cartCount ?? 0 }}</span>
             </a>
             <a href="{{ route('dashboard') }}" class="flex h-10 w-10 items-center justify-center text-[#333]" aria-label="Akun">
                 <x-icons.user width="20" height="20" />
