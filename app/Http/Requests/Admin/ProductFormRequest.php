@@ -40,9 +40,11 @@ class ProductFormRequest extends FormRequest
                 'developer_id' => ['nullable', 'exists:developers,id'],
                 'store_id' => ['nullable', 'exists:stores,id'],
                 'merch_category_id' => ['nullable', 'exists:merch_categories,id'],
-                'name' => ['required', 'string', 'max:150'],
+                // Nama wajib hanya saat diterbitkan; draft boleh tanpa nama (seperti auto-draft WooCommerce).
+                'name' => ['nullable', Rule::requiredIf(fn () => $this->boolean('is_active')), 'string', 'max:150'],
                 'sku' => [$isVariable ? 'nullable' : 'required', 'string', 'max:64', $sku],
-                'slug' => ['nullable', 'string', 'max:170', $slug],
+                // Slug otomatis (dari nama) dibuat unik oleh controller; slug manual tetap dicek unik di sini.
+                'slug' => $this->boolean('slug_auto') ? ['nullable', 'string', 'max:170'] : ['nullable', 'string', 'max:170', $slug],
                 'price_rmb' => [$isVariable ? 'nullable' : 'required', 'numeric', 'min:0'],
                 'weight_gram' => ['nullable', 'integer', 'min:1'],
                 'type' => ['required', 'in:single,variable'],
