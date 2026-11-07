@@ -137,6 +137,8 @@
                 @php $navItems = [
                     ['__SECTION__','','Dashboard'],
                     ['office.dashboard','bi-speedometer2','Dashboard','office.dashboard'],
+
+                    ['__SECTION__','','Log'],
                     ['office.activity-logs','bi-activity','Activity Log','office.activity'],
                     ['office.auth-logs','bi-shield-lock','Auth Log','office.auth'],
                     ['office.admin-logs','bi-person-gear','Admin Log','office.admin-logs'],
@@ -167,13 +169,13 @@
                     ['__SECTION__','','Konten'],
                     ['office.pages.index','bi-file-text','Pages CMS','office.pages'],
                     ['office.preorder.index','bi-layout-text-window-reverse','Preorder Builder','office.preorder'],
-                    ['office.email-templates.index','bi-envelope-paper','Email Templates','office.email-templates'],
                     ['office.hero-slides.index','bi-image','Hero Slides','office.hero-slides'],
 
-                    ['__SECTION__','','Lainnya'],
-                    ['office.seo.index','bi-globe','SEO','office.seo'],
-                                        ['office.reports.index','bi-bar-chart','Laporan','office.reports'],
+                    ['__SECTION__','','Pengaturan'],
+                    ['office.email-templates.index','bi-envelope-paper','Email Templates','office.email-templates'],
+                    ['office.reports.index','bi-bar-chart','Laporan','office.reports'],
                     ['office.payment-methods.index','bi-wallet2','Metode Bayar','office.payment-methods'],
+                    ['office.seo.index','bi-globe','SEO','office.seo']
                     ['office.settings.index','bi-gear','Settings','office.settings'],
                 ]; @endphp
 
