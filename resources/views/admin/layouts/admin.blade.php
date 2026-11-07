@@ -175,7 +175,7 @@
                     ['office.email-templates.index','bi-envelope-paper','Email Templates','office.email-templates'],
                     ['office.reports.index','bi-bar-chart','Laporan','office.reports'],
                     ['office.payment-methods.index','bi-wallet2','Metode Bayar','office.payment-methods'],
-                    ['office.seo.index','bi-globe','SEO','office.seo']
+                    ['office.seo.index','bi-globe','SEO','office.seo'],
                     ['office.settings.index','bi-gear','Settings','office.settings'],
                 ]; @endphp
 
